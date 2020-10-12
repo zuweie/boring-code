@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-10-12 13:00:34
+ * @LastEditTime: 2020-10-12 13:34:19
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -304,7 +304,7 @@ void test_rb_tree(void)
     /** 展示 **/
     printf("\n size of tree: %d \n", CN_size(&tree));
     It first = CN_first(&tree);
-    It tail = It_next( CN_tail(&tree) );
+    It tail = CN_tail(&tree);
     printf("list the element of tree: \n");
     for(;!It_equal(first, tail); first = It_next(first))
     {
