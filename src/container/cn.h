@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 18:51:11
- * @LastEditTime: 2020-10-12 12:24:29
+ * @LastEditTime: 2020-10-12 14:07:59
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CON_H_
@@ -12,8 +12,11 @@
 #include "tv.h"
 
 /* container function */
-#define cc(con)   (((Container*)(con))->_container)
-#define ccmp(con) (((Container*)(con))->_compare)
+//#define cc(con)   (((Container*)(con))->_container)
+//#define ccmp(con) (((Container*)(con))->_compare)
+
+#define cc(con) ((con)._container)
+#define ccmp(con) ((con)._compare)
 
 #define CN_first(con) container_first(cc(con))
 #define CN_last(con) container_last(cc(con))
@@ -35,7 +38,7 @@
 // 尾部移除
 #define CN_rm_last(con, rdata) CN_remove(con, CN_last(con), rdata)
 // 移除特定目标
-#define CN_rm_target(con, find, ret) _cn_rm_target(con, find, ret)
+#define CN_rm_target(con, find, ret) _cn_rm_target(cc(con), find, ret)
 
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
 #define CN_size(con) container_size(cc(con))

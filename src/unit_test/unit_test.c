@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-10-12 13:34:19
+ * @LastEditTime: 2020-10-12 17:54:30
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -297,7 +297,7 @@ void test_rb_tree(void)
     RbTree tree;
     RbTree_init(&tree, compare_int, compare_int);
 
-    for(int i=0; i<4; ++i) {
+    for(int i=0; i<11; ++i) {
         CN_insert(&tree, RbTree_root(&tree), i2t(i));
     }
 
@@ -322,13 +322,8 @@ void test_rb_tree(void)
     //     printf("\n delete %d \n", data);
 
     // }
+    
 
-    It pos = CN_find(&tree, i2t(11));
-    if (It_valid(pos)){
-        PRINTF_IT_ON_INT(pos);  
-    }else {
-        printf("can not find 11 on rb tree");
-    }
 
     // /** 展示 **/
     // printf("\n size of tree: %d ", container_size(rbtree));
@@ -485,10 +480,6 @@ void test_matrix()
     Matrix_set(matrix4, 1,0, 2.3);
     Matrix_set(matrix4, 3,1,4.5);
     Matrix_inspect(matrix4);
-
-    //Matrix_destroy(matrix1);
-    //Matrix_destroy(matrix2);
-    //Matrix_destroy(matrix3);
     Matrix_destroy(matrix4);
 
 }
