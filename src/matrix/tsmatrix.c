@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-13 10:14:00
- * @LastEditTime: 2020-06-14 11:57:58
+ * @LastEditTime: 2020-10-12 09:50:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/matrix/tsmatrix.c
@@ -10,12 +10,12 @@
 #include "tsmatrix.h"
 #include "matrix.h"
 
-static inline int _free_elem (tv e) 
+static inline int _free_elem (Tv e) 
 {
     ts_elem* elem = t2p(e);
     free(elem);
 }
-static inline int _find_elem (tv e, tv c) {
+static inline int _find_elem (Tv e, Tv c) {
 
     ts_coord* coord = t2p(c);
     ts_elem*  elem  = t2p(e);
@@ -65,7 +65,7 @@ TSMatrix* TSMatrix_create_transpose(TSMatrix* tsmatrix)
 {
     // TODO : make transpose.
     TSMatrix* trans = TSMatrix_create(tsmatrix->col, tsmatrix->row);
-    for (it first = CN_first(&tsmatrix->elems); !It_equal(first, CN_tail(&tsmatrix->elems)); first=It_next(first)) {
+    for (It first = CN_first(&tsmatrix->elems); !It_equal(first, CN_tail(&tsmatrix->elems)); first=It_next(first)) {
         ts_elem* elem = It_getptr(first);
         float value = TSMatrix_get(tsmatrix, elem->position.x, elem->position.y);
         TSMatrix_set(trans, elem->position.y, elem->position.x, value);
@@ -76,7 +76,7 @@ TSMatrix* TSMatrix_create_transpose(TSMatrix* tsmatrix)
 Matrix* TSMatrix_create_matrix(TSMatrix* tsmatrix)
 {
     Matrix* matrix = Matrix_create(tsmatrix->row, tsmatrix->col);
-    for (it first = CN_first(&tsmatrix->elems); !It_equal(first, CN_tail(&tsmatrix->elems)); first= It_next(first)) {
+    for (It first = CN_first(&tsmatrix->elems); !It_equal(first, CN_tail(&tsmatrix->elems)); first= It_next(first)) {
         ts_elem* elem = It_getptr(first);
         Matrix_set(matrix, elem->position.x, elem->position.y, elem->value);
     }
@@ -96,7 +96,7 @@ float TSMatrix_get(TSMatrix* tsmatrix, int x, int y)
     ts_coord coord;
     coord.x = x;
     coord.y = y;
-    it pos = CN_find(&tsmatrix->elems, p2t(&coord));
+    It pos = CN_find(&tsmatrix->elems, p2t(&coord));
     return It_valid(pos)? ((ts_elem*)(It_getptr(pos)))->value : 0.0f;
 }
 
@@ -105,7 +105,7 @@ int TSMatrix_set(TSMatrix* tsmatrix, int x, int y, float v)
     ts_coord coord;
     coord.x = x;
     coord.y = y;
-    it pos = CN_find(&tsmatrix->elems, p2t(&coord));
+    It pos = CN_find(&tsmatrix->elems, p2t(&coord));
 
     if (v != 0.0f) {
         !It_valid(pos) ? CN_add_tail(&tsmatrix->elems, p2t(_create_ts_elem(x,y,v))) : (((ts_elem*) It_getptr(pos))->value = v);

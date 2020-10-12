@@ -2,14 +2,14 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-06-14 01:22:23
+ * @LastEditTime: 2020-10-12 09:37:34
  * @LastEditors: Please set LastEditors
  */
 #include "graph_search.h"
 #include "container/queue.h"
 #include "container/tv.h"
 #include "container/it.h"
-static void _init_bfs_exploring(it pos) 
+static void _init_bfs_exploring(It pos) 
 {
     //bfs_node_t* pn = allocate(g_pool(0), sizeof(bfs_node_t));
     bfs_explor_t* pn = (bfs_explor_t*)malloc(sizeof(bfs_explor_t));
@@ -21,7 +21,7 @@ static void _init_bfs_exploring(it pos)
     vertex->exploring = pn;
 }
 
-static void _init_dfs_exploring(it pos) 
+static void _init_dfs_exploring(It pos) 
 {
     //dfs_node_t* pn = allocate(g_pool(0), sizeof(dfs_node_t));
     dfs_explor_t* pn = (dfs_explor_t*) malloc (sizeof(dfs_explor_t));
@@ -34,7 +34,7 @@ static void _init_dfs_exploring(it pos)
     vertex->exploring = pn;
 }
 
-static void _free_exploring (it pos) 
+static void _free_exploring (It pos) 
 {
     vertex_t* vertex = It_getptr(pos);
     free (vertex->exploring);
@@ -56,7 +56,7 @@ int grp_bfs(Graph* graph, vertex_t* start) {
     Queue queue;
     Queue_init(&queue, NULL);
     Queue_offer(&queue, p2t(start));
-    tv rdata;
+    Tv rdata;
     
     while(Queue_poll(&queue, &rdata) != -1) {
 
@@ -64,7 +64,7 @@ int grp_bfs(Graph* graph, vertex_t* start) {
         bfs_explor_t* pubfs = (bfs_explor_t*) pu->exploring;
 
         // 遍历节点的邻居表。
-        for(it first = CN_first(&pu->edges); 
+        for(It first = CN_first(&pu->edges); 
             !It_equal(first, CN_tail(&pu->edges)); 
             first=It_next(first)) {
 
@@ -90,7 +90,7 @@ static int _dfs_visit(vertex_t* pu, int* time)
     pudfs->color = _grp_gray;
     pudfs->d_time = *time + 1;
     // 访问邻接表
-    for(it first=CN_first(&pu->edges); !It_equal(first, CN_tail(&pu->edges)); first=It_next(first)) {
+    for(It first=CN_first(&pu->edges); !It_equal(first, CN_tail(&pu->edges)); first=It_next(first)) {
         edge_t* pv   = It_getptr(first);
         dfs_explor_t* pvdfs = (dfs_explor_t*)pv->to->exploring;
 
@@ -110,7 +110,7 @@ int grp_dfs(Graph* graph)
     int time = 0;
     CN_travel(&graph->vertexes, _init_dfs_exploring);
 
-    for(it first=CN_first(&graph->vertexes); 
+    for(It first=CN_first(&graph->vertexes); 
         !It_equal(first, CN_tail(&graph->vertexes)); 
         first=It_next(first)) {
 

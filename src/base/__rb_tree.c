@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-06-11 10:49:13
+ * @LastEditTime: 2020-10-12 12:53:41
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -499,7 +499,7 @@ static iterator_t _rb_tree_search(container_t* container, iterator_t offset, typ
     rb_tree_t* tree = container;
     // rb tree 不用外来的比较接口，用内部的insert_compare接口来找位置。
     rb_tree_node_t* p = __rb_tree_search(tree, tree->_root, find, compare);
-    _get_iter(p, container);
+    return _get_iter(p, container);
 }
 
 static int _rb_tree_insert(container_t* container, iterator_t pos, type_value_t data)

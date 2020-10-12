@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-10-11 18:08:37
+ * @LastEditTime: 2020-10-12 13:00:34
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -19,6 +19,7 @@
 #include "algor/graph.h"
 #include "algor/graph_search.h"
 #include "matrix/matrix.h"
+#include "container/RbTree.h"
 
 #define TEST_DATA_SIZE 10000
 #define PRINTF_TV_ON_INT(tv) printf("%d ", t2i(tv))
@@ -46,10 +47,10 @@ static void init_test_data()
     }
     return;
 }
-static tv get(int i) {
+static Tv get(int i) {
     return test_data[i];
 }
-static tv getcc(int i) {
+static Tv getcc(int i) {
     char* abc = "abcdefghijklmnopqrstuvwxyz";
     if (i<26 && i >=0) {
         return i2t(abc[i]);
@@ -69,13 +70,13 @@ static tv getcc(int i) {
 
 #define Graph_inspect(graph, printer) do{ \
     printf(" ********* inspection of Graph *****************\n"); \
-    for (it i = CN_first( &((graph)->vertexes) ); !It_equal(i, CN_tail( &((graph)->vertexes) ) ); i = It_next(i)) { \
+    for (It i = CN_first( &((graph)->vertexes) ); !It_equal(i, CN_tail( &((graph)->vertexes) ) ); i = It_next(i)) { \
         vertex_t* pv = It_getptr(i); \
         printf("vertex: "); \
         printer(pv->vertex_id); \
         printf("(%d) ", pv->indexing); \
         printf("------> "); \
-        for (it j = CN_first(&pv->edges); !It_equal(j, CN_tail(&pv->edges)); j = It_next(j)) { \
+        for (It j = CN_first(&pv->edges); !It_equal(j, CN_tail(&pv->edges)); j = It_next(j)) { \
             edge_t* pnode = It_getptr(j); \
             printer(pnode->to->vertex_id); \
             printf("(%d)   ", pnode->to->indexing);\
@@ -105,13 +106,13 @@ static tv getcc(int i) {
     } \
 }while(0)
 
-int find_vertex(tv v1, tv v2) 
+int find_vertex(Tv v1, Tv v2) 
 {
     vertex_t* pv = t2p(v1);
     return compare_int(pv->vertex_id, v2);
 }
 
-int find_edge(tv v1, tv v2) 
+int find_edge(Tv v1, Tv v2) 
 {
     edge_t* pl = t2p(v1);
     return compare_int(pl->to->vertex_id, v2);
@@ -290,44 +291,55 @@ void test_list (void) {
 
 void test_rb_tree(void) 
 {
-    rb_tree_t* rbtree = container_create(rb_tree, compare_int);
+    
     
     //init_rb_tree(rbtree, compare_int, g_pool(0));
-    for(int i=0; i<TEST_DATA_SIZE; ++i) {
-        container_insert(rbtree, rb_tree_null(rbtree), get(i));
+    RbTree tree;
+    RbTree_init(&tree, compare_int, compare_int);
+
+    for(int i=0; i<4; ++i) {
+        CN_insert(&tree, RbTree_root(&tree), i2t(i));
     }
 
     /** 展示 **/
-    printf("\n size of tree: %d ", rbtree->_size);
-    iterator_t first = container_first(rbtree);
-    iterator_t tail = iterator_next( container_last(rbtree) );
-    for(;!iterator_equal(first, tail); first = iterator_next(first))
+    printf("\n size of tree: %d \n", CN_size(&tree));
+    It first = CN_first(&tree);
+    It tail = It_next( CN_tail(&tree) );
+    printf("list the element of tree: \n");
+    for(;!It_equal(first, tail); first = It_next(first))
     {
-        int v = type_int( iterator_dereference(first) );
-        printf("\n %d \n", v);
+        int v = type_int( It_dref(first) );
+        printf(" %d ", v);
     }
 
     /** 删除 **/
-    for(int i=0; i<TEST_DATA_SIZE/2; ++i) {
+    // for(int i=0; i<TEST_DATA_SIZE/2; ++i) {
         
-        iterator_t pos = container_find(rbtree, get(i), compare_int);
+    //     iterator_t pos = container_find(rbtree, get(i), compare_int);
 
-        int data =  container_remove(rbtree, pos, NULL);
+    //     int data =  container_remove(rbtree, pos, NULL);
         
-        printf("\n delete %d \n", data);
+    //     printf("\n delete %d \n", data);
 
+    // }
+
+    It pos = CN_find(&tree, i2t(11));
+    if (It_valid(pos)){
+        PRINTF_IT_ON_INT(pos);  
+    }else {
+        printf("can not find 11 on rb tree");
     }
 
-    /** 展示 **/
-    printf("\n size of tree: %d ", container_size(rbtree));
-    first = container_first(rbtree);
-    tail = iterator_next( container_last(rbtree) );
-    for(;!iterator_equal(first, tail); first = iterator_next(first))
-    {
-        int v = type_int( iterator_dereference(first) );
-        printf("\n %d \n", v);
-    }
-    container_destroy(rb_tree, rbtree);
+    // /** 展示 **/
+    // printf("\n size of tree: %d ", container_size(rbtree));
+    // first = container_first(rbtree);
+    // tail = iterator_next( container_last(rbtree) );
+    // for(;!iterator_equal(first, tail); first = iterator_next(first))
+    // {
+    //     int v = type_int( iterator_dereference(first) );
+    //     printf("\n %d \n", v);
+    // }
+    // container_destroy(rb_tree, rbtree);
     CU_ASSERT(1);
 }
 
@@ -500,24 +512,22 @@ int main ()
 
     
     
-    if (NULL == CU_add_test(pSuite, "test_vector", test_vector) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-    
-    
-    // if (NULL == CU_add_test(pSuite, "test_rb_tree", test_rb_tree) ) {
+    // if (NULL == CU_add_test(pSuite, "test_vector", test_vector) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+    
+    
+    if (NULL == CU_add_test(pSuite, "test_rb_tree", test_rb_tree) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     
     
     // if (NULL == CU_add_test(pSuite, "test_list", test_list) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
-
-    
     
     // if (NULL == CU_add_test(pSuite, "test_graph", test_graph))
     // {

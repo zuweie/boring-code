@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 18:51:11
- * @LastEditTime: 2020-06-13 22:40:10
+ * @LastEditTime: 2020-10-12 12:24:29
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CON_H_
@@ -12,9 +12,8 @@
 #include "tv.h"
 
 /* container function */
-#define cc(con) (((Container*)(con))->_container)
+#define cc(con)   (((Container*)(con))->_container)
 #define ccmp(con) (((Container*)(con))->_compare)
-//#define setCmp(con, cmp) ((Cmp(con)=cmp)?con:con)
 
 #define CN_first(con) container_first(cc(con))
 #define CN_last(con) container_last(cc(con))
@@ -45,19 +44,19 @@
 
 #define CN_to_arr(con, arr) do { \
     int i = 0;                    \
-    for (it first = CN_first(con);      \
+    for (It first = CN_first(con);      \
         !It_equal(first, CN_tail(con)); \
         first = It_next(first) ) {      \
             arr[i++] = It_dref(first);  \
         } \
 }while(0)
 
-#define CN_init(con, label, cmp) do {       \
-    cc(con) = container_create(label);   \
+#define CN_init(con, label, cmp, ... ) do {     \
+    cc(con) = container_create(label, __VA_ARGS__);   \
     ccmp(con) = cmp;                     \
 }while(0)
 
-#define CN_free(con, label) do {         \
+#define CN_free(con, label) do {       \
     container_destroy(label, cc(con)); \
     ccmp(con) = NULL;                  \
     cc(con) = NULL;                    \
@@ -65,13 +64,13 @@
 
 // 遍历容器，
 #define CN_travel(con, handle) do {           \
-    for(it first = CN_first(con);              \
+    for(It first = CN_first(con);              \
         !It_equal(first, CN_tail(con));          \
         first = It_next(first) ){handle(first);} \
 }while(0)
 
 #define CN_cleanup(con, cleanup) do {    \
-    tv rdata;                            \
+    Tv rdata;                            \
     while(CN_rm_last(con, &rdata) != -1){ \
         cleanup(rdata);                  \        
     }                                    \
@@ -85,9 +84,9 @@ typedef struct _con{
 } Container;
 
 static inline
-int _cn_rm_target (Container* con, tv target, tv* ret) 
+int _cn_rm_target (Container* con, Tv target, Tv* ret) 
 {
-    it pos = CN_find(con, target);
+    It pos = CN_find(con, target);
     if (It_valid(pos)) {
         return CN_remove(con, pos, ret);
     }else {

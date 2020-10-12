@@ -2,11 +2,10 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-10-11 18:08:52
+ * @LastEditTime: 2020-10-11 19:55:53
  * @LastEditors: Please set LastEditors
  */
 #include <stddef.h>
-#include <stdio.h>
 #include <string.h>
 #include "__vector.h"
 #include "__iterator.h"
@@ -147,7 +146,6 @@ container_t* vector_create() {
     vector->_capacity = VEC_ALLOC_CHUNK_SIZE;
     // 先给水池注点水。
     vector->_data = allocate(container_mem_pool(vector), VEC_ALLOC_CHUNK_SIZE*sizeof(type_value_t));
-    printf("what the fucking happing here, who make the gui");
     return vector;
 }
 

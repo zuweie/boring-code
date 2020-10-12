@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-30 08:54:21
- * @LastEditTime: 2020-06-14 08:40:36
+ * @LastEditTime: 2020-10-11 19:53:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/container/iterator.h
@@ -11,7 +11,7 @@
 #define _IT_H_
 #include "base/__iterator.h"
 #include "tv.h"
-typedef iterator_t it;
+typedef iterator_t It;
 /* iterator_t function */
 #define It_ref(iter) iterator_reference(iter)
 #define It_dref(iter) iterator_dereference(iter)
@@ -32,9 +32,9 @@ typedef iterator_t it;
 //#define ivalid(iter) iterator_valid(iter)
 #define It_valid(it) _it_valid(it)
 static inline 
-int _it_valid(it iter) 
+int _it_valid(It iter) 
 {
-    it pos = iter;
+    It pos = iter;
     return iterator_valid(pos);
 }
 #endif
