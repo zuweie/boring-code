@@ -2,13 +2,13 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-10-12 11:05:33
+ * @LastEditTime: 2020-10-13 10:33:58
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
 #define _GRAPH_SEARCH_H_
 #include "graph.h"
-#include "container/LinkArray.h"
+#include "container/List.h"
 typedef enum _grp_color {
     _grp_whtie = 0,
     _grp_gray  = 1,
@@ -32,5 +32,5 @@ int grp_bfs(Graph* graph, vertex_t* start);
 int grp_dfs(Graph* graph);
 
 void grp_cleanup_exploring_info(Graph* graph);
-int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, LinkArray* arr);
+int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr);
 #endif

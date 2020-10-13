@@ -4,12 +4,13 @@ project(boring-code-testcase)
 
 set (SOURCE
     src/unit_test/unit_test.c
+    src/unit_test/unit_test_vector.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__sort.c
     src/base/__vector.c
-    src/algor/graph_search.c
-    src/algor/graph.c
+    src/graph/graph_search.c
+    src/graph/graph.c
     src/matrix/matrix.c
     src/matrix/tsmatrix.c
     src/mem_pool/__mem_pool.c

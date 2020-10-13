@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-13 10:14:00
- * @LastEditTime: 2020-10-12 09:50:47
+ * @LastEditTime: 2020-10-13 10:55:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/matrix/tsmatrix.c
@@ -39,7 +39,7 @@ TSMatrix* TSMatrix_create(size_t row, size_t col)
     TSMatrix* tsmatrix = (TSMatrix*) malloc (sizeof(TSMatrix));
     tsmatrix->row = row;
     tsmatrix->col = col;
-    LinkArr_init(&tsmatrix->elems, _find_elem);
+    List_init(tsmatrix->elems, _find_elem);
     return tsmatrix;
 }
 
@@ -48,13 +48,13 @@ TSMatrix* TSMatrix_create_by(size_t row, size_t col, float data[][col])
     TSMatrix * tsmatrix = (TSMatrix* ) malloc (sizeof(TSMatrix));
     tsmatrix->row = row;
     tsmatrix->col = col;
-    LinkArr_init(&tsmatrix->elems, NULL);
+    List_init(tsmatrix->elems, NULL);
 
     for (int i=0; i<row; ++i) {
         for (int j=0; j<col; ++j) {
             if (data[i][j] > 0.0f) {
                 ts_elem* elem = _create_ts_elem(i,j, data[i][j]);
-                CN_add_tail(&tsmatrix->elems, p2t(elem));
+                CN_add_tail(tsmatrix->elems, p2t(elem));
             }
         }
     }
@@ -65,7 +65,7 @@ TSMatrix* TSMatrix_create_transpose(TSMatrix* tsmatrix)
 {
     // TODO : make transpose.
     TSMatrix* trans = TSMatrix_create(tsmatrix->col, tsmatrix->row);
-    for (It first = CN_first(&tsmatrix->elems); !It_equal(first, CN_tail(&tsmatrix->elems)); first=It_next(first)) {
+    for (It first = CN_first(tsmatrix->elems); !It_equal(first, CN_tail(tsmatrix->elems)); first=It_next(first)) {
         ts_elem* elem = It_getptr(first);
         float value = TSMatrix_get(tsmatrix, elem->position.x, elem->position.y);
         TSMatrix_set(trans, elem->position.y, elem->position.x, value);
@@ -76,7 +76,7 @@ TSMatrix* TSMatrix_create_transpose(TSMatrix* tsmatrix)
 Matrix* TSMatrix_create_matrix(TSMatrix* tsmatrix)
 {
     Matrix* matrix = Matrix_create(tsmatrix->row, tsmatrix->col);
-    for (It first = CN_first(&tsmatrix->elems); !It_equal(first, CN_tail(&tsmatrix->elems)); first= It_next(first)) {
+    for (It first = CN_first(tsmatrix->elems); !It_equal(first, CN_tail(tsmatrix->elems)); first= It_next(first)) {
         ts_elem* elem = It_getptr(first);
         Matrix_set(matrix, elem->position.x, elem->position.y, elem->value);
     }
@@ -85,8 +85,8 @@ Matrix* TSMatrix_create_matrix(TSMatrix* tsmatrix)
 
 int TSMatrix_destroy(TSMatrix* tsmatrix)
 {
-    CN_cleanup(&tsmatrix->elems, _free_elem);
-    LinkArr_free(&tsmatrix->elems);
+    CN_cleanup(tsmatrix->elems, _free_elem);
+    List_free(tsmatrix->elems);
     free(tsmatrix);
     return 0;
 }
@@ -96,7 +96,7 @@ float TSMatrix_get(TSMatrix* tsmatrix, int x, int y)
     ts_coord coord;
     coord.x = x;
     coord.y = y;
-    It pos = CN_find(&tsmatrix->elems, p2t(&coord));
+    It pos = CN_find(tsmatrix->elems, p2t(&coord));
     return It_valid(pos)? ((ts_elem*)(It_getptr(pos)))->value : 0.0f;
 }
 
@@ -105,12 +105,12 @@ int TSMatrix_set(TSMatrix* tsmatrix, int x, int y, float v)
     ts_coord coord;
     coord.x = x;
     coord.y = y;
-    It pos = CN_find(&tsmatrix->elems, p2t(&coord));
+    It pos = CN_find(tsmatrix->elems, p2t(&coord));
 
     if (v != 0.0f) {
-        !It_valid(pos) ? CN_add_tail(&tsmatrix->elems, p2t(_create_ts_elem(x,y,v))) : (((ts_elem*) It_getptr(pos))->value = v);
+        !It_valid(pos) ? CN_add_tail(tsmatrix->elems, p2t(_create_ts_elem(x,y,v))) : (((ts_elem*) It_getptr(pos))->value = v);
     }else if ( It_valid(pos) ){
-        CN_remove(&tsmatrix->elems, pos, NULL);
+        CN_remove(tsmatrix->elems, pos, NULL);
     }
     return 0;
 }

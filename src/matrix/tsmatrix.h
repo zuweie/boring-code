@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-13 10:13:53
- * @LastEditTime: 2020-10-12 11:05:12
+ * @LastEditTime: 2020-10-13 07:30:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/matrix/tsmatrix.h
@@ -9,7 +9,7 @@
 #ifndef _TS_MATRIX_H_
 #define _TS_MATRIX_H_
 
-#include "container/LinkArray.h"
+#include "container/List.h"
 
 typedef struct _ts_coord {
 
@@ -27,7 +27,7 @@ typedef struct _ts_matrix{
 
     size_t row;
     size_t col;
-    LinkArray elems;
+    List elems;
 
 } TSMatrix;
 

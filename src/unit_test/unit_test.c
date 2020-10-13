@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-10-12 17:54:30
+ * @LastEditTime: 2020-10-13 07:04:44
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -16,10 +16,11 @@
 #include "container/cn.h"
 #include "container/it.h"
 #include "container/tv.h"
-#include "algor/graph.h"
-#include "algor/graph_search.h"
+#include "graph/graph.h"
+#include "graph/graph_search.h"
 #include "matrix/matrix.h"
 #include "container/RbTree.h"
+#include "unit_test.h"
 
 #define TEST_DATA_SIZE 10000
 #define PRINTF_TV_ON_INT(tv) printf("%d ", t2i(tv))
@@ -70,13 +71,13 @@ static Tv getcc(int i) {
 
 #define Graph_inspect(graph, printer) do{ \
     printf(" ********* inspection of Graph *****************\n"); \
-    for (It i = CN_first( &((graph)->vertexes) ); !It_equal(i, CN_tail( &((graph)->vertexes) ) ); i = It_next(i)) { \
+    for (It i = CN_first( ((graph)->vertexes) ); !It_equal(i, CN_tail( ((graph)->vertexes) ) ); i = It_next(i)) { \
         vertex_t* pv = It_getptr(i); \
         printf("vertex: "); \
         printer(pv->vertex_id); \
         printf("(%d) ", pv->indexing); \
         printf("------> "); \
-        for (It j = CN_first(&pv->edges); !It_equal(j, CN_tail(&pv->edges)); j = It_next(j)) { \
+        for (It j = CN_first(pv->edges); !It_equal(j, CN_tail(pv->edges)); j = It_next(j)) { \
             edge_t* pnode = It_getptr(j); \
             printer(pnode->to->vertex_id); \
             printf("(%d)   ", pnode->to->indexing);\
@@ -295,16 +296,16 @@ void test_rb_tree(void)
     
     //init_rb_tree(rbtree, compare_int, g_pool(0));
     RbTree tree;
-    RbTree_init(&tree, compare_int, compare_int);
+    RbTree_init(tree, compare_int, compare_int);
 
     for(int i=0; i<11; ++i) {
-        CN_insert(&tree, RbTree_root(&tree), i2t(i));
+        CN_insert(tree, RbTree_root(tree), i2t(i));
     }
 
     /** 展示 **/
-    printf("\n size of tree: %d \n", CN_size(&tree));
-    It first = CN_first(&tree);
-    It tail = CN_tail(&tree);
+    printf("\n size of tree: %d \n", CN_size(tree));
+    It first = CN_first(tree);
+    It tail = CN_tail(tree);
     printf("list the element of tree: \n");
     for(;!It_equal(first, tail); first = It_next(first))
     {
@@ -430,7 +431,7 @@ void test_graph ()
     */
    
     //Matrix* matrix = Matrix_create(CN_size(&graph.vertexes), CN_size(&graph.vertexes));
-    size_t size = CN_size(&graph.vertexes);
+    size_t size = CN_size(graph.vertexes);
     TSMatrix* tsmatrix = TSMatrix_create(size, size);
 
     Graph_getEdgeMatrix(&graph, tsmatrix);
@@ -489,11 +490,12 @@ int main ()
     printf("test unc what ");
     init_test_data();
 
-    CU_pSuite pSuite = NULL;
+    
     if (CUE_SUCCESS != CU_initialize_registry()){
 	    return CU_get_error();
     }
-
+    
+    CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("big test", suite_success_init, suite_success_clean);
 
     if (NULL == pSuite){
@@ -501,7 +503,7 @@ int main ()
       return CU_get_error();
     } 
 
-    
+    do_vector_test();
     
     // if (NULL == CU_add_test(pSuite, "test_vector", test_vector) ) {
     //     CU_cleanup_registry();
@@ -509,10 +511,10 @@ int main ()
     // }
     
     
-    if (NULL == CU_add_test(pSuite, "test_rb_tree", test_rb_tree) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test_rb_tree", test_rb_tree) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     
     
     // if (NULL == CU_add_test(pSuite, "test_list", test_list) ) {

@@ -2,21 +2,21 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 18:51:11
- * @LastEditTime: 2020-10-12 14:07:59
+ * @LastEditTime: 2020-10-13 11:24:15
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CON_H_
 #define _CON_H_
 #include "base/__container.h"
-#include "it.h"
-#include "tv.h"
+#include "It.h"
+#include "Tv.h"
 
 /* container function */
-//#define cc(con)   (((Container*)(con))->_container)
-//#define ccmp(con) (((Container*)(con))->_compare)
+#define cc(con)   (((Container*)( &(con) ))->_container)
+#define ccmp(con) (((Container*)( &(con) ))->_compare)
 
-#define cc(con) ((con)._container)
-#define ccmp(con) ((con)._compare)
+//#define cc(con) ((con)._container)
+//#define ccmp(con) ((con)._compare)
 
 #define CN_first(con) container_first(cc(con))
 #define CN_last(con) container_last(cc(con))
@@ -54,9 +54,13 @@
         } \
 }while(0)
 
-#define CN_init(con, label, cmp, ... ) do {     \
+#define CN_init(con, label, cmp, ... ) do {           \
     cc(con) = container_create(label, __VA_ARGS__);   \
-    ccmp(con) = cmp;                     \
+    if (cmp) {                                        \
+        ccmp(con) = cmp;                              \
+    }else{                                            \
+        ccmp(con) = _cmp_bit;                         \
+    }                                                 \
 }while(0)
 
 #define CN_free(con, label) do {       \
@@ -97,4 +101,10 @@ int _cn_rm_target (Container* con, Tv target, Tv* ret)
     }
 }
 
+static inline 
+int _cmp_bit (Tv v1, Tv v2) {
+    v_type t1 = *(v1.type_value);
+    v_type t2 = *(v2.type_value);
+    return t1^t2;
+}
 #endif
