@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-10-15 09:50:24
+ * @LastEditTime: 2020-10-15 13:54:43
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -26,13 +26,13 @@
 int find_vertex(Tv v1, Tv v2) 
 {
     vertex_t* pv = t2p(v1);
-    return compare_int(pv->vertex_id, v2);
+    //return compare_int(pv->vertex_id, v2);
 }
 
 int find_edge(Tv v1, Tv v2) 
 {
     edge_t* pl = t2p(v1);
-    return compare_int(pl->to->vertex_id, v2);
+    //return compare_int(pl->to->vertex_id, v2);
 }
 
 void 

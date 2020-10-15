@@ -1,8 +1,8 @@
 /*
- * @Description: In User Settings Edit
- * @Author: your name
+ * @Description: 迭代器
+ * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2020-10-14 19:10:15
+ * @LastEditTime: 2020-10-16 07:12:51
  * @LastEditors: Please set LastEditors
  */
 #ifndef _ITERATOR_H_

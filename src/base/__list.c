@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-10-15 06:00:57
+ * @LastEditTime: 2020-10-15 15:50:32
  * @LastEditors: Please set LastEditors
  */
 
@@ -127,7 +127,7 @@ container_t* list_create() {
     list_first(list) = list_head(list);
     list_last(list) = list_tail(list);
     list->_size = 0;
-    list->_sentinel.data = int_type(-1);      
+    list->_sentinel.data = int_vtype(-1);      
     return list;
 }
 

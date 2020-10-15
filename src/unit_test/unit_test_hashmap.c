@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-10-15 09:52:07
+ * @LastEditTime: 2020-10-15 15:49:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -24,7 +24,7 @@ static int suite_success_clean (void)
 static void test_hashmap_set (void) 
 {
     Hashmap hashmap;
-    Hashmap_init(hashmap, hashmap_ikey_hasher, Tv_Equal);
+    Hashmap_init(hashmap, hashmap_ikey_hasher, EQUL);
     Hashmap_uninit(hashmap, NULL);
     CU_ASSERT(1);
 }

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-15 07:59:24
- * @LastEditors: your name
+ * @LastEditTime: 2020-10-15 15:22:23
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/it.h
  */
@@ -11,7 +11,7 @@
 #include "base/__iterator.h"
 #include "Tv.h"
 typedef iterator_t It;
-/* iterator_t function */
+/* iterator_t interface */
 #define It_ref(iter) iterator_reference(iter)
 #define It_dref(iter) iterator_dereference(iter)
 #define It_move(it) iterator_move(iter, step)
@@ -21,20 +21,16 @@ typedef iterator_t It;
 #define It_assign(from, to) iterator_assign(from, to)
 #define It_exchange(iter1, iter2) iterator_exchange(iter1, itert2)
 
-#define It_getV(it, vt) t2v(vt, It_dref(it))
-#define It_getchar(it) It_getV(it, char)
-#define It_getint(it) It_getV(it, int)
-#define It_getfloat(it) It_getV(it, float)
-#define It_getdouble(it) It_getV(it, double)
+#define It_getchar(it) t2i(It_dref(it))
+#define It_getint(it) t2i(It_dref(it))
+#define It_getfloat(it) t2f(It_dref(it))
+#define It_getdouble(it) t2f(It_dref(it))
 #define It_getptr(it) t2p(It_dref(it))
 
-//#define ivalid(iter) iterator_valid(iter)
-#define It_valid(it) _it_valid(it)
-static inline 
-int _it_valid(It iter) 
-{
-    It pos = iter;
-    return iterator_valid(pos);
-}
+#define It_valid(it)                  \
+    ({                                \
+        int ret = iterator_valid(it); \
+        ret;                          \
+    })
 
 #endif

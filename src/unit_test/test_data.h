@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:26:56
- * @LastEditTime: 2020-10-13 16:48:21
+ * @LastEditTime: 2020-10-16 06:37:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.h
@@ -20,4 +20,7 @@ void init_test_data(void);
 Tv getTSi(int i);
 Tv getTSf(int i);
 Tv getTSs(int i);
+int geti(int i);
+float getf(int i);
+char* getstr(int i);
 #endif

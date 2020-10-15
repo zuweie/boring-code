@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-02 06:50:22
- * @LastEditTime: 2020-10-14 07:17:39
+ * @LastEditTime: 2020-10-16 07:31:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/container/tv.h
@@ -14,21 +14,20 @@
 
 typedef type_value_t Tv;
 
-#define t2v(vt, t) type_v(vt, t)
-#define t2i(t) type_int(t)
-#define t2f(t) type_float(t)
-#define t2d(t) type_double(t)
-#define t2p(t) type_pointer(t)
+#define t2i(t) vtype_int(t)
+#define t2f(t) vtype_float(t)
+#define t2d(t) vtype_float(t)
+#define t2p(t) vtype_pointer(t)
 
-#define i2t(v) int_type(v)
-#define f2t(v) float_type(v)
-#define d2t(v) double_type(v)
-#define p2t(v) pointer_type(v)
+#define i2t(v) int_vtype(v)
+#define f2t(v) float_vtype(v)
+#define d2t(v) float_vtype(v)
+#define p2t(v) pointer_vtype(v)
 
-#define tv_equl(tv1, tv2) (!type_value_equl(tv1, tv2))
-#define cmpi(tv1, tv2) compare_int(tv1, tv2)
-#define cmpf(tv1, tv2) compare_float(tv1, tv2)
-#define cmpd(tv1, tv2) compare_double(tv1, tv2)
-#define cmpptr(tv1, tv2) compare_pointer(tv1, tv2)
+#define Tv_equl(tv1, tv2) vtype_equl(tv1, tv2)
+#define Tv_cmpi(tv1, tv2) vtype_cmp_on_int(tv1, tv2)
+#define Tv_cmpf(tv1, tv2) vtype_cmp_on_flt(tv1, tv2)
+#define Tv_cmpd(tv1, tv2) vtype_cmp_on_flt(tv1, tv2)
+#define Tv_cmpptr(tv1, tv2) vtype_cmp_on_ptr(tv1, tv2)
 
 #endif

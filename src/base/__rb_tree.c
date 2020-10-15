@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-15 06:39:55
+ * @LastEditTime: 2020-10-15 15:51:04
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -19,7 +19,7 @@
     prb->_null.parent = _null(prb);
     prb->_null.left = _null(prb);
     prb->_null.right = _null(prb);
-    prb->_null.node = pointer_type(0);
+    prb->_null.node = pointer_vtype(0);
     
     /** 初始化其他 **/
     prb->_size = 0;

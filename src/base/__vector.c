@@ -2,9 +2,10 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-10-15 06:00:07
+ * @LastEditTime: 2020-10-15 22:07:03
  * @LastEditors: Please set LastEditors
  */
+//#include <stdio.h>
 #include <stddef.h>
 #include <string.h>
 #include "__vector.h"
@@ -44,7 +45,7 @@ static iterator_t _vector_last (container_t* container)
 
 static iterator_t _vector_search (container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)) 
 {
-    
+    //printf("vector search here\n");
     iterator_t first = offset;
     iterator_t tail = container_tail(container);
 

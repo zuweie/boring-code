@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:34:16
- * @LastEditTime: 2020-10-13 15:55:40
+ * @LastEditTime: 2020-10-16 06:37:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.c
@@ -59,11 +59,24 @@ Tv getTSi(int i)
 {
     return i2t(test_data_int[i]);
 }
+int geti(int i) {
+    return test_data_int[i];
+}
+
 Tv getTSf(int i)
 {
     return f2t(test_data_float[i]);
 }
+float getf(int i) {
+    return test_data_float[i];
+}
+
 Tv getTSs(int i) 
 {
     return p2t(test_data_string[i]);
+}
+
+char* getstr(int i) 
+{
+    return test_data_string[i];
 }

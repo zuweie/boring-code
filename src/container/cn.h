@@ -1,13 +1,14 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-15 09:16:24
+ * @LastEditTime: 2020-10-16 07:31:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
  */
 #ifndef _CON_H_
 #define _CON_H_
+#include <string.h>
 #include "base/__container.h"
 #include "It.h"
 #include "Tv.h"
@@ -52,7 +53,12 @@
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
 #define CN_size(con) container_size(cc(con))
 #define CN_sort(con, cmp) container_sort(cc(con), cmp)
-#define CN_has(con, find) It_valid( CN_find(con, find) )
+#define CN_has(con, find)            \
+    ({                               \
+        It pos = CN_find(con, find); \
+        int ret = It_valid(pos);     \
+        ret;                         \
+    })
 
 #define CN_to_arr(con, arr) do { \
     int i = 0;                    \
@@ -77,7 +83,7 @@
     if (cmp) {                                        \
         ccmp(con) = cmp;                              \
     }else{                                            \
-        ccmp(con) = Tv_Equal;                         \
+        ccmp(con) = EQUL;                             \
     }                                                 \
 }while(0)
 
@@ -99,9 +105,39 @@ typedef struct _con{
 
 } Container;
 
+// 这个能比较整数和浮点的值是否相等，但不能比较大小，这个只是用 ^ 做位运算，只能得出是否相等，不知其大小。
 static inline 
-int Tv_Equal (Tv v1, Tv v2) {
-    return tv_equl(v1, v2);
+int EQUL (Tv v1, Tv v2) {
+    v_type result = Tv_equl(v1, v2);
+    return result?1:0;
+}
+// 这个先用位运算比较是否相等，不等的话再化做 int 形式比较大小
+static inline
+int CMP_INT (Tv v1, Tv v2) 
+{
+    return Tv_cmpi(v1, v2);
 }
 
+// 这个先用位运算比较是否相等，不等的话再化做 float 形式比较大小
+static inline
+int CMP_FLT (Tv v1, Tv v2) 
+{
+    return Tv_cmpf(v1, v2);
+}
+
+// 指针比较
+static inline
+int CMP_PTR (Tv v1, Tv v2) 
+{
+    return Tv_cmpptr(v1, v2);
+}
+
+// 比较字符串
+static inline
+int CMP_STR (Tv v1, Tv v2) 
+{
+    const char* s1 = t2p(v1);
+    const char* s2 = t2p(v2);
+    return strcmp(s1, s2);
+}
 #endif
