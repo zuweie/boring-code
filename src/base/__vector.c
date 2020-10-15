@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-10-11 19:55:53
+ * @LastEditTime: 2020-10-15 06:00:07
  * @LastEditors: Please set LastEditors
  */
 #include <stddef.h>
@@ -106,14 +106,15 @@ static int _vector_insert (container_t* container, iterator_t it, type_value_t d
     return -1;
 }
 
-static int _vector_remove (container_t* container, iterator_t it, type_value_t* rdata) 
+static int _vector_remove (container_t* container, iterator_t it, void* rdata) 
 {
     if (!iterator_is_boundary(it)){
         
         vector_t *vec = container;
 
         if (rdata){
-            *rdata = iterator_dereference(it);
+
+            *((type_value_t*)rdata) = iterator_dereference(it);
         }
 
         // 擦除

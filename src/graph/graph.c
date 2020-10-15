@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-10-13 10:53:51
+ * @LastEditTime: 2020-10-15 08:23:37
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -18,7 +18,7 @@ static vertex_t* _create_vertex(Graph* graph, Tv vertex)
     return v;
 }
 static int _free_vertex(vertex_t* vertex) {
-    List_free(vertex->edges);
+    List_uninit(vertex->edges, NULL);
     free(vertex);
     return 0;
 }
@@ -39,13 +39,13 @@ int Graph_init(Graph* graph, int(*find_vertex)(Tv, Tv), int(*find_link)(Tv, Tv))
 {
     // 初始化图
     List_init(graph->vertexes, find_vertex);
-    graph->compare_edge = find_link;
-    graph->compare_vertex   = find_vertex;
+    graph->compare_edge   = find_link;
+    graph->compare_vertex = find_vertex;
     return 0;
 } 
 
 
-int Graph_free(Graph* graph) 
+int Graph_uninit(Graph* graph) 
 {
     // 把图给干掉了
     
@@ -58,7 +58,7 @@ int Graph_free(Graph* graph)
 
             Graph_delVertex(pv);
     }
-    List_free(graph->vertexes);
+    List_uninit(graph->vertexes, NULL);
     graph->compare_edge   = NULL;
     graph->compare_vertex = NULL;
     return 0;

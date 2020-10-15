@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-10-13 10:40:05
+ * @LastEditTime: 2020-10-15 08:21:19
  * @LastEditors: Please set LastEditors
  */
 #include "graph_search.h"
@@ -80,7 +80,7 @@ int grp_bfs(Graph* graph, vertex_t* start) {
         }
         pubfs->color = _grp_black;
     }
-    Queue_free(queue);
+    Queue_uninit(queue,NULL);
     return 0;
 }
 

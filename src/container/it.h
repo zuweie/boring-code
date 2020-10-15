@@ -1,12 +1,11 @@
 /*
  * @Author: your name
- * @Date: 2020-05-30 08:54:21
- * @LastEditTime: 2020-10-11 19:53:22
- * @LastEditors: Please set LastEditors
+ * @Date: 2020-09-22 15:01:45
+ * @LastEditTime: 2020-10-15 07:59:24
+ * @LastEditors: your name
  * @Description: In User Settings Edit
- * @FilePath: /kitc/src/container/iterator.h
- */ 
-
+ * @FilePath: /boring-code/src/container/it.h
+ */
 #ifndef _IT_H_
 #define _IT_H_
 #include "base/__iterator.h"
@@ -37,4 +36,5 @@ int _it_valid(It iter)
     It pos = iter;
     return iterator_valid(pos);
 }
+
 #endif

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-06-11 10:48:55
+ * @LastEditTime: 2020-10-15 06:00:57
  * @LastEditors: Please set LastEditors
  */
 
@@ -84,7 +84,7 @@ static int _list_insert(container_t* container, iterator_t pos, type_value_t dat
     return 0;
 }
 
-static int _list_remove(container_t* container, iterator_t pos, type_value_t* rdata)
+static int _list_remove(container_t* container, iterator_t pos, void* rdata)
 {
     // 删除
     // 边界的东西不能移除
@@ -97,7 +97,7 @@ static int _list_remove(container_t* container, iterator_t pos, type_value_t* rd
         pnode->next->prev = pnode->prev;
 
         if (rdata) {
-            *rdata = iterator_dereference(pos);
+            *((type_value_t*)rdata) = iterator_dereference(pos);
         }
         
         // 回收

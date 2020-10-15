@@ -4,11 +4,15 @@ project(boring-code-testcase)
 
 set (SOURCE
     src/unit_test/unit_test.c
+    src/unit_test/unit_test_tv.c
     src/unit_test/unit_test_vector.c
+    src/unit_test/unit_test_hashmap.c
+    src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__sort.c
     src/base/__vector.c
+    src/base/__hashmap.c
     src/graph/graph_search.c
     src/graph/graph.c
     src/matrix/matrix.c

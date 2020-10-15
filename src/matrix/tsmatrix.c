@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-13 10:14:00
- * @LastEditTime: 2020-10-13 10:55:02
+ * @LastEditTime: 2020-10-15 08:47:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/matrix/tsmatrix.c
@@ -85,8 +85,7 @@ Matrix* TSMatrix_create_matrix(TSMatrix* tsmatrix)
 
 int TSMatrix_destroy(TSMatrix* tsmatrix)
 {
-    CN_cleanup(tsmatrix->elems, _free_elem);
-    List_free(tsmatrix->elems);
+    List_uninit(tsmatrix->elems, _free_elem);
     free(tsmatrix);
     return 0;
 }

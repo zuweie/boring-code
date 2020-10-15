@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2020-10-13 10:40:15
+ * @LastEditTime: 2020-10-15 07:47:58
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_H_
@@ -40,7 +40,7 @@ typedef struct _graph
 } Graph;
 
 int Graph_init(Graph* graph, int(*find_vertex)(Tv, Tv), int(*find_link)(Tv, Tv));
-int Graph_free(Graph* graph);
+int Graph_uninit(Graph* graph);
 int Graph_addVertex(Graph* graph, Tv vertex);
 int Graph_addEdge(vertex_t* from, vertex_t* to, float weight);
 int Graph_delVertex(vertex_t* vertex);

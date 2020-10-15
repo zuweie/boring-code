@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-02 06:50:22
- * @LastEditTime: 2020-10-13 10:59:41
+ * @LastEditTime: 2020-10-14 07:17:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/container/tv.h
@@ -25,6 +25,7 @@ typedef type_value_t Tv;
 #define d2t(v) double_type(v)
 #define p2t(v) pointer_type(v)
 
+#define tv_equl(tv1, tv2) (!type_value_equl(tv1, tv2))
 #define cmpi(tv1, tv2) compare_int(tv1, tv2)
 #define cmpf(tv1, tv2) compare_float(tv1, tv2)
 #define cmpd(tv1, tv2) compare_double(tv1, tv2)

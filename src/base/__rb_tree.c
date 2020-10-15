@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-12 12:53:41
+ * @LastEditTime: 2020-10-15 06:39:55
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -140,7 +140,7 @@ static rb_tree_node_t* __rb_tree_search(rb_tree_t* prb, rb_tree_node_t* pnode, t
 {
     if (pnode != _null(prb)) {
         //int result = compare(pnode->node, find);
-        int result = compare(pnode->node, find);
+        int result = prb->_insert_compare(pnode->node, find);
         if (result == 0) {
             return pnode;
         }else if (result == 1) {
@@ -399,7 +399,7 @@ static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
     return 0;
 }
 
-static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, type_value_t* rdata)
+static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 {
     if (pz != _null(prb)){
         
@@ -443,7 +443,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, type_value_t* r
 
         // 返回值。
         if (rdata) {
-            *rdata = py->node;
+            *((type_value_t*)rdata) = py->node;
         }
         deallocate(container_mem_pool(prb), py);
         prb->_size--;
@@ -497,8 +497,7 @@ static iterator_t _rb_tree_last(container_t* container)
 static iterator_t _rb_tree_search(container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)) 
 {
     rb_tree_t* tree = container;
-    // rb tree 不用外来的比较接口，用内部的insert_compare接口来找位置。
-    rb_tree_node_t* p = __rb_tree_search(tree, tree->_root, find, compare);
+    rb_tree_node_t* p = __rb_tree_search(tree, tree->_root, find, NULL);
     return _get_iter(p, container);
 }
 
@@ -507,7 +506,7 @@ static int _rb_tree_insert(container_t* container, iterator_t pos, type_value_t 
     return __rb_tree_insert(container, data);
 }
 
-static int _rb_tree_remove(container_t* container, iterator_t pos, type_value_t* rdata)
+static int _rb_tree_remove(container_t* container, iterator_t pos, void* rdata)
 {
     return __rb_tree_remove(container, iterator_reference(pos), rdata);
 }
@@ -519,7 +518,7 @@ static size_t _rb_tree_size(container_t* container)
 static int _rb_tree_sort(container_t* container, int(*compare)(type_value_t, type_value_t)) 
 {
     // rb 树不能排序。
-    return 0;
+    return -1;
 }
 container_t* rb_tree_create(int(*insert_compare)(type_value_t, type_value_t)) {
     container_t* tree = (rb_tree_t*) malloc( sizeof(rb_tree_t) );

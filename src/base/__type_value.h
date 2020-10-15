@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 13:29:13
- * @LastEditTime: 2020-06-04 22:46:38
+ * @LastEditTime: 2020-10-14 07:09:34
  * @LastEditors: Please set LastEditors
  */
 
@@ -19,16 +19,26 @@
 #define type_pointer(t) (t.pointer)
 
 #define int_type(v)     _int_type(v)
+#define char_type(v)    _int_type(v)
 #define float_type(v)   _flv_type(v)
-#define double_type(v)  _2flv_type(v)
+#define double_type(v)  _flv_type(v)
 #define pointer_type(v) _ptr_type(v)
+#define string_type(v)  _ptr_type(v)
 
-#define cmp_int(t1, t2) ((type_int(t1)==type_int(t2))?0:((type_int(t1)>type_int(t2)))?1:-1)
-#define cmp_flt(t1, t2) ((type_int(t1)==type_int(t2))?0:((type_float(t1)>type_float(t2))?1:-1))
-#define cmp_dbl(t1, t2) ((type_int(t1)==type_int(t2))?0:((type_double(t1)>type_double(t2))?1:-1))
+#define type_value_equl(t1, t2) ((*((v_type*)t1.type_value))^(*((v_type*)t2.type_value)))
+#define cmp_int(t1, t2) (!(type_value_equl(t1, t2))?0:((type_int(t1)>type_int(t2)))?1:-1)
+#define cmp_flt(t1, t2) (!(type_value_equl(t1, t2))?0:((type_float(t1)>type_float(t2))?1:-1))
+#define cmp_dbl(t1, t2) (!(type_value_equl(t1, t2))?0:((type_double(t1)>type_double(t2))?1:-1))
 #define cmp_ptr(t1, t2) (!(type_pointer(t1)==type_pointer(t2)))
 
-typedef long long v_type;
+#if __x86_64__
+   typedef long v_type;
+   typedef double floating_type;
+#else
+   typedef int v_type;
+   typedef float floating_type;
+#endif
+   
 typedef union _type_value
 {
    void* pointer;
@@ -36,21 +46,14 @@ typedef union _type_value
 } type_value_t;
 
 static inline 
-type_value_t _int_type(int v)
+type_value_t _int_type(v_type v)
 {
    type_value_t tv;                                
    return set_type_val(tv, v);
 }
 
 static inline 
-type_value_t _flv_type(float v)
-{
-   type_value_t tv;
-   return set_type_val(tv, v);
-}
-
-static inline 
-type_value_t _2flv_type(double v) 
+type_value_t _flv_type(floating_type v) 
 {
    type_value_t tv;
    return set_type_val(tv, v);
