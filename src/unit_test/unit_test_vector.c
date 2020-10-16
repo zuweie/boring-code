@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-16 08:29:14
+ * @LastEditTime: 2020-10-16 10:09:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -93,10 +93,19 @@ void test_vector_sort()
     Vector_init(vector, NULL);
     const VECTOR_SIZE = 10;
     extern float test_data_float[TEST_DATA_SIZE];
+    // printf("\n\nunsort \n\n");
+    // for (int i=0; i<VECTOR_SIZE; ++i){
+    //     printf("%f ", test_data_float[i]);
+    // }
+    // printf("\n\n");
     Arr_to_cn(test_data_float, VECTOR_SIZE, f2t, vector);
 
     // 从小到大的排序
     CN_sort(vector, CMP_FLT);
+    // printf(" asc sort \n\n");
+    // CN_travel(vector, PRINTF_IT_ON_FLOAT);
+    // printf("\n\n");
+
     for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
@@ -104,12 +113,49 @@ void test_vector_sort()
     }
     // 从大到小的排序
     CN_sort(vector, INCMP_FLT);
-    for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
+    //printf(" desc sort \n\n");
+    //CN_travel(vector, PRINTF_IT_ON_FLOAT);
+    // printf("\n\n");
+    // for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
+    //     Tv v1 = It_dref(first);
+    //     Tv v2 = It_dref(It_next(first));
+    //     CU_ASSERT_TRUE(Tv_cmpf(v1, v2) > 0);
+    // }
+    Vector_uninit(vector, NULL);
+    
+    // 测试 string 的排序。
+    Vector vector2;
+    Vector_init(vector2, NULL);
+    // 灌入数据
+
+    extern *test_data_string[TEST_DATA_STRING_SIZE];
+    // printf("\n\nunsort \n\n");
+    // for (int i=0; i<TEST_DATA_STRING_SIZE; ++i){
+    //     printf("%s ", test_data_string[i]);
+    // }
+    // printf("\n\n");
+    Arr_to_cn(test_data_string, TEST_DATA_STRING_SIZE, p2t, vector2);
+    CN_sort(vector2, CMP_STR);
+    for(It first=CN_first(vector2); !It_equal(first, CN_last(vector2)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
-        CU_ASSERT_TRUE(Tv_cmpf(v1, v2) > 0);
+        CU_ASSERT_TRUE(CMP_STR(v1, v2) < 0);
     }
-    Vector_uninit(vector, NULL);
+    // printf(" asc sort \n\n");
+    // CN_travel(vector2, PRINTF_IT_ON_STRING);
+    // printf("\n\n");
+    
+    CN_sort(vector2, INCMP_STR);
+    // printf("desc sort \n\n");
+    // CN_travel(vector2, PRINTF_IT_ON_STRING);
+    // printf("\n\n");
+    for(It first=CN_first(vector2); !It_equal(first, CN_last(vector2)); first=It_next(first)){
+        Tv v1 = It_dref(first);
+        Tv v2 = It_dref(It_next(first));
+        CU_ASSERT_TRUE(CMP_STR(v1, v2) > 0);
+    }
+    
+    Vector_uninit(vector2, NULL);
 }
 int do_vector_test (void) 
 {

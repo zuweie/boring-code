@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-10-15 13:54:43
+ * @LastEditTime: 2020-10-16 10:12:29
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -357,6 +357,7 @@ int main ()
     // } 
 
     do_vector_test();
+    do_list_test();
     do_tv_test();
     do_hashmap_test();
     // if (NULL == CU_add_test(pSuite, "test_vector", test_vector) ) {

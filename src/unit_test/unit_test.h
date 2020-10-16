@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2020-10-15 09:50:17
+ * @LastEditTime: 2020-10-16 10:12:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -71,6 +71,8 @@
 }while(0)
 
 int do_vector_test (void);
+int do_list_test(void);
 int do_tv_test(void);
 int do_hashmap_test(void);
+
 #endif

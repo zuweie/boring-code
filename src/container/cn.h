@@ -1,13 +1,14 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-16 08:09:10
+ * @LastEditTime: 2020-10-16 10:06:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
  */
 #ifndef _CON_H_
 #define _CON_H_
+#include <stdio.h>
 #include <string.h>
 #include "base/__container.h"
 #include "It.h"
@@ -154,6 +155,13 @@ int CMP_STR (Tv v1, Tv v2)
 {
     const char* s1 = t2p(v1);
     const char* s2 = t2p(v2);
-    return strcmp(s1, s2);
+    int ret = strcmp(s1, s2);
+    return ret?(ret>0?1:-1):0;
+}
+
+static inline
+int INCMP_STR(Tv v1, Tv v2) 
+{
+    return CMP_STR(v2, v1);
 }
 #endif

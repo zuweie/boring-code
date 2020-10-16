@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:26:56
- * @LastEditTime: 2020-10-16 06:37:33
+ * @LastEditTime: 2020-10-16 08:59:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.h
@@ -12,7 +12,7 @@
 #include "container/Tv.h"
 
 #define TEST_DATA_SIZE 100 
-
+#define TEST_DATA_STRING_SIZE 24
 void init_test_data_int(void);
 void init_test_data_float(void);
 void init_test_data(void);
