@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-15 15:53:45
+ * @LastEditTime: 2020-10-17 00:11:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -18,20 +18,20 @@ static hash_node_t* _create_hash_node (container_t* container, type_value_t key,
     hash_node_t* node = allocate(container_mem_pool(container), sizeof(hash_node_t));
     node->entity.key = key;
     node->entity.value = value;
-    node->slot_index = hashmap->key_hasher(key);
+    node->slot_index = hashmap->key_hasher(key, hashmap->_slot_size);
     return node;
 }
 static iterator_t _get_iterator_by_key(container_t* container, type_value_t key) 
 {
     hashmap_t* hashmap = (hashmap_t*) container;
-    int hash_index = hashmap->key_hasher(key);
+    int hash_index = hashmap->key_hasher(key, hashmap->_slot_size);
     return hashmap->_slot[hash_index];
 }
 
 static iterator_t _search_in_table(container_t* container, iterator_t pos, type_value_t key) 
 {
     hashmap_t* hashmap = (hashmap_t*) container;
-    int hash_index = hashmap->key_hasher(key);
+    int hash_index = hashmap->key_hasher(key, hashmap->_slot_size);
 
     for(;!iterator_equal(pos, container_tail(hashmap->_hash_table));pos=iterator_next(pos)) {
         
@@ -71,14 +71,13 @@ static int _hashmap_insert(container_t* container, iterator_t pos, type_value_t 
     hashmap_t* hashmap  = (hashmap_t*) container;
     entity_t* pentity   = vtype_pointer(en);
     iterator_t slot_it  = _get_iterator_by_key(container, pentity->key);
-    iterator_t table_it = _search_in_table(container, slot_it, pentity->key);
+    iterator_t table_it = iterator_is_tail(slot_it)? slot_it :_search_in_table(container, slot_it, pentity->key);
 
     if (iterator_is_tail(slot_it) || iterator_is_tail(table_it)) {
         // 插入新元素
-        iterator_t insert_it = iterator_is_tail(slot_it) ? slot_it : table_it;
         hash_node_t* pnode = _create_hash_node(container, pentity->key, pentity->value);
-        ret = container_insert(hashmap->_hash_table, insert_it, pointer_vtype(pnode));
-        hashmap->_slot[hashmap->key_hasher(pentity->key)] = iterator_prev(insert_it);
+        ret = container_insert(hashmap->_hash_table, slot_it, pointer_vtype(pnode));
+        hashmap->_slot[hashmap->key_hasher(pentity->key, hashmap->_slot_size)] = iterator_prev(slot_it);
         return ret;
     } else {
         // 更新元素的 value
@@ -134,13 +133,20 @@ static size_t _hashmap_size(container_t* container)
     return container_size(hashmap->_hash_table);
 }
 
-container_t* hashmap_create(int (*key_hasher)(type_value_t), int (*key_compare) (type_value_t, type_value_t)) 
+container_t* hashmap_create(size_t slot_size, int (*key_hasher)(type_value_t, size_t), int (*key_compare) (type_value_t, type_value_t)) 
 {
-    hashmap_t* hashmap = (hashmap_t*) malloc (sizeof (hashmap_t));
+    hashmap_t* hashmap = (hashmap_t*) malloc (sizeof(hashmap_t) + sizeof(iterator_t)*slot_size);
     pool_t* _mem_pool = alloc_create(0);
     hashmap->key_hasher = key_hasher;
     hashmap->key_compare = key_compare;
+    hashmap->_slot_size = slot_size;
     hashmap->_hash_table = container_create(list);
+
+    iterator_t hash_table_tail = container_tail(hashmap->_hash_table);
+    for(int i=0; i<hashmap->_slot_size; ++i) {
+        hashmap->_slot[i] = hash_table_tail;
+    }
+    
     initialize_container(
         hashmap, 
         _hashmap_first,

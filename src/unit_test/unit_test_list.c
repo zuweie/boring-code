@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-16 11:17:00
+ * @LastEditTime: 2020-10-16 16:35:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -12,7 +12,6 @@
 #include "container/List.h"
 #include "unit_test.h"
 #include "test_data.h"
-
 
 static int  suite_success_init (void) 
 {

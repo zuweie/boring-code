@@ -1,14 +1,13 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-16 10:06:43
+ * @LastEditTime: 2020-10-16 19:19:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
  */
 #ifndef _CON_H_
 #define _CON_H_
-#include <stdio.h>
 #include <string.h>
 #include "base/__container.h"
 #include "It.h"
@@ -103,6 +102,15 @@
     ccmp(con) = NULL;                             \
     cc(con) = NULL;                               \
 }while(0)
+
+#define _CN(pcon, cmp)            \
+    ({                            \
+        Container con = {         \
+            ._container = (pcon), \
+            ._compare = (cmp)     \
+        };                        \
+        con;                      \
+    })
 
 typedef int (*Cleaner)(It);
 typedef struct _con{
