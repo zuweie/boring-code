@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-16 07:53:27
+ * @LastEditTime: 2020-10-16 08:29:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -12,6 +12,7 @@
 #include "container/Vector.h"
 #include "unit_test.h"
 #include "test_data.h"
+
 
 static int  suite_success_init (void) 
 {
@@ -86,6 +87,30 @@ static void test_vector_remove()
     Vector_uninit(vector2, NULL);
 }
 
+void test_vector_sort()
+{
+    Vector vector;
+    Vector_init(vector, NULL);
+    const VECTOR_SIZE = 10;
+    extern float test_data_float[TEST_DATA_SIZE];
+    Arr_to_cn(test_data_float, VECTOR_SIZE, f2t, vector);
+
+    // 从小到大的排序
+    CN_sort(vector, CMP_FLT);
+    for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
+        Tv v1 = It_dref(first);
+        Tv v2 = It_dref(It_next(first));
+        CU_ASSERT_TRUE(Tv_cmpf(v1, v2) < 0);
+    }
+    // 从大到小的排序
+    CN_sort(vector, INCMP_FLT);
+    for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
+        Tv v1 = It_dref(first);
+        Tv v2 = It_dref(It_next(first));
+        CU_ASSERT_TRUE(Tv_cmpf(v1, v2) > 0);
+    }
+    Vector_uninit(vector, NULL);
+}
 int do_vector_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -106,6 +131,11 @@ int do_vector_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test vector remove", test_vector_remove) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test vector sort", test_vector_sort) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

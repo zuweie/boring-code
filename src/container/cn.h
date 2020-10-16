@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-16 07:31:45
+ * @LastEditTime: 2020-10-16 08:09:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -69,6 +69,12 @@
         } \
 }while(0)
 
+#define Arr_to_cn(arr, size, transfer, con) do { \
+    for (int i=0; i<size; ++i) {              \
+        Tv v = transfer(arr[i]);              \
+        CN_add_tail(con, v);                  \
+    }                                         \
+}while(0)
 // 遍历容器，
 #define CN_travel(con, handle) do {                 \
     for(It first = CN_first(con);                   \
@@ -117,12 +123,22 @@ int CMP_INT (Tv v1, Tv v2)
 {
     return Tv_cmpi(v1, v2);
 }
+static inline 
+int INCMP_INT (Tv v1, Tv v2) 
+{
+    return Tv_cmpi(v2, v1);
+}
 
 // 这个先用位运算比较是否相等，不等的话再化做 float 形式比较大小
 static inline
 int CMP_FLT (Tv v1, Tv v2) 
 {
     return Tv_cmpf(v1, v2);
+}
+static inline
+int INCMP_FLT (Tv v1, Tv v2) 
+{
+    return Tv_cmpf(v2, v1);
 }
 
 // 指针比较

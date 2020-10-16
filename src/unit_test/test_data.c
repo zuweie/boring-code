@@ -1,16 +1,16 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:34:16
- * @LastEditTime: 2020-10-16 06:37:26
+ * @LastEditTime: 2020-10-16 08:10:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.c
  */
 #include <stdlib.h>
 #include "test_data.h"
-static int test_data_int[TEST_DATA_SIZE];
-static float test_data_float[TEST_DATA_SIZE];
-static char* test_data_string[] = {
+int test_data_int[TEST_DATA_SIZE];
+float test_data_float[TEST_DATA_SIZE];
+char* test_data_string[] = {
         "abc",
         "efg",
         "hijk",
