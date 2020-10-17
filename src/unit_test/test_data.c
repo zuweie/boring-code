@@ -1,16 +1,113 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:34:16
- * @LastEditTime: 2020-10-16 08:59:41
+ * @LastEditTime: 2020-10-17 09:04:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.c
  */
 #include <stdlib.h>
 #include "test_data.h"
+
 int test_data_int[TEST_DATA_SIZE];
 float test_data_float[TEST_DATA_SIZE];
-char* test_data_string[TEST_DATA_STRING_SIZE] = {
+char* test_data_string[] = {
+        "abc",
+        "efg",
+        "hijk",
+        "lmn",
+        "joe",
+        "wei",
+        "cl1024",
+        "tunimadeb",
+        "fuck",
+        "nice",
+        "113224",
+        "334422",
+        "8989128",
+        "jjjjda",
+        "uuuu",
+        "098765",
+        "020",
+        "898",
+        "llllll",
+        "A",
+        "AC",
+        "DC",
+        "ZLP",
+        "kKk"
+        "abc",
+        "efg",
+        "hijk",
+        "lmn",
+        "joe",
+        "wei",
+        "cl1024",
+        "tunimadeb",
+        "fuck",
+        "nice",
+        "113224",
+        "334422",
+        "8989128",
+        "jjjjda",
+        "uuuu",
+        "098765",
+        "020",
+        "898",
+        "llllll",
+        "A",
+        "AC",
+        "DC",
+        "ZLP",
+        "kKk"
+        "abc",
+        "efg",
+        "hijk",
+        "lmn",
+        "joe",
+        "wei",
+        "cl1024",
+        "tunimadeb",
+        "fuck",
+        "nice",
+        "113224",
+        "334422",
+        "8989128",
+        "jjjjda",
+        "uuuu",
+        "098765",
+        "020",
+        "898",
+        "llllll",
+        "A",
+        "AC",
+        "DC",
+        "ZLP",
+        "kKk"
+        "abc",
+        "efg",
+        "hijk",
+        "lmn",
+        "joe",
+        "wei",
+        "cl1024",
+        "tunimadeb",
+        "fuck",
+        "nice",
+        "113224",
+        "334422",
+        "8989128",
+        "jjjjda",
+        "uuuu",
+        "098765",
+        "020",
+        "898",
+        "llllll",
+        "A",
+        "AC",
+        "DC",
+        "ZLP",
+        "kKk"
         "abc",
         "efg",
         "hijk",
@@ -36,6 +133,7 @@ char* test_data_string[TEST_DATA_STRING_SIZE] = {
         "ZLP",
         "kKk"
 };
+const int TEST_DATA_STR_SIZE = sizeof(test_data_string) / sizeof(char*);
 void init_test_data_int(void)
 {
     for(int i=0; i<TEST_DATA_SIZE; ++i) {

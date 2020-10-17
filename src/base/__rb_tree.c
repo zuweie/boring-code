@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-15 15:51:04
+ * @LastEditTime: 2020-10-17 22:51:42
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -520,10 +520,26 @@ static int _rb_tree_sort(container_t* container, int(*compare)(type_value_t, typ
     // rb 树不能排序。
     return -1;
 }
+static int _rb_tree_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int (*callback)(void*))
+{
+    return -1;
+}
+
 container_t* rb_tree_create(int(*insert_compare)(type_value_t, type_value_t)) {
     container_t* tree = (rb_tree_t*) malloc( sizeof(rb_tree_t) );
     pool_t* _mem_pool = alloc_create(0);
-    initialize_container(tree, _rb_tree_first, _rb_tree_last, _rb_tree_search, _rb_tree_insert, _rb_tree_remove, _rb_tree_sort, _rb_tree_size, _mem_pool);
+    initialize_container(
+        tree, 
+        _rb_tree_first, 
+        _rb_tree_last, 
+        _rb_tree_search, 
+        _rb_tree_insert, 
+        _rb_tree_remove, 
+        _rb_tree_sort, 
+        _rb_tree_wring,
+        _rb_tree_size, 
+        _mem_pool
+    );
     __init_rb_tree(tree, insert_compare);
     return tree;
 }

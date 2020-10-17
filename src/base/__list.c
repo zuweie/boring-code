@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-10-15 15:50:32
+ * @LastEditTime: 2020-10-17 20:02:02
  * @LastEditors: Please set LastEditors
  */
 
@@ -12,7 +12,8 @@
 #include "__iterator.h"
 #include "__container.h"
 #include "mem_pool/__mem_pool.h"
-#include "__sort.h"
+#include "base/operate/__sort.h"
+#include "base/operate/__wring.h"
 /** iter function **/
 static iterator_t _get_iter (void* refer, void* list);
 
@@ -119,11 +120,29 @@ static int _list_sort(container_t* container, int(*compare)(type_value_t, type_v
     return quick_sort(container_first(container), container_last(container), compare);
 }
 
+static int _list_wring(container_t* container, int(*compare)(type_value_t, type_value_t))
+{
+    return wring(container, compare);
+}
+
 container_t* list_create() {
     
     list_t* list = (list_t*) malloc( sizeof(list_t));
     pool_t* _mem_pool = alloc_create(0);
-    initialize_container(list, _list_first, _list_last, _list_search, _list_insert, _list_remove, _list_sort, _list_size, _mem_pool);
+
+    initialize_container(
+        list, 
+        _list_first, 
+        _list_last, 
+        _list_search, 
+        _list_insert, 
+        _list_remove, 
+        _list_sort, 
+        _list_wring, 
+        _list_size, 
+        _mem_pool
+    );
+
     list_first(list) = list_head(list);
     list_last(list) = list_tail(list);
     list->_size = 0;

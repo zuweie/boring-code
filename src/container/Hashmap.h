@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-17 00:13:49
+ * @LastEditTime: 2020-10-17 13:49:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -11,10 +11,11 @@
 
 #include "Cn.h"
 #include "base/__hashmap.h"
-typedef Container Hashmap;
-typedef entity_t Entity;
-
-#define Hashmap_init(hm, key_hasher, key_cmp) CN_initialize(hm, hashmap, NULL, 100, key_hasher, key_cmp)
+typedef Container   Hashmap;
+typedef entity_t    Entity;
+typedef hash_node_t HashNode;
+#define HASHMAP_SLOT_SIZE 10
+#define Hashmap_init(hm, key_hasher, key_cmp) CN_initialize(hm, hashmap, NULL, HASHMAP_SLOT_SIZE, key_hasher, key_cmp)
 #define Hashmap_uninit(hm, cleanup) CN_uninitialize(hm, hashmap, cleanup)
 
 #define Hashmap_has(con, key) CN_has(con, key)
@@ -26,6 +27,7 @@ typedef entity_t Entity;
     };                                    \
     CN_insert(con, __null_iterator, p2t(&entity)); \
 } while(0)
+
 #define Hashmap_get(con, key, value)                   \
     ({                                                 \
         int ret = -1;                                  \
@@ -41,7 +43,16 @@ typedef entity_t Entity;
 
 #define Hashmap_table(con) (_CN( (((hashmap_t*)cc(con))->_hash_table),  (((hashmap_t*)cc(con))->key_compare) ))
 
-#define _Entity(key, value) \
+#define Hashmap_keys(con, key_arr) do {     \
+    int i =0;                               \
+    Container table =Hashmap_table(con);     \
+    for(It first=CN_frist(table); !It_equal(first, CN_tail(table)); first=It_next(first)) { \
+        HashNode* hash_node = (HashNode*)It_getptr(first);                                  \
+        key_arr[i++] = hash_node->entity.key;                                               \
+    }                                                                                       \
+} while(0)
+
+#define _Entity(key, value)      \
     ({                           \
         Entity entity = {        \
             .key = key,          \
@@ -55,5 +66,9 @@ int hashmap_ikey_hasher (Tv key, size_t slot_size) {
     int k = t2i(key);
     return (k % slot_size);
 }
-
+static inline 
+int hashmap_skey_hasher (Tv key, size_t slot_size) {
+    char* k = t2p(key);
+    return 0;
+}
 #endif

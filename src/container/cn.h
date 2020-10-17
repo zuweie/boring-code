@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-16 19:19:51
+ * @LastEditTime: 2020-10-17 23:18:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -43,7 +43,7 @@
 #define CN_rm_target(con, find, ret)   \
     ({                                 \
         int ret_code = -1;             \
-        It pos = CN_find(con, find); \
+        It pos = CN_find(con, find);   \
         if (It_valid(pos)) {           \
             ret_code = CN_remove(con, pos, ret); \
         }                                        \
@@ -53,6 +53,8 @@
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
 #define CN_size(con) container_size(cc(con))
 #define CN_sort(con, cmp) container_sort(cc(con), cmp)
+#define CN_wring(con, cb) container_wring(cc(con), ccmp(con), cb)
+
 #define CN_has(con, find)            \
     ({                               \
         It pos = CN_find(con, find); \
@@ -82,6 +84,11 @@
         first = It_next(first) ) {                  \
             handle(first);                          \
         }                                           \
+}while(0)
+
+#define CN_unique(con, sort_cmp) do {    \
+    CN_sort(con, sort_cmp);              \                  
+    CN_wring(con, NULL);                 \            
 }while(0)
 
 #define CN_initialize(con, label, cmp, ... ) do {     \

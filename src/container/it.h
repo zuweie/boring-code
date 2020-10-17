@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-15 15:22:23
+ * @LastEditTime: 2020-10-17 18:24:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/it.h
@@ -32,5 +32,6 @@ typedef iterator_t It;
         int ret = iterator_valid(it); \
         ret;                          \
     })
-
+#define It_is_tail(it) iterator_is_tail(it)
+#define It_is_head(it) iterator_is_head(it)
 #endif

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2020-10-15 05:33:24
+ * @LastEditTime: 2020-10-17 22:57:00
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CONTAINER_H_
@@ -46,6 +46,9 @@ typedef struct _iterator iterator_t;
 // 容器排序
 #define container_sort(container, compare) ((container_t*)(container))->sort((container_t*)(container), compare)
 
+// 容器挤水
+#define container_wring(container, compare, callback) (((container_t*)(container))->wring(((container_t*)(container)), compare, callback))
+
 // 容器的内存池
 #define container_mem_pool(container) (((container_t*)(container))->mem_pool)
 
@@ -63,13 +66,14 @@ typedef struct _iterator iterator_t;
 
 #define container_size(container) (((container_t*)(container))->size((container_t*)container))
 
-#define initialize_container(container, __first, __last, __search, __insert, __remove, __sort, __size, __mem_pool) do { \
+#define initialize_container(container, __first, __last, __search, __insert, __remove, __sort, __wring, __size, __mem_pool) do { \
     ((container_t*)(container))->first  = (__first);                                        \
     ((container_t*)(container))->last   = (__last);                                         \
     ((container_t*)(container))->search = (__search);                                       \
     ((container_t*)(container))->insert = (__insert);                                       \
     ((container_t*)(container))->remove = (__remove);                                       \
     ((container_t*)(container))->sort   = (__sort);                                         \
+    ((container_t*)(container))->wring  = (__wring);                                        \
     ((container_t*)(container))->size   = (__size);                                         \
     ((container_t*)(container))->mem_pool = (__mem_pool);                                   \
 } while (0)
@@ -83,6 +87,7 @@ struct _container {
     int (*insert) (container_t* container, iterator_t iter, type_value_t data); 
     int (*remove) (container_t* container, iterator_t iter, void* rdata);
     int (*sort) (container_t* container, int(*compare)(type_value_t, type_value_t));
+    int (*wring) (container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(void*));
     size_t (*size) (container_t*);
     pool_t* mem_pool;
 };

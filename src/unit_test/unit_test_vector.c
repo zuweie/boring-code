@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-16 10:09:06
+ * @LastEditTime: 2020-10-17 23:33:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -56,7 +56,7 @@ static void test_vector_insert(void)
     Vector_uninit(vector, NULL);
 }
 
-static void test_vector_remove() 
+static void test_vector_remove(void) 
 {
     const int VECTOR_SIZE = 10;
     Vector vector;
@@ -87,7 +87,7 @@ static void test_vector_remove()
     Vector_uninit(vector2, NULL);
 }
 
-void test_vector_sort()
+void test_vector_sort(void)
 {
     Vector vector;
     Vector_init(vector, NULL);
@@ -128,18 +128,18 @@ void test_vector_sort()
     Vector_init(vector2, NULL);
     // 灌入数据
 
-    extern *test_data_string[TEST_DATA_STRING_SIZE];
+    extern char* test_data_string[];
     // printf("\n\nunsort \n\n");
     // for (int i=0; i<TEST_DATA_STRING_SIZE; ++i){
     //     printf("%s ", test_data_string[i]);
     // }
     // printf("\n\n");
-    Arr_to_cn(test_data_string, TEST_DATA_STRING_SIZE, p2t, vector2);
+    Arr_to_cn(test_data_string, TEST_DATA_STR_SIZE, p2t, vector2);
     CN_sort(vector2, CMP_STR);
     for(It first=CN_first(vector2); !It_equal(first, CN_last(vector2)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
-        CU_ASSERT_TRUE(CMP_STR(v1, v2) < 0);
+        CU_ASSERT_TRUE( CMP_STR(v1, v2) <= 0 );
     }
     // printf(" asc sort \n\n");
     // CN_travel(vector2, PRINTF_IT_ON_STRING);
@@ -152,11 +152,19 @@ void test_vector_sort()
     for(It first=CN_first(vector2); !It_equal(first, CN_last(vector2)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
-        CU_ASSERT_TRUE(CMP_STR(v1, v2) > 0);
+        CU_ASSERT_TRUE( CMP_STR(v1, v2) >= 0 );
     }
     
     Vector_uninit(vector2, NULL);
 }
+
+static void test_vector_unique(void) 
+{
+    Vector vector;
+    Vector_init(vector, NULL);
+    Vector_uninit(vector);
+}
+
 int do_vector_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -182,6 +190,11 @@ int do_vector_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test vector sort", test_vector_sort) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test vector sort", test_vector_unique) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

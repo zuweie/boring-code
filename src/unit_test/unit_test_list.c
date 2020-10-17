@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-16 16:35:06
+ * @LastEditTime: 2020-10-17 09:08:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -119,18 +119,18 @@ void test_list_sort()
     List_init(list2, NULL);
     // 灌入数据
 
-    extern *test_data_string[TEST_DATA_STRING_SIZE];
+    extern char* test_data_string[];
     // printf("\n\nunsort \n\n");
     // for (int i=0; i<TEST_DATA_STRING_SIZE; ++i){
     //     printf("%s ", test_data_string[i]);
     // }
     // printf("\n\n");
-    Arr_to_cn(test_data_string, TEST_DATA_STRING_SIZE, p2t, list2);
+    Arr_to_cn(test_data_string, TEST_DATA_STR_SIZE, p2t, list2);
     CN_sort(list2, CMP_STR);
     for(It first=CN_first(list2); !It_equal(first, CN_last(list2)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
-        CU_ASSERT_TRUE(CMP_STR(v1, v2) < 0);
+        CU_ASSERT_TRUE(CMP_STR(v1, v2) <= 0);
     }
     // printf(" asc sort \n\n");
     // CN_travel(list2, PRINTF_IT_ON_STRING);
@@ -143,7 +143,7 @@ void test_list_sort()
     for(It first=CN_first(list2); !It_equal(first, CN_last(list2)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
-        CU_ASSERT_TRUE(CMP_STR(v1, v2) > 0);
+        CU_ASSERT_TRUE(CMP_STR(v1, v2) >= 0);
     }
     
     List_uninit(list2, NULL);

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-10-15 22:07:03
+ * @LastEditTime: 2020-10-17 22:49:59
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -12,8 +12,8 @@
 #include "__iterator.h"
 #include "__type_value.h"
 #include "mem_pool/__mem_pool.h"
-#include "__sort.h"
-
+#include "base/operate/__sort.h"
+#include "base/operate/__wring.h"
 /** iterator function **/
 static iterator_t _get_iter (void* refer, void* container);
 
@@ -134,6 +134,11 @@ static int _vector_sort(container_t* container, int(*compare)(type_value_t, type
     return quick_sort(container_first(container), container_last(container), compare);
 }
 
+static int _vector_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(void*)) 
+{
+    return wring(container, compare, callback);
+}
+
 static size_t _vector_size (container_t* container) 
 {
     return ((vector_t*)container)->_size;
@@ -143,7 +148,18 @@ static size_t _vector_size (container_t* container)
 container_t* vector_create() {
     vector_t* vector = (vector_t*) malloc (sizeof(vector_t));
     pool_t* _mem_pool = alloc_create(0);
-    initialize_container(vector, _vector_first, _vector_last, _vector_search, _vector_insert, _vector_remove,_vector_sort, _vector_size, _mem_pool);
+    initialize_container(
+        vector, 
+        _vector_first, 
+        _vector_last, 
+        _vector_search, 
+        _vector_insert, 
+        _vector_remove, 
+        _vector_sort, 
+        _vector_wring,
+        _vector_size, 
+        _mem_pool
+    );
     vector->_size = 0;
     vector->_capacity = VEC_ALLOC_CHUNK_SIZE;
     // 先给水池注点水。

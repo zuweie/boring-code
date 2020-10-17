@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-17 00:11:05
+ * @LastEditTime: 2020-10-17 22:52:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -32,15 +32,16 @@ static iterator_t _search_in_table(container_t* container, iterator_t pos, type_
 {
     hashmap_t* hashmap = (hashmap_t*) container;
     int hash_index = hashmap->key_hasher(key, hashmap->_slot_size);
-
-    for(;!iterator_equal(pos, container_tail(hashmap->_hash_table));pos=iterator_next(pos)) {
+    iterator_t table_tail = container_tail(hashmap->_hash_table);
+    
+    for(;!iterator_equal(pos, table_tail);pos=iterator_next(pos)) {
         
         hash_node_t* node = vtype_pointer(iterator_dereference(pos));
         
         if (hashmap->key_compare(node->entity.key, key) == 0) {
             return pos;
         }else if (node->slot_index != hash_index) {
-            return container_tail(hashmap->_hash_table);
+            return table_tail;
         }
     }    
     return pos;
@@ -61,7 +62,7 @@ static iterator_t _hashmap_last(container_t* container)
 static iterator_t _hashmap_search (container_t* container, iterator_t offset, type_value_t find, int(compare)(type_value_t, type_value_t))
 {
     iterator_t slot_it = _get_iterator_by_key(container, find);
-    iterator_t iter    = _search_in_table(container, slot_it, find);
+    iterator_t iter    = iterator_is_tail(slot_it) ? slot_it:  _search_in_table(container, slot_it, find);
     return iter;    
 }
 
@@ -107,7 +108,7 @@ static int _hashmap_remove(container_t* container, iterator_t pos, void* rdata)
                 hashmap->_slot[slot_index] = pos_next;
             }else{
                 // 把 slot 中的 It 置为尾部。
-                hashmap->_slot[slot_index] = container_tail(hashmap->_slot);
+                hashmap->_slot[slot_index] = container_tail(hashmap->_hash_table);
             }
         }
         if (rdata) {
@@ -123,6 +124,11 @@ static int _hashmap_remove(container_t* container, iterator_t pos, void* rdata)
 }
 
 static int _hashmap_sort (container_t* container, int(*compare)(type_value_t, type_value_t)) 
+{
+    return -1;
+}
+
+static int _hashmap_wring (container_t* container, int(*compare)(type_value_t, type_value_t), int (*callback)(void*))
 {
     return -1;
 }
@@ -154,7 +160,8 @@ container_t* hashmap_create(size_t slot_size, int (*key_hasher)(type_value_t, si
         _hashmap_search, 
         _hashmap_insert, 
         _hashmap_remove, 
-        _hashmap_sort, 
+        _hashmap_sort,
+        _hashmap_wring, 
         _hashmap_size, 
         _mem_pool
     );
