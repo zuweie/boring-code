@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-10-17 22:49:59
+ * @LastEditTime: 2020-10-18 12:49:42
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -114,7 +114,6 @@ static int _vector_remove (container_t* container, iterator_t it, void* rdata)
         vector_t *vec = container;
 
         if (rdata){
-
             *((type_value_t*)rdata) = iterator_dereference(it);
         }
 

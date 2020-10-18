@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-10-18 11:03:45
+ * @LastEditTime: 2020-10-18 14:27:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -21,12 +21,11 @@
         printf("index: %2d ", pnode->slot_index);             \
         printf("\n");                                       \
     })
-#define HASH_KEYS(it)           \
-    ({                          \
-        Tv key = It_getint(it); \
-        int index = hashmap_ikey_hasher(key, HASHMAP_SLOT_SIZE); \
-        It_dref(it) = index; \
-    }) 
+#define ENTITY_2_HASH_KEY(it) do {       \
+    HashNode * pnode  = It_getptr(it);   \
+    int index = hashmap_ikey_hasher(pnode->entity.key, HASHMAP_SLOT_SIZE); \
+    It_dref(it) = i2t(index); \
+} while(0)
 
 static int  suite_success_init (void) 
 {
@@ -206,12 +205,76 @@ static void test_hashmap_del(void)
     CU_ASSERT_FALSE(Hashmap_has(hashmap, i2t(11)));
     CU_ASSERT_FALSE(Hashmap_has(hashmap, i2t(22)));
     CU_ASSERT_FALSE(Hashmap_has(hashmap, i2t(3)));
-    
+
     Hashmap_uninit(hashmap, NULL);
 }
 
 static void test_hashmap_set_n_get (void) 
 {
+    const int HASHMAP_SIZE = 50;
+    Hashmap hashmap;
+    Tv key, value;
+    Hashmap_init(hashmap, hashmap_ikey_hasher, EQUL);
+    
+    for (int i=0; i<HASHMAP_SIZE; ++i) {
+        
+        key = getTSi(i);
+        value = getTSs(i);
+        Hashmap_set(hashmap, key, value);
+
+    }
+
+    Hashmap_del(hashmap, getTSi(2));
+    Hashmap_del(hashmap, getTSi(4));
+    Hashmap_del(hashmap, getTSi(6));
+    Hashmap_del(hashmap, getTSi(8));
+    Hashmap_del(hashmap, getTSi(10));
+    Hashmap_del(hashmap, getTSi(12));
+    Hashmap_del(hashmap, getTSi(14));
+    Hashmap_del(hashmap, getTSi(16));
+    Hashmap_del(hashmap, getTSi(18));
+    Hashmap_del(hashmap, getTSi(20));
+    Hashmap_del(hashmap, getTSi(22));
+    Hashmap_del(hashmap, getTSi(24));
+
+    for (int i=51; i<TEST_DATA_SIZE; ++i) {
+        key = getTSi(i);
+        value = getTSs(i);
+        Hashmap_set(hashmap, key, value);
+    }
+
+    List list;
+    List_init(list, NULL);
+    Container table = Hashmap_table(hashmap);
+    CN_duplicate(table, list);
+
+    // printf("\n\n");
+    // CN_foreach(list, ENTITY_2_HASH_KEY);
+    // printf("\n\n indexs: ");
+    // CN_foreach(list, PRINTF_IT_ON_INT);
+    // printf("\n\n");
+    // printf("size of index: %d\n", CN_size(list));
+
+    CN_wring(list, NULL);
+    // printf(" after wring :\n");
+    // CN_foreach(list, PRINTF_IT_ON_INT);
+
+    CN_sort(list, CMP_INT);
+    
+    // printf(" after sort :\n");
+    // CN_foreach(list, PRINTF_IT_ON_INT);
+
+    for(It first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
+
+        It next = It_next(first);
+        int v1 = It_getint(first);
+        int v2 = It_getint(next);
+
+        CU_ASSERT_FALSE( v1 == v2);
+    }
+
+    List_uninit(list, NULL);
+    Hashmap_uninit(hashmap, NULL);
 
 }
 
@@ -235,6 +298,11 @@ int do_hashmap_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test hashmap del", test_hashmap_del) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test hashmap set and get", test_hashmap_set_n_get) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
