@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-18 13:24:14
+ * @LastEditTime: 2020-10-18 21:04:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -104,6 +104,18 @@
         CN_add(con2, It_dref(first));    \
     }                                    \ 
 } while(0)
+
+
+// 两个容器合并。
+#define CN_merge(con1, con2) do { \
+    It first2  = CN_first(c2);    \
+    It tail2   = CN_tail(c2);     \
+    for(; !It_equal(first2, tail2); \
+        first2 = It_next(first2)) { \
+        Tv data = It_dref(first2);    \
+        CN_add(c1, data);             \
+    }                                 \
+}while(0)
 
 #define CN_initialize(con, label, cmp, ... ) do {     \
     cc(con) = container_create(label, __VA_ARGS__);   \

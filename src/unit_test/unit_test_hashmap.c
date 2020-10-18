@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-10-18 14:27:34
+ * @LastEditTime: 2020-10-18 20:58:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -223,19 +223,11 @@ static void test_hashmap_set_n_get (void)
         Hashmap_set(hashmap, key, value);
 
     }
-
-    Hashmap_del(hashmap, getTSi(2));
-    Hashmap_del(hashmap, getTSi(4));
-    Hashmap_del(hashmap, getTSi(6));
-    Hashmap_del(hashmap, getTSi(8));
-    Hashmap_del(hashmap, getTSi(10));
-    Hashmap_del(hashmap, getTSi(12));
-    Hashmap_del(hashmap, getTSi(14));
-    Hashmap_del(hashmap, getTSi(16));
-    Hashmap_del(hashmap, getTSi(18));
-    Hashmap_del(hashmap, getTSi(20));
-    Hashmap_del(hashmap, getTSi(22));
-    Hashmap_del(hashmap, getTSi(24));
+    // 随机删到30个数据
+    for (int i=0; i<30; ++i) {
+        Tv key = getTSi(rand()%50);
+        Hashmap_del(hashmap, key);
+    }
 
     for (int i=51; i<TEST_DATA_SIZE; ++i) {
         key = getTSi(i);
@@ -248,21 +240,21 @@ static void test_hashmap_set_n_get (void)
     Container table = Hashmap_table(hashmap);
     CN_duplicate(table, list);
 
-    // printf("\n\n");
-    // CN_foreach(list, ENTITY_2_HASH_KEY);
-    // printf("\n\n indexs: ");
-    // CN_foreach(list, PRINTF_IT_ON_INT);
-    // printf("\n\n");
-    // printf("size of index: %d\n", CN_size(list));
+    printf("\n\n");
+    CN_foreach(list, ENTITY_2_HASH_KEY);
+    printf("\n\n indexs: ");
+    CN_foreach(list, PRINTF_IT_ON_INT);
+    printf("\n\n");
+    printf("size of index: %d\n", CN_size(list));
 
     CN_wring(list, NULL);
-    // printf(" after wring :\n");
-    // CN_foreach(list, PRINTF_IT_ON_INT);
+    printf("\n after wring :\n");
+    CN_foreach(list, PRINTF_IT_ON_INT);
 
     CN_sort(list, CMP_INT);
     
-    // printf(" after sort :\n");
-    // CN_foreach(list, PRINTF_IT_ON_INT);
+    printf("\n after sort :\n");
+    CN_foreach(list, PRINTF_IT_ON_INT);
 
     for(It first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
 

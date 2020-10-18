@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2020-10-17 22:57:00
+ * @LastEditTime: 2020-10-18 20:49:17
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CONTAINER_H_
@@ -51,18 +51,6 @@ typedef struct _iterator iterator_t;
 
 // 容器的内存池
 #define container_mem_pool(container) (((container_t*)(container))->mem_pool)
-
-// 两个容器合并。
-#define container_merge(container_1, container2) do { \
-    container_t* c1 = (container_t*)(container_1);    \
-    container_t* c2 = (container_t*)(container_2);    \
-    iterator_t first2  = container_first(c2);         \
-    iterator_t tail2   = container_tail(c2);          \
-    for(; !iterator_equal(first2, tail2); first2 = iterator_next(first2)) { \
-        type_value_t data = iterator_dereference(first2);                   \
-        container_insert_tail(c1, data);                                    \
-    }                                                                       \
-}while(0)
 
 #define container_size(container) (((container_t*)(container))->size((container_t*)container))
 

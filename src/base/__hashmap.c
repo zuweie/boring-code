@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-17 22:52:52
+ * @LastEditTime: 2020-10-18 21:03:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -121,6 +121,7 @@ static int _hashmap_remove(container_t* container, iterator_t pos, void* rdata)
         return 0;
     }
     return -1;
+    
 }
 
 static int _hashmap_sort (container_t* container, int(*compare)(type_value_t, type_value_t)) 
