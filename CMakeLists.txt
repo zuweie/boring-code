@@ -11,7 +11,6 @@ set (SOURCE
     src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c
-    src/base/__sort.c
     src/base/__vector.c
     src/base/__hashmap.c
     src/base/operate/__sort.c

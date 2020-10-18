@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-17 23:33:40
+ * @LastEditTime: 2020-10-18 10:52:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -162,7 +162,68 @@ static void test_vector_unique(void)
 {
     Vector vector;
     Vector_init(vector, NULL);
-    Vector_uninit(vector);
+
+    CN_add(vector, i2t(11));
+    CN_add(vector, i2t(11));
+    CN_add(vector, i2t(22));
+    CN_add(vector, i2t(32));
+    CN_add(vector, i2t(44));
+    CN_add(vector, i2t(55));
+    CN_add(vector, i2t(55));
+
+    // printf ("\n\n before unique\n");
+    // CN_foreach(vector, PRINTF_IT_ON_INT);
+    CN_unique(vector, CMP_INT);
+    // printf("\n\n after unique\n");
+    // CN_foreach(vector, PRINTF_IT_ON_INT);
+    // printf("\n\n");
+    
+    for(It first = CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
+
+        It next = It_next(first);
+        int v1 = It_getint(first);
+        int v2 = It_getint(next);
+
+        CU_ASSERT_FALSE( v1 == v2);
+    }
+
+    Vector_uninit(vector, NULL);
+}
+
+static void test_vector_wring(void) 
+{
+    Vector vector;
+    Vector_init(vector, NULL);
+
+    CN_add(vector, i2t(11));
+    CN_add(vector, i2t(11));
+    CN_add(vector, i2t(22));
+    CN_add(vector, i2t(23));
+    CN_add(vector, i2t(24));
+    CN_add(vector, i2t(24));
+    CN_add(vector, i2t(11));
+    CN_add(vector, i2t(44));
+    CN_add(vector, i2t(55));
+    CN_add(vector, i2t(55));
+    CN_add(vector, i2t(44));
+
+    // printf ("\n\n before wring\n");
+    // CN_foreach(vector, PRINTF_IT_ON_INT);
+    CN_wring(vector, NULL);
+    // printf ("\n\n after wring\n");
+    // CN_foreach(vector, PRINTF_IT_ON_INT);
+    // printf("\n\n");
+    
+    for(It first = CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
+
+        It next = It_next(first);
+        int v1 = It_getint(first);
+        int v2 = It_getint(next);
+
+        CU_ASSERT_FALSE( v1 == v2);
+    }
+
+    Vector_uninit(vector, NULL);
 }
 
 int do_vector_test (void) 
@@ -194,7 +255,13 @@ int do_vector_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test vector sort", test_vector_unique) ) {
+    if (NULL == CU_add_test(pSuite, "test vector unique", test_vector_unique) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+
+    if (NULL == CU_add_test(pSuite, "test vector wring", test_vector_wring) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

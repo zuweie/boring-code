@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-10-17 13:57:53
+ * @LastEditTime: 2020-10-18 11:03:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -40,18 +40,18 @@ static int suite_success_clean (void)
 
 static void checkKeysDistribution(Hashmap* hashmap) 
 {
-    size_t key_size = CN_size(*hashmap);
-    Tv keys[key_size];
-    Hashmap_keys((*hashmap), keys);
+    // size_t key_size = CN_size(*hashmap);
+    // Tv keys[key_size];
+    // Hashmap_keys((*hashmap), keys);
 
-    List keylist;
-    List_init(keylist, NULL);
-    Arr_to_cn(keys, key_size, t2t, keylist);
+    // List keylist;
+    // List_init(keylist, NULL);
+    // Arr_to_cn(keys, key_size, t2t, keylist);
 
-    CN_travel(keylist, HASH_KEYS);
-    
+    // CN_travel(keylist, HASH_KEYS);
 
-    List_uninit(keylist,NULL);
+
+    // List_uninit(keylist,NULL);
 }
 
 static void test_hashmap_set (void) 
@@ -189,20 +189,24 @@ static void test_hashmap_del(void)
     value = p2t("22");
     Hashmap_set(hashmap, key, value);
 
-    printf("\n\n");
-    hashtab = Hashmap_table(hashmap);
-    CN_travel(hashtab, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // printf("\n\n");
+    // hashtab = Hashmap_table(hashmap);
+    // CN_travel(hashtab, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
     Hashmap_del(hashmap, i2t(11));
     Hashmap_del(hashmap, i2t(22));
     Hashmap_del(hashmap, i2t(3));
-    printf("\n\n after del \n\n");
-    hashtab = Hashmap_table(hashmap);
-    CN_travel(hashtab, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // printf("\n\n after del \n\n");
+    // hashtab = Hashmap_table(hashmap);
+    // CN_travel(hashtab, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
-    CU_ASSERT(1);
+    //CU_ASSERT(1);
+    CU_ASSERT_FALSE(Hashmap_has(hashmap, i2t(11)));
+    CU_ASSERT_FALSE(Hashmap_has(hashmap, i2t(22)));
+    CU_ASSERT_FALSE(Hashmap_has(hashmap, i2t(3)));
+    
     Hashmap_uninit(hashmap, NULL);
 }
 

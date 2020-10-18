@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2020-10-16 22:09:13
+ * @LastEditTime: 2020-10-18 10:44:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -17,7 +17,7 @@
 #define PRINTF_TV_ON_CHAR(tv) printf("%c ", t2i(tv))
 #define PRINTF_TV_ON_STRING(tv) printf("%s ", t2p(tv))
 
-#define PRINTF_IT_ON_INT(it) PRINTF_TV_ON_CHAR(It_dref(it))
+#define PRINTF_IT_ON_INT(it) PRINTF_TV_ON_INT(It_dref(it))
 #define PRINTF_IT_ON_CHAR(it) PRINTF_TV_ON_CHAR(It_dref(it))
 #define PRINTF_IT_ON_FLOAT(it) PRINTF_TV_ON_FLOAT(It_dref(it))
 #define PRINTF_IT_ON_STRING(it) PRINTF_TV_ON_STRING(It_dref(it))

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-10-17 20:02:02
+ * @LastEditTime: 2020-10-18 10:17:43
  * @LastEditors: Please set LastEditors
  */
 
@@ -16,12 +16,6 @@
 #include "base/operate/__wring.h"
 /** iter function **/
 static iterator_t _get_iter (void* refer, void* list);
-
-// static type_value_t _dereference(iterator_t it) 
-// {
-//     list_node_t* pnode = iterator_reference(it);
-//     return pnode->data;
-// }
 
 static iterator_t _move(iterator_t it, int step)
 {
@@ -120,9 +114,9 @@ static int _list_sort(container_t* container, int(*compare)(type_value_t, type_v
     return quick_sort(container_first(container), container_last(container), compare);
 }
 
-static int _list_wring(container_t* container, int(*compare)(type_value_t, type_value_t))
+static int _list_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(void*))
 {
-    return wring(container, compare);
+    return wring(container, compare, callback);
 }
 
 container_t* list_create() {

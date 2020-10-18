@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-17 09:08:28
+ * @LastEditTime: 2020-10-18 11:00:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -148,6 +148,79 @@ void test_list_sort()
     
     List_uninit(list2, NULL);
 }
+
+static void test_list_unique(void) 
+{
+    List list;
+    List_init(list, NULL);
+
+    CN_add(list, i2t(11));
+    CN_add(list, i2t(11));
+    CN_add(list, i2t(22));
+    CN_add(list, i2t(32));
+    CN_add(list, i2t(44));
+    CN_add(list, i2t(55));
+    CN_add(list, i2t(55));
+    CN_add(list, i2t(11));
+    CN_add(list, i2t(11));
+    CN_add(list, i2t(55));
+    CN_add(list, i2t(44));
+    
+    // printf ("\n\n before unique\n");
+    // CN_foreach(list, PRINTF_IT_ON_INT);
+    CN_unique(list, CMP_INT);
+    // printf("\n\n after unique\n");
+    // CN_foreach(list, PRINTF_IT_ON_INT);
+    // printf("\n\n");
+    
+    for(It first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
+
+        It next = It_next(first);
+        int v1 = It_getint(first);
+        int v2 = It_getint(next);
+
+        CU_ASSERT_FALSE( v1 == v2);
+    }
+
+    List_uninit(list, NULL);
+}
+
+static void test_list_wring(void) 
+{
+    List list;
+    List_init(list, NULL);
+
+    CN_add(list, i2t(11));
+    CN_add(list, i2t(11));
+    CN_add(list, i2t(22));
+    CN_add(list, i2t(23));
+    CN_add(list, i2t(24));
+    CN_add(list, i2t(24));
+    CN_add(list, i2t(11));
+    CN_add(list, i2t(44));
+    CN_add(list, i2t(55));
+    CN_add(list, i2t(55));
+    CN_add(list, i2t(44));
+
+    // printf ("\n\n before wring\n");
+    // CN_foreach(list, PRINTF_IT_ON_INT);
+    CN_wring(list, NULL);
+    // printf ("\n\n after wring\n");
+    // CN_foreach(list, PRINTF_IT_ON_INT);
+    // printf ("\n\n");
+    
+    for(It first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
+
+        It next = It_next(first);
+        int v1 = It_getint(first);
+        int v2 = It_getint(next);
+
+        CU_ASSERT_FALSE( v1 == v2);
+    }
+
+    List_uninit(list, NULL);
+}
+
 int do_list_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -173,6 +246,16 @@ int do_list_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test List sort", test_list_sort) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test List unique", test_list_unique) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test List wring", test_list_wring) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
