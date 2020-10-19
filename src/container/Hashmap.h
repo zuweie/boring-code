@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-18 09:39:20
+ * @LastEditTime: 2020-10-19 17:12:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -11,6 +11,8 @@
 
 #include "Cn.h"
 #include "base/__hashmap.h"
+#include "base/__entitiy.h"
+
 typedef Container   Hashmap;
 typedef entity_t    Entity;
 typedef hash_node_t HashNode;
@@ -45,7 +47,7 @@ typedef hash_node_t HashNode;
 
 #define Hashmap_keys(con, key_arr) do {     \
     int i =0;                               \
-    Container table =Hashmap_table(con);     \
+    Container table =Hashmap_table(con);    \
     for(It first=CN_first(table); !It_equal(first, CN_tail(table)); first=It_next(first)) { \
         HashNode* hash_node = (HashNode*)It_getptr(first);                                  \
         key_arr[i++] = hash_node->entity.key;                                               \

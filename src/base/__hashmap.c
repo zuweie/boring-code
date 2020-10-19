@@ -1,16 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-18 21:03:23
+ * @LastEditTime: 2020-10-19 17:14:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
  */
 #include "__hashmap.h"
-#include "__container.h"
-#include "__iterator.h"
 #include "mem_pool/__mem_pool.h"
-
 
 static hash_node_t* _create_hash_node (container_t* container, type_value_t key, type_value_t value) 
 {

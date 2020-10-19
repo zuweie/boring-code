@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:27
- * @LastEditTime: 2020-10-17 00:07:56
+ * @LastEditTime: 2020-10-19 17:13:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.h
@@ -9,15 +9,10 @@
 #ifndef _HASHMAP_H_
 #define _HASHMAP_H_
 
-#include "__type_value.h"
 #include "__container.h"
+#include "__iterator.h"
 #include "__list.h"
-
-typedef struct _entity 
-{
-    type_value_t key;
-    type_value_t value;
-} entity_t;
+#include "__entitiy.h"
 
 typedef struct _hash_node
 {

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-10-18 20:58:05
+ * @LastEditTime: 2020-10-19 13:19:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -35,22 +35,6 @@ static int  suite_success_init (void)
 static int suite_success_clean (void) 
 {   
     printf("\nHashmap suite success clean\n");
-}
-
-static void checkKeysDistribution(Hashmap* hashmap) 
-{
-    // size_t key_size = CN_size(*hashmap);
-    // Tv keys[key_size];
-    // Hashmap_keys((*hashmap), keys);
-
-    // List keylist;
-    // List_init(keylist, NULL);
-    // Arr_to_cn(keys, key_size, t2t, keylist);
-
-    // CN_travel(keylist, HASH_KEYS);
-
-
-    // List_uninit(keylist,NULL);
 }
 
 static void test_hashmap_set (void) 

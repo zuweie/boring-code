@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-10-18 09:31:31
+ * @LastEditTime: 2020-10-19 13:16:31
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -107,42 +107,7 @@ test_mem_pool_maxslot (void)
 }
 
 
-void test_list (void) {
 
-    // list_t* list = container_create(list);
-    // //init_list(list, g_pool(0));
-
-    // printf("\n********** size fo type_value_t %d *********************\n", sizeof(type_value_t));
-
-    // for(int i=0; i<40; ++i) {
-    //     container_insert(list, container_first(list), get(i));
-    // }
-
-    // iterator_t tail = container_tail(list);
-    // iterator_t first = container_first(list);
-    
-    // printf("\n********* before sort ***********\n");
-    // for(; !iterator_equal(first, tail); first = iterator_next(first)) {
-    //     int v = type_int( iterator_dereference(first) );
-    //     printf("%d ", v);
-    // }
-
-    // //quick_sort(container_first(list), container_last(list), compare_int);
-    // container_sort(list, compare_int);
-    
-    // tail = container_tail(list);
-    // first = container_first(list);
-    // printf("\n******** after sort ***************\n");
-    // for(; !iterator_equal(first, tail); first = iterator_next(first)) {
-    //     int v = type_int( iterator_dereference(first) );
-    //     printf("%d ", v);
-    // }
-    // printf("\n************ inspact pool *******************\n");
-    // inspect_pool(container_mem_pool(list));
-    
-    // container_destroy(list, list);
-    // CU_ASSERT(1);
-}
 
 void test_rb_tree(void) 
 {
@@ -348,64 +313,12 @@ int main ()
 	    return CU_get_error();
     }
 
-    //CU_pSuite pSuite = NULL;
-    //pSuite = CU_add_suite("big test", suite_success_init, suite_success_clean);
-
-    // if (NULL == pSuite){
-    //   CU_cleanup_registry();
-    //   return CU_get_error();
-    // } 
-
+    /* run de test */
     do_vector_test();
     do_list_test();
     do_tv_test();
     do_hashmap_test();
-    // if (NULL == CU_add_test(pSuite, "test_vector", test_vector) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-    
-    
-    // if (NULL == CU_add_test(pSuite, "test_rb_tree", test_rb_tree) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-    
-    
-    // if (NULL == CU_add_test(pSuite, "test_list", test_list) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-    
-    // if (NULL == CU_add_test(pSuite, "test_graph", test_graph))
-    // {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-    
-    
-    // if (NULL == CU_add_test(pSuite, "test_matrix", test_matrix))
-    // {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
 
-    // if (NULL == CU_add_test(pSuite, "test_mem_pool_maxslot", test_mem_pool_maxslot) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, "test_mem_pool_inspect", test_mem_pool_inspect) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-    
-
-    // if (NULL == CU_add_test(pSuite, "test_mem_attr", test_mem_attr)) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-   
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();

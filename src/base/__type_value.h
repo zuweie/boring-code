@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 13:29:13
- * @LastEditTime: 2020-10-16 07:07:45
+ * @LastEditTime: 2020-10-19 15:44:06
  * @LastEditors: Please set LastEditors
  */
 
@@ -47,56 +47,10 @@
 #define vtype_cmp_on_int(t1, t2) ((vtype_equl(t1, t2))?(((vtype_int(t1)>vtype_int(t2)))?1:-1):0)
 #define vtype_cmp_on_flt(t1, t2) ((vtype_equl(t1, t2))?((vtype_float(t1)>vtype_float(t2))?1:-1):0)
 #define vtype_cmp_on_ptr(t1, t2) (!(vtype_pointer(t1)==vtype_pointer(t2)))
-   
-typedef union _type_value
-{
+
+typedef union _type_value{
    void* pointer;
    unsigned char type_value[sizeof(v_type)];
 } type_value_t;
-
-// static inline 
-// type_value_t _int_type(v_type v)
-// {
-//    type_value_t tv;                                
-//    return set_type_val(tv, v);
-// }
-
-// static inline 
-// type_value_t _flv_type(floating_type v) 
-// {
-//    type_value_t tv;
-//    return set_type_val(tv, v);
-// }
-
-// static inline 
-// type_value_t _ptr_type(void* p)
-// {
-//    type_value_t tv;
-//    return set_type_ptr(tv, p);
-// }
-
-// static inline 
-// int compare_int(type_value_t t1, type_value_t t2) 
-// {
-//    return cmp_int(t1, t2);
-// }
-
-// static inline 
-// int compare_float(type_value_t t1, type_value_t t2) 
-// {
-//    return cmp_flt(t1, t2);
-// }
-
-// static inline
-// int compare_double(type_value_t t1, type_value_t t2) 
-// {
-//    return cmp_dbl(t1, t2);
-// }
-
-// static inline 
-// int compare_pointer(type_value_t t1, type_value_t t2) 
-// {
-//    return cmp_ptr(t1, t2);
-// }
 
 #endif
