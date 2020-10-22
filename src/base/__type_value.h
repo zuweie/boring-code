@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 13:29:13
- * @LastEditTime: 2020-10-19 15:44:06
+ * @LastEditTime: 2020-10-23 00:41:55
  * @LastEditors: Please set LastEditors
  */
 
@@ -41,12 +41,12 @@
       set_type_ptr(tv, p);     \
       tv;                      \
    }) 
-
-
 #define vtype_equl(t1, t2) (((*((v_type*)t1.type_value))^(*((v_type*)t2.type_value)))?1:0)
 #define vtype_cmp_on_int(t1, t2) ((vtype_equl(t1, t2))?(((vtype_int(t1)>vtype_int(t2)))?1:-1):0)
 #define vtype_cmp_on_flt(t1, t2) ((vtype_equl(t1, t2))?((vtype_float(t1)>vtype_float(t2))?1:-1):0)
 #define vtype_cmp_on_ptr(t1, t2) (!(vtype_pointer(t1)==vtype_pointer(t2)))
+
+#define bad_vtype int_vtype(~((v_type)0))
 
 typedef union _type_value{
    void* pointer;

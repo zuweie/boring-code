@@ -19,6 +19,8 @@ set (SOURCE
     src/graph/graph.c
     src/matrix/matrix.c
     src/matrix/tsmatrix.c
+    src/matrix/CooMatrix.c
+    src/matrix/DenseMatrix.c
     src/mem_pool/__mem_pool.c
 )
 

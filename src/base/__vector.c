@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-10-19 15:48:36
+ * @LastEditTime: 2020-10-23 00:46:28
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -56,7 +56,7 @@ static iterator_t _vector_search (container_t* container, iterator_t offset, typ
     return first;
 }
 
-static int _vector_insert (container_t* container, iterator_t it, type_value_t data)
+static type_value_t _vector_insert (container_t* container, iterator_t it, type_value_t data)
 {
     // head 的位置不能前插
     if (!iterator_is_head(it)){
@@ -69,7 +69,7 @@ static int _vector_insert (container_t* container, iterator_t it, type_value_t d
             type_value_t *new_block = allocate(container_mem_pool(container), require_size * sizeof(type_value_t));
 
             if (new_block == NULL){
-                return -1;
+                return bad_vtype;
             }
 
             // 如果整个块要是重新malloc的，那么要重新计算it的位置。
@@ -102,29 +102,28 @@ static int _vector_insert (container_t* container, iterator_t it, type_value_t d
         type_value_t *pt = iterator_reference(it);
         *pt = data;
         vec->_size++;
-        return 0;
+        return int_vtype(0);
     }
-    return -1;
+    return bad_vtype;
 }
 
-static int _vector_remove (container_t* container, iterator_t it, void* rdata) 
+static type_value_t _vector_remove (container_t* container, iterator_t it) 
 {
     if (!iterator_is_boundary(it)){
         
         vector_t *vec = container;
 
-        if (rdata){
-            *((type_value_t*)rdata) = iterator_dereference(it);
-        }
+        type_value_t rdata = iterator_dereference(it);
+        
         // 擦除
         for (;!iterator_equal(it, container_last(vec));it = iterator_next(it)){
             iterator_t it_next = iterator_next(it);
             iterator_assign(it, it_next);
         }
         vec->_size--;
-        return 0;
+        return rdata;
     }
-    return -1;
+    return bad_vtype;
 }
 
 static int _vector_sort(container_t* container, int(*compare)(type_value_t, type_value_t)) 

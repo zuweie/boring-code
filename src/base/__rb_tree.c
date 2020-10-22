@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-17 22:51:42
+ * @LastEditTime: 2020-10-23 00:52:52
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -254,26 +254,29 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t) {
     return pnode;
 }
 
-static int __rb_tree_insert (rb_tree_t* prb, type_value_t t) 
+static type_value_t __rb_tree_insert (rb_tree_t* prb, type_value_t t) 
 {
 
 	rb_tree_node_t* py = _null(prb);
 	rb_tree_node_t* px = prb->_root;
     /* alloc */
-    rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
+    // rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
 
     // 找位置
     while(px != _null(prb)) {
         py = px;
-        if (prb->_insert_compare(pz->node, px->node) == -1){
+        if (prb->_insert_compare(t, px->node) == -1){
         	px = px->left;
-        }else if (prb->_insert_compare(pz->node, px->node) == 1 ){
+        }else if (prb->_insert_compare(t, px->node) == 1 ){
         	px = px->right;
         }else{
-            // 不挂重复的。
-            return -1;
+            // 遇见相等的，把旧的值给丢出去，把新的值弄上去。
+            type_value_t rdata = px->node;
+            px->node = t;
+            return rdata;
         }
     }
+    rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
     pz->parent = py;
     // 挂叶子
     if (py == _null(prb)){
@@ -288,7 +291,8 @@ static int __rb_tree_insert (rb_tree_t* prb, type_value_t t)
     pz->right = _null(prb);
     pz->color = _rb_red;
     prb->_size++;
-    return __rb_tree_insert_fixup(prb, pz);
+    int ret = __rb_tree_insert_fixup(prb, pz);
+    return int_vtype(ret);
 }
 
 static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
@@ -399,7 +403,7 @@ static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
     return 0;
 }
 
-static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
+static type_value_t __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz)
 {
     if (pz != _null(prb)){
         
@@ -442,15 +446,13 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
         }
 
         // 返回值。
-        if (rdata) {
-            *((type_value_t*)rdata) = py->node;
-        }
+        type_value_t rdata = py->node;
         deallocate(container_mem_pool(prb), py);
         prb->_size--;
-        return 0;
+        return rdata;
     }else{
         // 空节点，返回-1;
-        return -1;
+        return bad_vtype;
     }
 }
 /** tree function **/
@@ -501,14 +503,14 @@ static iterator_t _rb_tree_search(container_t* container, iterator_t offset, typ
     return _get_iter(p, container);
 }
 
-static int _rb_tree_insert(container_t* container, iterator_t pos, type_value_t data)
+static type_value_t _rb_tree_insert(container_t* container, iterator_t pos, type_value_t data)
 {
     return __rb_tree_insert(container, data);
 }
 
-static int _rb_tree_remove(container_t* container, iterator_t pos, void* rdata)
+static type_value_t _rb_tree_remove(container_t* container, iterator_t pos)
 {
-    return __rb_tree_remove(container, iterator_reference(pos), rdata);
+    return __rb_tree_remove(container, iterator_reference(pos));
 }
 
 static size_t _rb_tree_size(container_t* container)

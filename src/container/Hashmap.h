@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-19 17:12:57
+ * @LastEditTime: 2020-10-22 16:51:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -11,14 +11,12 @@
 
 #include "Cn.h"
 #include "base/__hashmap.h"
-#include "base/__entitiy.h"
 
 typedef Container   Hashmap;
-typedef entity_t    Entity;
 typedef hash_node_t HashNode;
 #define HASHMAP_SLOT_SIZE 10
 #define Hashmap_init(hm, key_hasher, key_cmp) CN_initialize(hm, hashmap, NULL, HASHMAP_SLOT_SIZE, key_hasher, key_cmp)
-#define Hashmap_uninit(hm, cleanup) CN_uninitialize(hm, hashmap, cleanup)
+#define Hashmap_uninit(hm, ...) CN_uninitialize(hm, hashmap, __VA_ARGS__)
 
 #define Hashmap_has(con, key) CN_has(con, key)
 
@@ -65,7 +63,7 @@ typedef hash_node_t HashNode;
 
 static inline 
 int hashmap_ikey_hasher (Tv key, size_t slot_size) {
-    int k = t2i(key);
+    size_t k = t2i(key);
     return (k % slot_size);
 }
 static inline 
