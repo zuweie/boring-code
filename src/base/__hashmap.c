@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-23 01:15:43
+ * @LastEditTime: 2020-10-23 01:30:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -107,10 +107,12 @@ static type_value_t _hashmap_remove(container_t* container, iterator_t pos)
             }
         }
         type_value_t rdata = hash_node->entity;
-        // 把 hash_node 指的 内存块干掉。
-        deallocate(hashmap, hash_node);
-        // 把 hash_node 这个指针所用的空间干掉
-        container_remove(hashmap->_hash_table, pos);
+        
+        type_value_t del = container_remove(hashmap->_hash_table, pos);
+        if (!vtype_equl(del, bad_vtype)) {
+            hash_node_t* pnode = vtype_pointer(del);
+            deallocate(hashmap, pnode);
+        }
         return rdata;
     }
     return bad_vtype;
