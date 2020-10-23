@@ -1,11 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
-<<<<<<< HEAD
- * @LastEditTime: 2020-10-23 12:58:05
-=======
- * @LastEditTime: 2020-10-23 01:17:42
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
+ * @LastEditTime: 2020-10-23 13:44:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h

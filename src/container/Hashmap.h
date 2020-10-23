@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-23 13:41:22
+ * @LastEditTime: 2020-10-23 13:44:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -57,8 +57,6 @@ typedef hash_node_t HashNode;
 //         };                       \
 //         entity;                  \
 //     })                           
-
-<<<<<<< HEAD
 // static inline 
 // int hashmap_ikey_hasher (Tv key, size_t slot_size) {
 //     int k = t2i(key);
@@ -69,16 +67,5 @@ typedef hash_node_t HashNode;
 //     char* k = t2p(key);
 //     return 0;
 // }
-=======
-static inline 
-int hashmap_ikey_hasher (Tv key, size_t slot_size) {
-    size_t k = t2i(key);
-    return (k % slot_size);
-}
-static inline 
-int hashmap_skey_hasher (Tv key, size_t slot_size) {
-    char* k = t2p(key);
-    return 0;
-}
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
+
 #endif
