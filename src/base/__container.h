@@ -2,7 +2,11 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
+<<<<<<< HEAD
  * @LastEditTime: 2020-10-23 12:56:34
+=======
+ * @LastEditTime: 2020-10-23 01:13:07
+>>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CONTAINER_H_
@@ -38,10 +42,10 @@ typedef struct _iterator iterator_t;
 #define container_insert_tail(container, data) container_insert(container, container_tail(container), data)
 
 // 容器移除
-#define container_remove(container, iter, rdata) (((container_t*)(container))->remove(((container_t*)(container)), iter, rdata))
-#define container_remove_find(container, find, rdata, compare) container_remove(container, container_find(container, find, compare), rdata) 
-#define container_remove_first(container, rdata) container_remove(container, container_first(container), rdata)
-#define container_remove_last(container, rdata) container_remove(container, container_last(container), rdata)
+#define container_remove(container, iter) (((container_t*)(container))->remove(((container_t*)(container)), iter))
+#define container_remove_find(container, find, compare) container_remove(container, container_find(container, find, compare)) 
+#define container_remove_first(container) container_remove(container, container_first(container))
+#define container_remove_last(container) container_remove(container, container_last(container))
 
 // 容器测试
 #define container_has(container, find, compare) (!iterator_is_boundary(container_find(container, find, compare)))
@@ -76,9 +80,14 @@ struct _container {
     iterator_t (*first) (container_t* container);   
     iterator_t (*last) (container_t * container);   
     iterator_t (*search) (container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)); 
+<<<<<<< HEAD
     int (*set) (container_t* container, type_value_t data, int (*setup) (type_value_t, type_value_t));
     int (*insert) (container_t* container, iterator_t iter, type_value_t data); 
     int (*remove) (container_t* container, iterator_t iter, void* rdata);
+=======
+    type_value_t (*insert) (container_t* container, iterator_t iter, type_value_t data); 
+    type_value_t (*remove) (container_t* container, iterator_t iter);
+>>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
     int (*sort) (container_t* container, int(*compare)(type_value_t, type_value_t));
     int (*wring) (container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(type_value_t, void*));
     size_t (*size) (container_t* container);

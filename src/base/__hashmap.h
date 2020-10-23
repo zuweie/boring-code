@@ -1,7 +1,11 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:27
+<<<<<<< HEAD
  * @LastEditTime: 2020-10-23 11:57:45
+=======
+ * @LastEditTime: 2020-10-22 16:21:39
+>>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.h

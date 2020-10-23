@@ -1,7 +1,11 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
+<<<<<<< HEAD
  * @LastEditTime: 2020-10-23 13:23:55
+=======
+ * @LastEditTime: 2020-10-22 16:51:21
+>>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -11,14 +15,16 @@
 
 #include "Cn.h"
 #include "base/__hashmap.h"
+<<<<<<< HEAD
 #include "Entity.h"
+=======
+>>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
 
 typedef Container   Hashmap;
-typedef entity_t    Entity;
 typedef hash_node_t HashNode;
 #define HASHMAP_SLOT_SIZE 10
 #define Hashmap_init(hm, key_hasher, key_cmp) CN_initialize(hm, hashmap, NULL, HASHMAP_SLOT_SIZE, key_hasher, key_cmp)
-#define Hashmap_uninit(hm, cleanup) CN_uninitialize(hm, hashmap, cleanup)
+#define Hashmap_uninit(hm, ...) CN_uninitialize(hm, hashmap, __VA_ARGS__)
 
 #define Hashmap_has(con, key) CN_has(con, key)
 
@@ -59,6 +65,7 @@ typedef hash_node_t HashNode;
 //         entity;                  \
 //     })                           
 
+<<<<<<< HEAD
 // static inline 
 // int hashmap_ikey_hasher (Tv key, size_t slot_size) {
 //     int k = t2i(key);
@@ -69,4 +76,16 @@ typedef hash_node_t HashNode;
 //     char* k = t2p(key);
 //     return 0;
 // }
+=======
+static inline 
+int hashmap_ikey_hasher (Tv key, size_t slot_size) {
+    size_t k = t2i(key);
+    return (k % slot_size);
+}
+static inline 
+int hashmap_skey_hasher (Tv key, size_t slot_size) {
+    char* k = t2p(key);
+    return 0;
+}
+>>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
 #endif
