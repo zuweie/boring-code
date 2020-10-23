@@ -3,7 +3,7 @@
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
 <<<<<<< HEAD
- * @LastEditTime: 2020-10-23 13:32:49
+ * @LastEditTime: 2020-10-23 13:36:55
 =======
  * @LastEditTime: 2020-10-23 01:13:07
 >>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
@@ -42,10 +42,10 @@ typedef struct _iterator iterator_t;
 #define container_insert_tail(container, data) container_insert(container, container_tail(container), data)
 
 // 容器移除
-#define container_remove(container, iter) (((container_t*)(container))->remove(((container_t*)(container)), iter))
-#define container_remove_find(container, find, compare) container_remove(container, container_find(container, find, compare)) 
-#define container_remove_first(container) container_remove(container, container_first(container))
-#define container_remove_last(container) container_remove(container, container_last(container))
+#define container_remove(container, iter, rdata) (((container_t*)(container))->remove(((container_t*)(container)), iter, rdata))
+#define container_remove_find(container, find, compare, rdata) container_remove(container, container_find(container, find, compare, rdata)) 
+#define container_remove_first(container, rdata) container_remove(container, container_first(container), rdata)
+#define container_remove_last(container, rdata) container_remove(container, container_last(container, rdata))
 
 // 容器测试
 #define container_has(container, find, compare) (!iterator_is_boundary(container_find(container, find, compare)))
