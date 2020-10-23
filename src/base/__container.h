@@ -3,7 +3,7 @@
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
 <<<<<<< HEAD
- * @LastEditTime: 2020-10-23 12:56:34
+ * @LastEditTime: 2020-10-23 13:32:49
 =======
  * @LastEditTime: 2020-10-23 01:13:07
 >>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
@@ -80,14 +80,9 @@ struct _container {
     iterator_t (*first) (container_t* container);   
     iterator_t (*last) (container_t * container);   
     iterator_t (*search) (container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)); 
-<<<<<<< HEAD
     int (*set) (container_t* container, type_value_t data, int (*setup) (type_value_t, type_value_t));
     int (*insert) (container_t* container, iterator_t iter, type_value_t data); 
     int (*remove) (container_t* container, iterator_t iter, void* rdata);
-=======
-    type_value_t (*insert) (container_t* container, iterator_t iter, type_value_t data); 
-    type_value_t (*remove) (container_t* container, iterator_t iter);
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
     int (*sort) (container_t* container, int(*compare)(type_value_t, type_value_t));
     int (*wring) (container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(type_value_t, void*));
     size_t (*size) (container_t* container);
