@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2020-10-19 15:46:33
+ * @LastEditTime: 2020-10-23 12:56:34
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CONTAINER_H_
@@ -27,6 +27,9 @@ typedef struct _iterator iterator_t;
 // 容器搜索
 #define container_search(container, offset, find, compare) (((container_t*)(container))->search(((container_t*)(container)), offset, find, compare))
 #define container_find(container, find, compare) container_search(container, container_first(container), find, compare)
+
+// 根据插入的东东计算插入的位置。不需要 iterator 来指明，有特殊的数据结构，例如红黑树，hashmap
+#define container_set(container, data, setup) (((container_t*)(container))->set(((container_t*)(container)), data, setup))
 
 // 容器插入
 #define container_insert(container, iter, data) (((container_t*)(container))->insert(((container_t*)(container)), iter, data))
@@ -54,10 +57,11 @@ typedef struct _iterator iterator_t;
 
 #define container_size(container) (((container_t*)(container))->size((container_t*)container))
 
-#define initialize_container(container, __first, __last, __search, __insert, __remove, __sort, __wring, __size, __mem_pool) do { \
+#define initialize_container(container, __first, __last, __search, __set, __insert, __remove, __sort, __wring, __size, __mem_pool) do { \
     ((container_t*)(container))->first  = (__first);                                        \
     ((container_t*)(container))->last   = (__last);                                         \
     ((container_t*)(container))->search = (__search);                                       \
+    ((container_t*)(container))->set    = (__set);                                          \
     ((container_t*)(container))->insert = (__insert);                                       \
     ((container_t*)(container))->remove = (__remove);                                       \
     ((container_t*)(container))->sort   = (__sort);                                         \
@@ -72,11 +76,12 @@ struct _container {
     iterator_t (*first) (container_t* container);   
     iterator_t (*last) (container_t * container);   
     iterator_t (*search) (container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)); 
+    int (*set) (container_t* container, type_value_t data, int (*setup) (type_value_t, type_value_t));
     int (*insert) (container_t* container, iterator_t iter, type_value_t data); 
-    int (*remove) (container_t* container, iterator_t iter, void* data);
+    int (*remove) (container_t* container, iterator_t iter, void* rdata);
     int (*sort) (container_t* container, int(*compare)(type_value_t, type_value_t));
     int (*wring) (container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(type_value_t, void*));
-    size_t (*size) (container_t*);
+    size_t (*size) (container_t* container);
     pool_t* mem_pool;
 };
 

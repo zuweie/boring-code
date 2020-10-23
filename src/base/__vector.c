@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-10-19 15:48:36
+ * @LastEditTime: 2020-10-23 12:46:02
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -55,7 +55,10 @@ static iterator_t _vector_search (container_t* container, iterator_t offset, typ
     // 返回边界的指针
     return first;
 }
-
+static int _vector_set(container_t* container, type_value_t data, int (*setup)(type_value_t, type_value_t)) 
+{
+    return -1;
+}
 static int _vector_insert (container_t* container, iterator_t it, type_value_t data)
 {
     // head 的位置不能前插
@@ -150,7 +153,8 @@ container_t* vector_create() {
         vector, 
         _vector_first, 
         _vector_last, 
-        _vector_search, 
+        _vector_search,
+        _vector_set,
         _vector_insert, 
         _vector_remove, 
         _vector_sort, 

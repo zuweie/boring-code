@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-17 22:51:42
+ * @LastEditTime: 2020-10-23 12:48:04
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -254,26 +254,29 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t) {
     return pnode;
 }
 
-static int __rb_tree_insert (rb_tree_t* prb, type_value_t t) 
+static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int (*setup)(type_value_t, type_value_t)) 
 {
-
 	rb_tree_node_t* py = _null(prb);
 	rb_tree_node_t* px = prb->_root;
     /* alloc */
-    rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
+    //
 
     // 找位置
     while(px != _null(prb)) {
         py = px;
-        if (prb->_insert_compare(pz->node, px->node) == -1){
+        if (prb->_insert_compare(t, px->node) == -1){
         	px = px->left;
-        }else if (prb->_insert_compare(pz->node, px->node) == 1 ){
+        }else if (prb->_insert_compare(t, px->node) == 1 ){
         	px = px->right;
         }else{
-            // 不挂重复的。
-            return -1;
+            // 把旧的进行更新。
+            if (setup) {
+                setup(px->node, t);
+            }
+            return 1;
         }
     }
+    rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
     pz->parent = py;
     // 挂叶子
     if (py == _null(prb)){
@@ -501,9 +504,14 @@ static iterator_t _rb_tree_search(container_t* container, iterator_t offset, typ
     return _get_iter(p, container);
 }
 
+static int _rb_tree_set(container_t* container, type_value_t data, void* rdata)
+{
+    return __rb_tree_insert(container, data, rdata);
+}
+
 static int _rb_tree_insert(container_t* container, iterator_t pos, type_value_t data)
 {
-    return __rb_tree_insert(container, data);
+    return -1;
 }
 
 static int _rb_tree_remove(container_t* container, iterator_t pos, void* rdata)
