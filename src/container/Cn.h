@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-23 13:44:31
+ * @LastEditTime: 2020-10-23 13:47:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -39,13 +39,13 @@
 
 #define CN_add(con, data) CN_add_tail(con, data)
 
-#define CN_remove(con, it) container_remove(cc(con), it)
+#define CN_remove(con, it, rdata) container_remove(cc(con), it, rdata)
 // 头部移除
-#define CN_rm_first(con) CN_remove(con, CN_first(con))
+#define CN_rm_first(con, rdata) CN_remove(con, CN_first(con), rdata)
 // 尾部移除
-#define CN_rm_last(con) CN_remove(con, CN_last(con))
+#define CN_rm_last(con, rdata) CN_remove(con, CN_last(con), rdata)
 
-#define CN_rm(con) CN_rm_last(con)
+#define CN_rm(con, rdata) CN_rm_last(con, rdata)
 // 移除特定目标
 #define CN_rm_target(con, find, ret)   \
     ({                                 \
