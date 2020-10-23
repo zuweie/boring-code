@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-19 15:53:12
+ * @LastEditTime: 2020-10-23 12:58:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -27,6 +27,9 @@
 
 #define CN_search(con,offset,find) container_search(cc(con), offset, find, ccmp(con))
 #define CN_find(con,find) CN_search(con, CN_first(con), find)
+
+// 特殊的插入。
+#define CN_set(con, data, setup) container_set(cc(con), data, setup)
 
 #define CN_insert(con, it, data) container_insert(cc(con), it, data)
 // 头部插入
