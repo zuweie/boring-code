@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-10-24 16:32:03
+ * @LastEditTime: 2020-10-24 16:50:57
  * @LastEditors: Please set LastEditors
  */
 
@@ -60,7 +60,7 @@ static iterator_t _list_search (container_t* container, iterator_t offset, type_
     return first;
 }
 
-static int _list_set(container_t* container, type_value_t data, int(*setup)(type_value_t, type_value_t));
+static int _list_set(container_t* container, type_value_t data, int(*confilt_fix)(type_value_t, type_value_t))
 {
     return -1;
 }
@@ -81,10 +81,10 @@ static int _list_insert(container_t* container, iterator_t pos, type_value_t dat
 
     list_t *plist = container;
     plist->_size++;
-    return int_vtype(0);
+    return 0;
 }
 
-static type_value_t _list_remove(container_t* container, iterator_t pos)
+static int _list_remove(container_t* container, iterator_t pos, void* rdata)
 {
     // 删除
     // 边界的东西不能移除
@@ -96,14 +96,15 @@ static type_value_t _list_remove(container_t* container, iterator_t pos)
         pnode->prev->next = pnode->next;
         pnode->next->prev = pnode->prev;
 
-        type_value_t rdata = iterator_dereference(pos);
+        // 将要删除的值返回出去。
+        if (rdata) *((type_value_t*)rdata) = iterator_dereference(pos);
         // 回收
         deallocate(container_mem_pool(container), pnode);
         list->_size--;
-        return rdata; 
+        return 0; 
     }
 
-    return bad_vtype;
+    return 0;
 }
 
 static size_t _list_size(container_t* container) 

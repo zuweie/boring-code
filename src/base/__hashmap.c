@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-24 16:16:43
+ * @LastEditTime: 2020-10-24 16:46:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -121,7 +121,7 @@ static int _hashmap_remove(container_t* container, iterator_t pos, void* rdata)
         type_value_t del;
         container_remove(hashmap->_hash_table, pos, &del);
         hash_node_t* pdel_node = vtype_pointer(del);
-        deallocate(hashmap, pdel_node);
+        deallocate(container_mem_pool(hashmap), pdel_node);
         return 0;
     }
     return -1;

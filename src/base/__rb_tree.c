@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-24 16:33:58
+ * @LastEditTime: 2020-10-24 16:47:54
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -403,7 +403,7 @@ static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
     return 0;
 }
 
-static type_value_t __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz)
+static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 {
     if (pz != _null(prb)){
         
@@ -446,13 +446,14 @@ static type_value_t __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz)
         }
 
         // 返回值。
-        type_value_t rdata = py->node;
+        if (rdata) *((type_value_t*)rdata) = py->node;
         deallocate(container_mem_pool(prb), py);
         prb->_size--;
-        return rdata;
+        //return rdata;
+        return 0;
     }else{
         // 空节点，返回-1;
-        return bad_vtype;
+        return -1;
     }
 }
 /** tree function **/
@@ -513,9 +514,9 @@ static int _rb_tree_insert(container_t* container, iterator_t pos, type_value_t 
     return -1;
 }
 
-static type_value_t _rb_tree_remove(container_t* container, iterator_t pos)
+static int _rb_tree_remove(container_t* container, iterator_t pos, void* rdata)
 {
-    return __rb_tree_remove(container, iterator_reference(pos));
+    return __rb_tree_remove(container, iterator_reference(pos), rdata);
 }
 
 static size_t _rb_tree_size(container_t* container)
@@ -539,7 +540,8 @@ container_t* rb_tree_create(int(*insert_compare)(type_value_t, type_value_t)) {
         tree, 
         _rb_tree_first, 
         _rb_tree_last, 
-        _rb_tree_search, 
+        _rb_tree_search,
+        _rb_tree_set,
         _rb_tree_insert, 
         _rb_tree_remove, 
         _rb_tree_sort, 
