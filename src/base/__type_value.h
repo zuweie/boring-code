@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 13:29:13
- * @LastEditTime: 2020-10-23 00:41:55
+ * @LastEditTime: 2020-10-24 10:16:11
  * @LastEditors: Please set LastEditors
  */
 
@@ -17,9 +17,10 @@
    typedef float floating_type;
 #endif
 
-#define set_type_val(t, v) (((*((v_type*)t.type_value))=(*((v_type*)(&(v)))))?t:t)
-#define set_type_ptr(t, p) ((t.pointer=p)?t:t)
-
+//#define set_type_val(t, v) (((*((v_type*)t.type_value))=(*((v_type*)(&(v)))))?t:t)
+//#define set_type_ptr(t, p) ((t.pointer=p)?t:t)
+#define set_type_val(t, v) ((*((v_type*)t.type_value))=(*((v_type*)(&(v)))))
+#define set_type_ptr(t, p) (t.pointer=p)
 #define vtype_xtype(vt,t) (*((vt*)t.type_value))
 #define vtype_int(t) vtype_xtype(v_type, t)
 #define vtype_float(t) vtype_xtype(floating_type, t)
