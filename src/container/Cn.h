@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-23 13:47:04
+ * @LastEditTime: 2020-10-24 20:07:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -15,8 +15,12 @@
 
 /* container function */
 #define cc(con)   (((Container*)( &(con) ))->_container)
-#define ccmp(con) (((Container*)( &(con) ))->_compare)
-
+#define ccmp(con) (((Container*)( &(con) ))->_search_compare)
+#define ccf(con)  (((Container*)( &(con) ))->_conflict_fix)
+#define csc(con)  (((Container*)( &(con) ))->_sort_compare)
+#define cwc(con)  (((Container*)( &(con) ))->_wring_compare)
+#define cwb(con)  (((Container*)( &(con) ))->_wring_callback)
+#define cch(con)  (((Container*)( &(con) ))->_cleanup_handler)
 //#define cc(con) ((con)._container)
 //#define ccmp(con) ((con)._compare)
 
@@ -29,7 +33,7 @@
 #define CN_find(con,find) CN_search(con, CN_first(con), find)
 
 // 特殊的插入。
-#define CN_set(con, data, setup) container_set(cc(con), data, setup)
+#define CN_set(con, data) container_set(cc(con), data, ccf(con))
 
 #define CN_insert(con, it, data) container_insert(cc(con), it, data)
 // 头部插入
@@ -59,8 +63,8 @@
 
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
 #define CN_size(con) container_size(cc(con))
-#define CN_sort(con, cmp) container_sort(cc(con), cmp)
-#define CN_wring(con, cb) container_wring(cc(con), ccmp(con), cb)
+#define CN_sort(con) container_sort(cc(con), csc(con))
+#define CN_wring(con, cb) container_wring(cc(con), cwc(con), cwb(con))
 
 #define CN_has(con, find)            \
     ({                               \
@@ -95,9 +99,9 @@
 
 #define CN_foreach(con, handle) CN_travel(con, handle)
 
-#define CN_unique(con, sort_cmp) do {    \
-    CN_sort(con, sort_cmp);              \                  
-    CN_wring(con, NULL);                 \            
+#define CN_unique(con) do {    \
+    CN_sort(con, csc(con));    \                  
+    CN_wring(con, cwb(con));   \            
 }while(0)
 
 #define CN_duplicate(con1, con2) do {    \
@@ -120,23 +124,22 @@
     }                                 \
 }while(0)
 
-#define CN_initialize(con, label, cmp, ... ) do {     \
-    cc(con) = container_create(label, __VA_ARGS__);   \
-    if (cmp) {                                        \
-        ccmp(con) = cmp;                              \
-    }else{                                            \
-        ccmp(con) = EQUL;                             \
-    }                                                 \
+#define CN_initialize(con, label, search_cmp, conflict_fix, sort_cmp, wring_cmp, wring_cb, cleanup, ... ) do {  \
+    ccmp(con) = search_cmp;   \
+    ccf(con)  = conflict_fix; \ 
+    csc(con)  = sort_cmp;     \
+    cwc(con)  = wring_cmp;    \
+    cwb(con)  = wring_cb;     \
+    cch(con)  = cleanup;      \
+    cc(con) = container_create(label, __VA_ARGS__); \
 }while(0)
 
-#define CN_uninitialize(con, label, cleanup) do { \
-    Cleaner cleaner = (Cleaner)cleanup;           \
-    if (cleaner) {                                \
-        CN_travel(con, cleaner);                  \
-    }                                             \
-    container_destroy(label, cc(con));            \
-    ccmp(con) = NULL;                             \
-    cc(con) = NULL;                               \
+#define CN_uninitialize(con, label) do {    \
+    if (cch(con)) {                         \
+        CN_travel(con, cch(con));           \
+    }                                       \
+    container_destroy(label, cc(con));      \
+    cc(con) = NULL;                         \
 }while(0)
 
 #define _CN(pcon, cmp)            \
@@ -152,15 +155,20 @@ typedef int (*Cleaner)(It);
 typedef struct _con{
     
     container_t* _container;
-    int (*_compare)(type_value_t, type_value_t);
+
+    int (*_search_compare)(type_value_t, type_value_t);
+    int (*_conflict_fix)(type_value_t, type_value_t);
+    int (*_sort_compare)(type_value_t, type_value_t);
+    int (*_wring_compare)(type_value_t, type_value_t);
+    int (*_wring_callback)(type_value_t, void*);
+    int (*_cleanup_handler) (type_value_t);
 
 } Container;
 
 // 这个能比较整数和浮点的值是否相等，但不能比较大小，这个只是用 ^ 做位运算，只能得出是否相等，不知其大小。
 static inline 
 int EQUL (Tv v1, Tv v2) {
-    v_type result = Tv_equl(v1, v2);
-    return result?1:0;
+    return Tv_equl(v1, v2);
 }
 // 这个先用位运算比较是否相等，不等的话再化做 int 形式比较大小
 static inline

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-24 16:46:04
+ * @LastEditTime: 2020-10-24 23:18:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -112,16 +112,12 @@ static int _hashmap_remove(container_t* container, iterator_t pos, void* rdata)
                 hashmap->_slot[slot_index] = container_tail(hashmap->_hash_table);
             }
         }
-        if (rdata) {
-            // 把键值返回回去。
-            *((type_value_t*)rdata) = hash_node->entity;
-        }
+        if (rdata) *((type_value_t*)rdata) = hash_node->entity;
 
         // 把这个节点干掉。
         type_value_t del;
         container_remove(hashmap->_hash_table, pos, &del);
-        hash_node_t* pdel_node = vtype_pointer(del);
-        deallocate(container_mem_pool(hashmap), pdel_node);
+        deallocate(container_mem_pool(hashmap), vtype_pointer(del));
         return 0;
     }
     return -1;

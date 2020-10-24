@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-23 13:44:50
+ * @LastEditTime: 2020-10-24 21:28:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -16,7 +16,7 @@
 typedef Container   Hashmap;
 typedef hash_node_t HashNode;
 #define HASHMAP_SLOT_SIZE 10
-#define Hashmap_init(hm, key_hasher, key_cmp) CN_initialize(hm, hashmap, NULL, HASHMAP_SLOT_SIZE, key_hasher, key_cmp)
+#define Hashmap_init(hm, conflict_fix, cleanup, key_hasher, key_cmp) CN_initialize(hm, hashmap, NULL, conflict_fix, NULL, NULL, NULL, cleanup, HASHMAP_SLOT_SIZE, key_hasher, key_cmp)
 #define Hashmap_uninit(hm, ...) CN_uninitialize(hm, hashmap, __VA_ARGS__)
 
 #define Hashmap_has(con, key) CN_has(con, key)

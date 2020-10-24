@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-06-07 12:36:10
- * @LastEditTime: 2020-10-15 07:46:56
+ * @LastEditTime: 2020-10-24 20:15:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/container/list.h
@@ -14,7 +14,7 @@
 
 typedef Container List;
 
-#define List_init(l, compare) CN_initialize(l, list, compare)
-#define List_uninit(l, cleanup) CN_uninitialize(l, list, cleanup)
+#define List_init(ls, search_cmp, NULL, sort_cmp, wring_cmp, wring_cb, cleanup) CN_initialize(ls, list, search_cmp, NULL, sort_cmp, wring_cmp, wring_cb, cleanup)
+#define List_uninit(ls) CN_uninitialize(ls, list, cleanup)
 
 #endif

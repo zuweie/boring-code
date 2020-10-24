@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-24 16:47:54
+ * @LastEditTime: 2020-10-24 17:57:28
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -291,8 +291,7 @@ static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int (*conflict_fix)
     pz->right = _null(prb);
     pz->color = _rb_red;
     prb->_size++;
-    int ret = __rb_tree_insert_fixup(prb, pz);
-    return ret;
+    return __rb_tree_insert_fixup(prb, pz);
 }
 
 static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
@@ -300,7 +299,7 @@ static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
     /*
      * 麻痹，好鸡巴复杂的逻辑啊。到底是怎么回事。谁他妈的发明红黑树啊。
      * 这里要好好说明算法的过程：
-     * 1 删除z时候，y所在的位置：在rbtree中y一班是z的后置，于是y就差不多在底层：若y有右孩子那么y就在倒数第二层，x在底层。y没有右孩子y就在底层。
+     * 1 删除z时候，y所在的位置：在rbtree中y一般是z的后置，于是y就差不多在底层：若y有右孩子那么y就在倒数第二层，x在底层。y没有右孩子y就在底层。
      *   详细见tree的删除过程
      *                            y
      *                            |
@@ -447,6 +446,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
         // 返回值。
         if (rdata) *((type_value_t*)rdata) = py->node;
+        
         deallocate(container_mem_pool(prb), py);
         prb->_size--;
         //return rdata;
