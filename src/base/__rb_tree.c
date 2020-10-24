@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-23 13:31:03
+ * @LastEditTime: 2020-10-24 16:33:58
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -254,21 +254,11 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t) {
     return pnode;
 }
 
-<<<<<<< HEAD
-static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int (*setup)(type_value_t, type_value_t)) 
-=======
-static type_value_t __rb_tree_insert (rb_tree_t* prb, type_value_t t) 
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
+static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int (*conflict_fix)(type_value_t, type_value_t)) 
 {
 	rb_tree_node_t* py = _null(prb);
 	rb_tree_node_t* px = prb->_root;
     /* alloc */
-<<<<<<< HEAD
-    //
-=======
-    // rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
-
     // 找位置
     while(px != _null(prb)) {
         py = px;
@@ -277,18 +267,13 @@ static type_value_t __rb_tree_insert (rb_tree_t* prb, type_value_t t)
         }else if (prb->_insert_compare(t, px->node) == 1 ){
         	px = px->right;
         }else{
-<<<<<<< HEAD
             // 把旧的进行更新。
-            if (setup) {
-                setup(px->node, t);
+            if (conflict_fix) {
+                conflict_fix(px->node, t);
+            }else {
+                px->node = t;
             }
             return 1;
-=======
-            // 遇见相等的，把旧的值给丢出去，把新的值弄上去。
-            type_value_t rdata = px->node;
-            px->node = t;
-            return rdata;
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
         }
     }
     rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
@@ -307,7 +292,7 @@ static type_value_t __rb_tree_insert (rb_tree_t* prb, type_value_t t)
     pz->color = _rb_red;
     prb->_size++;
     int ret = __rb_tree_insert_fixup(prb, pz);
-    return int_vtype(ret);
+    return ret;
 }
 
 static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
@@ -518,16 +503,12 @@ static iterator_t _rb_tree_search(container_t* container, iterator_t offset, typ
     return _get_iter(p, container);
 }
 
-<<<<<<< HEAD
 static int _rb_tree_set(container_t* container, type_value_t data, void* rdata)
 {
     return __rb_tree_insert(container, data, rdata);
 }
 
 static int _rb_tree_insert(container_t* container, iterator_t pos, type_value_t data)
-=======
-static type_value_t _rb_tree_insert(container_t* container, iterator_t pos, type_value_t data)
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
 {
     return -1;
 }

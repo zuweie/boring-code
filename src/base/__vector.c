@@ -2,11 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
-<<<<<<< HEAD
- * @LastEditTime: 2020-10-23 13:31:15
-=======
- * @LastEditTime: 2020-10-23 00:46:28
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
+ * @LastEditTime: 2020-10-24 16:31:47
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>

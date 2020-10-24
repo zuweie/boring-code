@@ -2,11 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
-<<<<<<< HEAD
  * @LastEditTime: 2020-10-24 16:08:34
-=======
- * @LastEditTime: 2020-10-23 01:13:07
->>>>>>> 9def592acf81ccf931381a808989fbfb2bf43559
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CONTAINER_H_
