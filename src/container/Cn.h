@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-24 20:07:19
+ * @LastEditTime: 2020-10-25 09:21:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -21,8 +21,12 @@
 #define cwc(con)  (((Container*)( &(con) ))->_wring_compare)
 #define cwb(con)  (((Container*)( &(con) ))->_wring_callback)
 #define cch(con)  (((Container*)( &(con) ))->_cleanup_handler)
-//#define cc(con) ((con)._container)
-//#define ccmp(con) ((con)._compare)
+
+#define setcmp(con, search_cmp) (ccmp(con)=search_cmp)
+#define setccf(con, conflict_fix) (ccf(con)=conflict_fix)
+#define setcsc(con, sort_cmp) (csc(con)=sort_cmp)
+#define setcwc(con, wring_cmp) (cwc(con)=wring_cmp)
+#define setcch(con, cleanup) (cch(con)=cleanup)
 
 #define CN_first(con) container_first(cc(con))
 #define CN_last(con) container_last(cc(con))
@@ -93,7 +97,7 @@
     for(It first = CN_first(con);                   \
         !It_equal(first, CN_tail(con));             \
         first = It_next(first) ) {                  \
-            handle(first);                          \
+            handle(It_dref(first));                 \
         }                                           \
 }while(0)
 
