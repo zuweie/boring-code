@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-10-24 16:47:15
+ * @LastEditTime: 2020-10-26 15:45:36
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -55,7 +55,7 @@ static iterator_t _vector_search (container_t* container, iterator_t offset, typ
     // 返回边界的指针
     return first;
 }
-static int _vector_set(container_t* container, type_value_t data, int (*confilt_fix)(type_value_t, type_value_t)) 
+static int _vector_set(container_t* container, type_value_t data, int(*setup)(type_value_t*, type_value_t), int (*confilt_fix)(type_value_t*, type_value_t)) 
 {
     return -1;
 }

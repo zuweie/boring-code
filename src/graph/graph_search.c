@@ -2,14 +2,14 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-10-24 23:55:38
+ * @LastEditTime: 2020-10-27 00:58:51
  * @LastEditors: Please set LastEditors
  */
 #include "graph_search.h"
 #include "container/Queue.h"
 #include "container/Tv.h"
 #include "container/It.h"
-static void _init_bfs_exploring(It pos) 
+static void _init_bfs_exploring(Tv e) 
 {
     //bfs_node_t* pn = allocate(g_pool(0), sizeof(bfs_node_t));
     bfs_explor_t* pn = (bfs_explor_t*)malloc(sizeof(bfs_explor_t));
@@ -17,11 +17,11 @@ static void _init_bfs_exploring(It pos)
     pn->distance = -1;
     pn->pi = NULL;
 
-    vertex_t* vertex = It_getptr(pos);
+    vertex_t* vertex = t2p(e);//It_getptr(pos);
     vertex->exploring = pn;
 }
 
-static void _init_dfs_exploring(It pos) 
+static void _init_dfs_exploring(Tv e) 
 {
     //dfs_node_t* pn = allocate(g_pool(0), sizeof(dfs_node_t));
     dfs_explor_t* pn = (dfs_explor_t*) malloc (sizeof(dfs_explor_t));
@@ -30,13 +30,13 @@ static void _init_dfs_exploring(It pos)
     pn->d_time = -1;
     pn->f_time = -1;
 
-    vertex_t* vertex = It_getptr(pos);
+    vertex_t* vertex = t2p(e);//It_getptr(pos);
     vertex->exploring = pn;
 }
 
-static void _free_exploring (It pos) 
+static void _free_exploring (Tv e) 
 {
-    vertex_t* vertex = It_getptr(pos);
+    vertex_t* vertex = t2p(e);//It_getptr(pos);
     free (vertex->exploring);
     vertex->exploring = NULL;
 }
@@ -44,7 +44,7 @@ static void _free_exploring (It pos)
 // 广度优先算法
 int grp_bfs(Graph* graph, vertex_t* start) {
 
-    CN_travel(graph->vertexes, _init_bfs_exploring);
+    CN_foreach(graph->vertexes, _init_bfs_exploring);
     // 2 做广度优先遍历
     // 
 
@@ -53,8 +53,7 @@ int grp_bfs(Graph* graph, vertex_t* start) {
     pbfs->distance = 0;
     pbfs->pi = NULL;
 
-    Queue queue;
-    Queue_init(queue, NULL);
+    Queue queue = _Queue(NULL);
     Queue_offer(queue, p2t(start));
     Tv rdata;
     
@@ -80,7 +79,7 @@ int grp_bfs(Graph* graph, vertex_t* start) {
         }
         pubfs->color = _grp_black;
     }
-    Queue_uninit(queue,NULL);
+    Queue_(queue,NULL);
     return 0;
 }
 
@@ -108,7 +107,7 @@ static int _dfs_visit(vertex_t* pu, int* time)
 int grp_dfs(Graph* graph) 
 {
     int time = 0;
-    CN_travel(graph->vertexes, _init_dfs_exploring);
+    CN_foreach(graph->vertexes, _init_dfs_exploring);
 
     for(It first=CN_first(graph->vertexes); 
         !It_equal(first, CN_tail(graph->vertexes)); 
@@ -139,5 +138,5 @@ int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr)
 
 void grp_cleanup_exploring_info(Graph* graph) 
 {
-    CN_travel(graph->vertexes, _free_exploring);
+    CN_foreach(graph->vertexes, _free_exploring);
 }

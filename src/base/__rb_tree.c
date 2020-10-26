@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-26 07:49:58
+ * @LastEditTime: 2020-10-26 15:44:48
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -258,7 +258,7 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t, in
     return pnode;
 }
 
-static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int(*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t, type_value_t)) 
+static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int(*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t)) 
 {
 	rb_tree_node_t* py = _null(prb);
 	rb_tree_node_t* px = prb->_root;
@@ -273,7 +273,7 @@ static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int(*setup)(type_va
         }else{
             // 把旧的进行更新。
             if (conflict_fix) {
-                conflict_fix(px->node, t);
+                conflict_fix(&px->node, t);
             }else {
                 px->node = t;
             }

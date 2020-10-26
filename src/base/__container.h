@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2020-10-26 07:53:39
+ * @LastEditTime: 2020-10-26 15:46:30
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CONTAINER_H_
@@ -76,7 +76,7 @@ struct _container {
     iterator_t (*first) (container_t* container);   
     iterator_t (*last) (container_t * container);   
     iterator_t (*search) (container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)); 
-    int (*set) (container_t* container, type_value_t data, int(*setup)(type_value_t*, type_value_t), int (*conflict_fix) (type_value_t, type_value_t));
+    int (*set) (container_t* container, type_value_t data, int(*setup)(type_value_t*, type_value_t), int (*conflict_fix) (type_value_t*, type_value_t));
     int (*insert) (container_t* container, iterator_t iter, type_value_t data); 
     int (*remove) (container_t* container, iterator_t iter, void* rdata);
     int (*sort) (container_t* container, int(*compare)(type_value_t, type_value_t));

@@ -15,6 +15,7 @@ set (SOURCE
     src/base/__hashmap.c
     src/base/operate/__sort.c
     src/base/operate/__wring.c
+    src/container/Entity.c
     src/graph/graph_search.c
     src/graph/graph.c
     src/matrix/matrix.c

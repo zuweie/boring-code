@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-18 11:00:56
+ * @LastEditTime: 2020-10-26 22:50:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -26,21 +26,21 @@ static int suite_success_clean (void)
 static void test_list_size(void)
 {
     const int LIST_SIZE = 10;
-    List list;
-    List_init(list, NULL);
+    List list = _List(NULL);
+
     for (int i=0; i<LIST_SIZE; ++i) {
         Tv v = getTSi(i);
         CN_add_tail(list, v);
     }
     CU_ASSERT_TRUE(LIST_SIZE==CN_size(list));
-    List_uninit(list, NULL);
+    List_(list, NULL);
 }
 
 static void test_list_insert(void) 
 {
     const int LIST_SIZE = 10;
-    List list;
-    List_init(list, NULL);
+    List list = _List(EQUL);
+
     for (int i=0; i<LIST_SIZE; ++i) {
        Tv v = getTSf(i);
        CN_add_tail(list, v);
@@ -52,14 +52,14 @@ static void test_list_insert(void)
     find = getTSf(11);
     CU_ASSERT_FALSE(CN_has(list, find));
    
-    List_uninit(list, NULL);
+    List_(list, NULL);
 }
 
 static void test_list_remove() 
 {
     const int LIST_SIZE = 10;
-    List list;
-    List_init(list, NULL);
+    List list = _List(EQUL);
+    
     for (int i=0; i<LIST_SIZE; ++i) {
        Tv v = getTSf(i);
        CN_add_tail(list, v);
@@ -70,10 +70,9 @@ static void test_list_remove()
     CU_ASSERT_TRUE(CN_rm_target(list, target, &ret) == 0);
     CU_ASSERT_TRUE(Tv_equl(target, ret)==0);
     CU_ASSERT_FALSE(CN_has(list, target));
-    List_uninit(list, NULL);
+    List_(list, NULL);
 
-    List list2;
-    List_init(list2, CMP_STR);
+    List list2 = _List(CMP_STR);
     for (int i=0; i<LIST_SIZE; ++i) {
         Tv v = getTSs(i);
         CN_add_tail(list2, v);
@@ -83,13 +82,12 @@ static void test_list_remove()
     CU_ASSERT_TRUE(CN_rm_target(list2, target, &ret) == 0);
     CU_ASSERT_TRUE(Tv_equl(target, ret)==0);
     CU_ASSERT_FALSE(CN_has(list2, target));
-    List_uninit(list2, NULL);
+    List_(list2, NULL);
 }
 
 void test_list_sort()
 {
-    List list;
-    List_init(list, NULL);
+    List list = _List(EQUL);
     const VECTOR_SIZE = 10;
     extern float test_data_float[TEST_DATA_SIZE];
     
@@ -112,11 +110,10 @@ void test_list_sort()
     //     Tv v2 = It_dref(It_next(first));
     //     CU_ASSERT_TRUE(Tv_cmpf(v1, v2) > 0);
     // }
-    List_uninit(list, NULL);
+    List_(list, NULL);
     
     // 测试 string 的排序。
-    List list2;
-    List_init(list2, NULL);
+    List list2 = _List(NULL);
     // 灌入数据
 
     extern char* test_data_string[];
@@ -127,6 +124,7 @@ void test_list_sort()
     // printf("\n\n");
     Arr_to_cn(test_data_string, TEST_DATA_STR_SIZE, p2t, list2);
     CN_sort(list2, CMP_STR);
+    
     for(It first=CN_first(list2); !It_equal(first, CN_last(list2)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
@@ -146,13 +144,12 @@ void test_list_sort()
         CU_ASSERT_TRUE(CMP_STR(v1, v2) >= 0);
     }
     
-    List_uninit(list2, NULL);
+    List_(list2, NULL);
 }
 
 static void test_list_unique(void) 
 {
-    List list;
-    List_init(list, NULL);
+    List list = _List(EQUL);
 
     CN_add(list, i2t(11));
     CN_add(list, i2t(11));
@@ -168,7 +165,7 @@ static void test_list_unique(void)
     
     // printf ("\n\n before unique\n");
     // CN_foreach(list, PRINTF_IT_ON_INT);
-    CN_unique(list, CMP_INT);
+    CN_unique(list, CMP_INT, NULL);
     // printf("\n\n after unique\n");
     // CN_foreach(list, PRINTF_IT_ON_INT);
     // printf("\n\n");
@@ -182,13 +179,12 @@ static void test_list_unique(void)
         CU_ASSERT_FALSE( v1 == v2);
     }
 
-    List_uninit(list, NULL);
+    List_(list, NULL);
 }
 
 static void test_list_wring(void) 
 {
-    List list;
-    List_init(list, NULL);
+    List list = _List( EQUL );
 
     CN_add(list, i2t(11));
     CN_add(list, i2t(11));
@@ -218,7 +214,7 @@ static void test_list_wring(void)
         CU_ASSERT_FALSE( v1 == v2);
     }
 
-    List_uninit(list, NULL);
+    List_(list, NULL);
 }
 
 int do_list_test (void) 

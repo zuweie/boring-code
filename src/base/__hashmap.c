@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-26 07:52:22
+ * @LastEditTime: 2020-10-26 15:44:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -65,7 +65,7 @@ static iterator_t _hashmap_search (container_t* container, iterator_t offset, ty
     return iter;    
 }
 
-static int _hashmap_set(container_t* container, type_value_t en, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t, type_value_t))
+static int _hashmap_set(container_t* container, type_value_t en, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t))
 {
     int ret = -1;
     hashmap_t* hashmap  = (hashmap_t*) container;
@@ -82,7 +82,7 @@ static int _hashmap_set(container_t* container, type_value_t en, int (*setup)(ty
         hash_node_t* pnode  = vtype_pointer(iterator_dereference(table_it));
         if (conflict_fix) {
             // 如果有冲突解决函数，则调用冲突解决函数
-            conflict_fix(pnode->entity, en);
+            conflict_fix(&pnode->entity, en);
         } else {
             // 没有则直接把旧的 entity 换成新的 en;
             pnode->entity = en;

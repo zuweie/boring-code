@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-10-15 08:23:37
+ * @LastEditTime: 2020-10-27 00:53:52
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -14,11 +14,11 @@ static vertex_t* _create_vertex(Graph* graph, Tv vertex)
     vertex_t* v =(vertex_t*) malloc (sizeof (vertex_t));
     v->vertex_id = vertex;
     // 这个找
-    List_init(v->edges, graph->compare_edge);
+    v->edges = _List(graph->compare_edge);
     return v;
 }
 static int _free_vertex(vertex_t* vertex) {
-    List_uninit(vertex->edges, NULL);
+    List_(vertex->edges, NULL);
     free(vertex);
     return 0;
 }
@@ -38,7 +38,7 @@ static int _free_edge (edge_t* pnode)
 int Graph_init(Graph* graph, int(*find_vertex)(Tv, Tv), int(*find_link)(Tv, Tv)) 
 {
     // 初始化图
-    List_init(graph->vertexes, find_vertex);
+    graph->vertexes = _List(find_vertex);
     graph->compare_edge   = find_link;
     graph->compare_vertex = find_vertex;
     return 0;
@@ -58,7 +58,7 @@ int Graph_uninit(Graph* graph)
 
             Graph_delVertex(pv);
     }
-    List_uninit(graph->vertexes, NULL);
+    List_(graph->vertexes, NULL);
     graph->compare_edge   = NULL;
     graph->compare_vertex = NULL;
     return 0;

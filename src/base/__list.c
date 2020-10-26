@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-10-24 16:50:57
+ * @LastEditTime: 2020-10-26 15:46:09
  * @LastEditors: Please set LastEditors
  */
 
@@ -60,7 +60,7 @@ static iterator_t _list_search (container_t* container, iterator_t offset, type_
     return first;
 }
 
-static int _list_set(container_t* container, type_value_t data, int(*confilt_fix)(type_value_t, type_value_t))
+static int _list_set(container_t* container, type_value_t data, int(*setup)(type_value_t*, type_value_t), int(*confilt_fix)(type_value_t*, type_value_t))
 {
     return -1;
 }
