@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-24 17:57:28
+ * @LastEditTime: 2020-10-26 07:49:58
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -245,16 +245,20 @@ static int __rb_tree_insert_fixup (rb_tree_t* prb, rb_tree_node_t* pz)
     return 0;
 }
 
-static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t) {
+static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t, int (*setup)(type_value_t*, type_value_t)) {
     rb_tree_node_t* pnode = allocate(container_mem_pool(prb), sizeof (rb_tree_node_t));
     pnode->parent = _null(prb);
     pnode->left   = _null(prb);
     pnode->right  = _null(prb);
-    pnode->node   = t;
+    if (setup) {
+        setup(&pnode->node, t);
+    } else {
+        pnode->node = t;
+    }
     return pnode;
 }
 
-static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int (*conflict_fix)(type_value_t, type_value_t)) 
+static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int(*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t, type_value_t)) 
 {
 	rb_tree_node_t* py = _null(prb);
 	rb_tree_node_t* px = prb->_root;
@@ -276,7 +280,7 @@ static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int (*conflict_fix)
             return 1;
         }
     }
-    rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
+    rb_tree_node_t* pz = __rb_tree_create_node(prb, t, setup);
     pz->parent = py;
     // 挂叶子
     if (py == _null(prb)){

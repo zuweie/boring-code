@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-24 23:18:05
+ * @LastEditTime: 2020-10-26 07:52:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -9,11 +9,16 @@
 #include "__hashmap.h"
 #include "mem_pool/__mem_pool.h"
 
-static hash_node_t* __create_hash_node (container_t* container, type_value_t en) 
+static hash_node_t* __create_hash_node (container_t* container, type_value_t en, int (*setup)(type_value_t*, type_value_t)) 
 {
     hashmap_t* hashmap = (hashmap_t*) container;
     hash_node_t* node = allocate(container_mem_pool(container), sizeof(hash_node_t));
     node->slot_index = hashmap->key_hasher(en, hashmap->_slot_size);
+    if (setup) {
+        setup(&node->entity, en);
+    }else{
+        node->entity = en;
+    }
     return node;
 }
 static iterator_t __get_iterator_by_key(container_t* container, type_value_t key) 
@@ -60,7 +65,7 @@ static iterator_t _hashmap_search (container_t* container, iterator_t offset, ty
     return iter;    
 }
 
-static int _hashmap_set(container_t* container, type_value_t en, int (*conflict_fix)(type_value_t, type_value_t))
+static int _hashmap_set(container_t* container, type_value_t en, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t, type_value_t))
 {
     int ret = -1;
     hashmap_t* hashmap  = (hashmap_t*) container;
@@ -69,7 +74,7 @@ static int _hashmap_set(container_t* container, type_value_t en, int (*conflict_
     iterator_t table_it = iterator_is_tail(slot_it)? slot_it : __search_in_table(container, slot_it, en);
     if (iterator_is_tail(slot_it) || iterator_is_tail(table_it)) {
         // 插入新元素
-        hash_node_t* pnode = _create_hash_node(container, en);
+        hash_node_t* pnode = __create_hash_node(container, en, setup);
         ret = container_insert(hashmap->_hash_table, slot_it, pointer_vtype(pnode));
         hashmap->_slot[pnode->slot_index] = iterator_prev(slot_it);
     } else {

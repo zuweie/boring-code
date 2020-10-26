@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2020-10-24 16:08:34
+ * @LastEditTime: 2020-10-26 07:53:39
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CONTAINER_H_
@@ -29,7 +29,7 @@ typedef struct _iterator iterator_t;
 #define container_find(container, find, compare) container_search(container, container_first(container), find, compare)
 
 // 根据插入的东东计算插入的位置。不需要 iterator 来指明，有特殊的数据结构，例如红黑树，hashmap
-#define container_set(container, data, setup) (((container_t*)(container))->set(((container_t*)(container)), data, setup))
+#define container_set(container, data, setup, conflict_fix) (((container_t*)(container))->set(((container_t*)(container)), data, setup, conflict_fix))
 
 // 容器插入
 #define container_insert(container, iter, data) (((container_t*)(container))->insert(((container_t*)(container)), iter, data))
@@ -76,7 +76,7 @@ struct _container {
     iterator_t (*first) (container_t* container);   
     iterator_t (*last) (container_t * container);   
     iterator_t (*search) (container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)); 
-    int (*set) (container_t* container, type_value_t data, int (*conflict_fix) (type_value_t, type_value_t));
+    int (*set) (container_t* container, type_value_t data, int(*setup)(type_value_t*, type_value_t), int (*conflict_fix) (type_value_t, type_value_t));
     int (*insert) (container_t* container, iterator_t iter, type_value_t data); 
     int (*remove) (container_t* container, iterator_t iter, void* rdata);
     int (*sort) (container_t* container, int(*compare)(type_value_t, type_value_t));

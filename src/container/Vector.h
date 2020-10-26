@@ -15,7 +15,7 @@
 typedef Container Vector;
 
 #define Vector_init(vet, search_cmp, sort_cmp, wring_cmp, wring_cb, cleanup) \
-    CN_initialize(vet, vector, search_cmp, NULL, sort_cmp, wring_cmp, wring_cb, cleanup)
+    CN_initialize(vet, vector, search_cmp,NULL, NULL, sort_cmp, wring_cmp, wring_cb, cleanup)
     
 #define Vector_uninit(vet) CN_uninitialize(vet, vector)
 

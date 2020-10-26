@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-25 09:21:32
+ * @LastEditTime: 2020-10-26 08:23:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -14,30 +14,34 @@
 #include "Tv.h"
 
 /* container function */
-#define cc(con)   (((Container*)( &(con) ))->_container)
-#define ccmp(con) (((Container*)( &(con) ))->_search_compare)
-#define ccf(con)  (((Container*)( &(con) ))->_conflict_fix)
-#define csc(con)  (((Container*)( &(con) ))->_sort_compare)
-#define cwc(con)  (((Container*)( &(con) ))->_wring_compare)
-#define cwb(con)  (((Container*)( &(con) ))->_wring_callback)
-#define cch(con)  (((Container*)( &(con) ))->_cleanup_handler)
+#define cc(con)              (((Container*)( &(con) ))->_container)
+#define c_search_cmp(con)    (((Container*)( &(con) ))->_search_compare)
+#define c_conflict_fix(con)  (((Container*)( &(con) ))->_conflict_fix)
+#define c_setup(con)         (((Container*)( &(con) ))->_setup)
+#define c_sort_cmp(con)      (((Container*)( &(con) ))->_sort_compare)
+#define c_wring_cmp(con)     (((Container*)( &(con) ))->_wring_compare)
+#define c_wring_cb(con)      (((Container*)( &(con) ))->_wring_callback)
+#define c_cleanup(con)       (((Container*)( &(con) ))->_cleanup_handler)
 
-#define setcmp(con, search_cmp) (ccmp(con)=search_cmp)
-#define setccf(con, conflict_fix) (ccf(con)=conflict_fix)
-#define setcsc(con, sort_cmp) (csc(con)=sort_cmp)
-#define setcwc(con, wring_cmp) (cwc(con)=wring_cmp)
-#define setcch(con, cleanup) (cch(con)=cleanup)
+#define set_search_cmp(con, search_cmp)     (c_search_cmp(con)=search_cmp)
+#define set_setup(con, setup)               (c_setup(con) = setup)
+#define set_conflict_fix(con, conflict_fix) (c_conflict_fix(con)=conflict_fix)
+#define set_sort_cmp(con, sort_cmp)         (c_sort_cmp(con)=sort_cmp)
+#define set_wring_cmp(con, wring_cmp)       (c_wring_cmp(con)=wring_cmp)
+#define set_wring_cb(con, wring_cb)         (c_wring_cb(con)=wring_cb)
+#define set_cleanup(con, cleanup)           (c_cleanup(con)=cleanup)
+
 
 #define CN_first(con) container_first(cc(con))
 #define CN_last(con) container_last(cc(con))
 #define CN_head(con) container_head(cc(con))
 #define CN_tail(con) container_tail(cc(con))
 
-#define CN_search(con,offset,find) container_search(cc(con), offset, find, ccmp(con))
+#define CN_search(con,offset,find) container_search(cc(con), offset, find, c_search_cmp(con))
 #define CN_find(con,find) CN_search(con, CN_first(con), find)
 
 // 特殊的插入。
-#define CN_set(con, data) container_set(cc(con), data, ccf(con))
+#define CN_set(con, data) container_set(cc(con), data, c_setup(con),  c_conflict_fix(con))
 
 #define CN_insert(con, it, data) container_insert(cc(con), it, data)
 // 头部插入
@@ -67,8 +71,8 @@
 
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
 #define CN_size(con) container_size(cc(con))
-#define CN_sort(con) container_sort(cc(con), csc(con))
-#define CN_wring(con, cb) container_wring(cc(con), cwc(con), cwb(con))
+#define CN_sort(con) container_sort(cc(con), c_sort_cmp(con))
+#define CN_wring(con, cb) container_wring(cc(con), c_wring_cmp(con), c_wring_cb(con))
 
 #define CN_has(con, find)            \
     ({                               \
@@ -128,29 +132,29 @@
     }                                 \
 }while(0)
 
-#define CN_initialize(con, label, search_cmp, conflict_fix, sort_cmp, wring_cmp, wring_cb, cleanup, ... ) do {  \
-    ccmp(con) = search_cmp;   \
-    ccf(con)  = conflict_fix; \ 
-    csc(con)  = sort_cmp;     \
-    cwc(con)  = wring_cmp;    \
-    cwb(con)  = wring_cb;     \
-    cch(con)  = cleanup;      \
+#define CN_initialize(con, label, search_cmp, setup,conflict_fix, sort_cmp, wring_cmp, wring_cb, cleanup, ... ) do {  \
+    set_search_cmp(con, search_cmp);      \
+    set_conflict_fix(con, conflict_fix);  \
+    set_setup(con, setup);                \
+    set_sort_cmp(con, sort_cmp);          \
+    set_wring_cmp(con, wring_cmp);        \
+    set_wring_cb(con, wring_cb);          \
+    set_cleanup(con, cleanup);            \
     cc(con) = container_create(label, __VA_ARGS__); \
 }while(0)
 
 #define CN_uninitialize(con, label) do {    \
-    if (cch(con)) {                         \
-        CN_travel(con, cch(con));           \
+    if (c_cleanup(con)) {                   \
+        CN_travel(con, c_cleanup(con));     \
     }                                       \
     container_destroy(label, cc(con));      \
     cc(con) = NULL;                         \
 }while(0)
 
-#define _CN(pcon, cmp)            \
+#define _CN(pcon)                 \
     ({                            \
         Container con = {         \
             ._container = (pcon), \
-            ._compare = (cmp)     \
         };                        \
         con;                      \
     })
@@ -160,12 +164,13 @@ typedef struct _con{
     
     container_t* _container;
 
-    int (*_search_compare)(type_value_t, type_value_t);
-    int (*_conflict_fix)(type_value_t, type_value_t);
-    int (*_sort_compare)(type_value_t, type_value_t);
-    int (*_wring_compare)(type_value_t, type_value_t);
-    int (*_wring_callback)(type_value_t, void*);
-    int (*_cleanup_handler) (type_value_t);
+    int (*_search_compare)(Tv, Tv);
+    int (*_setup)(Tv*, Tv);
+    int (*_conflict_fix)(Tv, Tv);
+    int (*_sort_compare)(Tv, Tv);
+    int (*_wring_compare)(Tv, Tv);
+    int (*_wring_callback)(Tv, void*);
+    int (*_cleanup_handler) (Tv);
 
 } Container;
 

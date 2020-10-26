@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 19:09:21
- * @LastEditTime: 2020-10-24 23:38:32
+ * @LastEditTime: 2020-10-26 08:25:36
  * @LastEditors: Please set LastEditors
  */
 #ifndef _QUEUE_H_
@@ -14,7 +14,7 @@
 typedef Container Queue;
 
 #define Queue_init(queue, search_cmp, sort_cmp, wring_cmp, wring_cb, cleanup) \
-    CN_initialize(ls, list, search_cmp, NULL, sort_cmp, wring_cmp, wring_cb, cleanup)
+    CN_initialize(ls, list, search_cmp,NULL, NULL, sort_cmp, wring_cmp, wring_cb, cleanup)
     
 #define Queue_uninit(queue) CN_uninitialize(queue, list)
 
