@@ -1,13 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-27 01:05:51
+ * @LastEditTime: 2020-10-27 23:19:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
  */
 #ifndef _HASHMAP_2_H_
 #define _HASHMAP_2_H_
+#include <stdio.h>
 #include <string.h>
 #include "Cn.h"
 #include "base/__hashmap.h"
@@ -69,31 +70,32 @@ typedef hash_node_t HashNode;
 #define Hashmap_get2(con, key1, key2, value) Hashmap_getx(con, value, 2, key1, key2)
 #define Hashmap_get3(con, key1, key2, key3, value) Hashmap_getx(con, value, 3, key1, key2, key3)
 
-#define Hashmap_delx(con, /*rdata,*/ x, ...)    \
+#define Hashmap_delx(con, rdata, x, ...)    \
     ({                                      \
         int ret = -1;                       \
         Tv t[x];                            \
         Entity entity;                      \
-        TempEntity(&entity, x, x, t, __VA_ARGS__); \
-        Tv rentity;                                \
-        ret = CN_rm_target(con, p2t(t), rentity);  \
-        if (ret == 0) {                          \
-            Entity* pentity = t2p(rentity);      \
-            /*rdata = pentity->tv[pentity->value_index];*/ \
-            free(pentity);                             \
-        }                                              \
+        TempEntity(&entity, x, x, t, __VA_ARGS__);      \
+        Tv rentity;                                       \
+        ret = CN_rm_target(con, p2t(&entity), &rentity);  \
+        if (ret == 0) {                                 \
+            Entity* pentity = t2p(rentity);             \
+            rdata = pentity->tv[pentity->value_index];  \
+            free(pentity);                              \
+        }                                               \ 
         ret;\
     })
 
-#define Hashmap_del(con, key/*, rdata*/) Hashmap_delx(con, /*rdata,*/ 1, key)
-#define Hashmap_del2(con, key1, key2/*, rdata*/) Hashmap_delx(con, /*rdata,*/ 2, key1, key2)
-#define Hashmap_del3(con, key1, key2, key3/*, rdata*/) Hashmap_delx(con, /*rdata,*/ 3, key1, key2, key3)
+#define Hashmap_del(con, key, rdata) Hashmap_delx(con, rdata, 1, key)
+#define Hashmap_del2(con, key1, key2, rdata) Hashmap_delx(con, rdata, 2, key1, key2)
+#define Hashmap_del3(con, key1, key2, key3, rdata) Hashmap_delx(con, rdata, 3, key1, key2, key3)
 
 static inline 
 int Hashmap_setup (Tv* v1, Tv v2) 
 {
     Entity* temp = t2p(v2);
     Entity* lentity = CopyALongTimeEntity(temp);
+    //printf("make a lentity %p \n", lentity);
     *v1 = p2t(lentity);
 }
 
@@ -119,10 +121,12 @@ int Hashmap_conflict_fix(Tv* v1, Tv v2)
     return 0;
 }
 static inline
-int Hashmap_cleanup (Tv v) 
+int Hashmap_cleanup_entity (Tv v) 
 {
-    Entity* entity = t2p(v);
-    free(entity);
+    HashNode *pnode = t2p(v);
+    Entity* pentity = t2p(pnode->entity);
+    //printf("free a lentity %p \n", pentity);
+    free(pentity);
     return 0;
 }
 static inline
@@ -130,7 +134,7 @@ int Entity_key_cmp (Tv v1, Tv v2)
 {
     Entity* e1 = t2p(v1);
     Entity* e2 = t2p(v2);
-    return EntityValueEqual(e1, e2);
+    return EntityKeyEqual(e1, e2);
 }
 
 #endif

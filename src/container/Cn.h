@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-27 01:00:59
+ * @LastEditTime: 2020-10-27 09:35:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -98,7 +98,7 @@
     for(It first = CN_first(con);                   \
         !It_equal(first, CN_tail(con));             \
         first = It_next(first) ) {                  \
-            handle(It_dref(first));                 \
+            handle( It_dref(first) );               \
         }                                           \
 }while(0)
 

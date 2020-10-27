@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-26 15:44:48
+ * @LastEditTime: 2020-10-27 09:00:04
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -508,9 +508,9 @@ static iterator_t _rb_tree_search(container_t* container, iterator_t offset, typ
     return _get_iter(p, container);
 }
 
-static int _rb_tree_set(container_t* container, type_value_t data, void* rdata)
+static int _rb_tree_set(container_t* container, type_value_t data, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t))
 {
-    return __rb_tree_insert(container, data, rdata);
+    return __rb_tree_insert(container, data, setup, conflict_fix);
 }
 
 static int _rb_tree_insert(container_t* container, iterator_t pos, type_value_t data)

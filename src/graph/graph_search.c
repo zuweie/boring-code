@@ -2,14 +2,14 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-10-27 00:58:51
+ * @LastEditTime: 2020-10-27 09:41:22
  * @LastEditors: Please set LastEditors
  */
 #include "graph_search.h"
 #include "container/Queue.h"
 #include "container/Tv.h"
 #include "container/It.h"
-static void _init_bfs_exploring(Tv e) 
+static void _init_bfs_exploring(Tv tv) 
 {
     //bfs_node_t* pn = allocate(g_pool(0), sizeof(bfs_node_t));
     bfs_explor_t* pn = (bfs_explor_t*)malloc(sizeof(bfs_explor_t));
@@ -17,11 +17,11 @@ static void _init_bfs_exploring(Tv e)
     pn->distance = -1;
     pn->pi = NULL;
 
-    vertex_t* vertex = t2p(e);//It_getptr(pos);
+    vertex_t* vertex = t2p(tv);//It_getptr(pos);
     vertex->exploring = pn;
 }
 
-static void _init_dfs_exploring(Tv e) 
+static void _init_dfs_exploring(Tv tv) 
 {
     //dfs_node_t* pn = allocate(g_pool(0), sizeof(dfs_node_t));
     dfs_explor_t* pn = (dfs_explor_t*) malloc (sizeof(dfs_explor_t));
@@ -30,13 +30,13 @@ static void _init_dfs_exploring(Tv e)
     pn->d_time = -1;
     pn->f_time = -1;
 
-    vertex_t* vertex = t2p(e);//It_getptr(pos);
+    vertex_t* vertex = t2p(tv);//It_getptr(pos);
     vertex->exploring = pn;
 }
 
-static void _free_exploring (Tv e) 
+static void _free_exploring (Tv tv) 
 {
-    vertex_t* vertex = t2p(e);//It_getptr(pos);
+    vertex_t* vertex =  t2p(tv);//It_getptr(pos);
     free (vertex->exploring);
     vertex->exploring = NULL;
 }

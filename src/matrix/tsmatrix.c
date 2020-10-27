@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-13 10:14:00
- * @LastEditTime: 2020-10-15 08:47:29
+ * @LastEditTime: 2020-10-27 09:09:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/matrix/tsmatrix.c
@@ -10,9 +10,9 @@
 #include "tsmatrix.h"
 #include "matrix.h"
 
-static inline int _free_elem (Tv e) 
+static inline int _free_elem (It pos) 
 {
-    ts_elem* elem = t2p(e);
+    ts_elem* elem = It_getptr(pos); //t2p(e);
     free(elem);
 }
 static inline int _find_elem (Tv e, Tv c) {
@@ -39,7 +39,7 @@ TSMatrix* TSMatrix_create(size_t row, size_t col)
     TSMatrix* tsmatrix = (TSMatrix*) malloc (sizeof(TSMatrix));
     tsmatrix->row = row;
     tsmatrix->col = col;
-    List_init(tsmatrix->elems, _find_elem);
+    tsmatrix->elems = _List(_find_elem);
     return tsmatrix;
 }
 
@@ -48,7 +48,7 @@ TSMatrix* TSMatrix_create_by(size_t row, size_t col, float data[][col])
     TSMatrix * tsmatrix = (TSMatrix* ) malloc (sizeof(TSMatrix));
     tsmatrix->row = row;
     tsmatrix->col = col;
-    List_init(tsmatrix->elems, NULL);
+    tsmatrix->elems = _List(NULL);
 
     for (int i=0; i<row; ++i) {
         for (int j=0; j<col; ++j) {
@@ -85,7 +85,7 @@ Matrix* TSMatrix_create_matrix(TSMatrix* tsmatrix)
 
 int TSMatrix_destroy(TSMatrix* tsmatrix)
 {
-    List_uninit(tsmatrix->elems, _free_elem);
+    List_(tsmatrix->elems, _free_elem);
     free(tsmatrix);
     return 0;
 }

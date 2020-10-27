@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-24 10:20:46
- * @LastEditTime: 2020-10-26 20:53:45
+ * @LastEditTime: 2020-10-27 21:59:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -14,9 +14,11 @@
 void TempEntity(Entity* entity, int num, int value_index, Tv t[], ...) 
 {
     va_list valist;
+    va_start(valist, t);
+    
     for (int i=0; i<num; ++i) {
-        v_type v = va_arg(valist, v_type);
-        t[i] = i2t(v);
+        Tv v = va_arg(valist, Tv);
+        t[i] = v;
     }
     entity->number = num;
     entity->value_index = value_index;
@@ -27,9 +29,10 @@ void TempEntity(Entity* entity, int num, int value_index, Tv t[], ...)
 Entity* CopyALongTimeEntity(Entity* temp) 
 {
     Entity *lentity = (Entity*) malloc(sizeof(Entity) + sizeof(Tv)*(temp->number));
-    memcpy(lentity->tv, temp->tv, sizeof(Tv)*(temp->number));
+    memcpy(&lentity[1], temp->tv, sizeof(Tv)*(temp->number));
     lentity->number = temp->number;
     lentity->value_index = temp->value_index;
+    lentity->tv = &lentity[1];
     return lentity;
 }
 
