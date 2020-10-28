@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-27 23:19:54
+ * @LastEditTime: 2020-10-28 10:48:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -44,7 +44,7 @@ typedef hash_node_t HashNode;
 #define Hashmap_setx(con, x, y, ...) do {      \
     Tv t[x];                                   \
     Entity entity;                             \
-    TempEntity(&entity, x, y, t, __VA_ARGS__);  \
+    TempEntity(&entity, x, y, t, __VA_ARGS__); \
     CN_set(con, p2t(&entity));                 \
 } while(0)
 
@@ -60,7 +60,8 @@ typedef hash_node_t HashNode;
         TempEntity(&entity, x, x, t, __VA_ARGS__);  \
         It it = CN_find(con, p2t(&entity));         \
         if (It_valid(it)) {                         \
-            Entity* ent = It_dref(it);              \
+            HashNode* pnode = It_getptr(it);        \
+            Entity* ent = t2p (pnode->entity);      \
             value = ent->tv[ent->value_index];      \
             ret = 0;                                \
         }                                           \
@@ -75,12 +76,14 @@ typedef hash_node_t HashNode;
         int ret = -1;                       \
         Tv t[x];                            \
         Entity entity;                      \
-        TempEntity(&entity, x, x, t, __VA_ARGS__);      \
+        Tv* prdata = rdata;                 \
+        TempEntity(&entity, x, x, t, __VA_ARGS__);        \
         Tv rentity;                                       \
         ret = CN_rm_target(con, p2t(&entity), &rentity);  \
-        if (ret == 0) {                                 \
-            Entity* pentity = t2p(rentity);             \
-            rdata = pentity->tv[pentity->value_index];  \
+        if (ret == 0) {                                   \
+            Entity* pentity = t2p(rentity);               \
+            if (prdata)                                   \
+                *prdata = pentity->tv[pentity->value_index]; \
             free(pentity);                              \
         }                                               \ 
         ret;\

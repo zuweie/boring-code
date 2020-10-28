@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-10-27 23:20:31
+ * @LastEditTime: 2020-10-28 10:32:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -69,59 +69,76 @@ static void test_hashmap_set (void)
     Tv key, value;
 
     // Container hashtab;
-    // for(int i=0; i<HASHMAP_SIZE; ++i) {
-    //     Hashmap_set(hashmap, key, value);
-    // }
+    for(int i=0; i<HASHMAP_SIZE; ++i) {
+        key = getTSi(i);
+        value = getTSs(i);
+        Hashmap_set(hashmap, key, value);
+    }
     
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
     
-    key   = i2t(1);
-    value = p2t("1");
-    Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_travel(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // key   = i2t(1);
+    // value = p2t("1");
+    // Hashmap_set(hashmap, key, value);
+    // printf("\n\n");
+    // CN_travel(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
-    key   = i2t(2);
-    value = p2t("2");
-    Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // key   = i2t(2);
+    // value = p2t("2");
+    // Hashmap_set(hashmap, key, value);
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
-    key   = i2t(3);
-    value = p2t("3");
-    Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // key   = i2t(3);
+    // value = p2t("3");
+    // Hashmap_set(hashmap, key, value);
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
-    key   = i2t(11);
-    value = p2t("11");
-    Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // key   = i2t(11);
+    // value = p2t("11");
+    // Hashmap_set(hashmap, key, value);
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
-    key   = i2t(12);
-    value = p2t("12");
-    Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // key   = i2t(12);
+    // value = p2t("12");
+    // Hashmap_set(hashmap, key, value);
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
-    printf("hihihihihihi\n");
-    key = i2t(12);
-    value = p2t("1222");
-    Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
-    printf("hihihihihihi\n");
-    
-    CU_ASSERT(Hashmap_has(hashmap, getTSi(3)));
+    // key = i2t(12);
+    // value = p2t("1222");
+    // Hashmap_set(hashmap, key, value);
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
+
+    //CU_ASSERT_FALSE(Hashmap_has(hashmap, getTSi(3)));
+
+    Tv rdata;
+    for (int j=0; j<HASHMAP_SIZE; ++j) {
+        int ret = Hashmap_get(hashmap, getTSi(j), rdata);
+        CU_ASSERT_TRUE(ret == 0);
+        if (ret == 0) {
+            CU_ASSERT_TRUE( CMP_STR(getTSs(j), rdata) == 0);
+        }
+    }
+
+    Hashmap_set(hashmap, i2t(12), p2t("1023"));
+    Hashmap_get(hashmap, i2t(12), rdata);
+    CU_ASSERT_TRUE( CMP_STR(p2t("1023"), rdata) == 0);
+
+    Hashmap_set(hashmap, i2t(12), p2t("1024"));
+    Hashmap_get(hashmap, i2t(12), rdata);
+    CU_ASSERT_TRUE( CMP_STR(p2t("1024"), rdata) == 0);
     Hashmap_(hashmap, Hashmap_cleanup_entity);
     
 }
@@ -156,30 +173,30 @@ static void test_hashmap_del(void)
     key   = i2t(1);
     value = p2t("1");
     Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
     key   = i2t(2);
     value = p2t("2");
     Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
     key   = i2t(3);
     value = p2t("3");
     Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
     
     key   = i2t(11);
     value = p2t("11");
     Hashmap_set(hashmap, key, value);
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
     key   = i2t(12);
     value = p2t("12");
@@ -189,16 +206,16 @@ static void test_hashmap_del(void)
     value = p2t("22");
     Hashmap_set(hashmap, key, value);
 
-    printf("\n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    // printf("\n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
-    Hashmap_del(hashmap, i2t(11));
-    Hashmap_del(hashmap, i2t(22));
-    Hashmap_del(hashmap, i2t(3));
-    printf("\n\n after del \n\n");
-    CN_foreach(hashmap, PRINTF_HASH_NODE);
-    printf("\n\n");
+    Hashmap_del(hashmap, i2t(11), NULL);
+    Hashmap_del(hashmap, i2t(22), NULL);
+    Hashmap_del(hashmap, i2t(3), NULL);
+    // printf("\n\n after del \n\n");
+    // CN_foreach(hashmap, PRINTF_HASH_NODE);
+    // printf("\n\n");
 
     //CU_ASSERT(1);
     CU_ASSERT_FALSE(Hashmap_has(hashmap, i2t(11)));
@@ -223,9 +240,10 @@ static void test_hashmap_set_n_get (void)
 
     }
     // 随机删到30个数据
+    Tv rdata;
     for (int i=0; i<30; ++i) {
         Tv key = getTSi(rand()%50);
-        Hashmap_del(hashmap, key);
+        Hashmap_del(hashmap, key, NULL);
     }
 
     for (int i=51; i<TEST_DATA_SIZE; ++i) {
@@ -238,21 +256,21 @@ static void test_hashmap_set_n_get (void)
     //Container table = Hashmap_table(hashmap);
     CN_duplicate(hashmap, list);
 
-    printf("\n\n");
+    // printf("\n\n");
     CN_foreach(list, ENTITY_2_HASH_KEY);
-    printf("\n\n indexs: ");
-    CN_foreach(list, PRINTF_TV_ON_INT);
-    printf("\n\n");
-    printf("size of index: %d\n", CN_size(list));
+    // printf("\n\n indexs: ");
+    // CN_foreach(list, PRINTF_TV_ON_INT);
+    // printf("\n\n");
+    // printf("size of index: %d\n", CN_size(list));
 
     CN_wring(list, NULL);
-    printf("\n after wring :\n");
-    CN_foreach(list, PRINTF_TV_ON_INT);
+    // printf("\n after wring :\n");
+    // CN_foreach(list, PRINTF_TV_ON_INT);
 
     CN_sort(list, CMP_INT);
     
-    printf("\n after sort :\n");
-    CN_foreach(list, PRINTF_TV_ON_INT);
+    // printf("\n after sort :\n");
+    // CN_foreach(list, PRINTF_TV_ON_INT);
 
     for(It first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
 

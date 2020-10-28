@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-24 10:20:46
- * @LastEditTime: 2020-10-27 21:59:04
+ * @LastEditTime: 2020-10-28 08:24:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -49,7 +49,7 @@ int CopyEntityValue(Entity* e1, Entity* e2)
 
 int EntityValueEqual(Entity* e1, Entity* e2) 
 {
-    if ( e1->value_index == e2->value_index ){
+    if ( e1->value_index == e2->value_index && e1->number == e2->number){
 
         for (int i=e1->value_index;i<e1->number; ++i) {
             if ( Tv_equl((e1->tv[i]), (e2->tv[i])) != 0) {
@@ -63,8 +63,7 @@ int EntityValueEqual(Entity* e1, Entity* e2)
 
 int EntityKeyEqual(Entity* e1, Entity* e2) 
 {
-    if (e1->number == e2->number 
-    && e1->value_index == e2->value_index ) {
+    if ( e1->value_index == e2->value_index ) {
         for (int i=0; i<e1->value_index; ++i) {
             if (Tv_equl(e1->tv[i], e2->tv[i]) != 0) {
                 return 1;
