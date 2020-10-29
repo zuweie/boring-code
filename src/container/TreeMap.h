@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-29 11:33:49
- * @LastEditTime: 2020-10-29 12:53:48
+ * @LastEditTime: 2020-10-29 12:58:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/TreeMap.h
@@ -20,7 +20,7 @@
         tm; \
     })
 
-#define Treemap_(tm) Map_uninit(tm, rb_tree, Hashmap_cleanup_entity)
+#define Treemap_(tm) Map_uninit(tm, rb_tree, Treemap_cleanup_entity)
 
 static inline 
 int Treemap_cleanup_entity (Tv v) 

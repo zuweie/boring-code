@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-29 11:33:41
- * @LastEditTime: 2020-10-29 12:49:46
+ * @LastEditTime: 2020-10-29 12:57:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -27,7 +27,7 @@ typedef hash_node_t HashNode;
     })
 
 #define Hashmap_(hm) Map_uninit(hm, hashmap, Hashmap_cleanup_entity)
-/*CN_initialize(hm, hashmap, NULL, Map_setup, Map_conflict_fix, HASHMAP_SLOT_SIZE, key_hasher, Map_entity_key_equl);*/ 
+
 static inline
 int Hashmap_cleanup_entity (Tv v) 
 {
