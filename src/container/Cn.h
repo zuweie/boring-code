@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-27 09:35:12
+ * @LastEditTime: 2020-10-29 11:03:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -18,11 +18,12 @@
 #define c_search_cmp(con)    (((Container*)(&(con)))->_search_compare)
 #define c_conflict_fix(con)  (((Container*)(&(con)))->_conflict_fix)
 #define c_setup(con)         (((Container*)(&(con)))->_setup)
+#define c_extra_func(con)      (((Container*)(&(con)))->_extra_func)
 
 #define CN_set_search_cmp(con, search_cmp)     (c_search_cmp(con)=search_cmp)
 #define CN_set_setup(con, setup)               (c_setup(con) = setup)
 #define CN_set_conflict_fix(con, conflict_fix) (c_conflict_fix(con)=conflict_fix)
-
+#define CN_set_extra_func(con, func)           (c_extra_func(con)=func)
 
 #define CN_first(con) container_first(cc(con))
 #define CN_last(con) container_last(cc(con))
@@ -126,8 +127,8 @@
 
 #define CN_initialize(con, label, search_cmp, setup, conflict_fix, ... ) do {  \
     CN_set_search_cmp(con, search_cmp);      \
-    CN_set_conflict_fix(con, conflict_fix);  \
     CN_set_setup(con, setup);                \
+    CN_set_conflict_fix(con, conflict_fix);  \
     cc(con) = container_create(label, __VA_ARGS__); \
 }while(0)
 
@@ -149,7 +150,7 @@ typedef struct _con{
     int (*_setup)(Tv*, Tv);         // 此函数用于结构数据类型容器
     int (*_conflict_fix)(Tv*, Tv);   // 此函数用于结构数据类型容器
     int (*_cleanup_handler) (Tv);   // 此函数用户数据容器结束的清扫工作
-
+    void (*_extra_func) (void);           // 一些其他额外需要用到的函数
 } Container;
 
 // 这个能比较整数和浮点的值是否相等，但不能比较大小，这个只是用 ^ 做位运算，只能得出是否相等，不知其大小。

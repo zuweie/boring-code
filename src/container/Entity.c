@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-24 10:20:46
- * @LastEditTime: 2020-10-28 08:24:28
+ * @LastEditTime: 2020-10-28 18:42:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -73,3 +73,4 @@ int EntityKeyEqual(Entity* e1, Entity* e2)
     }
     return 1;
 }
+

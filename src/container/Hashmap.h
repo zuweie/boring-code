@@ -1,128 +1,33 @@
 /*
  * @Author: your name
- * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-28 10:48:46
+ * @Date: 2020-10-29 11:33:41
+ * @LastEditTime: 2020-10-29 12:49:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
  */
-#ifndef _HASHMAP_2_H_
-#define _HASHMAP_2_H_
-#include <stdio.h>
-#include <string.h>
-#include "Cn.h"
+#ifndef _HASH_MAP_H_
+#define _HASH_MAP_H_
 #include "base/__hashmap.h"
+#include "Map.h"
+#include "Cn.h"
+#include "Tv.h"
 #include "Entity.h"
 
-typedef Container   Hashmap;
 typedef hash_node_t HashNode;
 
-#define HASHMAP_SLOT_SIZE 100
+#define HASHMAP_SLOT_SIZE 1000
 
-#define _Hashmap(key_hasher, key_cmp, setup, conflict_fix) \
+#define _Hashmap(key_hasher) \
     ({ \
-        Hashmap hm; \
-        CN_initialize(hm, hashmap, NULL, setup, conflict_fix, HASHMAP_SLOT_SIZE, key_hasher, key_cmp); \
+        Map hm; \
+        Map_init(hm, hashmap, Map_setup, Map_conflict_fix, HASHMAP_SLOT_SIZE, key_hasher, Map_entity_key_equl);\
+        CN_set_extra_func(hm, Hashmap_Expose_Entity);\
         hm; \
     })
 
-#define Hashmap_(hm, cleanup) CN_uninitialize(hm, hashmap, cleanup)
-
-#define Hashmap_hasx(con, x, ...) \
-    ({                            \
-        Tv t[x];                  \
-        Entity entity;            \
-        TempEntity(&entity, x, x, t, __VA_ARGS__); \
-        int ret = CN_has(con, p2t(&entity)); \
-        ret; \
-    })
-#define Hashmap_has(con, key) Hashmap_hasx(con, 1, key)
-#define Hashmap_has2(con, key1, key2) Hashmap_hasx(con, 2, key1, key2)
-#define Hashmap_has3(con, key1, key2, key3) Hashmap_hasx(con, 3, key1, key2, key3)
- //CN_has(con, key)
-
-#define Hashmap_setx(con, x, y, ...) do {      \
-    Tv t[x];                                   \
-    Entity entity;                             \
-    TempEntity(&entity, x, y, t, __VA_ARGS__); \
-    CN_set(con, p2t(&entity));                 \
-} while(0)
-
-#define Hashmap_set(con, key, value) Hashmap_setx(con, 2, 1, key, value)
-#define Hashmap_set2(con, key1, key2, value) Hashmap_setx(con, 3, 2, key1, key2, value)
-#define Hashmap_set3(con, key1, key2, key3, value) Hashmap_setx(con, 4, 3, key1, key2, key3, value)
-
-#define Hashmap_getx(con, value, x, ...)   \
-    ({                                     \
-        int ret = -1;                      \
-        Tv t[x];                           \
-        Entity entity;                     \
-        TempEntity(&entity, x, x, t, __VA_ARGS__);  \
-        It it = CN_find(con, p2t(&entity));         \
-        if (It_valid(it)) {                         \
-            HashNode* pnode = It_getptr(it);        \
-            Entity* ent = t2p (pnode->entity);      \
-            value = ent->tv[ent->value_index];      \
-            ret = 0;                                \
-        }                                           \
-        ret;                                        \
-    })
-#define Hashmap_get(con, key, value) Hashmap_getx(con, value, 1, key)
-#define Hashmap_get2(con, key1, key2, value) Hashmap_getx(con, value, 2, key1, key2)
-#define Hashmap_get3(con, key1, key2, key3, value) Hashmap_getx(con, value, 3, key1, key2, key3)
-
-#define Hashmap_delx(con, rdata, x, ...)    \
-    ({                                      \
-        int ret = -1;                       \
-        Tv t[x];                            \
-        Entity entity;                      \
-        Tv* prdata = rdata;                 \
-        TempEntity(&entity, x, x, t, __VA_ARGS__);        \
-        Tv rentity;                                       \
-        ret = CN_rm_target(con, p2t(&entity), &rentity);  \
-        if (ret == 0) {                                   \
-            Entity* pentity = t2p(rentity);               \
-            if (prdata)                                   \
-                *prdata = pentity->tv[pentity->value_index]; \
-            free(pentity);                              \
-        }                                               \ 
-        ret;\
-    })
-
-#define Hashmap_del(con, key, rdata) Hashmap_delx(con, rdata, 1, key)
-#define Hashmap_del2(con, key1, key2, rdata) Hashmap_delx(con, rdata, 2, key1, key2)
-#define Hashmap_del3(con, key1, key2, key3, rdata) Hashmap_delx(con, rdata, 3, key1, key2, key3)
-
-static inline 
-int Hashmap_setup (Tv* v1, Tv v2) 
-{
-    Entity* temp = t2p(v2);
-    Entity* lentity = CopyALongTimeEntity(temp);
-    //printf("make a lentity %p \n", lentity);
-    *v1 = p2t(lentity);
-}
-
-static inline 
-int Hashmap_conflict_fix(Tv* v1, Tv v2) 
-{
-    // 算出来了 key 相同。
-    Entity* temp = t2p(v2);
-    Entity* lentity = t2p((*v1));
-    
-    if (EntityValueEqual(lentity, temp) == 0) return 0;
-
-    // 然后把 value 弄过去。
-    if (temp->number == lentity->number 
-    && temp->value_index == lentity->value_index) {
-        CopyEntityValue(lentity, temp);
-    } else {
-        // 直接把旧的弄掉，换新的上去。
-        free(lentity);
-        Entity* nentity = CopyALongTimeEntity(temp);
-        *v1 = p2t(nentity);
-    } 
-    return 0;
-}
+#define Hashmap_(hm) Map_uninit(hm, hashmap, Hashmap_cleanup_entity)
+/*CN_initialize(hm, hashmap, NULL, Map_setup, Map_conflict_fix, HASHMAP_SLOT_SIZE, key_hasher, Map_entity_key_equl);*/ 
 static inline
 int Hashmap_cleanup_entity (Tv v) 
 {
@@ -132,12 +37,12 @@ int Hashmap_cleanup_entity (Tv v)
     free(pentity);
     return 0;
 }
-static inline
-int Entity_key_cmp (Tv v1, Tv v2) 
-{
-    Entity* e1 = t2p(v1);
-    Entity* e2 = t2p(v2);
-    return EntityKeyEqual(e1, e2);
-}
 
+static inline 
+Entity* Hashmap_Expose_Entity (Tv v) 
+{
+    HashNode *pnode = t2p(v);
+    Entity* pentity = t2p(pnode->entity);
+    return pentity;
+}
 #endif
