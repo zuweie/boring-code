@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-29 11:03:22
+ * @LastEditTime: 2020-11-01 12:07:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -105,12 +105,12 @@
 
 #define CN_foreach(con, handle) CN_travel(con, handle)
 
-#define CN_duplicate(con1, con2) do {    \
-    for(It first = CN_first(con1);       \
-        !It_equal(first, CN_tail(con1)); \
-        first=It_next(first)) {          \
-        CN_add(con2, It_dref(first));    \
-    }                                    \ 
+#define CN_duplicate(con1, con2) do {\
+    for(It first = CN_first(con1);\
+        !It_equal(first, CN_tail(con1));\
+        first=It_next(first)) {\
+        CN_add(con2, It_dref(first));\
+    }\ 
 } while(0)
 
 

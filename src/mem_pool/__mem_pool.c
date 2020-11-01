@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 17:13:19
- * @LastEditTime: 2020-10-11 15:21:40
+ * @LastEditTime: 2020-11-01 10:38:29
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -13,26 +13,6 @@ static int _refill(pool_t *palloc, size_t n);
 static char* _chunk_alloc(pool_t *palloc, size_t size, int *nobjs);
 static inline void _set_node_slot(pool_node_t *p, unsigned int slot);
 static inline unsigned int _get_node_slot(pool_node_t *p);
-
-// 全局的 pool变量。
-/*
-static pool_t POOL_INSTANCE;
-
-pool_t* pool_instance(int *ret)
-{
-
-	ret ? *ret = 1 : 0;
-	static pool_t *p_instance = NULL;
-	if (p_instance == NULL)
-	{
-		ret ? *ret = 0 : 0;
-		alloc_init(&POOL_INSTANCE);
-		p_instance = &POOL_INSTANCE;
-	}
-
-	return p_instance;
-}
-*/
 
 int alloc_init(pool_t *palloc)
 {
