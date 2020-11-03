@@ -2,7 +2,7 @@
  * @Description: 一个简单的内存池模型
  * @Author: zuweie
  * @Date: 2019-09-03 17:13:11
- * @LastEditTime: 2020-10-11 10:55:03
+ * @LastEditTime: 2020-11-03 10:32:08
  * @LastEditors: Please set LastEditors
  */
 #ifndef _MEM_POOL_H_
@@ -19,7 +19,7 @@
 // 每次重新装到freelist时的内存块数量
 #define __REFILL_CHUNK_SIZE 2
 
-// 存放内存槽信息的位数
+// 存放内存槽信息的位数，最多只能搞四位，多了会发生不可预测结果。
 #define __SLOT_INFO_BYTES 1
 
 //此宏求n个byte的最大无符号值。
@@ -47,10 +47,26 @@
 #define POOL_ATTACH_SLOT_INFO_SIZE(x) (x + __SLOT_INFO_BYTES)
 #define POOL_DETACH_SLOT_INFO_SIZE(X) (x - __SLOT_INFO_BYTES)
 
-#define POOL_EXPORT_POINTER(p) ((char *)p + __SLOT_INFO_BYTES)
-#define POOL_RECOVER_POINTER(p) ((char *)p - __SLOT_INFO_BYTES)
+#define POOL_EXPOSE_POINTER(p) ((char *)(p) + __SLOT_INFO_BYTES)
+#define POOL_RECOVER_POINTER(p) ((char *)(p) - __SLOT_INFO_BYTES)
+
+#define POOL_SET_SLOT(p, slot) \
+	({\
+		size_t v = slot; \
+		*((slot_type_t*)(p)) = *((slot_type_t*)(&v));\
+	})
+	
+#define POOL_GET_SLOT(p) \
+	({ \
+		size_t slot = 0; \
+		*((slot_type_t*)(&slot)) = *((slot_type_t*)(p)); \
+		slot;\
+	})
 
 /*#define g_pool(x) pool_instance(x)*/
+typedef struct _slot_type {
+	unsigned char holder[__SLOT_INFO_BYTES];
+} slot_type_t;
 
 typedef union _pool_node 
 {

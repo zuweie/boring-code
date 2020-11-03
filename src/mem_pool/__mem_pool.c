@@ -2,20 +2,21 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 17:13:19
- * @LastEditTime: 2020-11-01 10:38:29
+ * @LastEditTime: 2020-11-03 12:02:59
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
 #include <string.h>
 #include "__mem_pool.h"
 
-static int _refill(pool_t *palloc, size_t n);
-static char* _chunk_alloc(pool_t *palloc, size_t size, int *nobjs);
-static inline void _set_node_slot(pool_node_t *p, unsigned int slot);
-static inline unsigned int _get_node_slot(pool_node_t *p);
+static int __refill(pool_t *palloc, size_t n);
+static char* __chunk_alloc(pool_t *palloc, size_t size, int *nobjs);
+//static inline void _set_node_slot(pool_node_t *p, unsigned int slot);
+//static inline unsigned int _get_node_slot(pool_node_t *p);
 
 int alloc_init(pool_t *palloc)
 {
+	// 这里有一个bug，用这一句，没办法free_list 清0.
 	//memset(palloc->free_list, 0, sizeof(palloc->free_list));
 	memset(palloc->free_list, 0, sizeof(pool_node_t *)*__FREELIST_SIZE);
 	palloc->start_free = 0;
@@ -53,7 +54,7 @@ void* allocate(pool_t *palloc, size_t x)
 	// 多加一个info的空位放置块信息。
 	//x += __NODE_INFO_BYTES;
 
-	if (palloc && POOL_FREELIST_INDEX(POOL_ATTACH_SLOT_INFO_SIZE(x)) < __FREELIST_SIZE){
+	if (POOL_FREELIST_INDEX(POOL_ATTACH_SLOT_INFO_SIZE(x)) < __FREELIST_SIZE){
 		pool_node_t *volatile *my_free_list;
 		pool_node_t *result;
 		
@@ -62,21 +63,23 @@ void* allocate(pool_t *palloc, size_t x)
 
 		if (result == 0){
 			// 重新填充 free list
-			return (_refill(palloc, POOL_ROUND_UP(POOL_ATTACH_SLOT_INFO_SIZE(x))) == 0) ? allocate(palloc, x) : result;
+			return (__refill(palloc, POOL_ROUND_UP(POOL_ATTACH_SLOT_INFO_SIZE(x))) == 0) ? allocate(palloc, x) : result;
 
 		}else{
 			// 把slot第一个指针指向下个块，这个块就返回出去。给用户用了
 			*my_free_list = result->free_list_link;
-			_set_node_slot(result, POOL_FREELIST_INDEX(POOL_ATTACH_SLOT_INFO_SIZE(x)));
-			return POOL_EXPORT_POINTER(result);
+			//_set_node_slot(result, POOL_FREELIST_INDEX(POOL_ATTACH_SLOT_INFO_SIZE(x)));
+			POOL_SET_SLOT(result, POOL_FREELIST_INDEX(POOL_ATTACH_SLOT_INFO_SIZE(x)));
+
+			return POOL_EXPOSE_POINTER(result);
 		}
 	}else{
 		// 如果大于 __FREELIST_SIZE 那个值，那么回收的时候即可判断是直接从内存找来的。
 		pool_node_t *result = malloc(POOL_ATTACH_SLOT_INFO_SIZE(x));
 
 		if (result){
-			_set_node_slot(result, __MAX_FREELIST_SIZE);
-			return POOL_EXPORT_POINTER(result);
+			POOL_SET_SLOT(result, __MAX_FREELIST_SIZE);
+			return POOL_EXPOSE_POINTER(result);
 		}
 		//
 	}
@@ -86,19 +89,18 @@ void* allocate(pool_t *palloc, size_t x)
 // 接受的指针必须是从allocate出来的～～～否则后果难料啊。
 void deallocate(pool_t *palloc, void *p)
 {
-	if (p){
-		pool_node_t *q = (pool_node_t *)POOL_RECOVER_POINTER(p);
-		size_t slot = _get_node_slot(q);
-		if (palloc && slot < __FREELIST_SIZE){
-			// 这里是头部插入。
-			pool_node_t *volatile *my_free_list;
-			my_free_list = palloc->free_list + slot;
-			q->free_list_link = *my_free_list;
-			*my_free_list = q;
-		}else{
-			// 直接free
-			free(q);
-		}
+	pool_node_t *q = (pool_node_t *)POOL_RECOVER_POINTER(p);
+	size_t slot = POOL_GET_SLOT(q);//_get_node_slot(q);
+	if (slot < __FREELIST_SIZE){
+		// 这里是头部插入。
+		pool_node_t *volatile *my_free_list;
+		my_free_list = palloc->free_list + slot;
+		q->free_list_link = *my_free_list;
+		*my_free_list = q;
+	}
+	else{
+		// 直接free
+		free(q);
 	}
 }
 
@@ -138,35 +140,35 @@ size_t size_of_slot(int slot)
 }
 #endif
 
-static inline
-void _set_node_slot(pool_node_t *p, unsigned int slot)
-{
-	for (int i = __SLOT_INFO_BYTES - 1, j = 0; i >= 0; --i, ++j)
-	{
-		p->slot[i] = (unsigned char)(slot >> j * 8);
-	}
-	return;
-}
+// static inline
+// void _set_node_slot(pool_node_t *p, unsigned int slot)
+// {
+// 	for (int i = __SLOT_INFO_BYTES - 1, j = 0; i >= 0; --i, ++j)
+// 	{
+// 		p->slot[i] = (unsigned char)(slot >> j * 8);
+// 	}
+// 	return;
+// }
 
-static inline
-unsigned int _get_node_slot(pool_node_t *p)
-{
-	unsigned int slot = 0;
-	for (int i = 0, j = __SLOT_INFO_BYTES - 1; i < __SLOT_INFO_BYTES; ++i, --j)
-	{
-		slot |= (unsigned int)(p->slot[i] << j * 8);
-	}
-	return slot;
-}
+// static inline
+// unsigned int _get_node_slot(pool_node_t *p)
+// {
+// 	unsigned int slot = 0;
+// 	for (int i = 0, j = __SLOT_INFO_BYTES - 1; i < __SLOT_INFO_BYTES; ++i, --j)
+// 	{
+// 		slot |= (unsigned int)(p->slot[i] << j * 8);
+// 	}
+// 	return slot;
+// }
 
-static int _refill(pool_t *palloc, size_t n)
+static int __refill(pool_t *palloc, size_t n)
 {
 	int nobjs = __REFILL_CHUNK_SIZE;
 
 	// chunk 是 nobjs 个大小为 n 的block。
 	// _chunk_alloc 后返回 nobjs 是获得块的个数。
 
-	char *chunk = _chunk_alloc(palloc, n, &nobjs);
+	char *chunk = __chunk_alloc(palloc, n, &nobjs);
 	if (0 == chunk)
 	{
 		// 拿不到任何内存
@@ -210,7 +212,7 @@ static int _refill(pool_t *palloc, size_t n)
  *  4 再递归调用自己看看内存池还有没有。
  */
 
-static char* _chunk_alloc(pool_t *palloc, size_t size, int *nobjs)
+static char* __chunk_alloc(pool_t *palloc, size_t size, int *nobjs)
 {
 	char *result;
 	size_t total_bytes = size * (*nobjs);
@@ -292,7 +294,7 @@ static char* _chunk_alloc(pool_t *palloc, size_t size, int *nobjs)
 					palloc->start_free = (char *)p;
 					palloc->end_free = palloc->start_free + i;
 					// 释放完了，继续调用自己看看，mem pool 里面够不够内存返回。
-					return (_chunk_alloc(palloc, size, nobjs));
+					return (__chunk_alloc(palloc, size, nobjs));
 				}
 			}
 			//到了这里一点内存也没有了。只能返回空null
@@ -302,7 +304,7 @@ static char* _chunk_alloc(pool_t *palloc, size_t size, int *nobjs)
 		// 申请到内存,下次多申请一点
 		palloc->heap_size += bytes_to_get;
 		palloc->end_free = palloc->start_free + bytes_to_get;
-		return (_chunk_alloc(palloc, size, nobjs));
+		return (__chunk_alloc(palloc, size, nobjs));
 	}
 }
 
