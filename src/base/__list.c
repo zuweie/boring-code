@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-10-29 10:23:02
+ * @LastEditTime: 2020-11-05 10:04:26
  * @LastEditors: Please set LastEditors
  */
 
@@ -31,7 +31,7 @@ static iterator_t _move(iterator_t it, int step)
 
 static iterator_t _get_iter(void *refer, void* list) 
 {
-    return get_iterator(refer, list, _move);
+    return __iterator(refer, list, _move);
 }
 /** iter function **/
 

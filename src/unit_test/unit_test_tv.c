@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 21:41:25
- * @LastEditTime: 2020-10-16 07:32:37
+ * @LastEditTime: 2020-11-07 08:42:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_tv.c
@@ -69,7 +69,26 @@ static void test_tv_value_cmp (void)
     CU_ASSERT_TRUE(Tv_cmpf(v1,v2)==0);
 }
 
+static void test_tv_value_assign (void) 
+{
+    type_value_t t1 = int_vtype(1024);
+    int v1 = vtype_int(t1);
 
+    type_value_t t2 = float_vtype(10.24f);
+    float v2 = vtype_float(t2);
+
+    type_value_t t3 = pointer_vtype("hello word");
+    char* v3 = vtype_pointer(t3);
+
+    
+    printf("\n\n\n\n\n");
+    printf("v1: %d\n", v1);
+    printf("v2: %f\n", v2);
+    printf("v3: %s\n", v3);
+    printf("\n\n\n\n");
+    
+    CU_ASSERT_TRUE(1);
+}
 
 int do_tv_test(void) 
 {
@@ -90,5 +109,8 @@ int do_tv_test(void)
         return CU_get_error();
     }
 
-    
+    if (NULL == CU_add_test(pSuite, "test tv assign", test_tv_value_assign) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }

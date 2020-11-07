@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-10-27 09:00:04
+ * @LastEditTime: 2020-11-05 10:05:26
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -480,7 +480,7 @@ static iterator_t _move(iterator_t it, int step)
 
 static iterator_t _get_iter(void* refer, void* tree) 
 {
-    return get_iterator(refer, tree, _move);
+    return __iterator(refer, tree, _move);
 }
 /** iterator function **/
 

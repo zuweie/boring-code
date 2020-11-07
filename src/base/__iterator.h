@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2020-10-16 07:12:51
+ * @LastEditTime: 2020-11-05 10:14:17
  * @LastEditors: Please set LastEditors
  */
 #ifndef _ITERATOR_H_
@@ -42,16 +42,16 @@ struct _iterator {
     void* container;
 };
 
-static inline 
-iterator_t get_iterator(void* __refer, void* __container, iterator_t (*__move)(iterator_t, int))
-{
-    iterator_t it = {
-        .move      = (__move),
-        .reference = (__refer),
-        .container = (__container)
-    };
-    return it;
-}
+#define __iterator(__refer, __container, __move) \
+    ({ \
+        iterator_t it = { \
+            .move = (__move), \
+            .reference = (__refer), \
+            .container = (__container), \
+        }; \
+        it; \
+    })
+    
 iterator_t __null_iterator;
 
 #endif
