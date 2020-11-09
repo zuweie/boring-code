@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-11-05 10:04:59
+ * @LastEditTime: 2020-11-09 14:43:06
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -34,13 +34,13 @@ static iterator_t _get_iter (void* refer, void* vec) {
 static iterator_t _vector_first (container_t* container) 
 {
     vector_t* vec = container;
-    return _get_iter(vec->_data, vec);
+    return __iterator(vec->_data, vec, _move);
 }
 
 static iterator_t _vector_last (container_t* container) 
 {
     vector_t* vec = container;
-    return _get_iter((vec->_data + vec->_size -1), vec);
+    return __iterator((vec->_data + vec->_size -1), vec, _move);
 }
 
 static iterator_t _vector_search (container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)) 

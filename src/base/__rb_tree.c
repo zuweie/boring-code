@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-11-05 10:05:26
+ * @LastEditTime: 2020-11-09 15:02:54
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -464,7 +464,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
 /** iterator function **/
 
-static iterator_t _get_iter(void* refer, void* tree);
+//static iterator_t _get_iter(void* refer, void* tree);
 
 static iterator_t _move(iterator_t it, int step) 
 {
@@ -475,13 +475,12 @@ static iterator_t _move(iterator_t it, int step)
         if (next>0) pnode = __tree_successor(tree, pnode);
         else if (next<0) pnode = __tree_predecessor(tree, pnode);
     }
-    return _get_iter(pnode, tree);
+    return iterator_set_reference(it, pnode);
 }
-
-static iterator_t _get_iter(void* refer, void* tree) 
-{
-    return __iterator(refer, tree, _move);
-}
+// static iterator_t _get_iter(void* refer, void* tree) 
+// {
+//     return __iterator(refer, tree, _move);
+// }
 /** iterator function **/
 
 
@@ -491,21 +490,21 @@ static iterator_t _rb_tree_first(container_t* container)
 {
     rb_tree_t* tree = container;
     rb_tree_node_t* pnode = __tree_minimum(tree, tree->_root);
-    return _get_iter(pnode, container);
+    return __iterator(pnode, container,_move);
 }
 
 static iterator_t _rb_tree_last(container_t* container) 
 {
     rb_tree_t* tree = container;
     rb_tree_node_t* pnode = __tree_maximun(tree, tree->_root);
-    return _get_iter(pnode, container);
+    return __iterator(pnode, container, _move);
 }
 
 static iterator_t _rb_tree_search(container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)) 
 {
     rb_tree_t* tree = container;
     rb_tree_node_t* p = __rb_tree_search(tree, tree->_root, find, NULL);
-    return _get_iter(p, container);
+    return __iterator(p, container, _move);
 }
 
 static int _rb_tree_set(container_t* container, type_value_t data, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t))
@@ -562,11 +561,11 @@ int rb_tree_destroy(container_t* tree) {
     return 0;
 }
 iterator_t rb_tree_root(rb_tree_t* tree) {
-    return _get_iter(tree->_root, tree);
+    return __iterator(tree->_root, tree, _move);
 }
 
 iterator_t rb_tree_null(rb_tree_t* tree) 
 {
-    return _get_iter(_null(tree), tree);
+    return __iterator(_null(tree), tree, _move);
 } 
 /** container function **/

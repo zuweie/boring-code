@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-11-05 10:04:26
+ * @LastEditTime: 2020-11-09 14:41:27
  * @LastEditors: Please set LastEditors
  */
 
@@ -15,7 +15,7 @@
 #include "base/operate/__sort.h"
 #include "base/operate/__wring.h"
 /** iter function **/
-static iterator_t _get_iter (void* refer, void* list);
+//static iterator_t _get_iter (void* refer, void* list);
 
 static iterator_t _move(iterator_t it, int step)
 {
@@ -29,22 +29,22 @@ static iterator_t _move(iterator_t it, int step)
 }
 
 
-static iterator_t _get_iter(void *refer, void* list) 
-{
-    return __iterator(refer, list, _move);
-}
+// static iterator_t _get_iter(void *refer, void* list) 
+// {
+//     return __iterator(refer, list, _move);
+// }
 /** iter function **/
 
 /** container function **/
 
 static iterator_t _list_first (container_t* plist)
 {
-    return _get_iter(list_first(plist), plist);
+    return __iterator(list_first(plist), plist, _move);
 }
 
 static iterator_t _list_last (container_t* plist)
 {
-    return _get_iter(list_last(plist), plist);
+    return __iterator(list_last(plist), plist, _move);
 }
 
 static iterator_t _list_search (container_t* container, iterator_t offset, type_value_t find, int(compare)(type_value_t data1, type_value_t data2))
