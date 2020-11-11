@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-10-26 22:50:41
+ * @LastEditTime: 2020-11-11 10:44:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -217,6 +217,92 @@ static void test_list_wring(void)
     List_(list, NULL);
 }
 
+static void test_list(void) 
+{
+    printf("n\n\n测试 list, 插入10个整数: \n");
+    list_t* list = list_create();
+    container_insert_tail(list, int_vtype(1));
+    container_insert_tail(list, int_vtype(2));
+    container_insert_tail(list, int_vtype(3));
+    container_insert_tail(list, int_vtype(4));
+    container_insert_tail(list, int_vtype(5));
+    container_insert_tail(list, int_vtype(6));
+    container_insert_tail(list, int_vtype(7));
+    container_insert_tail(list, int_vtype(8));
+    container_insert_tail(list, int_vtype(9));
+    container_insert_tail(list, int_vtype(10));
+
+    for(iterator_t first = container_first(list); !iterator_equal(first, container_tail(list)); first=iterator_next(first)) {
+        type_value_t t = iterator_dereference(first);
+        int v = vtype_int(t);
+        printf(" %d ", v);
+    }
+
+    printf("\n\n删除第一和最后一个元素:\n");
+    container_remove_first(list, NULL);
+    container_remove_last(list, NULL);
+
+    for(iterator_t first = container_first(list); !iterator_equal(first, container_tail(list)); first=iterator_next(first)) {
+        type_value_t t = iterator_dereference(first);
+        printf(" %d ", vtype_int(t));
+    }
+    list_destroy(list);
+
+    list_t* list2 = list_create();
+    printf("\n\n\n\n测试 list2, 插入10个浮点: \n");
+    container_insert_tail(list2, float_vtype(1.1));
+    container_insert_tail(list2, float_vtype(2.2));
+    container_insert_tail(list2, float_vtype(3.3));
+    container_insert_tail(list2, float_vtype(4.4));
+    container_insert_tail(list2, float_vtype(5.5));
+    container_insert_tail(list2, float_vtype(6.6));
+    container_insert_tail(list2, float_vtype(7.7));
+    container_insert_tail(list2, float_vtype(8.8));
+    container_insert_tail(list2, float_vtype(9.9));
+    container_insert_tail(list2, float_vtype(10.11));
+
+    for(iterator_t first = container_first(list2); !iterator_equal(first, container_tail(list2)); first=iterator_next(first)) {
+        type_value_t t = iterator_dereference(first);
+        printf(" %f ", vtype_float(t));
+    }
+
+    printf("\n\n 删除第一和最后一个元素:\n");
+    container_remove_first(list2, NULL);
+    container_remove_last(list2, NULL);
+
+    for(iterator_t first = container_first(list2); !iterator_equal(first, container_tail(list2)); first=iterator_next(first)) {
+        type_value_t t = iterator_dereference(first);
+        printf(" %f ", vtype_float(t));
+    }
+    list_destroy(list2);
+
+    list_t* list3 = list_create();
+    printf("\n\n\n测试 list3, 插入7个字符串 \n");
+    container_insert_tail(list3, pointer_vtype("hello6"));
+    container_insert_tail(list3, pointer_vtype("hello5"));
+    container_insert_tail(list3, pointer_vtype("hello4"));
+    container_insert_tail(list3, pointer_vtype("hello3"));
+    container_insert_tail(list3, pointer_vtype("hello2"));
+    container_insert_tail(list3, pointer_vtype("hello1"));
+    container_insert_tail(list3, pointer_vtype("hello0"));
+
+    for(iterator_t first = container_first(list3); !iterator_equal(first, container_tail(list3)); first=iterator_next(first)) {
+        type_value_t t = iterator_dereference(first);
+        printf(" %s ", vtype_pointer(t));
+    }
+
+    printf("\n\n 删除第一和最后一个元素:\n");
+    container_remove_first(list3, NULL);
+    container_remove_last(list3, NULL);
+
+    for(iterator_t first = container_first(list3); !iterator_equal(first, container_tail(list3)); first=iterator_next(first)) {
+        type_value_t t = iterator_dereference(first);
+        printf(" %s ", vtype_pointer(t));
+    }
+    list_destroy(list3);
+    printf("\n\n\n\n");
+};
+
 int do_list_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -252,6 +338,11 @@ int do_list_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test List wring", test_list_wring) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test List", test_list) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

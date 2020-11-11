@@ -9,6 +9,7 @@ set (SOURCE
     src/unit_test/unit_test_list.c
     src/unit_test/unit_test_hashmap.c
     src/unit_test/unit_test_mempool.c
+    src/unit_test/unit_test_coo_matrix.c
     src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c

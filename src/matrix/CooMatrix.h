@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:48
- * @LastEditTime: 2020-10-28 20:12:11
+ * @LastEditTime: 2020-11-11 13:03:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.h
@@ -9,15 +9,15 @@
 #ifndef _COO_MATRIX_H_
 #define _COO_MATRIX_H_
 
-#include "__matrix.h"
+#include "imatrix.h"
+#include "container/Map.h"
 
-#define COOHASH(x, y) \
-    ({size_t sum = x + y; sum = sum * (sum + 1) / 2 + x;})
 
 typedef struct _coo_matrix {
     imatrix_t matrix;
-    size_t x;
-    size_t y;
+    Map coo;
+    size_t columns;
+    size_t rows;
 }CooMatrix;
 
 CooMatrix* CooMatrix_create(size_t x, size_t y);

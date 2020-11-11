@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-11-03 09:34:38
+ * @LastEditTime: 2020-11-11 14:59:45
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -318,6 +318,7 @@ int main ()
     do_tv_test();
     do_hashmap_test();
     do_memory_pool_test();
+    do_coo_matrix_test();
     
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();

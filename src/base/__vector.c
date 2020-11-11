@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-11-09 14:43:06
+ * @LastEditTime: 2020-11-10 11:24:20
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -15,18 +15,11 @@
 #include "base/operate/__sort.h"
 #include "base/operate/__wring.h"
 /** iterator function **/
-static iterator_t _get_iter (void* refer, void* container);
 
 static iterator_t _move (iterator_t it, int step) 
 {
     type_value_t* pv = iterator_reference(it);
-
-    //return _get_iter((pv + step), iterator_container(it));
     return iterator_set_reference(it, (pv+step));
-}
-
-static iterator_t _get_iter (void* refer, void* vec) {
-    return __iterator(refer, vec, _move);
 }
 /** iterator function **/
 
@@ -113,24 +106,36 @@ static int _vector_insert (container_t* container, iterator_t it, type_value_t d
 
 static int _vector_remove (container_t* container, iterator_t it, void* rdata) 
 {
-    if (!iterator_is_boundary(it)){
+    // if (!iterator_is_boundary(it)){
         
-        vector_t *vec = container;
+    //     vector_t *vec = container;
 
-        type_value_t del = iterator_dereference(it);
+    //     type_value_t del = iterator_dereference(it);
         
-        // 擦除
-        for (;!iterator_equal(it, container_last(vec));it = iterator_next(it)){
-            iterator_t it_next = iterator_next(it);
-            iterator_assign(it, it_next);
-        }
-        vec->_size--;
+    //     // 擦除
+    //     for (;!iterator_equal(it, container_last(vec));it = iterator_next(it)){
+    //         iterator_t it_next = iterator_next(it);
+    //         iterator_assign(it, it_next);
+    //     }
+    //     vec->_size--;
 
-        if (rdata) *((type_value_t*)rdata) = del;
+    //     if (rdata) *((type_value_t*)rdata) = del;
         
-        return 0;
+    //     return 0;
+    // }
+    // return -1;
+    vector_t *vec = container;
+    type_value_t del = iterator_dereference(it);
+        
+    // 擦除
+    for (;!iterator_equal(it, container_last(vec));it = iterator_next(it)){
+        iterator_t it_next = iterator_next(it);
+        iterator_assign(it, it_next);
     }
-    return -1;
+    vec->_size--;
+    if (rdata) *((type_value_t*)rdata) = del;
+        
+    return 0;
 }
 
 static int _vector_sort(container_t* container, int(*compare)(type_value_t, type_value_t)) 

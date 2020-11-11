@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2020-11-01 10:49:45
+ * @LastEditTime: 2020-11-10 12:29:47
  * @LastEditors: Please set LastEditors
  */
 #ifndef _CONTAINER_H_
@@ -41,7 +41,7 @@ typedef struct _iterator iterator_t;
 #define container_remove(container_ptr, iter, rdata) (((container_t*)(container_ptr))->remove(((container_t*)(container_ptr)), iter, rdata))
 #define container_remove_find(container_ptr, find, compare, rdata) container_remove(container_ptr, container_find(container_ptr, find, compare, rdata)) 
 #define container_remove_first(container_ptr, rdata) container_remove(container_ptr, container_first(container_ptr), rdata)
-#define container_remove_last(container_ptr, rdata) container_remove(container_ptr, container_last(container, rdata))
+#define container_remove_last(container_ptr, rdata) container_remove(container_ptr, container_last(container_ptr), rdata)
 
 // 容器测试
 #define container_has(container_ptr, find, compare) \

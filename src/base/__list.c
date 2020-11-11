@@ -87,22 +87,33 @@ static int _list_remove(container_t* container, iterator_t pos, void* rdata)
 {
     // 删除
     // 边界的东西不能移除
-    if (!iterator_is_boundary(pos)){
+    // if (!iterator_is_boundary(pos)){
 
-        list_t* list = container;
-        list_node_t* pnode = iterator_reference(pos);
+    //     list_t* list = container;
+    //     list_node_t* pnode = iterator_reference(pos);
         
-        pnode->prev->next = pnode->next;
-        pnode->next->prev = pnode->prev;
+    //     pnode->prev->next = pnode->next;
+    //     pnode->next->prev = pnode->prev;
 
-        // 将要删除的值返回出去。
-        if (rdata) *((type_value_t*)rdata) = iterator_dereference(pos);
-        // 回收
-        deallocate(container_mem_pool(container), pnode);
-        list->_size--;
-        return 0; 
-    }
+    //     // 将要删除的值返回出去。
+    //     if (rdata) *((type_value_t*)rdata) = iterator_dereference(pos);
+    //     // 回收
+    //     deallocate(container_mem_pool(container), pnode);
+    //     list->_size--;
+    //     return 0; 
+    // }
 
+    list_t* list = container;
+    list_node_t* pnode = iterator_reference(pos);
+        
+    pnode->prev->next = pnode->next;
+    pnode->next->prev = pnode->prev;
+
+    // 将要删除的值返回出去。
+    if (rdata) *((type_value_t*)rdata) = iterator_dereference(pos);
+    // 回收
+    deallocate(container_mem_pool(container), pnode);
+    list->_size--;
     return 0;
 }
 

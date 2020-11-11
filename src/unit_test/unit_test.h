@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2020-11-03 09:28:51
+ * @LastEditTime: 2020-11-11 14:46:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -77,4 +77,5 @@ int do_list_test(void);
 int do_tv_test(void);
 int do_hashmap_test(void);
 int do_memory_pool_test(void);
+int do_coo_matrix_test(void);
 #endif
