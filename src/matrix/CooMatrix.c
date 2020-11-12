@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2020-11-11 15:15:37
+ * @LastEditTime: 2020-11-11 16:01:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
@@ -17,7 +17,7 @@ int Keyhasher(Tv v, size_t slot_t)
    size_t col = t2i(entity->tv[1]);
    size_t sum = row + col;
    sum = sum * (sum+1)/2 + row;
-   return sum;
+   return sum % slot_t;
 }
 
 static inline 
@@ -35,7 +35,7 @@ float get(CooMatrix* matrix, size_t x, size_t y)
 static inline 
 int set(CooMatrix* matrix, size_t x, size_t y, float v) 
 {
-    Map_set2(matrix->coo, x, y, v);
+    Map_set2(matrix->coo, i2t(x), i2t(y), f2t(v));
     return 0;
 }
 
@@ -57,7 +57,7 @@ CooMatrix* CooMatrix_load(size_t x, size_t y, float* data)
     for (int i=0; i<x; ++i) {
         for (int j=0; j<y; ++j) {
             if (raw[i][j] != 0.0) {
-                Matrix_set(matrix, x, y, raw[i][j]);
+                Matrix_set(matrix, i, j, raw[i][j]);
             }
         }
     }

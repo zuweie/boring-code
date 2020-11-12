@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-11 14:37:11
- * @LastEditTime: 2020-11-11 15:16:53
+ * @LastEditTime: 2020-11-11 16:02:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_coo_matrix.c
@@ -13,7 +13,7 @@
 
 #define PR_MATRIX(matrix_ptr, row, col) do { \
     for (int i=0; i<row; ++i) { \
-        for (int j=0; i<col; ++j) { \
+        for (int j=0; j<col; ++j) { \
             printf("%02f ", Matrix_get(matrix_ptr, i, j)); \
         } \
         printf("\n"); \
@@ -32,8 +32,9 @@ static int suite_success_clean (void)
 
 static void test_coo_matrix_set_get (void)
 {
-    extern float* test_data_float;
+    extern float test_data_float[TEST_DATA_SIZE];
     CooMatrix* matrix = CooMatrix_load(10, 10, test_data_float);
+    printf("\n\n");
     PR_MATRIX(matrix, 10, 10);
     CooMatrix_destroy(matrix);
     CU_ASSERT_TRUE(1);
