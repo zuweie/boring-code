@@ -10,6 +10,7 @@ set (SOURCE
     src/unit_test/unit_test_hashmap.c
     src/unit_test/unit_test_mempool.c
     src/unit_test/unit_test_coo_matrix.c
+    src/unit_test/unit_test_dense_matrix.c
     src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c
@@ -20,8 +21,6 @@ set (SOURCE
     src/container/Entity.c
     src/graph/graph_search.c
     src/graph/graph.c
-    src/matrix/matrix.c
-    src/matrix/tsmatrix.c
     src/matrix/CooMatrix.c
     src/matrix/DenseMatrix.c
     src/mem_pool/__mem_pool.c

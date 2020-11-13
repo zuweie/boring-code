@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-10-27 00:53:52
+ * @LastEditTime: 2020-11-12 16:06:16
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -126,11 +126,11 @@ edge_t* Graph_getEdge(vertex_t* from, Tv to_id) {
     return It_valid(i) ? It_getptr(i) : NULL;
 }
 
-int Graph_getEdgeMatrix(Graph* graph, TSMatrix* tsmatrix) 
+int Graph_getEdgeMatrix(Graph* graph, CooMatrix* matrix) 
 {
     
     size_t size = CN_size(graph->vertexes);
-    if (tsmatrix->col == size && tsmatrix->row == size ) {
+    if (Matrix_rows(matrix) == size && Matrix_cols(matrix) == size ) {
         Graph_indexingVertexes(graph);
 
         //Matrix* matrix = Matrix_create(size, size);
@@ -150,7 +150,8 @@ int Graph_getEdgeMatrix(Graph* graph, TSMatrix* tsmatrix)
                 int x = pvertex->indexing;
                 int y = pedge->to->indexing;
 
-                TSMatrix_set(tsmatrix, x, y, 1.0f);
+                //TSMatrix_set(tsmatrix, x, y, 1.0f);
+                Matrix_set(matrix, x, y, 1.0f);
             }
         }
 
@@ -159,18 +160,21 @@ int Graph_getEdgeMatrix(Graph* graph, TSMatrix* tsmatrix)
     return -1;
 } 
 
-int Graph_addEdgeByMatrix(Graph* graph, TSMatrix* tsmatrix, float weight)
+int  Graph_addEdgeByMatrix(Graph* graph, CooMatrix* coomatrix, float weight)
 {
     size_t size = CN_size(graph->vertexes);
-    if (tsmatrix->col == size && tsmatrix->row == size ) {
+    if (Matrix_rows(coomatrix) == size && Matrix_cols(coomatrix) == size ) {
         Tv arr[size];
         CN_to_arr(graph->vertexes, arr);
-        for (It first = CN_first(tsmatrix->elems); !It_equal(first, CN_tail(tsmatrix->elems)); first = It_next(first)) {
-            ts_elem* elem = It_getptr(first);
-            vertex_t* from = t2p(arr[elem->position.x]);
-            vertex_t* to   = t2p(arr[elem->position.y]);
-            Graph_addEdge(from, to, weight);
-        }
+       for (It first = CN_first(coomatrix->coo); !It_equal(first, CN_tail(coomatrix->coo)); first = It_next(first)) {
+           Entity* entity = It_getptr(first);
+           size_t x = t2i(entity->tv[0]);
+           size_t y = t2i(entity->tv[1]);
+           vertex_t* from = t2p(arr[x]);
+           vertex_t* to   = t2p(arr[y]);
+           Graph_addEdge(from, to, weight);
+       }
+       CN_foreach(coomatrix->coo, );
        return 0;
     }
     return -1;

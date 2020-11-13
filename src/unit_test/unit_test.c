@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-11-11 14:59:45
+ * @LastEditTime: 2020-11-12 15:45:30
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -18,7 +18,6 @@
 #include "container/Tv.h"
 #include "graph/graph.h"
 #include "graph/graph_search.h"
-#include "matrix/matrix.h"
 #include "unit_test.h"
 #include "test_data.h"
 
@@ -319,7 +318,8 @@ int main ()
     do_hashmap_test();
     do_memory_pool_test();
     do_coo_matrix_test();
-    
+    do_dense_matrix_test();
+
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();
