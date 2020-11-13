@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2020-11-13 11:28:24
+ * @LastEditTime: 2020-11-13 22:54:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -30,21 +30,21 @@ void get_row(imatrix_t* matrix_ptr, size_t row_index, float data[])
     return;
 }
 
-static inline 
+static  
 float get(imatrix_t* matrix_ptr, size_t x, size_t y) 
 {
     DenseMatrix* densematrix = (DenseMatrix*) matrix_ptr;
     return ((float(*)[Matrix_cols(matrix_ptr)])(densematrix->elems))[x][y];
 }
 
-static inline 
+static  
 int set(imatrix_t* matrix_ptr, size_t x, size_t y, float v) 
 {
     DenseMatrix* densematrix = (DenseMatrix*) matrix_ptr;
     ((float(*)[Matrix_cols(matrix_ptr)])(densematrix->elems))[x][y] = v;
     return 0;
 }
-static inline 
+static  
 int trans (imatrix_t* matrix_ptr) 
 {
     DenseMatrix* denmatrix = (DenseMatrix*) matrix_ptr;
@@ -59,11 +59,16 @@ int trans (imatrix_t* matrix_ptr)
     matrix_ptr->rows = o_cols;
     return 0;
 }
+static 
+int product(imatrix_t* matrix_ptr1, imatrix_t* matrix_ptr2) 
+{
+    
+}
 
 DenseMatrix* DenseMatrix_create(size_t row, size_t col)
 {
     DenseMatrix* matrix = malloc(sizeof(DenseMatrix) + sizeof(float)*row*col);
-    initialize_matrix(matrix, get, set, trans, get_row, get_col, row, col);
+    initialize_matrix(matrix, get, set, trans, get_row, get_col, product, row, col);
     return matrix;
 }
 

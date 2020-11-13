@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-12 12:23:02
- * @LastEditTime: 2020-11-13 11:37:21
+ * @LastEditTime: 2020-11-13 12:26:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dense_matrix.c
@@ -47,6 +47,10 @@ static void test_dense_matrix_trans (void)
     extern float test_data_float[TEST_DATA_SIZE];
     DenseMatrix* matrix = DenseMatrix_load(25, 4, test_data_float);
     printf("\n\n");
+    printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
+    PR_DENSEMATRIX(matrix, Matrix_rows(matrix), Matrix_cols(matrix));
+    printf("\n\n");
+    Matrix_trans(matrix);
     printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
     PR_DENSEMATRIX(matrix, Matrix_rows(matrix), Matrix_cols(matrix));
     printf("\n\n");

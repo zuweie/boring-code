@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2020-11-13 11:03:53
+ * @LastEditTime: 2020-11-13 22:36:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
@@ -63,7 +63,7 @@ CooMatrix* CooMatrix_create(size_t rows, size_t cols)
 {
     CooMatrix* matrix = malloc(sizeof(CooMatrix));
     matrix->coo     = _Hashmap(Keyhasher);
-    initialize_matrix(matrix, get, set, get_row, get_col, trans, rows, cols);
+    //initialize_matrix(matrix, get, set, get_row, get_col, trans, rows, cols);
     return matrix;
 }
 
