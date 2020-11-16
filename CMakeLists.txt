@@ -19,7 +19,7 @@ set (SOURCE
     src/base/operate/__sort.c
     src/base/operate/__wring.c
     src/container/Entity.c
-    src/graph/graph_search.c
+    src/graph/graph_research.c
     src/graph/graph.c
     src/matrix/CooMatrix.c
     src/matrix/DenseMatrix.c

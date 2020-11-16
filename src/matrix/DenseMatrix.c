@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2020-11-13 22:54:21
+ * @LastEditTime: 2020-11-16 16:39:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -60,9 +60,18 @@ int trans (imatrix_t* matrix_ptr)
     return 0;
 }
 static 
-int product(imatrix_t* matrix_ptr1, imatrix_t* matrix_ptr2) 
+int product(imatrix_t* matrix_ptr1, imatrix_t* matrix_ptr2, imatrix_t** production) 
 {
-    
+    *production = NULL:
+
+    if (Matrix_cols(matrix_ptr1) == Matrix_rows(matrix_ptr2)) {
+        DenseMatrix* matrix = DenseMatrix_create(Matrix_rows(matrix_ptr1), Matrix_cols(matrix_ptr2));
+        // 
+        
+        *production = matrix;
+        return 0;
+    }
+    return -1;
 }
 
 DenseMatrix* DenseMatrix_create(size_t row, size_t col)
