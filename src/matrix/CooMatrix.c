@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2020-11-13 22:36:09
+ * @LastEditTime: 2020-11-18 12:51:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
  */
 #include "CooMatrix.h"
 #include "container/HashMap.h"
-
+#include "container/List.h"
 static inline 
 int Keyhasher(Tv v, size_t slot_t) 
 {
@@ -23,9 +23,9 @@ int Keyhasher(Tv v, size_t slot_t)
 static inline 
 float get(imatrix_t* matrix_ptr, size_t x, size_t y) 
 {
-    CooMatrix* coomatrix = (CooMatrix*)matrix_ptr;
+    CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
     Tv v;
-    if (Map_get2(coomatrix->coo, x, y, v) ==0)
+    if (Map_get2(cooMatrix->coo, x, y, v) ==0)
     {
         return t2f(v);
     }
@@ -36,14 +36,29 @@ float get(imatrix_t* matrix_ptr, size_t x, size_t y)
 static inline 
 int set(imatrix_t* matrix_ptr, size_t x, size_t y, float v) 
 {
-    CooMatrix* coomatrix = (CooMatrix*) matrix_ptr;
-    Map_set2(coomatrix->coo, i2t(x), i2t(y), f2t(v));
+    CooMatrix* cooMatrix = (CooMatrix*) matrix_ptr;
+    Map_set2(cooMatrix->coo, i2t(x), i2t(y), f2t(v));
     return 0;
 }
+
 
 static 
 int trans(imatrix_t* matrix_ptr) 
 {
+    CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
+    Map new_coo = _Hashmap(Keyhasher);
+    
+    for(It first = CN_first(cooMatrix->coo);!It_equal(first, CN_tail(cooMatrix->coo));first=It_next(first)) {
+        Entity* pentity = Hahsmap_node_2_entity(It_getptr(first));
+        Map_set2(new_coo, pentity->tv[1], pentity->tv[0], pentity->tv[2]);
+    }
+    
+    // release the old coo
+    Hashmap_(cooMatrix->coo);
+    cooMatrix->coo = new_coo;
+    size_t o_row = matrix_ptr->rows;
+    matrix_ptr->rows = matrix_ptr->cols;
+    matrix_ptr->cols = o_row;
     return 0;
 }
 
@@ -63,7 +78,7 @@ CooMatrix* CooMatrix_create(size_t rows, size_t cols)
 {
     CooMatrix* matrix = malloc(sizeof(CooMatrix));
     matrix->coo     = _Hashmap(Keyhasher);
-    //initialize_matrix(matrix, get, set, get_row, get_col, trans, rows, cols);
+    initialize_matrix(matrix, get, set, trans, get_row, get_col, rows, cols);
     return matrix;
 }
 

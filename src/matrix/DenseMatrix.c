@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2020-11-16 16:39:37
+ * @LastEditTime: 2020-11-17 13:30:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -60,24 +60,26 @@ int trans (imatrix_t* matrix_ptr)
     return 0;
 }
 static 
-int product(imatrix_t* matrix_ptr1, imatrix_t* matrix_ptr2, imatrix_t** production) 
-{
-    *production = NULL:
+imatrix_t* product(imatrix_t* matrix_ptr1, imatrix_t* matrix_ptr2, imatrix_t* product) 
+{  
+    // 简单大循环，算法
+    for (int i=0; i<Matrix_rows(matrix_ptr1); ++i) {
+        for (int j=0; j<Matrix_cols((matrix_ptr2)); ++j){
 
-    if (Matrix_cols(matrix_ptr1) == Matrix_rows(matrix_ptr2)) {
-        DenseMatrix* matrix = DenseMatrix_create(Matrix_rows(matrix_ptr1), Matrix_cols(matrix_ptr2));
-        // 
-        
-        *production = matrix;
-        return 0;
+            float v = 0.0f;
+            for (int k=0; k<Matrix_cols(matrix_ptr1); ++k) {
+                 v += Matrix_get(matrix_ptr1, i, k) * Matrix_get(matrix_ptr2, k, j);
+            }
+            Matrix_set(product, i, j, v);
+        }
     }
-    return -1;
+    return product;
 }
 
 DenseMatrix* DenseMatrix_create(size_t row, size_t col)
 {
     DenseMatrix* matrix = malloc(sizeof(DenseMatrix) + sizeof(float)*row*col);
-    initialize_matrix(matrix, get, set, trans, get_row, get_col, product, row, col);
+    initialize_matrix(matrix, get, set, trans, get_row, get_col, row, col);
     return matrix;
 }
 

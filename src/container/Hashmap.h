@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-29 11:33:41
- * @LastEditTime: 2020-10-29 12:57:37
+ * @LastEditTime: 2020-11-18 12:50:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -27,7 +27,12 @@ typedef hash_node_t HashNode;
     })
 
 #define Hashmap_(hm) Map_uninit(hm, hashmap, Hashmap_cleanup_entity)
-
+#define Hahsmap_node_2_entity(pnode) \
+    ({ \
+        Entity* __p_marco_entity = t2p(((HashNode*)(pnode))->entity); \
+        __p_marco_entity; \
+    })
+    
 static inline
 int Hashmap_cleanup_entity (Tv v) 
 {

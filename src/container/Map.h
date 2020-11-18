@@ -1,15 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-10-29 12:56:48
+ * @LastEditTime: 2020-11-18 12:31:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
  */
 #ifndef _MAP_H_
 #define _MAP_H_
-#include <stdio.h>
-#include <string.h>
 #include "Cn.h"
 #include "base/__rb_tree.h"
 #include "Entity.h"
@@ -23,10 +21,10 @@ typedef Entity* (*Expose_Entity)(Tv);
 
 #define Map_hasx(con, x, ...)     \
     ({                            \
-        Tv t[x];                  \
-        Entity entity;            \
-        TempEntity(&entity, x, x, t, __VA_ARGS__); \
-        int ret = CN_has(con, p2t(&entity));       \
+        Tv __marco_tv[x];                  \
+        Entity __marco_entity;            \
+        TempEntity(&__marco_entity, x, x, __marco_tv, __VA_ARGS__); \
+        int ret = CN_has(con, p2t(&__marco_entity));       \
         ret; \
     })
 #define Map_has(con, key) Map_hasx(con, 1, key)
@@ -35,10 +33,10 @@ typedef Entity* (*Expose_Entity)(Tv);
  //CN_has(con, key)
 
 #define Map_setx(con, x, y, ...) do {          \
-    Tv t[x];                                   \
-    Entity entity;                             \
-    TempEntity(&entity, x, y, t, __VA_ARGS__); \
-    CN_set(con, p2t(&entity));                 \
+    Tv __marco_tv[x];                                   \
+    Entity __macro_entity;                             \
+    TempEntity(&__macro_entity, x, y, __marco_tv, __VA_ARGS__); \
+    CN_set(con, p2t(&__macro_entity));                 \
 } while(0)
 
 #define Map_set(con, key, value) Map_setx(con, 2, 1, key, value)
@@ -48,10 +46,10 @@ typedef Entity* (*Expose_Entity)(Tv);
 #define Map_getx(con, value, x, ...)   \
     ({                                     \
         int ret = -1;                      \
-        Tv t[x];                           \
-        Entity entity;                     \
-        TempEntity(&entity, x, x, t, __VA_ARGS__);  \
-        It it = CN_search(con, __null_iterator, p2t(&entity)); \
+        Tv __marco_tv[x];                           \
+        Entity __marco_entity;                     \
+        TempEntity(&__marco_entity, x, x, __marco_tv, __VA_ARGS__);  \
+        It it = CN_search(con, __null_iterator, p2t(&__marco_entity)); \
         if (It_valid(it)) {                         \
             Expose_Entity exposer                   \
                 = (Expose_Entity) c_extra_func(con);\
@@ -65,22 +63,22 @@ typedef Entity* (*Expose_Entity)(Tv);
 #define Map_get2(con, key1, key2, value) Map_getx(con, value, 2, key1, key2)
 #define Map_get3(con, key1, key2, key3, value) Map_getx(con, value, 3, key1, key2, key3)
 
-#define Map_delx(con, rdata, x, ...)        \
+#define Map_delx(con, prdata, x, ...)        \
     ({                                      \
         int ret = -1;                       \
-        Tv t[x];                            \
-        Entity entity;                      \
-        Tv* prdata = rdata;                 \
-        TempEntity(&entity, x, x, t, __VA_ARGS__);        \
+        Tv __marco_tv[x];                            \
+        Entity __marco_entity;                      \
+        TempEntity(&__marco_entity, x, x, __marco_tv, __VA_ARGS__);        \
         Tv rentity;                                       \
-        ret = CN_rm_target(con, p2t(&entity), &rentity);  \
+        ret = CN_rm_target(con, p2t(&__marco_entity), &rentity);  \
         if (ret == 0) {                                   \
             Entity* pentity = t2p(rentity);               \
-            if (prdata)                                   \
-                *prdata = pentity->tv[pentity->value_index]; \
+            Tv* ttprdata = prdata;                        \
+            if (ttprdata)                                   \
+                *ttprdata = pentity->tv[pentity->value_index]; \
             free(pentity);                              \
         }                                               \ 
-        ret;\
+        ret;                                            \
     })
 
 #define Map_del(con, key, rdata) Map_delx(con, rdata, 1, key)

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-11-12 16:06:16
+ * @LastEditTime: 2020-11-18 10:48:41
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -166,7 +166,7 @@ int  Graph_addEdgeByMatrix(Graph* graph, CooMatrix* coomatrix, float weight)
     if (Matrix_rows(coomatrix) == size && Matrix_cols(coomatrix) == size ) {
         Tv arr[size];
         CN_to_arr(graph->vertexes, arr);
-       for (It first = CN_first(coomatrix->coo); !It_equal(first, CN_tail(coomatrix->coo)); first = It_next(first)) {
+        for (It first = CN_first(coomatrix->coo); !It_equal(first, CN_tail(coomatrix->coo)); first = It_next(first)) {
            Entity* entity = It_getptr(first);
            size_t x = t2i(entity->tv[0]);
            size_t y = t2i(entity->tv[1]);
