@@ -2,10 +2,11 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-11-18 10:48:41
+ * @LastEditTime: 2020-11-19 15:42:49
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
+#include "container/HashMap.h"
 #include "graph.h"
 
 static vertex_t* _create_vertex(Graph* graph, Tv vertex) 
@@ -14,14 +15,10 @@ static vertex_t* _create_vertex(Graph* graph, Tv vertex)
     vertex_t* v =(vertex_t*) malloc (sizeof (vertex_t));
     v->vertex_id = vertex;
     // 这个找
-    v->edges = _List(graph->compare_edge);
+    v->edges = _List(graph->match_edge);
     return v;
 }
-static int _free_vertex(vertex_t* vertex) {
-    List_(vertex->edges, NULL);
-    free(vertex);
-    return 0;
-}
+
 static edge_t* _create_edge(vertex_t* to, float weight) 
 {
     // 生成邻接表的节点
@@ -30,37 +27,32 @@ static edge_t* _create_edge(vertex_t* to, float weight)
     node->weight = weight;
     return node;
 }
-static int _free_edge (edge_t* pnode) 
-{
-    free(pnode);
-}
 
-int Graph_init(Graph* graph, int(*find_vertex)(Tv, Tv), int(*find_link)(Tv, Tv)) 
+Graph* Graph_create(int(*match_vertex)(Tv, Tv), int(*match_edge)(Tv, Tv)) 
 {
     // 初始化图
-    graph->vertexes = _List(find_vertex);
-    graph->compare_edge   = find_link;
-    graph->compare_vertex = find_vertex;
-    return 0;
+    Graph* graph = (Graph*) malloc (sizeof(Graph));
+    graph->vertexes = _List(match_vertex);
+    graph->match_edge   = match_edge;
+    graph->match_vertex = match_vertex;
+    return graph;
 } 
 
 
-int Graph_uninit(Graph* graph) 
+int Graph_destroy(Graph* graph) 
 {
-    // 把图给干掉了
-    
     // 把顶点删了。
     for (It first = CN_first(graph->vertexes); 
         !It_equal(first, CN_tail(graph->vertexes)); 
         first = It_next(first)) {
 
-            vertex_t* pv = t2p(It_dref(first));
-
+            vertex_t* pv = It_getptr(first);
             Graph_delVertex(pv);
     }
     List_(graph->vertexes, NULL);
-    graph->compare_edge   = NULL;
-    graph->compare_vertex = NULL;
+    graph->match_edge   = NULL;
+    graph->match_vertex = NULL;
+    free(graph);
     return 0;
 }
 
@@ -73,21 +65,22 @@ int Graph_addVertex(Graph* graph, Tv vertex)
 int Graph_addEdge(vertex_t* from, vertex_t* to, float weight)
 {
     // 首先得找一下 开始点 到 终结点 是不是在图中。
-    if (Graph_getEdge(from, to->vertex_id) == NULL) {
+    //if (Graph_getEdge(from, to->vertex_id) == NULL) {
         edge_t *p = _create_edge(to, weight);
         return CN_add_tail(from->edges, p2t(p));
-    }
+    //}
 }
 
 int Graph_delVertex(vertex_t* vertex)
 {
     Tv rnode;
-    while (CN_rm_last(vertex->edges, &rnode) != -1)
-    {
-        _free_edge(t2p(rnode));
+    // free the edge of the vertex
+    It it = CN_last(vertex->edges);
+    while (CN_rm_last(vertex->edges, &rnode) != -1){
+        free(t2p(rnode));
     }
-
-    _free_vertex(vertex);
+    List_(vertex->edges, NULL);
+    free(vertex);
     return 0;
 }
 
@@ -96,7 +89,7 @@ int Graph_delEdge(vertex_t* from, vertex_t* to)
     Tv rnode;
     if (CN_rm_target(from->edges, to->vertex_id, &rnode) != -1)
     {
-        _free_edge(t2p(rnode));
+        free(t2p(rnode));
     }
     return 0;
 }
@@ -160,21 +153,21 @@ int Graph_getEdgeMatrix(Graph* graph, CooMatrix* matrix)
     return -1;
 } 
 
-int  Graph_addEdgeByMatrix(Graph* graph, CooMatrix* coomatrix, float weight)
+int  Graph_addEdgeByMatrix(Graph* graph, CooMatrix* coomatrix)
 {
     size_t size = CN_size(graph->vertexes);
     if (Matrix_rows(coomatrix) == size && Matrix_cols(coomatrix) == size ) {
         Tv arr[size];
         CN_to_arr(graph->vertexes, arr);
         for (It first = CN_first(coomatrix->coo); !It_equal(first, CN_tail(coomatrix->coo)); first = It_next(first)) {
-           Entity* entity = It_getptr(first);
+           Entity* entity = Hahsmap_node_2_entity(It_getptr(first));
            size_t x = t2i(entity->tv[0]);
            size_t y = t2i(entity->tv[1]);
+           float  w = t2f(entity->tv[2]);
            vertex_t* from = t2p(arr[x]);
            vertex_t* to   = t2p(arr[y]);
-           Graph_addEdge(from, to, weight);
+           Graph_addEdge(from, to, w);
        }
-       CN_foreach(coomatrix->coo, );
        return 0;
     }
     return -1;

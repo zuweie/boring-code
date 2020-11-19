@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-11-16 15:12:16
+ * @LastEditTime: 2020-11-19 22:24:10
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -36,8 +36,9 @@ static void _init_dfs_exploring(Tv tv)
 
 static void _free_exploring (Tv tv) 
 {
-    vertex_t* vertex =  t2p(tv);//It_getptr(pos);
-    free (vertex->exploring);
+    vertex_t* vertex =  t2p(tv);
+    if (vertex->exploring)
+        free (vertex->exploring);
     vertex->exploring = NULL;
 }
 
@@ -87,7 +88,7 @@ static int _dfs_visit(vertex_t* pu, int* time)
 {
     dfs_explor_t* pudfs = (dfs_explor_t*) pu->exploring;
     pudfs->color = _grp_gray;
-    pudfs->d_time = *time + 1;
+    pudfs->d_time = ++(*time);
     // 访问邻接表
     for(It first=CN_first(pu->edges); !It_equal(first, CN_tail(pu->edges)); first=It_next(first)) {
         edge_t* pv   = It_getptr(first);
@@ -135,6 +136,13 @@ int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr)
     }
     return 0;
 }
+
+// 计算有向图的强连通分支
+Graph* grp_calulate_strong_connected_component(Graph* graph)
+{
+    
+}
+
 
 void grp_cleanup_exploring_info(Graph* graph) 
 {

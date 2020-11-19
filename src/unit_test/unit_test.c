@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-11-16 15:16:39
+ * @LastEditTime: 2020-11-19 11:47:12
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -20,18 +20,6 @@
 #include "graph/graph_research.h"
 #include "unit_test.h"
 #include "test_data.h"
-
-int find_vertex(Tv v1, Tv v2) 
-{
-    vertex_t* pv = t2p(v1);
-    //return compare_int(pv->vertex_id, v2);
-}
-
-int find_edge(Tv v1, Tv v2) 
-{
-    edge_t* pl = t2p(v1);
-    //return compare_int(pl->to->vertex_id, v2);
-}
 
 void 
 test_mem_attr(void) {
@@ -319,7 +307,8 @@ int main ()
     do_memory_pool_test();
     do_coo_matrix_test();
     do_dense_matrix_test();
-
+    do_graph_test();
+    
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();

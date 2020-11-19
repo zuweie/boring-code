@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-11-18 11:18:36
+ * @LastEditTime: 2020-11-19 13:00:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -36,7 +36,11 @@
 // 特殊的插入。
 #define CN_set(con, data) container_set(cc(con), data, c_setup(con),  c_conflict_fix(con))
 
-#define CN_insert(con, it, data) container_insert(cc(con), it, data)
+#define CN_insert(con, it, data) \
+    ({ \
+        It __marco_it = it; \
+        container_insert(cc(con), __marco_it, data); \
+    })
 // 头部插入
 #define CN_add_first(con, data) CN_insert(con, CN_first(con), data)
 // 尾部插入
@@ -44,7 +48,16 @@
 
 #define CN_add(con, data) CN_add_tail(con, data)
 
-#define CN_remove(con, it, rdata) container_remove(cc(con), it, rdata)
+#define CN_remove(con, it, rdata) \
+    ({ \
+        It __marco_it = it; \
+        int __marco_ret = -1; \
+        if (It_valid(__marco_it)) { \
+            container_remove(cc(con), __marco_it, rdata); \
+            __marco_ret = 0; \
+        } \
+        __marco_ret; \
+    })
 // 头部移除
 #define CN_rm_first(con, rdata) CN_remove(con, CN_first(con), rdata)
 // 尾部移除

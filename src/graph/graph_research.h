@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-10-13 10:33:58
+ * @LastEditTime: 2020-11-19 11:08:51
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
@@ -24,6 +24,7 @@ typedef struct _bfs_explor {
 typedef struct _dfs_explor {
     int d_time;
     int f_time;
+    int component_id;
     grp_color_t color;
     vertex_t* pi;
 } dfs_explor_t;

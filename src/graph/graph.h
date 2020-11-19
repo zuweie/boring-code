@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2020-11-12 14:48:31
+ * @LastEditTime: 2020-11-19 14:47:42
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_H_
@@ -20,7 +20,7 @@ typedef struct _vertex
     void* exploring;
     /* 本顶点在列表中的索引，用于生成连接矩阵 */
     int indexing;
-
+    /* 邻接表 */
     List edges;
 } vertex_t;
 
@@ -35,20 +35,19 @@ typedef struct _graph
 {
     /* data */
     List vertexes;
-    int (*compare_edge)(Tv node, Tv find);
-    int (*compare_vertex) (Tv node, Tv find);
+    int (*match_edge)(Tv node, Tv find);
+    int (*match_vertex) (Tv node, Tv find);
 } Graph;
 
-int Graph_init(Graph* graph, int(*find_vertex)(Tv, Tv), int(*find_link)(Tv, Tv));
-int Graph_uninit(Graph* graph);
+Graph* Graph_create(int(*)(Tv, Tv), int(*)(Tv, Tv));
+int Graph_destroy(Graph* graph);
 int Graph_addVertex(Graph* graph, Tv vertex);
 int Graph_addEdge(vertex_t* from, vertex_t* to, float weight);
 int Graph_delVertex(vertex_t* vertex);
 int Graph_delEdge(vertex_t* from, vertex_t* edge);
 int Graph_indexingVertexes(Graph* graph);
 int Graph_getEdgeMatrix(Graph* origin, CooMatrix* matrix);
-int Graph_addEdgeByMatrix(Graph* graph, CooMatrix* matrix, float weight);
-
+int Graph_addEdgeByMatrix(Graph* graph, CooMatrix* matrix);
 vertex_t* Graph_getVertex(Graph* graph, Tv vertex_id);
 edge_t* Graph_getEdge(vertex_t* from, Tv to_id);
 #endif
