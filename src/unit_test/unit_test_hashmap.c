@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-10-29 11:51:40
+ * @LastEditTime: 2020-11-22 22:58:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -465,7 +465,7 @@ static void test_entity(void)
 {
     Entity entity;
     Tv tv[4];
-    TempEntity(&entity, 4, 2, tv, i2t(12), i2t(23), f2t(44.55694), f2t(2839.783874));
+    Entity_temp(&entity, 4, 2, tv, i2t(12), i2t(23), f2t(44.55694), f2t(2839.783874));
     //TempEntity(&entity, 4, 2, tv, 12, 23, 44.55694, 2839.783874);
     // PRINTF_TV_ON_INT(tv[0]);
     // PRINTF_TV_ON_INT(tv[1]);

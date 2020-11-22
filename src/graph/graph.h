@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2020-11-19 14:47:42
+ * @LastEditTime: 2020-11-22 23:08:04
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_H_
@@ -41,13 +41,14 @@ typedef struct _graph
 
 Graph* Graph_create(int(*)(Tv, Tv), int(*)(Tv, Tv));
 int Graph_destroy(Graph* graph);
-int Graph_addVertex(Graph* graph, Tv vertex);
-int Graph_addEdge(vertex_t* from, vertex_t* to, float weight);
-int Graph_delVertex(vertex_t* vertex);
-int Graph_delEdge(vertex_t* from, vertex_t* edge);
-int Graph_indexingVertexes(Graph* graph);
-int Graph_getEdgeMatrix(Graph* origin, CooMatrix* matrix);
-int Graph_addEdgeByMatrix(Graph* graph, CooMatrix* matrix);
-vertex_t* Graph_getVertex(Graph* graph, Tv vertex_id);
-edge_t* Graph_getEdge(vertex_t* from, Tv to_id);
+int Graph_add_vertex(Graph* graph, Tv vertex);
+int Graph_add_edge(vertex_t* from, vertex_t* to, float weight);
+int Graph_del_vertex(vertex_t* vertex);
+int Graph_del_edge(vertex_t* from, vertex_t* edge);
+int Graph_indexing_vertexes(Graph* graph);
+int Graph_get_edge_matrix(Graph* origin, CooMatrix* matrix);
+int Graph_add_edge_by_matrix(Graph* graph, CooMatrix* matrix);
+int Graph_get_vertexes_id(Graph* graph, List vertexes);
+vertex_t* Graph_get_vertex(Graph* graph, Tv vertex_id);
+edge_t* Graph_get_edge(vertex_t* from, Tv to_id);
 #endif

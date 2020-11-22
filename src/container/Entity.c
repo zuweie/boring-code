@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-24 10:20:46
- * @LastEditTime: 2020-10-28 18:42:27
+ * @LastEditTime: 2020-11-22 22:53:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -11,7 +11,7 @@
 #include "Entity.h"
 #include "Tv.h"
 
-void TempEntity(Entity* entity, int num, int value_index, Tv t[], ...) 
+void Entity_temp(Entity* entity, int num, int value_index, Tv t[], ...) 
 {
     va_list valist;
     va_start(valist, t);
@@ -26,7 +26,7 @@ void TempEntity(Entity* entity, int num, int value_index, Tv t[], ...)
     va_end(valist);
 }
 
-Entity* CopyALongTimeEntity(Entity* temp) 
+Entity* Entity_cpyto_heap_entity(Entity* temp) 
 {
     Entity *lentity = (Entity*) malloc(sizeof(Entity) + sizeof(Tv)*(temp->number));
     memcpy(&lentity[1], temp->tv, sizeof(Tv)*(temp->number));
@@ -36,7 +36,7 @@ Entity* CopyALongTimeEntity(Entity* temp)
     return lentity;
 }
 
-int CopyEntityValue(Entity* e1, Entity* e2) 
+int Entity_copy_Value(Entity* e1, Entity* e2) 
 {
     if (e1->number == e2->number 
         && e1->value_index == e2->value_index 
@@ -47,7 +47,7 @@ int CopyEntityValue(Entity* e1, Entity* e2)
     return -1;
 }
 
-int EntityValueEqual(Entity* e1, Entity* e2) 
+int Entity_is_value_equal(Entity* e1, Entity* e2) 
 {
     if ( e1->value_index == e2->value_index && e1->number == e2->number){
 
@@ -61,7 +61,7 @@ int EntityValueEqual(Entity* e1, Entity* e2)
     return 1;
 }
 
-int EntityKeyEqual(Entity* e1, Entity* e2) 
+int Entity_is_key_equal(Entity* e1, Entity* e2) 
 {
     if ( e1->value_index == e2->value_index ) {
         for (int i=0; i<e1->value_index; ++i) {

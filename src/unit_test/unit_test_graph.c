@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-11-19 15:44:24
+ * @LastEditTime: 2020-11-23 00:28:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -78,13 +78,13 @@ static int suite_success_clean (void)
 static void test_graph_vertex_edge (void)
 {
     Graph* graph = Graph_create(find_vertex, find_edge);
-    Graph_addVertex(graph, getTSi(1));
-    Graph_addVertex(graph, getTSi(2));
-    vertex_t* from = Graph_getVertex(graph, getTSi(1));
-    vertex_t* to   = Graph_getVertex(graph, getTSi(2));
+    Graph_add_vertex(graph, getTSi(1));
+    Graph_add_vertex(graph, getTSi(2));
+    vertex_t* from = Graph_get_vertex(graph, getTSi(1));
+    vertex_t* to   = Graph_get_vertex(graph, getTSi(2));
 
-    Graph_addEdge(from, to, 0.f);
-    Graph_addEdge(to, from, 0.f);
+    Graph_add_edge(from, to, 0.f);
+    Graph_add_edge(to, from, 0.f);
 
 
     Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
@@ -95,20 +95,20 @@ static void test_graph_vertex_edge (void)
 static void test_graph_matrix (void) 
 {
     Graph* graph = Graph_create(find_vertex, find_edge);
-    Graph_addVertex(graph, getTSi(1));
-    Graph_addVertex(graph, getTSi(2));
-    Graph_addVertex(graph, getTSi(3));
-    Graph_addVertex(graph, getTSi(4));
-    Graph_addVertex(graph, getTSi(5));
-    Graph_addVertex(graph, getTSi(6));
-    Graph_addVertex(graph, getTSi(7));
-    Graph_addVertex(graph, getTSi(8));
-    Graph_addVertex(graph, getTSi(9));
-    Graph_addVertex(graph, getTSi(10));
-    Graph_addVertex(graph, getTSi(11));
-    Graph_addVertex(graph, getTSi(12));
-    Graph_addVertex(graph, getTSi(13));
-    Graph_addVertex(graph, getTSi(14));   
+    Graph_add_vertex(graph, getTSi(1));
+    Graph_add_vertex(graph, getTSi(2));
+    Graph_add_vertex(graph, getTSi(3));
+    Graph_add_vertex(graph, getTSi(4));
+    Graph_add_vertex(graph, getTSi(5));
+    Graph_add_vertex(graph, getTSi(6));
+    Graph_add_vertex(graph, getTSi(7));
+    Graph_add_vertex(graph, getTSi(8));
+    Graph_add_vertex(graph, getTSi(9));
+    Graph_add_vertex(graph, getTSi(10));
+    Graph_add_vertex(graph, getTSi(11));
+    Graph_add_vertex(graph, getTSi(12));
+    Graph_add_vertex(graph, getTSi(13));
+    Graph_add_vertex(graph, getTSi(14));   
     Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
 
     CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
@@ -123,7 +123,7 @@ static void test_graph_matrix (void)
     Matrix_set(matrix, 0, 5, 1.0f);
     Matrix_set(matrix, 9, 0, 1.0f);
     Matrix_set(matrix, 13, 2, 1.0f);
-    Graph_addEdgeByMatrix(graph, matrix);
+    Graph_add_edge_by_matrix(graph, matrix);
     Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
     
     CooMatrix_destroy(matrix);
@@ -141,11 +141,11 @@ static void test_graph_dfs (void)
 {
 
     Graph* graph = Graph_create(find_vertex, find_edge);
-    Graph_addVertex(graph, i2t(0));
-    Graph_addVertex(graph, i2t(1));
-    Graph_addVertex(graph, i2t(2));
-    Graph_addVertex(graph, i2t(3));
-    Graph_addVertex(graph, i2t(4));
+    Graph_add_vertex(graph, i2t(0));
+    Graph_add_vertex(graph, i2t(1));
+    Graph_add_vertex(graph, i2t(2));
+    Graph_add_vertex(graph, i2t(3));
+    Graph_add_vertex(graph, i2t(4));
     CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
 
     Matrix_set(matrix, 0, 1, 1.0f);
@@ -154,7 +154,7 @@ static void test_graph_dfs (void)
     Matrix_set(matrix, 3, 0, 1.0f);
     Matrix_set(matrix, 0, 4, 1.0f);
     Matrix_set(matrix, 4, 3, 1.0f);
-    Graph_addEdgeByMatrix(graph, matrix);
+    Graph_add_edge_by_matrix(graph, matrix);
     Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
 
 

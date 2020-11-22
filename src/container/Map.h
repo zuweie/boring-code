@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-11-18 12:31:45
+ * @LastEditTime: 2020-11-22 22:54:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -23,7 +23,7 @@ typedef Entity* (*Expose_Entity)(Tv);
     ({                            \
         Tv __marco_tv[x];                  \
         Entity __marco_entity;            \
-        TempEntity(&__marco_entity, x, x, __marco_tv, __VA_ARGS__); \
+        Entity_temp(&__marco_entity, x, x, __marco_tv, __VA_ARGS__); \
         int ret = CN_has(con, p2t(&__marco_entity));       \
         ret; \
     })
@@ -35,7 +35,7 @@ typedef Entity* (*Expose_Entity)(Tv);
 #define Map_setx(con, x, y, ...) do {          \
     Tv __marco_tv[x];                                   \
     Entity __macro_entity;                             \
-    TempEntity(&__macro_entity, x, y, __marco_tv, __VA_ARGS__); \
+    Entity_temp(&__macro_entity, x, y, __marco_tv, __VA_ARGS__); \
     CN_set(con, p2t(&__macro_entity));                 \
 } while(0)
 
@@ -48,7 +48,7 @@ typedef Entity* (*Expose_Entity)(Tv);
         int ret = -1;                      \
         Tv __marco_tv[x];                           \
         Entity __marco_entity;                     \
-        TempEntity(&__marco_entity, x, x, __marco_tv, __VA_ARGS__);  \
+        Entity_temp(&__marco_entity, x, x, __marco_tv, __VA_ARGS__);  \
         It it = CN_search(con, __null_iterator, p2t(&__marco_entity)); \
         if (It_valid(it)) {                         \
             Expose_Entity exposer                   \
@@ -68,7 +68,7 @@ typedef Entity* (*Expose_Entity)(Tv);
         int ret = -1;                       \
         Tv __marco_tv[x];                            \
         Entity __marco_entity;                      \
-        TempEntity(&__marco_entity, x, x, __marco_tv, __VA_ARGS__);        \
+        Entity_temp(&__marco_entity, x, x, __marco_tv, __VA_ARGS__);        \
         Tv rentity;                                       \
         ret = CN_rm_target(con, p2t(&__marco_entity), &rentity);  \
         if (ret == 0) {                                   \
@@ -89,7 +89,7 @@ static inline
 int Map_setup (Tv* v1, Tv v2) 
 {
     Entity* temp = t2p(v2);
-    Entity* lentity = CopyALongTimeEntity(temp);
+    Entity* lentity = Entity_cpyto_heap_entity(temp);
     //printf("make a lentity %p \n", lentity);
     *v1 = p2t(lentity);
 }
@@ -101,16 +101,16 @@ int Map_conflict_fix(Tv* v1, Tv v2)
     Entity* temp = t2p(v2);
     Entity* lentity = t2p((*v1));
     
-    if (EntityValueEqual(lentity, temp) == 0) return 0;
+    if (Entity_is_value_equal(lentity, temp) == 0) return 0;
 
     // 然后把 value 弄过去。
     if (temp->number == lentity->number 
     && temp->value_index == lentity->value_index) {
-        CopyEntityValue(lentity, temp);
+        Entity_copy_Value(lentity, temp);
     } else {
         // 直接把旧的弄掉，换新的上去。
         free(lentity);
-        Entity* nentity = CopyALongTimeEntity(temp);
+        Entity* nentity = Entity_cpyto_heap_entity(temp);
         *v1 = p2t(nentity);
     } 
     return 0;
@@ -121,6 +121,6 @@ int Map_entity_key_equl (Tv v1, Tv v2)
 {
     Entity* e1 = t2p(v1);
     Entity* e2 = t2p(v2);
-    return EntityKeyEqual(e1, e2);
+    return Entity_is_key_equal(e1, e2);
 }
 #endif

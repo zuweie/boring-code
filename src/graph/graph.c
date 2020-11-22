@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-11-19 15:42:49
+ * @LastEditTime: 2020-11-23 00:31:04
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -47,7 +47,7 @@ int Graph_destroy(Graph* graph)
         first = It_next(first)) {
 
             vertex_t* pv = It_getptr(first);
-            Graph_delVertex(pv);
+            Graph_del_vertex(pv);
     }
     List_(graph->vertexes, NULL);
     graph->match_edge   = NULL;
@@ -56,13 +56,13 @@ int Graph_destroy(Graph* graph)
     return 0;
 }
 
-int Graph_addVertex(Graph* graph, Tv vertex) 
+int Graph_add_vertex(Graph* graph, Tv vertex) 
 {
     vertex_t* v = _create_vertex(graph, vertex);
     return CN_add_tail(graph->vertexes, p2t(v));
 }
 
-int Graph_addEdge(vertex_t* from, vertex_t* to, float weight)
+int Graph_add_edge(vertex_t* from, vertex_t* to, float weight)
 {
     // 首先得找一下 开始点 到 终结点 是不是在图中。
     //if (Graph_getEdge(from, to->vertex_id) == NULL) {
@@ -71,7 +71,7 @@ int Graph_addEdge(vertex_t* from, vertex_t* to, float weight)
     //}
 }
 
-int Graph_delVertex(vertex_t* vertex)
+int Graph_del_vertex(vertex_t* vertex)
 {
     Tv rnode;
     // free the edge of the vertex
@@ -84,7 +84,7 @@ int Graph_delVertex(vertex_t* vertex)
     return 0;
 }
 
-int Graph_delEdge(vertex_t* from, vertex_t* to)
+int Graph_del_edge(vertex_t* from, vertex_t* to)
 {
     Tv rnode;
     if (CN_rm_target(from->edges, to->vertex_id, &rnode) != -1)
@@ -95,7 +95,7 @@ int Graph_delEdge(vertex_t* from, vertex_t* to)
 }
 
 
-int Graph_indexingVertexes(Graph* graph) 
+int Graph_indexing_vertexes(Graph* graph) 
 {
     int i =0;
     for (It first = CN_first(graph->vertexes);
@@ -108,23 +108,23 @@ int Graph_indexingVertexes(Graph* graph)
 
 }
 
-vertex_t* Graph_getVertex(Graph* graph, Tv vertex_id) 
+vertex_t* Graph_get_vertex(Graph* graph, Tv vertex_id) 
 {
     It i = CN_find(graph->vertexes, vertex_id);
     return It_valid(i) ? It_getptr(i) : NULL;
 }
 
-edge_t* Graph_getEdge(vertex_t* from, Tv to_id) {
+edge_t* Graph_get_edge(vertex_t* from, Tv to_id) {
     It i = CN_find(from->edges, to_id);
     return It_valid(i) ? It_getptr(i) : NULL;
 }
 
-int Graph_getEdgeMatrix(Graph* graph, CooMatrix* matrix) 
+int Graph_get_edge_matrix(Graph* graph, CooMatrix* matrix) 
 {
     
     size_t size = CN_size(graph->vertexes);
     if (Matrix_rows(matrix) == size && Matrix_cols(matrix) == size ) {
-        Graph_indexingVertexes(graph);
+        Graph_indexing_vertexes(graph);
 
         //Matrix* matrix = Matrix_create(size, size);
 
@@ -153,7 +153,7 @@ int Graph_getEdgeMatrix(Graph* graph, CooMatrix* matrix)
     return -1;
 } 
 
-int  Graph_addEdgeByMatrix(Graph* graph, CooMatrix* coomatrix)
+int  Graph_add_edge_by_matrix(Graph* graph, CooMatrix* coomatrix)
 {
     size_t size = CN_size(graph->vertexes);
     if (Matrix_rows(coomatrix) == size && Matrix_cols(coomatrix) == size ) {
@@ -166,9 +166,15 @@ int  Graph_addEdgeByMatrix(Graph* graph, CooMatrix* coomatrix)
            float  w = t2f(entity->tv[2]);
            vertex_t* from = t2p(arr[x]);
            vertex_t* to   = t2p(arr[y]);
-           Graph_addEdge(from, to, w);
+           Graph_add_edge(from, to, w);
        }
        return 0;
     }
     return -1;
+}
+
+int Graph_get_vertexes_id(Graph* graph, List vertexes) 
+{
+    // for(It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes); first = It_next(first)) {
+    // }
 }

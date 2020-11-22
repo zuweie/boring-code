@@ -18,7 +18,7 @@
 #define c_search_cmp(con)    (((Container*)(&(con)))->_search_compare)
 #define c_conflict_fix(con)  (((Container*)(&(con)))->_conflict_fix)
 #define c_setup(con)         (((Container*)(&(con)))->_setup)
-#define c_extra_func(con)      (((Container*)(&(con)))->_extra_func)
+#define c_extra_func(con)    (((Container*)(&(con)))->_extra_func)
 
 #define CN_set_search_cmp(con, search_cmp)     (c_search_cmp(con)=search_cmp)
 #define CN_set_setup(con, setup)               (c_setup(con) = setup)
@@ -163,7 +163,7 @@ typedef struct _con{
     int (*_setup)(Tv*, Tv);         // 此函数用于结构数据类型容器
     int (*_conflict_fix)(Tv*, Tv);   // 此函数用于结构数据类型容器
     int (*_cleanup_handler) (Tv);   // 此函数用户数据容器结束的清扫工作
-    void (*_extra_func) (void);           // 一些其他额外需要用到的函数
+    void (*_extra_func) (void);     // 一些其他额外需要用到的函数
 } Container;
 
 // 这个能比较整数和浮点的值是否相等，但不能比较大小，这个只是用 ^ 做位运算，只能得出是否相等，不知其大小。
