@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-11-23 00:28:18
+ * @LastEditTime: 2020-11-23 15:42:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -18,13 +18,11 @@
         vertex_t* pv = It_getptr(i); \
         printf("vertex: "); \
         printer(pv->vertex_id); \
-        printf("(%d) ", pv->indexing); \
         exploring_printer(pv->exploring); \
         printf("------> "); \
         for (It j = CN_first(pv->edges); !It_equal(j, CN_tail(pv->edges)); j = It_next(j)) { \
             edge_t* pnode = It_getptr(j); \
             printer(pnode->to->vertex_id); \
-            printf("(%d)   ", pnode->to->indexing);\
         }\
         printf("\n\n"); \
     } \
@@ -95,22 +93,36 @@ static void test_graph_vertex_edge (void)
 static void test_graph_matrix (void) 
 {
     Graph* graph = Graph_create(find_vertex, find_edge);
-    Graph_add_vertex(graph, getTSi(1));
-    Graph_add_vertex(graph, getTSi(2));
-    Graph_add_vertex(graph, getTSi(3));
-    Graph_add_vertex(graph, getTSi(4));
-    Graph_add_vertex(graph, getTSi(5));
-    Graph_add_vertex(graph, getTSi(6));
-    Graph_add_vertex(graph, getTSi(7));
-    Graph_add_vertex(graph, getTSi(8));
-    Graph_add_vertex(graph, getTSi(9));
-    Graph_add_vertex(graph, getTSi(10));
-    Graph_add_vertex(graph, getTSi(11));
-    Graph_add_vertex(graph, getTSi(12));
-    Graph_add_vertex(graph, getTSi(13));
-    Graph_add_vertex(graph, getTSi(14));   
-    Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
+    // Graph_add_vertex(graph, getTSi(1));
+    // Graph_add_vertex(graph, getTSi(2));
+    // Graph_add_vertex(graph, getTSi(3));
+    // Graph_add_vertex(graph, getTSi(4));
+    // Graph_add_vertex(graph, getTSi(5));
+    // Graph_add_vertex(graph, getTSi(6));
+    // Graph_add_vertex(graph, getTSi(7));
+    // Graph_add_vertex(graph, getTSi(8));
+    // Graph_add_vertex(graph, getTSi(9));
+    // Graph_add_vertex(graph, getTSi(10));
+    // Graph_add_vertex(graph, getTSi(11));
+    // Graph_add_vertex(graph, getTSi(12));
+    // Graph_add_vertex(graph, getTSi(13));
+    // Graph_add_vertex(graph, getTSi(14));   
+    //Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
 
+    Graph_add_vertex(graph, i2t(1));
+    Graph_add_vertex(graph, i2t(2));
+    Graph_add_vertex(graph, i2t(3));
+    Graph_add_vertex(graph, i2t(4));
+    Graph_add_vertex(graph, i2t(5));
+    Graph_add_vertex(graph, i2t(6));
+    Graph_add_vertex(graph, i2t(7));
+    Graph_add_vertex(graph, i2t(8));
+    Graph_add_vertex(graph, i2t(9));
+    Graph_add_vertex(graph, i2t(10));
+    Graph_add_vertex(graph, i2t(11));
+    Graph_add_vertex(graph, i2t(12));
+    Graph_add_vertex(graph, i2t(13));
+    Graph_add_vertex(graph, i2t(14)); 
     CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
 
     Matrix_set(matrix, 1, 2, 1.0f);
@@ -126,9 +138,15 @@ static void test_graph_matrix (void)
     Graph_add_edge_by_matrix(graph, matrix);
     Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
     
+    printf("Create reverse Graph \n\n");
+
+    Graph* reverse = Graph_create_reverse(graph);
+    
+    Graph_inspect(reverse, PRINTF_TV_ON_INT, NULL_exploring_printer);
+    
     CooMatrix_destroy(matrix);
     Graph_destroy(graph);
-
+    Graph_destroy(reverse);
     CU_ASSERT_TRUE(1);
 }
 
@@ -141,31 +159,49 @@ static void test_graph_dfs (void)
 {
 
     Graph* graph = Graph_create(find_vertex, find_edge);
-    Graph_add_vertex(graph, i2t(0));
-    Graph_add_vertex(graph, i2t(1));
-    Graph_add_vertex(graph, i2t(2));
-    Graph_add_vertex(graph, i2t(3));
-    Graph_add_vertex(graph, i2t(4));
+    Graph_add_vertex(graph, i2t('a')); // 0
+    Graph_add_vertex(graph, i2t('b')); // 1
+    Graph_add_vertex(graph, i2t('c')); // 2
+    Graph_add_vertex(graph, i2t('d')); // 3
+    Graph_add_vertex(graph, i2t('e')); // 4
+    Graph_add_vertex(graph, i2t('f')); // 5
+    Graph_add_vertex(graph, i2t('g')); // 6
+    Graph_add_vertex(graph, i2t('h')); // 7
     CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
 
-    Matrix_set(matrix, 0, 1, 1.0f);
-    Matrix_set(matrix, 1, 2, 1.0f);
-    Matrix_set(matrix, 2, 3, 1.0f);
-    Matrix_set(matrix, 3, 0, 1.0f);
-    Matrix_set(matrix, 0, 4, 1.0f);
-    Matrix_set(matrix, 4, 3, 1.0f);
+    Matrix_set(matrix, 0, 1, 1.0f); // a b
+    Matrix_set(matrix, 1, 2, 1.0f); // b c
+    Matrix_set(matrix, 2, 3, 1.0f); // c d
+    Matrix_set(matrix, 3, 2, 1.0f); // d c
+    Matrix_set(matrix, 3, 7, 1.0f); // d h
+    Matrix_set(matrix, 4, 0, 1.0f); // e a
+    Matrix_set(matrix, 1, 4, 1.0f); // b e
+    Matrix_set(matrix, 4, 5, 1.0f); // e f
+    Matrix_set(matrix, 1, 5, 1.0f); // b f
+    Matrix_set(matrix, 5, 6, 1.0f); // f g
+    Matrix_set(matrix, 6, 5, 1.0f); // g f
+    Matrix_set(matrix, 2, 6, 1.0f); // c g
+    Matrix_set(matrix, 6, 7, 1.0f); // g h
+    Matrix_set(matrix, 7, 7, 1.0f); // h h
     Graph_add_edge_by_matrix(graph, matrix);
-    Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
-
-
-    grp_dfs(graph);
-    Graph_inspect(graph, PRINTF_TV_ON_INT, DFS_exploring_printer);
+    //Graph_inspect(graph, PRINTF_TV_ON_CHAR, NULL_exploring_printer);
+    grp_dfs_exploring(graph);
+    grp_topological_sort(graph);
+    Graph_inspect(graph, PRINTF_TV_ON_CHAR, DFS_exploring_printer);
+    
+    printf("\nreverse graph ...\n");
+    Graph* reverse = Graph_create_reverse(graph);
+    grp_dfs_exploring(reverse);
+    Graph_inspect(reverse, PRINTF_TV_ON_CHAR, DFS_exploring_printer);
+    
 
     // clean up the malloc memory
-    grp_cleanup_exploring_info(graph);
+    grp_cleanup_exploring(graph);
+    grp_cleanup_exploring(reverse);
+
     CooMatrix_destroy(matrix);
     Graph_destroy(graph);
-
+    Graph_destroy(reverse);
     CU_ASSERT_TRUE(1);
 }
 
@@ -178,23 +214,23 @@ int do_graph_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test graph bfs", test_graph_bfs) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test graph bfs", test_graph_bfs) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     if (NULL == CU_add_test(pSuite, "test graph dfs", test_graph_dfs) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test graph vertex edge", test_graph_vertex_edge) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test graph vertex edge", test_graph_vertex_edge) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test graph vertex matrix", test_graph_matrix) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test graph vertex matrix", test_graph_matrix) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }

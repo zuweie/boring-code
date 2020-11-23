@@ -2,13 +2,21 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-11-19 22:24:10
+ * @LastEditTime: 2020-11-23 15:35:54
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
 #include "container/Queue.h"
 #include "container/Tv.h"
 #include "container/It.h"
+
+static int _topological_sort_cmp(Tv t1, Tv t2) 
+{
+    dfs_explor_t* v1 = ((vertex_t*)t2p(t1))->exploring;
+    dfs_explor_t* v2 = ((vertex_t*)t2p(t2))->exploring;
+
+    return INCMP_INT(i2t(v1->f_time), i2t(v2->f_time));
+}
 static void _init_bfs_exploring(Tv tv) 
 {
     //bfs_node_t* pn = allocate(g_pool(0), sizeof(bfs_node_t));
@@ -43,7 +51,7 @@ static void _free_exploring (Tv tv)
 }
 
 // 广度优先算法
-int grp_bfs(Graph* graph, vertex_t* start) {
+int grp_bfs_exploring(Graph* graph, vertex_t* start) {
 
     CN_foreach(graph->vertexes, _init_bfs_exploring);
     // 2 做广度优先遍历
@@ -105,7 +113,7 @@ static int _dfs_visit(vertex_t* pu, int* time)
 }
 
 // 深度优先算法
-int grp_dfs(Graph* graph) 
+int grp_dfs_exploring(Graph* graph) 
 {
     int time = 0;
     CN_foreach(graph->vertexes, _init_dfs_exploring);
@@ -137,6 +145,12 @@ int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr)
     return 0;
 }
 
+// 再完成了 dfs 后启动的拓扑排序。
+int grp_topological_sort(Graph* graph)
+{
+    CN_sort(graph->vertexes, _topological_sort_cmp);
+}
+
 // 计算有向图的强连通分支
 Graph* grp_calulate_strong_connected_component(Graph* graph)
 {
@@ -144,7 +158,7 @@ Graph* grp_calulate_strong_connected_component(Graph* graph)
 }
 
 
-void grp_cleanup_exploring_info(Graph* graph) 
+void grp_cleanup_exploring(Graph* graph) 
 {
     CN_foreach(graph->vertexes, _free_exploring);
 }

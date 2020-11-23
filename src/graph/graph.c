@@ -2,12 +2,32 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-11-23 00:31:04
+ * @LastEditTime: 2020-11-23 14:46:56
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
 #include "container/HashMap.h"
 #include "graph.h"
+static int _vertex_id_hasher (Tv v1, size_t slot_size) 
+{
+    Entity* entity = t2p(v1);
+    size_t id  = t2i(entity->tv[0]);
+    size_t key = id % slot_size;
+    return key;
+}
+
+static int _bulid_vertexes_id_indexing(Graph* graph, Map map) 
+{
+    int i =0;
+    for (It first = CN_first(graph->vertexes);
+        !It_equal(first, CN_tail(graph->vertexes));
+        first = It_next(first)) {
+            vertex_t* v = It_getptr(first);
+            Map_set(map, v->vertex_id, i2t(i++));
+    }
+    return i;
+
+}
 
 static vertex_t* _create_vertex(Graph* graph, Tv vertex) 
 {
@@ -15,7 +35,7 @@ static vertex_t* _create_vertex(Graph* graph, Tv vertex)
     vertex_t* v =(vertex_t*) malloc (sizeof (vertex_t));
     v->vertex_id = vertex;
     // 这个找
-    v->edges = _List(graph->match_edge);
+    v->edges = _List(graph->match_edge);    
     return v;
 }
 
@@ -38,6 +58,27 @@ Graph* Graph_create(int(*match_vertex)(Tv, Tv), int(*match_edge)(Tv, Tv))
     return graph;
 } 
 
+Graph* Graph_create_reverse(Graph* graph) 
+{
+    Graph* new_graph = (Graph*) malloc (sizeof(Graph));
+    new_graph->vertexes = _List(graph->match_vertex);
+    new_graph->match_edge = graph->match_edge;
+    new_graph->match_vertex = graph->match_vertex;
+    
+    // 注入复制定点
+    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first = It_next(first)){
+        vertex_t* v = It_getptr(first);
+        Graph_add_vertex(new_graph, v->vertex_id);
+    }
+    
+    CooMatrix* cooMatrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
+    Graph_get_edge_matrix(graph, cooMatrix);
+    Matrix_trans(cooMatrix);
+    Graph_add_edge_by_matrix(new_graph, cooMatrix);
+    CooMatrix_destroy(cooMatrix);
+    
+    return new_graph;
+}
 
 int Graph_destroy(Graph* graph) 
 {
@@ -94,20 +135,6 @@ int Graph_del_edge(vertex_t* from, vertex_t* to)
     return 0;
 }
 
-
-int Graph_indexing_vertexes(Graph* graph) 
-{
-    int i =0;
-    for (It first = CN_first(graph->vertexes);
-        !It_equal(first, CN_tail(graph->vertexes));
-        first = It_next(first)) {
-            vertex_t* pv = It_getptr(first);
-            pv->indexing = i ++;
-    }
-    return i;
-
-}
-
 vertex_t* Graph_get_vertex(Graph* graph, Tv vertex_id) 
 {
     It i = CN_find(graph->vertexes, vertex_id);
@@ -124,9 +151,10 @@ int Graph_get_edge_matrix(Graph* graph, CooMatrix* matrix)
     
     size_t size = CN_size(graph->vertexes);
     if (Matrix_rows(matrix) == size && Matrix_cols(matrix) == size ) {
-        Graph_indexing_vertexes(graph);
-
-        //Matrix* matrix = Matrix_create(size, size);
+        
+        Map vertex_index_map = _Hashmap(_vertex_id_hasher);
+        _bulid_vertexes_id_indexing(graph, vertex_index_map);
+        
 
         for (It first = CN_first(graph->vertexes);
              !It_equal(first, CN_tail(graph->vertexes));
@@ -140,13 +168,13 @@ int Graph_get_edge_matrix(Graph* graph, CooMatrix* matrix)
 
                 edge_t *pedge = It_getptr(first2);
 
-                int x = pvertex->indexing;
-                int y = pedge->to->indexing;
-
-                //TSMatrix_set(tsmatrix, x, y, 1.0f);
-                Matrix_set(matrix, x, y, 1.0f);
+                Tv vx, vy;
+                Map_get(vertex_index_map, pvertex->vertex_id, vx);
+                Map_get(vertex_index_map, pedge->to->vertex_id, vy);
+                Matrix_set(matrix, t2i(vx), t2i(vy), pedge->weight);
             }
         }
+        Hashmap_(vertex_index_map);
 
         return 0;
     }
@@ -171,10 +199,4 @@ int  Graph_add_edge_by_matrix(Graph* graph, CooMatrix* coomatrix)
        return 0;
     }
     return -1;
-}
-
-int Graph_get_vertexes_id(Graph* graph, List vertexes) 
-{
-    // for(It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes); first = It_next(first)) {
-    // }
 }

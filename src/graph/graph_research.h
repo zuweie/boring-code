@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-11-19 11:08:51
+ * @LastEditTime: 2020-11-23 15:31:22
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
@@ -29,9 +29,10 @@ typedef struct _dfs_explor {
     vertex_t* pi;
 } dfs_explor_t;
 
-int grp_bfs(Graph* graph, vertex_t* start);
-int grp_dfs(Graph* graph);
+int grp_bfs_exploring(Graph* graph, vertex_t* start);
+int grp_dfs_exploring(Graph* graph);
 
-void grp_cleanup_exploring_info(Graph* graph);
+void grp_cleanup_exploring(Graph* graph);
 int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr);
+int grp_topological_sort(Graph* graph);
 #endif

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 13:29:13
- * @LastEditTime: 2020-11-08 01:35:56
+ * @LastEditTime: 2020-11-23 12:22:54
  * @LastEditors: Please set LastEditors
  */
 
@@ -25,14 +25,14 @@
 #define int_vtype(v) \
    ({ \
       type_value_t t; \
-      t.pointer = (void*)v; \
+      t.pointer = (void*)(v); \
       t; \
    })
 
 #define float_vtype(v) \
    ({ \
       type_value_t t; \
-      t.floating = v; \
+      t.floating = (v); \
       t; \
    })
 
