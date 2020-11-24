@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-11-23 15:35:54
+ * @LastEditTime: 2020-11-24 14:19:29
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -115,7 +115,7 @@ static int _dfs_visit(vertex_t* pu, int* time)
 // 深度优先算法
 int grp_dfs_exploring(Graph* graph) 
 {
-    int time = 0;
+    int time = -1;
     CN_foreach(graph->vertexes, _init_dfs_exploring);
 
     for(It first=CN_first(graph->vertexes); 
@@ -132,7 +132,7 @@ int grp_dfs_exploring(Graph* graph)
     return 0;
 }
 
-int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr) 
+int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List arr) 
 {
     if (start == desc) {
         CN_add_tail(arr, p2t(start));
@@ -152,8 +152,13 @@ int grp_topological_sort(Graph* graph)
 }
 
 // 计算有向图的强连通分支
-Graph* grp_calulate_strong_connected_component(Graph* graph)
+Graph* grp_calculate_strongly_connected_component_graph(Graph* graph)
 {
+    grp_dfs_exploring(graph);
+    grp_topological_sort(graph);
+    Graph* reverse = Graph_create_reverse(graph);
+    grp_dfs_exploring(reverse);
+    return reverse;
     
 }
 
@@ -161,4 +166,41 @@ Graph* grp_calulate_strong_connected_component(Graph* graph)
 void grp_cleanup_exploring(Graph* graph) 
 {
     CN_foreach(graph->vertexes, _free_exploring);
+}
+
+
+int grp_calculate_component(Graph* graph, List list) 
+{
+    // 把所有的定点排好
+    size_t arr_size = CN_size(graph->vertexes) * 2;
+    vertex_t* vertex_arr[arr_size];
+
+    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first = It_next(first)) {
+        vertex_t* vertex = It_getptr(first);
+        dfs_explor_t* dfs = vertex->exploring;
+        vertex_arr[dfs->d_time] = vertex;
+        vertex_arr[dfs->f_time] = vertex;
+    }
+
+    vertex_t* close_flag = vertex_arr[0];
+
+    // 1 把第一个塞进去容器。
+    CN_add_tail(list, p2t(close_flag));
+    It split_from = CN_last(list);
+    for (int i=1; i<arr_size; ++i) {
+        vertex_t* curr_vertex = vertex_arr[i];
+
+        if (close_flag == curr_vertex && i < arr_size-1) {
+            CN_add_tail(list, p2t(NULL));
+            close_flag = vertex_arr[++i];
+            CN_add_tail(list, p2t(close_flag));
+            split_from = CN_last(list);
+        } else {
+            It is_find = CN_search(list, split_from, p2t(curr_vertex));
+            if (It_is_tail(is_find)) {
+                CN_add_tail(list, p2t(curr_vertex));
+            }
+        }
+    }
+    return 0;
 }

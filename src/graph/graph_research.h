@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-11-23 15:31:22
+ * @LastEditTime: 2020-11-24 14:17:23
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
@@ -33,6 +33,8 @@ int grp_bfs_exploring(Graph* graph, vertex_t* start);
 int grp_dfs_exploring(Graph* graph);
 
 void grp_cleanup_exploring(Graph* graph);
-int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr);
+int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List arr);
 int grp_topological_sort(Graph* graph);
+int grp_calculate_component(Graph* graph, List list);
+Graph* grp_calculate_strongly_connected_component_graph (Graph* graph);
 #endif

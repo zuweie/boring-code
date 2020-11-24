@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-11-23 15:42:12
+ * @LastEditTime: 2020-11-24 14:25:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <CUnit/Basic.h>
 #include "graph/graph_research.h"
+#include "container/List.h"
 #include "unit_test.h"
 #include "test_data.h"
 
@@ -22,7 +23,21 @@
         printf("------> "); \
         for (It j = CN_first(pv->edges); !It_equal(j, CN_tail(pv->edges)); j = It_next(j)) { \
             edge_t* pnode = It_getptr(j); \
+            printf(" ");\
             printer(pnode->to->vertex_id); \
+            dfs_explor_t* explor = pnode->to->exploring; \
+            if (explor) { \
+                printf("["); \
+                /*printer(explor->pi->vertex_id);*/ \
+                printf("%d, %d", explor->d_time, explor->f_time);\
+                if (explor->pi) { \
+                    printf(", "); \
+                    printer(explor->pi->vertex_id); \
+                } \
+                printf("]"); \
+            } else { \
+                printf("[]") ;\
+            }\
         }\
         printf("\n\n"); \
     } \
@@ -193,9 +208,21 @@ static void test_graph_dfs (void)
     Graph* reverse = Graph_create_reverse(graph);
     grp_dfs_exploring(reverse);
     Graph_inspect(reverse, PRINTF_TV_ON_CHAR, DFS_exploring_printer);
-    
 
+    List list = _List(CMP_PTR);   
+    grp_calculate_component(reverse, list);
+    
+    for (It first = CN_first(list); !It_equal(first, CN_tail(list)); first = It_next(first)) {
+        vertex_t* v = It_getptr(first);
+        if (v) {
+            PRINTF_TV_ON_CHAR(v->vertex_id);
+        }else {
+            printf(" 0 ");
+        }
+    }
     // clean up the malloc memory
+    List_(list, NULL);
+
     grp_cleanup_exploring(graph);
     grp_cleanup_exploring(reverse);
 
@@ -203,6 +230,15 @@ static void test_graph_dfs (void)
     Graph_destroy(graph);
     Graph_destroy(reverse);
     CU_ASSERT_TRUE(1);
+}
+
+static void test_grap_strongly_connect(void) {
+
+    Graph* graph = Graph_create(find_vertex, find_edge);
+    Graph_add_vertex(graph, i2t('a')); // 0
+    Graph_add_vertex(graph, i2t('b')); // 1
+    Graph_add_vertex(graph, i2t('c')); // 2
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
 }
 
 int do_graph_test (void) 
