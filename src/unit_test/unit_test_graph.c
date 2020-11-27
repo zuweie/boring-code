@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-11-24 14:25:42
+ * @LastEditTime: 2020-11-27 22:55:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -21,8 +21,8 @@
         printer(pv->vertex_id); \
         exploring_printer(pv->exploring); \
         printf("------> "); \
-        for (It j = CN_first(pv->edges); !It_equal(j, CN_tail(pv->edges)); j = It_next(j)) { \
-            edge_t* pnode = It_getptr(j); \
+        for (It j = CN_first(pv->paths); !It_equal(j, CN_tail(pv->paths)); j = It_next(j)) { \
+            path_t* pnode = It_getptr(j); \
             printf(" ");\
             printer(pnode->to->vertex_id); \
             dfs_explor_t* explor = pnode->to->exploring; \
@@ -66,16 +66,16 @@
         printf("[]");\
     })
 
-int find_vertex(Tv v1, Tv v2) 
+static int find_vertex(Tv v1, Tv v2) 
 {
     vertex_t* pv = t2p(v1);
     return Tv_equl(pv->vertex_id, v2);
 }
 
-int find_edge(Tv v1, Tv v2) 
+static int find_path(Tv v1, Tv v2) 
 {
-    edge_t* pedge = t2p(v1);
-    return Tv_equl(pedge->to->vertex_id, v2);
+    path_t* path = t2p(v1);
+    return Tv_equl(path->to->vertex_id, v2);
 }
 
 static int  suite_success_init (void) 
@@ -90,14 +90,14 @@ static int suite_success_clean (void)
 
 static void test_graph_vertex_edge (void)
 {
-    Graph* graph = Graph_create(find_vertex, find_edge);
+    Graph* graph = Graph_create(find_vertex, find_path, 0);
     Graph_add_vertex(graph, getTSi(1));
     Graph_add_vertex(graph, getTSi(2));
     vertex_t* from = Graph_get_vertex(graph, getTSi(1));
     vertex_t* to   = Graph_get_vertex(graph, getTSi(2));
 
-    Graph_add_edge(from, to, 0.f);
-    Graph_add_edge(to, from, 0.f);
+    Graph_add_path(from, to, 0.f);
+    Graph_add_path(to, from, 0.f);
 
 
     Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
@@ -107,7 +107,7 @@ static void test_graph_vertex_edge (void)
 
 static void test_graph_matrix (void) 
 {
-    Graph* graph = Graph_create(find_vertex, find_edge);
+    Graph* graph = Graph_create(find_vertex, find_path, 0);
     // Graph_add_vertex(graph, getTSi(1));
     // Graph_add_vertex(graph, getTSi(2));
     // Graph_add_vertex(graph, getTSi(3));
@@ -150,7 +150,7 @@ static void test_graph_matrix (void)
     Matrix_set(matrix, 0, 5, 1.0f);
     Matrix_set(matrix, 9, 0, 1.0f);
     Matrix_set(matrix, 13, 2, 1.0f);
-    Graph_add_edge_by_matrix(graph, matrix);
+    Graph_add_paths_by_matrix(graph, matrix);
     Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
     
     printf("Create reverse Graph \n\n");
@@ -173,7 +173,7 @@ static void test_graph_bfs (void)
 static void test_graph_dfs (void) 
 {
 
-    Graph* graph = Graph_create(find_vertex, find_edge);
+    Graph* graph = Graph_create(find_vertex, find_path, sizeof(dfs_explor_t));
     Graph_add_vertex(graph, i2t('a')); // 0
     Graph_add_vertex(graph, i2t('b')); // 1
     Graph_add_vertex(graph, i2t('c')); // 2
@@ -198,7 +198,7 @@ static void test_graph_dfs (void)
     Matrix_set(matrix, 2, 6, 1.0f); // c g
     Matrix_set(matrix, 6, 7, 1.0f); // g h
     Matrix_set(matrix, 7, 7, 1.0f); // h h
-    Graph_add_edge_by_matrix(graph, matrix);
+    Graph_add_paths_by_matrix(graph, matrix);
     //Graph_inspect(graph, PRINTF_TV_ON_CHAR, NULL_exploring_printer);
     grp_dfs_exploring(graph);
     grp_topological_sort(graph);
@@ -223,8 +223,8 @@ static void test_graph_dfs (void)
     // clean up the malloc memory
     List_(list, NULL);
 
-    grp_cleanup_exploring(graph);
-    grp_cleanup_exploring(reverse);
+    //grp_cleanup_exploring(graph);
+    //grp_cleanup_exploring(reverse);
 
     CooMatrix_destroy(matrix);
     Graph_destroy(graph);
@@ -234,11 +234,36 @@ static void test_graph_dfs (void)
 
 static void test_grap_strongly_connect(void) {
 
-    Graph* graph = Graph_create(find_vertex, find_edge);
+    Graph* graph = Graph_create(find_vertex, find_path, sizeof(dfs_explor_t));
     Graph_add_vertex(graph, i2t('a')); // 0
     Graph_add_vertex(graph, i2t('b')); // 1
     Graph_add_vertex(graph, i2t('c')); // 2
     CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
+    Matrix_set(matrix, 0, 1, 1.0f);
+    Matrix_set(matrix, 0, 2, 1.0f);
+    Matrix_set(matrix, 2, 1, 1.0f);
+    Graph_add_paths_by_matrix(graph, matrix);
+
+    Graph* strongly_connected = grp_calculate_strongly_connected_component_graph(graph);
+    List list = _List(CMP_PTR);
+    grp_calculate_component(strongly_connected, list);
+    
+    for (It first = CN_first(list); !It_equal(first, CN_tail(list)); first = It_next(first)) {
+        vertex_t* v = It_getptr(first);
+        if (v) {
+            PRINTF_TV_ON_CHAR(v->vertex_id);
+        }else {
+            printf(" 0 ");
+        }
+    }
+
+    List_(list, NULL);
+    //grp_cleanup_exploring(graph);
+    //grp_cleanup_exploring(strongly_connected);
+    Graph_destroy(graph);
+    Graph_destroy(strongly_connected);
+    CooMatrix_destroy(matrix);
+    CU_ASSERT_TRUE(1);
 }
 
 int do_graph_test (void) 
@@ -255,10 +280,10 @@ int do_graph_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test graph dfs", test_graph_dfs) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test graph dfs", test_graph_dfs) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     // if (NULL == CU_add_test(pSuite, "test graph vertex edge", test_graph_vertex_edge) ) {
     //     CU_cleanup_registry();
@@ -269,4 +294,9 @@ int do_graph_test (void)
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+
+    if (NULL == CU_add_test(pSuite, "test graph strongly connected", test_grap_strongly_connect) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }    
 }

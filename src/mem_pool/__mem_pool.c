@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 17:13:19
- * @LastEditTime: 2020-11-03 12:02:59
+ * @LastEditTime: 2020-11-25 09:26:31
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -110,7 +110,7 @@ void inspect_pool(pool_t *pool)
 {
 	printf("\n***************** Inspect Pool ***********************\n");
 	printf(" Pool Heap size : %d \n", pool->heap_size);
-	printf(" Pool size : %d \n", (pool->end_free - pool->start_free));
+	printf(" Pool size : %ld \n", (pool->end_free - pool->start_free));
 	printf(" Pool start at : %p \n", pool->start_free);
 	printf(" Pool end at : %p \n", pool->end_free);
 	printf("\n\n");

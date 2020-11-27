@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-11-24 14:19:29
+ * @LastEditTime: 2020-11-27 22:56:15
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -17,46 +17,28 @@ static int _topological_sort_cmp(Tv t1, Tv t2)
 
     return INCMP_INT(i2t(v1->f_time), i2t(v2->f_time));
 }
-static void _init_bfs_exploring(Tv tv) 
+
+static void _init_bfs_exploring(void* exploring) 
 {
-    //bfs_node_t* pn = allocate(g_pool(0), sizeof(bfs_node_t));
-    bfs_explor_t* pn = (bfs_explor_t*)malloc(sizeof(bfs_explor_t));
+    bfs_explor_t* pn = exploring;
     pn->color = _grp_whtie;
     pn->distance = -1;
     pn->pi = NULL;
-
-    vertex_t* vertex = t2p(tv);//It_getptr(pos);
-    vertex->exploring = pn;
 }
 
-static void _init_dfs_exploring(Tv tv) 
+static void _init_dfs_exploring(void* exploring) 
 {
-    //dfs_node_t* pn = allocate(g_pool(0), sizeof(dfs_node_t));
-    dfs_explor_t* pn = (dfs_explor_t*) malloc (sizeof(dfs_explor_t));
+    dfs_explor_t* pn = exploring;
     pn->color = _grp_whtie;
     pn->pi = NULL;
     pn->d_time = -1;
     pn->f_time = -1;
-
-    vertex_t* vertex = t2p(tv);//It_getptr(pos);
-    vertex->exploring = pn;
-}
-
-static void _free_exploring (Tv tv) 
-{
-    vertex_t* vertex =  t2p(tv);
-    if (vertex->exploring)
-        free (vertex->exploring);
-    vertex->exploring = NULL;
 }
 
 // 广度优先算法
-int grp_bfs_exploring(Graph* graph, vertex_t* start) {
-
-    CN_foreach(graph->vertexes, _init_bfs_exploring);
-    // 2 做广度优先遍历
-    // 
-
+int grp_bfs_exploring(Graph* graph, vertex_t* start) 
+{
+    Graph_initialize_exploring(graph, _init_bfs_exploring);
     bfs_explor_t* pbfs = (bfs_explor_t*)start->exploring;
     pbfs->color = _grp_gray;
     pbfs->distance = 0;
@@ -72,11 +54,11 @@ int grp_bfs_exploring(Graph* graph, vertex_t* start) {
         bfs_explor_t* pubfs = (bfs_explor_t*) pu->exploring;
 
         // 遍历节点的邻居表。
-        for(It first = CN_first(pu->edges); 
-            !It_equal(first, CN_tail(pu->edges)); 
+        for(It first = CN_first(pu->paths); 
+            !It_equal(first, CN_tail(pu->paths)); 
             first=It_next(first)) {
 
-            edge_t* pv = It_getptr(first);
+            path_t* pv = It_getptr(first);
             bfs_explor_t* pvbfs  = (bfs_explor_t*) (pv->to->exploring);
 
             if (pvbfs->color == _grp_whtie) {
@@ -98,8 +80,8 @@ static int _dfs_visit(vertex_t* pu, int* time)
     pudfs->color = _grp_gray;
     pudfs->d_time = ++(*time);
     // 访问邻接表
-    for(It first=CN_first(pu->edges); !It_equal(first, CN_tail(pu->edges)); first=It_next(first)) {
-        edge_t* pv   = It_getptr(first);
+    for(It first=CN_first(pu->paths); !It_equal(first, CN_tail(pu->paths)); first=It_next(first)) {
+        path_t* pv   = It_getptr(first);
         dfs_explor_t* pvdfs = (dfs_explor_t*)pv->to->exploring;
 
         if (pvdfs->color == _grp_whtie) {
@@ -116,8 +98,7 @@ static int _dfs_visit(vertex_t* pu, int* time)
 int grp_dfs_exploring(Graph* graph) 
 {
     int time = -1;
-    CN_foreach(graph->vertexes, _init_dfs_exploring);
-
+    Graph_initialize_exploring(graph, _init_dfs_exploring);
     for(It first=CN_first(graph->vertexes); 
         !It_equal(first, CN_tail(graph->vertexes)); 
         first=It_next(first)) {
@@ -159,15 +140,8 @@ Graph* grp_calculate_strongly_connected_component_graph(Graph* graph)
     Graph* reverse = Graph_create_reverse(graph);
     grp_dfs_exploring(reverse);
     return reverse;
-    
+
 }
-
-
-void grp_cleanup_exploring(Graph* graph) 
-{
-    CN_foreach(graph->vertexes, _free_exploring);
-}
-
 
 int grp_calculate_component(Graph* graph, List list) 
 {
