@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-02 06:50:22
- * @LastEditTime: 2020-10-27 11:21:58
+ * @LastEditTime: 2020-11-30 15:38:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /kitc/src/container/tv.h
@@ -32,8 +32,4 @@ typedef type_value_t Tv;
 #define Tv_cmpd(tv1, tv2) vtype_cmp_on_flt(tv1, tv2)
 #define Tv_cmpptr(tv1, tv2) vtype_cmp_on_ptr(tv1, tv2)
 
-// 将所有的值统一转换为 v_type
-#define ui(v) vtype_int(i2t(v))
-#define uf(v) vtype_int(f2t(v))
-#define up(v) vtype_int(p2t(v))
 #endif

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2020-11-18 12:51:47
+ * @LastEditTime: 2020-11-30 18:06:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
@@ -10,7 +10,7 @@
 #include "container/HashMap.h"
 #include "container/List.h"
 static inline 
-int Keyhasher(Tv v, size_t slot_t) 
+int COOMATRIX_Keyhasher(Tv v, size_t slot_t) 
 {
    Entity* entity = t2p(v);
    size_t row = t2i(entity->tv[0]);
@@ -46,7 +46,7 @@ static
 int trans(imatrix_t* matrix_ptr) 
 {
     CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
-    Map new_coo = _Hashmap(Keyhasher);
+    Map new_coo = _Hashmap(COOMATRIX_Keyhasher);
     
     for(It first = CN_first(cooMatrix->coo);!It_equal(first, CN_tail(cooMatrix->coo));first=It_next(first)) {
         Entity* pentity = Hahsmap_node_2_entity(It_getptr(first));
@@ -77,7 +77,7 @@ void get_col(imatrix_t* matrix_ptr, size_t col_index, float data[])
 CooMatrix* CooMatrix_create(size_t rows, size_t cols) 
 {
     CooMatrix* matrix = malloc(sizeof(CooMatrix));
-    matrix->coo     = _Hashmap(Keyhasher);
+    matrix->coo     = _Hashmap(COOMATRIX_Keyhasher);
     initialize_matrix(matrix, get, set, trans, get_row, get_col, rows, cols);
     return matrix;
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-11-27 22:55:47
+ * @LastEditTime: 2020-11-30 17:50:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -66,18 +66,6 @@
         printf("[]");\
     })
 
-static int find_vertex(Tv v1, Tv v2) 
-{
-    vertex_t* pv = t2p(v1);
-    return Tv_equl(pv->vertex_id, v2);
-}
-
-static int find_path(Tv v1, Tv v2) 
-{
-    path_t* path = t2p(v1);
-    return Tv_equl(path->to->vertex_id, v2);
-}
-
 static int  suite_success_init (void) 
 {
     printf("\nGraph research suite success init\n");
@@ -90,7 +78,7 @@ static int suite_success_clean (void)
 
 static void test_graph_vertex_edge (void)
 {
-    Graph* graph = Graph_create(find_vertex, find_path, 0);
+    Graph* graph = Graph_create(DEFAULT_MATCH_VERTEX, DEFAULT_MATCH_PATH, 0);
     Graph_add_vertex(graph, getTSi(1));
     Graph_add_vertex(graph, getTSi(2));
     vertex_t* from = Graph_get_vertex(graph, getTSi(1));
@@ -107,7 +95,7 @@ static void test_graph_vertex_edge (void)
 
 static void test_graph_matrix (void) 
 {
-    Graph* graph = Graph_create(find_vertex, find_path, 0);
+    Graph* graph = Graph_create(DEFAULT_MATCH_VERTEX, DEFAULT_MATCH_PATH, 0);
     // Graph_add_vertex(graph, getTSi(1));
     // Graph_add_vertex(graph, getTSi(2));
     // Graph_add_vertex(graph, getTSi(3));
@@ -173,7 +161,7 @@ static void test_graph_bfs (void)
 static void test_graph_dfs (void) 
 {
 
-    Graph* graph = Graph_create(find_vertex, find_path, sizeof(dfs_explor_t));
+    Graph* graph = Graph_create(DEFAULT_MATCH_VERTEX, DEFAULT_MATCH_PATH, sizeof(dfs_explor_t));
     Graph_add_vertex(graph, i2t('a')); // 0
     Graph_add_vertex(graph, i2t('b')); // 1
     Graph_add_vertex(graph, i2t('c')); // 2
@@ -234,7 +222,7 @@ static void test_graph_dfs (void)
 
 static void test_grap_strongly_connect(void) {
 
-    Graph* graph = Graph_create(find_vertex, find_path, sizeof(dfs_explor_t));
+    Graph* graph = Graph_create(DEFAULT_MATCH_VERTEX, DEFAULT_MATCH_PATH, sizeof(dfs_explor_t));
     Graph_add_vertex(graph, i2t('a')); // 0
     Graph_add_vertex(graph, i2t('b')); // 1
     Graph_add_vertex(graph, i2t('c')); // 2

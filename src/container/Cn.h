@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-11-30 12:20:38
+ * @LastEditTime: 2020-12-01 00:08:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -48,33 +48,47 @@
 
 #define CN_add(con, data) CN_add_tail(con, data)
 
-#define CN_remove(con, it, rdata) \
+#define CN_remove(con, it, prdata) \
     ({ \
         It __marco_it = it; \
         int __marco_ret = -1; \
         if (It_valid(__marco_it)) { \
-            container_remove(cc(con), __marco_it, rdata); \
+            container_remove(cc(con), __marco_it, prdata); \
             __marco_ret = 0; \
         } \
         __marco_ret; \
     })
 // 头部移除
-#define CN_rm_first(con, rdata) CN_remove(con, CN_first(con), rdata)
+#define CN_rm_first(con, prdata) CN_remove(con, CN_first(con), prdata)
 // 尾部移除
-#define CN_rm_last(con, rdata) CN_remove(con, CN_last(con), rdata)
+#define CN_rm_last(con, prdata) CN_remove(con, CN_last(con), prdata)
 
-#define CN_rm(con, rdata) CN_rm_last(con, rdata)
+#define CN_rm(con, prdata) CN_rm_last(con, prdata)
 // 移除特定目标
-#define CN_rm_target(con, find, ret)   \
+#define CN_rm_target(con, find, pret)   \
     ({                                 \
         int ret_code = -1;             \
         It pos = CN_find(con, find);   \
         if (It_valid(pos)) {           \
-            ret_code = CN_remove(con, pos, ret); \
+            ret_code = CN_remove(con, pos, pret); \
         }                                        \
         ret_code;                                \
     })
 
+#define CN_eliminate(con, find, match, cleanup) do { \
+    It first = CN_first(con); \
+    while ( !It_is_tail(first) ) { \
+        if (match(It_dref(first), find) == 0) { \
+            Tv __marco_rdata; \
+            It __marco_rm_it = first; \
+            first = It_prev(first);
+            if (CN_remove(con, __marco_rm_it, &__marco_rdata) == 0 && cleanup) { \
+                cleanup(__marco_rdata); \
+            } \
+        } \
+        first = It_next(first);\
+    } \
+}while(0)
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
 #define CN_size(con) container_size(cc(con))
 #define CN_sort(con, sort_cmp) container_sort(cc(con), sort_cmp)
