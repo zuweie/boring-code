@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-29 11:33:41
- * @LastEditTime: 2020-11-18 12:50:26
+ * @LastEditTime: 2020-11-30 11:18:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -14,7 +14,7 @@
 #include "Tv.h"
 #include "Entity.h"
 
-typedef hash_node_t HashNode;
+typedef hash_node_t HashmapNode;
 
 #define HASHMAP_SLOT_SIZE 1000
 
@@ -29,14 +29,14 @@ typedef hash_node_t HashNode;
 #define Hashmap_(hm) Map_uninit(hm, hashmap, Hashmap_cleanup_entity)
 #define Hahsmap_node_2_entity(pnode) \
     ({ \
-        Entity* __p_marco_entity = t2p(((HashNode*)(pnode))->entity); \
+        Entity* __p_marco_entity = t2p(((HashmapNode*)(pnode))->entity); \
         __p_marco_entity; \
     })
     
 static inline
 int Hashmap_cleanup_entity (Tv v) 
 {
-    HashNode *pnode = t2p(v);
+    HashmapNode *pnode = t2p(v);
     Entity* pentity = t2p(pnode->entity);
     //printf("free a lentity %p \n", pentity);
     free(pentity);
@@ -46,7 +46,7 @@ int Hashmap_cleanup_entity (Tv v)
 static inline 
 Entity* Hashmap_Expose_Entity (Tv v) 
 {
-    HashNode *pnode = t2p(v);
+    HashmapNode *pnode = t2p(v);
     Entity* pentity = t2p(pnode->entity);
     return pentity;
 }

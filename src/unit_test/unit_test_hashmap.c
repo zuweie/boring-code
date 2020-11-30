@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-11-22 22:58:05
+ * @LastEditTime: 2020-11-30 12:59:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -35,16 +35,16 @@
     })
 #define PRINTF_HASH_NODE(tv) \
     ({                                \
-        HashNode* pnode = t2p(tv);/*It_getptr(it);*/        \
+        HashmapNode* pnode = t2p(tv);       \
         Entity* pentity = t2p(pnode->entity);               \
         PRINTF_ENTITY( pentity, %d, t2i, %s, t2p);          \
         printf("index: %2d ", pnode->slot_index);           \
         printf("\n\n");                                       \
     })
-#define ENTITY_2_HASH_KEY(tv) do {       \
-    HashNode * pnode  =  t2p(tv); /*It_getptr(it);*/  \
+#define ENTITY_2_HASH_KEY(tv) do {     \
+    HashmapNode * pnode  =  t2p(tv);   \
     int index = ikey_hasher(pnode->entity, HASHMAP_SLOT_SIZE); \
-    /*It_dref(it)*/ tv = i2t(index);  \
+    tv = i2t(index); \
 } while(0)
 
 static int ikey_hasher (Tv v1, size_t slot_size) 

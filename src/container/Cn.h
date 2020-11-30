@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-11-19 13:00:40
+ * @LastEditTime: 2020-11-30 12:20:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -148,7 +148,7 @@
 #define CN_uninitialize(con, label, cleanup) do { \
     Cleaner cleaner = (Cleaner) cleanup;          \
     if (cleaner) {                          \
-        CN_travel(con, cleaner);            \
+        CN_foreach(con, cleaner);            \
     }                                       \
     container_destroy(label, cc(con));      \
     cc(con) = NULL;                         \

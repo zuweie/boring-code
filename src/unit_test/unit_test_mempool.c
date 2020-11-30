@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-03 08:33:31
- * @LastEditTime: 2020-11-03 10:57:41
+ * @LastEditTime: 2020-11-30 12:59:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_mem_pool.c
@@ -31,11 +31,7 @@ static void test_mempool_set_n_get_slot (void)
 
     POOL_SET_SLOT(pmem, test_slot);
     int ret_slot = POOL_GET_SLOT(pmem);
-    // char* p = (char*)pmem;
-    // for(int i=0; i<128; ++i) {
-    //     printf("%02x ", (short)p[i]);
-    // }
-    // printf("\n");
+    
     CU_ASSERT_TRUE(ret_slot<=__MAX_VAL_OF_BYTES(__SLOT_INFO_BYTES));
     CU_ASSERT_TRUE(ret_slot==test_slot);
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-11-22 22:54:36
+ * @LastEditTime: 2020-11-30 12:12:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -9,7 +9,6 @@
 #ifndef _MAP_H_
 #define _MAP_H_
 #include "Cn.h"
-#include "base/__rb_tree.h"
 #include "Entity.h"
 
 typedef Container   Map;
@@ -69,10 +68,10 @@ typedef Entity* (*Expose_Entity)(Tv);
         Tv __marco_tv[x];                            \
         Entity __marco_entity;                      \
         Entity_temp(&__marco_entity, x, x, __marco_tv, __VA_ARGS__);        \
-        Tv rentity;                                       \
-        ret = CN_rm_target(con, p2t(&__marco_entity), &rentity);  \
+        Tv __marco_rentity;                                       \
+        ret = CN_rm_target(con, p2t(&__marco_entity), &__marco_rentity);  \
         if (ret == 0) {                                   \
-            Entity* pentity = t2p(rentity);               \
+            Entity* pentity = t2p(__marco_rentity);       \
             Tv* ttprdata = prdata;                        \
             if (ttprdata)                                   \
                 *ttprdata = pentity->tv[pentity->value_index]; \

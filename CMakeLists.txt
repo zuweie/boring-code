@@ -22,6 +22,7 @@ set (SOURCE
     src/container/Entity.c
     src/graph/graph_research.c
     src/graph/graph.c
+    src/graph/ud_graph.c
     src/matrix/CooMatrix.c
     src/matrix/DenseMatrix.c
     src/mem_pool/__mem_pool.c

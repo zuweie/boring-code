@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-11-27 22:58:21
+ * @LastEditTime: 2020-11-30 07:59:25
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -189,7 +189,7 @@ int Graph_get_paths_matrix(Graph* graph, CooMatrix* matrix)
     return -1;
 } 
 
-int  Graph_add_paths_by_matrix(Graph* graph, CooMatrix* coomatrix)
+int Graph_add_paths_by_matrix(Graph* graph, CooMatrix* coomatrix)
 {
     size_t size = CN_size(graph->vertexes);
     if (Matrix_rows(coomatrix) == size && Matrix_cols(coomatrix) == size ) {
@@ -209,11 +209,11 @@ int  Graph_add_paths_by_matrix(Graph* graph, CooMatrix* coomatrix)
     return -1;
 }
 
-int Graph_initialize_exploring(Graph* graph, int (*init)(void* exploring)) 
+int Graph_initialize_exploring(Graph* graph, int (*initialize)(void* exploring)) 
 {
     for(It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first = It_next(first)) {
         vertex_t* vertex = It_getptr(first);
-        init(vertex->exploring);
+        initialize(vertex->exploring);
     }
     return 0;
 }
