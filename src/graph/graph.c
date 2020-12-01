@@ -2,32 +2,32 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-11-30 07:59:25
+ * @LastEditTime: 2020-12-01 14:14:09
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
 #include "container/HashMap.h"
 #include "graph.h"
-static int _vertex_id_hasher (Tv v1, size_t slot_size) 
-{
-    Entity* entity = t2p(v1);
-    size_t id  = t2i(entity->tv[0]);
-    size_t key = id % slot_size;
-    return key;
-}
+// static int _vertex_id_hasher (Tv v1, size_t slot_size) 
+// {
+//     Entity* entity = t2p(v1);
+//     size_t id  = t2i(entity->tv[0]);
+//     size_t key = id % slot_size;
+//     return key;
+// }
 
-static int _bulid_vertexes_id_indexing(Graph* graph, Map map) 
-{
-    int i =0;
-    for (It first = CN_first(graph->vertexes);
-        !It_equal(first, CN_tail(graph->vertexes));
-        first = It_next(first)) {
-            vertex_t* v = It_getptr(first);
-            Map_set(map, v->vertex_id, i2t(i++));
-    }
-    return i;
+// static int _bulid_vertexes_id_indexing(Graph* graph, Map map) 
+// {
+//     int i =0;
+//     for (It first = CN_first(graph->vertexes);
+//         !It_equal(first, CN_tail(graph->vertexes));
+//         first = It_next(first)) {
+//             vertex_t* v = It_getptr(first);
+//             Map_set(map, v->vertex_id, i2t(i++));
+//     }
+//     return i;
 
-}
+// }
 
 static vertex_t* _create_vertex(Graph* graph, Tv vertex) 
 {
@@ -123,7 +123,6 @@ int Graph_del_vertex(vertex_t* vertex)
 {
     Tv rnode;
     // free the edge of the vertex
-    It it = CN_last(vertex->paths);
     while (CN_rm_last(vertex->paths, &rnode) != -1){
         free(t2p(rnode));
     }
@@ -159,11 +158,7 @@ int Graph_get_paths_matrix(Graph* graph, CooMatrix* matrix)
     
     size_t size = CN_size(graph->vertexes);
     if (Matrix_rows(matrix) == size && Matrix_cols(matrix) == size ) {
-        
-        Map vertex_index_map = _Hashmap(_vertex_id_hasher);
-        _bulid_vertexes_id_indexing(graph, vertex_index_map);
-        
-
+        Graph_indexing_vertex(graph);
         for (It first = CN_first(graph->vertexes);
              !It_equal(first, CN_tail(graph->vertexes));
              first = It_next(first)){
@@ -175,15 +170,9 @@ int Graph_get_paths_matrix(Graph* graph, CooMatrix* matrix)
                  first2 = It_next(first2)){
 
                 path_t *path = It_getptr(first2);
-
-                Tv vx, vy;
-                Map_get(vertex_index_map, pvertex->vertex_id, vx);
-                Map_get(vertex_index_map, path->to->vertex_id, vy);
-                Matrix_set(matrix, t2i(vx), t2i(vy), path->weight);
+                Matrix_set(matrix, pvertex->index, path->to->index, path->weight);
             }
         }
-        Hashmap_(vertex_index_map);
-
         return 0;
     }
     return -1;
@@ -216,4 +205,13 @@ int Graph_initialize_exploring(Graph* graph, int (*initialize)(void* exploring))
         initialize(vertex->exploring);
     }
     return 0;
+}
+
+void Graph_indexing_vertex(Graph* graph) 
+{
+    size_t i =0;
+    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first = It_next(first)) {
+        vertex_t* vertex = It_getptr(first);
+        vertex->index = i++;
+    }
 }

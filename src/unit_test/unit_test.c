@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-11-19 11:47:12
+ * @LastEditTime: 2020-12-01 08:44:33
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -308,7 +308,7 @@ int main ()
     do_coo_matrix_test();
     do_dense_matrix_test();
     do_graph_test();
-    
+    do_udgraph_test();
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();

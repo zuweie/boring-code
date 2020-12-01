@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-12-01 00:08:57
+ * @LastEditTime: 2020-12-01 07:20:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -81,7 +81,7 @@
         if (match(It_dref(first), find) == 0) { \
             Tv __marco_rdata; \
             It __marco_rm_it = first; \
-            first = It_prev(first);
+            first = It_prev(first); \
             if (CN_remove(con, __marco_rm_it, &__marco_rdata) == 0 && cleanup) { \
                 cleanup(__marco_rdata); \
             } \
@@ -89,6 +89,7 @@
         first = It_next(first);\
     } \
 }while(0)
+
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
 #define CN_size(con) container_size(cc(con))
 #define CN_sort(con, sort_cmp) container_sort(cc(con), sort_cmp)

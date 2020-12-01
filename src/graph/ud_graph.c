@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2020-11-30 18:10:48
+ * @LastEditTime: 2020-12-01 14:08:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
@@ -10,7 +10,29 @@
 #include "container/Tv.h"
 #include "container/List.h"
 #include "container/Entity.h"
+#include "container/HashMap.h"
 #include "ud_graph.h"
+
+static int _vertex_id_hasher (Tv v1, size_t slot_size) 
+{
+    Entity* entity = t2p(v1);
+    size_t id  = t2i(entity->tv[0]);
+    size_t key = id % slot_size;
+    return key;
+}
+
+static int _bulid_vertexes_id_indexing(UDGraph* graph, Map map) 
+{
+    int i =0;
+    for (It first = CN_first(graph->uvertexs);
+        !It_equal(first, CN_tail(graph->uvertexs));
+        first = It_next(first)) {
+            vertex_t* v = It_getptr(first);
+            Map_set(map, v->vertex_id, i2t(i++));
+    }
+    return i;
+
+}
 
 static uvertex_t* _create_uvertex(UDGraph* graph, Tv vertex_id) 
 {
@@ -83,13 +105,12 @@ int UDGraph_add_edge(UDGraph* udgraph, Tv vertex_1, Tv vertex_2, float w)
     return 0;
 }
 
-int UDGraph_del_vertex(UDGraph* udgraph, Tv vertex_id) 
+int UDGraph_del_vertex(UDGraph* udgraph, Tv vertex_id, int (*match_edge)(Tv, Tv)) 
 {
     Tv rdata;
     if (CN_rm_target(udgraph->uvertexs, vertex_id, &rdata) != -1) {
-
         // 1 把所有有关的边都干掉
-        CN_rm()
+        CN_eliminate(udgraph->uedges, vertex_id, match_edge, _free_uedge);
         uvertex_t* vertex = t2p(rdata);
         free(vertex);
     }
@@ -105,4 +126,13 @@ int UDGraph_del_edge(UDGraph* udgraph, Tv v1, Tv v2)
         free(pedge);
     }
     return 0;
+}
+
+void UDGraph_indexing_vertex(UDGraph* graph) 
+{
+    size_t i = 0;
+    for (It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); first = It_next(first)) {
+        uvertex_t* vertext = It_getptr(first);
+        vertext->index     = i++;
+    }
 }

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2020-11-30 17:48:04
+ * @LastEditTime: 2020-12-01 14:09:30
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_H_
@@ -18,6 +18,8 @@ typedef struct _vertex
     Tv vertex_id;
     /* bfs 与 dfs 算法的临时信息 */
     void* exploring;
+    /* 定点索引 */
+    size_t index;
     /* 邻接表 */
     List paths;
 } vertex_t;
@@ -52,7 +54,7 @@ vertex_t* Graph_get_vertex(Graph* graph, Tv vertex_id);
 path_t* Graph_get_path(vertex_t* from, Tv to_id);
 int Graph_set_path_matrix(Graph* graph, Tv from, Tv to, CooMatrix* matrix);
 int Graph_initialize_exploring(Graph* graph, int (*)(void*));
-
+void Graph_indexing_vertex(Graph* graph);
 static int
 DEFAULT_MATCH_VERTEX(Tv v1, Tv v2) 
 {

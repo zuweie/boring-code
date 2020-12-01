@@ -2,12 +2,13 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-11-27 09:23:03
+ * @LastEditTime: 2020-12-01 10:29:58
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
 #define _GRAPH_SEARCH_H_
 #include "graph.h"
+#include "ud_graph.h"
 #include "container/List.h"
 typedef enum _grp_color {
     _grp_whtie = 0,
@@ -36,4 +37,7 @@ int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List arr);
 int grp_topological_sort(Graph* graph);
 int grp_calculate_component(Graph* graph, List list);
 Graph* grp_calculate_strongly_connected_component_graph (Graph* graph);
+
+int ugrp_calculate_mst_kruskal(UDGraph* graph, List list);
+
 #endif
