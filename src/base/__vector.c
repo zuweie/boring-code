@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2020-11-19 12:47:37
+ * @LastEditTime: 2020-12-02 23:34:58
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -13,6 +13,7 @@
 #include "__type_value.h"
 #include "mem_pool/__mem_pool.h"
 #include "base/operate/__sort.h"
+#include "base/operate/__heap_sort.h"
 #include "base/operate/__wring.h"
 /** iterator function **/
 
@@ -181,7 +182,8 @@ static int _vector_remove (container_t* container, iterator_t it, void* rdata)
 
 static int _vector_sort(container_t* container, int(*compare)(type_value_t, type_value_t)) 
 {
-    return quick_sort(container_first(container), container_last(container), compare);
+    //return quick_sort(container_first(container), container_last(container), compare);
+    return heap_sort(container, compare);
 }
 
 static int _vector_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(void*)) 

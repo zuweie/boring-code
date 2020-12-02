@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2020-12-01 14:09:30
+ * @LastEditTime: 2020-12-02 15:00:25
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_H_
@@ -55,17 +55,5 @@ path_t* Graph_get_path(vertex_t* from, Tv to_id);
 int Graph_set_path_matrix(Graph* graph, Tv from, Tv to, CooMatrix* matrix);
 int Graph_initialize_exploring(Graph* graph, int (*)(void*));
 void Graph_indexing_vertex(Graph* graph);
-static int
-DEFAULT_MATCH_VERTEX(Tv v1, Tv v2) 
-{
-    vertex_t* pv = t2p(v1);
-    return Tv_equl(pv->vertex_id, v2);
-}
 
-static int
-DEFAULT_MATCH_PATH(Tv v1, Tv v2) 
-{
-    path_t* path = t2p(v1);
-    return Tv_equl(path->to->vertex_id, v2);
-}
 #endif

@@ -13,6 +13,7 @@ set (SOURCE
     src/unit_test/unit_test_dense_matrix.c
     src/unit_test/unit_test_graph.c
     src/unit_test/unit_test_udgraph.c
+    src/unit_test/unit_test_heap_sort.c
     src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c
@@ -20,6 +21,7 @@ set (SOURCE
     src/base/__hashmap.c
     src/base/operate/__sort.c
     src/base/operate/__wring.c
+    src/base/operate/__heap_sort.c
     src/container/Entity.c
     src/graph/graph_research.c
     src/graph/graph.c
