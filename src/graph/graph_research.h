@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-12-01 10:29:58
+ * @LastEditTime: 2020-12-03 23:20:09
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
@@ -38,6 +38,6 @@ int grp_topological_sort(Graph* graph);
 int grp_calculate_component(Graph* graph, List list);
 Graph* grp_calculate_strongly_connected_component_graph (Graph* graph);
 
-int ugrp_calculate_mst_kruskal(UDGraph* graph, List list);
+int ugrp_calculate_mst_kruskal(UDGraph* graph, List list, int (*vertex_id_cmp)(Tv, Tv));
 
 #endif

@@ -14,6 +14,7 @@ set (SOURCE
     src/unit_test/unit_test_graph.c
     src/unit_test/unit_test_udgraph.c
     src/unit_test/unit_test_heap_sort.c
+    src/unit_test/unit_test_set.c
     src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-29 10:05:22
- * @LastEditTime: 2020-12-01 13:44:16
+ * @LastEditTime: 2020-12-03 23:26:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Set.h
@@ -76,7 +76,7 @@ typedef Container Set;
 #define Set_del(con, key, prdata) Set_delx(con, prdata, 1, key)
 
 #define Set_union(set1, set2) do { \
-    for (It first = CN_first(set2); !It_equal(first, CN_first(set2)); first = It_next(set2)) { \
+    for (It first = CN_first(set2); !It_equal(first, CN_first(set2)); first = It_next(first)) { \
         CN_set(set1, It_dref(first)); \
     } \
 } while(0)

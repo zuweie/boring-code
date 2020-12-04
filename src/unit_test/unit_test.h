@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2020-12-01 08:44:11
+ * @LastEditTime: 2020-12-04 07:45:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -64,4 +64,7 @@ int do_coo_matrix_test(void);
 int do_dense_matrix_test(void);
 int do_graph_test(void);
 int do_udgraph_test (void);
+int do_set_test(void);
+int do_heapsort_test(void);
+
 #endif

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 14:59:35
- * @LastEditTime: 2020-12-02 23:31:59
+ * @LastEditTime: 2020-12-04 09:03:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/operate/__heap_sort.c
@@ -16,7 +16,7 @@ int heap_max_heapify(container_t* container_ptr, size_t i, size_t heap_size, int
     size_t largest = 0;
 
     type_value_t v_left = container_fetch(container_ptr, left);
-    type_valut_t v_i    = container_fetch(container_ptr, i);
+    type_value_t v_i    = container_fetch(container_ptr, i);
     
     if ( left < heap_size && compare_to(v_left, v_i) == 1 ) {
         largest = left;
@@ -24,7 +24,7 @@ int heap_max_heapify(container_t* container_ptr, size_t i, size_t heap_size, int
         largest = i;
     } 
     type_value_t v_right   = container_fetch(container_ptr, right);
-    type_valut_t v_largest = container_fetch(container_ptr, largest);
+    type_value_t v_largest = container_fetch(container_ptr, largest);
 
     if ( right < heap_size &&  compare_to(v_right, v_largest) == 1) {
         largest = right;
@@ -41,9 +41,9 @@ int heap_max_heapify(container_t* container_ptr, size_t i, size_t heap_size, int
 
 int heap_build_max_heap(container_t* container_ptr, int (*compare_to)(type_value_t, type_value_t))
 {
-    size_t _size = container_size(container_ptr) / 2;
-    for (int i = _size / 2; i >= 0; --i) {
-        heap_max_heapify(container_ptr, i, _size, compare_to);
+    size_t heap_size = container_size(container_ptr);
+    for (int i = heap_size / 2 - 1; i >= 0; --i) {
+        heap_max_heapify(container_ptr, i, heap_size, compare_to);
     }
     return 0;
 }
@@ -52,7 +52,7 @@ int heap_sort(container_t* container_ptr, int (*compare_to)(type_value_t, type_v
 {
     heap_build_max_heap(container_ptr, compare_to);
     size_t _size = container_size(container_ptr);
-    size_t heap_size = size;
+    size_t heap_size = _size;
     for (int i = _size-1; i >= 1; --i ) {
         iterator_t it1 = container_access(container_ptr, 0);
         iterator_t it2 = container_access(container_ptr, i);

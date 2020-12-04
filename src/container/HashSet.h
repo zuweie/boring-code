@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-30 08:05:18
- * @LastEditTime: 2020-11-30 12:13:40
+ * @LastEditTime: 2020-12-04 08:32:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/HashSet.h
@@ -25,7 +25,7 @@ typedef hash_node_t HashsetNode;
         Set set; \
         Set_init(set, hashmap, Set_setup, Set_conflict_fix, HASHSET_SLOT_SIZE, key_hasher, Set_entity_key_equl);\
         CN_set_extra_func(set, Hashset_Expose_Entity);\
-        hm; \
+        set; \
     })
 
 #define Hashset_(set) Set_uninit(set, hashmap, Hashset_cleanup_entity)

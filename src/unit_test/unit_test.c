@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-12-01 08:44:33
+ * @LastEditTime: 2020-12-04 07:41:43
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -299,7 +299,7 @@ int main ()
 	    return CU_get_error();
     }
 
-    /* run de test */
+    /* run the testcase */
     do_vector_test();
     do_list_test();
     do_tv_test();
@@ -309,6 +309,10 @@ int main ()
     do_dense_matrix_test();
     do_graph_test();
     do_udgraph_test();
+    do_set_test();
+    do_heapsort_test();
+    /* run the test case */
+    
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();

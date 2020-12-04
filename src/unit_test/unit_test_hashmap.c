@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-12-01 16:21:59
+ * @LastEditTime: 2020-12-03 14:01:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -12,6 +12,7 @@
 #include "container/Cn.h"
 #include "unit_test/unit_test.h"
 #include "unit_test/test_data.h"
+#include "unit_test/cmp_component.h"
 #include "container/List.h"
 #include "container/HashMap.h"
 #include "container/TreeMap.h"
@@ -43,7 +44,7 @@
     })
 #define ENTITY_2_HASH_KEY(tv) do {     \
     HashmapNode * pnode  =  t2p(tv);   \
-    int index = ikey_hasher(pnode->entity, HASHMAP_SLOT_SIZE); \
+    int index = entity_int_keyhasher(pnode->entity, HASHMAP_SLOT_SIZE); \
     tv = i2t(index); \
 } while(0)
 
@@ -84,7 +85,7 @@ static int suite_success_clean (void)
 static void test_hashmap_set (void) 
 {
     const int HASHMAP_SIZE = 100;
-    Map hashmap = _Hashmap(ikey_hasher);
+    Map hashmap = _Hashmap(entity_int_keyhasher);
 
     Tv key, value;
 
@@ -166,7 +167,7 @@ static void test_hashmap_set (void)
 static void test_treemap_set (void) 
 {
     const int HASHMAP_SIZE = 100;
-    Map treemap = _Treemap(key_insert_cmp);
+    Map treemap = _Treemap(entity_int_insert_cmp);
     Tv key, value;
 
     // Container hashtab;
@@ -245,10 +246,11 @@ static void test_treemap_set (void)
 
     Treemap_(treemap);
 }
+
 static void test_hashmap_get (void) 
 {
     const int HASHMAP_SIZE = 20;
-    Map hashmap = _Hashmap(ikey_hasher);
+    Map hashmap = _Hashmap(entity_int_keyhasher);
     Tv key, value;
     for(int i=0; i<HASHMAP_SIZE; ++i) {
         Tv key = getTSi(i);
@@ -267,7 +269,7 @@ static void test_hashmap_get (void)
 static void test_treemap_get (void) 
 {
     const int HASHMAP_SIZE = 20;
-    Map treemap = _Treemap(key_insert_cmp);
+    Map treemap = _Treemap(entity_int_insert_cmp);
     Tv key, value;
     for(int i=0; i<HASHMAP_SIZE; ++i) {
         Tv key = getTSi(i);
@@ -285,7 +287,7 @@ static void test_treemap_get (void)
 
 static void test_hashmap_del(void)
 {
-    Map hashmap = _Hashmap(ikey_hasher);
+    Map hashmap = _Hashmap(entity_int_keyhasher);
     Tv key, value;
     key   = i2t(1);
     value = p2t("1");
@@ -344,7 +346,7 @@ static void test_hashmap_del(void)
 
 static void test_treemap_del(void)
 {
-    Map treemap = _Treemap(key_insert_cmp);
+    Map treemap = _Treemap(entity_int_insert_cmp);
     Tv key, value;
     key   = i2t(1);
     value = p2t("1");
@@ -406,7 +408,7 @@ static void test_hashmap_set_n_get (void)
     const int HASHMAP_SIZE = 50;
     
     Tv key, value;
-    Map hashmap = _Hashmap(ikey_hasher);
+    Map hashmap = _Hashmap(entity_int_keyhasher);
     
     for (int i=0; i<HASHMAP_SIZE; ++i) {
         

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-30 08:05:26
- * @LastEditTime: 2020-11-30 12:20:13
+ * @LastEditTime: 2020-12-03 23:25:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/TreeSet.h
@@ -18,7 +18,7 @@
     ({                       \
         Set set;              \
         Set_init(set, rb_tree, Set_setup, Set_conflict_fix, insert_cmp);\
-        CN_set_extra_func(tm, Treeset_Expose_Entity); \
+        CN_set_extra_func(set, Treeset_Expose_Entity); \
         set; \
     })
 

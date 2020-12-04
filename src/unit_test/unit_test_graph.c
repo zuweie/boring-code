@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-11-30 17:50:25
+ * @LastEditTime: 2020-12-03 21:20:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -12,6 +12,7 @@
 #include "container/List.h"
 #include "unit_test.h"
 #include "test_data.h"
+#include "cmp_component.h"
 
 #define Graph_inspect(graph, printer, exploring_printer) do{ \
     printf(" \n\n********* inspection of Graph *****************\n\n"); \
@@ -78,7 +79,7 @@ static int suite_success_clean (void)
 
 static void test_graph_vertex_edge (void)
 {
-    Graph* graph = Graph_create(DEFAULT_MATCH_VERTEX, DEFAULT_MATCH_PATH, 0);
+    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, 0);
     Graph_add_vertex(graph, getTSi(1));
     Graph_add_vertex(graph, getTSi(2));
     vertex_t* from = Graph_get_vertex(graph, getTSi(1));
@@ -95,7 +96,7 @@ static void test_graph_vertex_edge (void)
 
 static void test_graph_matrix (void) 
 {
-    Graph* graph = Graph_create(DEFAULT_MATCH_VERTEX, DEFAULT_MATCH_PATH, 0);
+    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, 0);
     // Graph_add_vertex(graph, getTSi(1));
     // Graph_add_vertex(graph, getTSi(2));
     // Graph_add_vertex(graph, getTSi(3));
@@ -161,7 +162,7 @@ static void test_graph_bfs (void)
 static void test_graph_dfs (void) 
 {
 
-    Graph* graph = Graph_create(DEFAULT_MATCH_VERTEX, DEFAULT_MATCH_PATH, sizeof(dfs_explor_t));
+    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(dfs_explor_t));
     Graph_add_vertex(graph, i2t('a')); // 0
     Graph_add_vertex(graph, i2t('b')); // 1
     Graph_add_vertex(graph, i2t('c')); // 2
@@ -222,7 +223,7 @@ static void test_graph_dfs (void)
 
 static void test_grap_strongly_connect(void) {
 
-    Graph* graph = Graph_create(DEFAULT_MATCH_VERTEX, DEFAULT_MATCH_PATH, sizeof(dfs_explor_t));
+    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(dfs_explor_t));
     Graph_add_vertex(graph, i2t('a')); // 0
     Graph_add_vertex(graph, i2t('b')); // 1
     Graph_add_vertex(graph, i2t('c')); // 2

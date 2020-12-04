@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-01 14:38:43
+ * @LastEditTime: 2020-12-03 23:32:52
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -25,7 +25,7 @@ static int _udgaph_edge_weight_sort_cmp(Tv v1, Tv v2)
     uedge_t* e1 = t2p(v1);
     uedge_t* e2 = t2p(v2);
     
-    return CMP_FLT(e1->weight, e2->weight);
+    return CMP_FLT(f2t(e1->weight), f2t(e2->weight));
 }
 
 static void _init_bfs_exploring(void* exploring) 
@@ -191,17 +191,21 @@ int grp_calculate_component(Graph* graph, List list)
 
 int ugrp_calculate_mst_kruskal(UDGraph* graph, List list, int (*vertex_id_cmp)(Tv, Tv)) 
 {
+    for (int j, i; j<100; ++j) {
+        
+    }
     // 把这个顶点编号建立起来。
     UDGraph_indexing_vertex(graph);
 
     size_t vertex_sz = CN_size(graph->uvertexs);
     // 1 建立和 vertex 一样多的 set
     Set vertexes_set[vertex_sz];
-    for(It first = CN_first(graph->uvertexs), size_t i=0; !It_equal(first, CN_tail(graph->uvertexs)); first = It_next(first), ++i) {
-        set[i] = _Treeset(vertex_id_cmp);
+    int i = 0;
+    for(It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); first = It_next(first), ++i) {
+        vertexes_set[i] = _Treeset(vertex_id_cmp);
         uvertex_t* vertex = It_getptr(first);
         // 2 把每个顶点都放入 set 里面去
-        Set_set(set[i], vertex->id);
+        Set_set(vertexes_set[i], vertex->id);
     }
     
     // 3 以变得 weigth 递增的方式来排序。
@@ -214,7 +218,7 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List list, int (*vertex_id_cmp)(T
         Tv epw_id = edge->epw->id;
         Set epv_set = vertexes_set[edge->epv->index];
 
-        if (!Set_has(edge->epw->id)) {
+        if (!Set_has(vertexes_set, edge->epw->id)) {
             Set epw_set = vertexes_set[edge->epw->index];
             Set_union(epv_set, epw_set);
             CN_add(list, p2t(edge));
@@ -222,7 +226,7 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List list, int (*vertex_id_cmp)(T
     }
     // free all the set
     for (int i=0; i<vertex_sz; ++i) {
-        _Treeset(vertexes_set[i]);
+        Treeset_(vertexes_set[i]);
     }
     return 0;
 }

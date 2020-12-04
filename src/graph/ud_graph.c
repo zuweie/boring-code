@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2020-12-01 14:08:05
+ * @LastEditTime: 2020-12-03 23:28:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
@@ -12,27 +12,6 @@
 #include "container/Entity.h"
 #include "container/HashMap.h"
 #include "ud_graph.h"
-
-static int _vertex_id_hasher (Tv v1, size_t slot_size) 
-{
-    Entity* entity = t2p(v1);
-    size_t id  = t2i(entity->tv[0]);
-    size_t key = id % slot_size;
-    return key;
-}
-
-static int _bulid_vertexes_id_indexing(UDGraph* graph, Map map) 
-{
-    int i =0;
-    for (It first = CN_first(graph->uvertexs);
-        !It_equal(first, CN_tail(graph->uvertexs));
-        first = It_next(first)) {
-            vertex_t* v = It_getptr(first);
-            Map_set(map, v->vertex_id, i2t(i++));
-    }
-    return i;
-
-}
 
 static uvertex_t* _create_uvertex(UDGraph* graph, Tv vertex_id) 
 {
