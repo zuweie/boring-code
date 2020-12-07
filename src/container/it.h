@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-10-17 18:24:01
+ * @LastEditTime: 2020-12-07 16:58:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/it.h
@@ -19,7 +19,7 @@ typedef iterator_t It;
 #define It_prev(iter) iterator_prev(iter)
 #define It_equal(iter1, iter2) iterator_equal(iter1, iter2)
 #define It_assign(from, to) iterator_assign(from, to)
-#define It_exchange(iter1, iter2) iterator_exchange(iter1, itert2)
+#define It_exchange(iter1, iter2) iterator_exchange(iter1, iter2)
 
 #define It_getchar(it) t2i(It_dref(it))
 #define It_getint(it) t2i(It_dref(it))

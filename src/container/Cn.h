@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-12-01 07:20:41
+ * @LastEditTime: 2020-12-07 16:30:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -122,6 +122,13 @@
         CN_add_tail(con, v);                  \
     }                                         \
 }while(0)
+
+#define CN_Access(con, step) container_access(cc(con), step)
+#define CN_fetch(con, index, rdata) \
+    ({ \
+        It it = CN_Access(con, index); \
+        rdata = It_dref(it); \
+    })
 // 遍历容器，
 #define CN_travel(con, handle) do {                 \
     for(It first = CN_first(con);                   \

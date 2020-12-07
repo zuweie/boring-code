@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-12-03 21:20:49
+ * @LastEditTime: 2020-12-07 13:26:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -171,8 +171,8 @@ static void test_graph_dfs (void)
     Graph_add_vertex(graph, i2t('f')); // 5
     Graph_add_vertex(graph, i2t('g')); // 6
     Graph_add_vertex(graph, i2t('h')); // 7
-    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
 
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
     Matrix_set(matrix, 0, 1, 1.0f); // a b
     Matrix_set(matrix, 1, 2, 1.0f); // b c
     Matrix_set(matrix, 2, 3, 1.0f); // c d
@@ -211,9 +211,6 @@ static void test_graph_dfs (void)
     }
     // clean up the malloc memory
     List_(list, NULL);
-
-    //grp_cleanup_exploring(graph);
-    //grp_cleanup_exploring(reverse);
 
     CooMatrix_destroy(matrix);
     Graph_destroy(graph);
