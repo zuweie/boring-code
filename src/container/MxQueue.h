@@ -38,10 +38,8 @@ typedef struct {
         if (CN_size(queue.con) >= 0) { \
             if (!queue.build_max_heap) {\
                 heap_build_max_heap(cc(queue.con), c_extra_func(queue.con)); \
-                /*printf("\n heap_build \n");*/\
                 queue.build_max_heap = 1; \
             } else { \
-                /*printf(" heap heapify \n");*/\
                 heap_max_heapify(cc(queue.con), 0, CN_size(cc(queue.con)), c_extra_func(queue.con)); \
             } \
             It first = CN_first(queue.con); \

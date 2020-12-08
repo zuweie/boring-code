@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-29 10:05:22
- * @LastEditTime: 2020-12-03 23:26:44
+ * @LastEditTime: 2020-12-08 16:23:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Set.h
@@ -23,7 +23,8 @@ typedef Container Set;
         Tv __marco_tv[x];                  \
         Entity __marco_entity;            \
         Entity_temp(&__marco_entity, x, x, __marco_tv, __VA_ARGS__); \
-        int ret = CN_has(con, p2t(&__marco_entity));       \
+        It it = CN_search(con, __null_iterator, p2t(&__marco_entity));\
+        int ret = It_valid(it); \
         ret; \
     })
 #define Set_has(con, key) set_hasx(con, 1, key)

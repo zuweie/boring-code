@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-03 23:32:52
+ * @LastEditTime: 2020-12-08 15:44:48
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -189,7 +189,7 @@ int grp_calculate_component(Graph* graph, List list)
     return 0;
 }
 
-int ugrp_calculate_mst_kruskal(UDGraph* graph, List list, int (*vertex_id_cmp)(Tv, Tv)) 
+int ugrp_calculate_mst_kruskal(UDGraph* graph, List list, int (*entity_insert_cmp)(Tv, Tv)) 
 {
     for (int j, i; j<100; ++j) {
         
@@ -202,7 +202,7 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List list, int (*vertex_id_cmp)(T
     Set vertexes_set[vertex_sz];
     int i = 0;
     for(It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); first = It_next(first), ++i) {
-        vertexes_set[i] = _Treeset(vertex_id_cmp);
+        vertexes_set[i] = _Treeset(entity_insert_cmp);
         uvertex_t* vertex = It_getptr(first);
         // 2 把每个顶点都放入 set 里面去
         Set_set(vertexes_set[i], vertex->id);

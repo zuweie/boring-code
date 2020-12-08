@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 17:37:16
- * @LastEditTime: 2020-12-07 17:38:23
+ * @LastEditTime: 2020-12-08 15:18:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_heap_sort.c
@@ -34,12 +34,7 @@ static void test_vector_heap_sort(void)
     for (int i=0; i<10; ++i) {
         container_insert_tail(vector, getTSi(i));
     }
-    // printf("\n\n befort sort \n\n");
-    // for(iterator_t first = container_first(vector); !iterator_equal(first, container_tail(vector)); first = iterator_next(first)) {
-    //     printf("%d ", vtype_int(iterator_dereference(first)));
-    // }
 
-    // printf("\n\n after sort \n\n");
 
     heap_sort(vector, CMP_INT);
 
@@ -49,7 +44,6 @@ static void test_vector_heap_sort(void)
         type_value_t t2 = iterator_dereference(iterator_next(first));
         CU_ASSERT_TRUE( vtype_cmp_on_int(t1, t2) <= 0 );
     }
-    // printf("\n\n");
     container_destroy(vector, vector);
 }
 
@@ -59,20 +53,8 @@ static void test_list_heap_sort(void)
     for (int i=0; i<10; ++i) {
         container_insert_tail(list, getTSi(i));
     }
-    // printf("\n\n befort sort \n\n");
-    // for(iterator_t first = container_first(list); !iterator_equal(first, container_tail(list)); first = iterator_next(first)) {
-    //     printf("%d ", vtype_int(iterator_dereference(first)));
-    // }
-
-    // printf("\n\n after sort \n\n");
 
     heap_sort(list, INCMP_INT);
-
-    // printf("\n\n after sort \n\n");
-    
-    // for(iterator_t first = container_first(list); !iterator_equal(first, container_tail(list)); first = iterator_next(first)) {
-    //     printf("%d ", vtype_int(iterator_dereference(first)));
-    // }
 
     for(iterator_t first = container_first(list); !iterator_equal(first, container_last(list)); first = iterator_next(first)) {
         //printf("%d ", vtype_int(iterator_dereference(first)));

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-11-30 12:12:53
+ * @LastEditTime: 2020-12-08 16:35:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -23,7 +23,8 @@ typedef Entity* (*Expose_Entity)(Tv);
         Tv __marco_tv[x];                  \
         Entity __marco_entity;            \
         Entity_temp(&__marco_entity, x, x, __marco_tv, __VA_ARGS__); \
-        int ret = CN_has(con, p2t(&__marco_entity));       \
+        It it = CN_search(con, __null_iterator, p2t(&__marco_entity));\
+        int ret = It_valid(it);\
         ret; \
     })
 #define Map_has(con, key) Map_hasx(con, 1, key)

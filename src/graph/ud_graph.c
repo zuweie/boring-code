@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2020-12-03 23:28:14
+ * @LastEditTime: 2020-12-08 15:25:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
@@ -79,9 +79,9 @@ int UDGraph_add_edge(UDGraph* udgraph, Tv vertex_1, Tv vertex_2, float w)
         uvertex_t* v2 = It_getptr(i_v2);
         uedge_t* edge = _create_uedge(v1, v2, w);
         CN_add(udgraph->uedges, p2t(edge));
-
+        return 0;
     }
-    return 0;
+    return -1;
 }
 
 int UDGraph_del_vertex(UDGraph* udgraph, Tv vertex_id, int (*match_edge)(Tv, Tv)) 
