@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-11-09 15:02:54
+ * @LastEditTime: 2020-12-09 09:23:45
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -24,6 +24,8 @@
     /** 初始化其他 **/
     prb->_size = 0;
     prb->_root = _null(prb);
+    prb->_first = _null(prb);
+    prb->_last  = _null(prb);
     prb->_insert_compare = insert_compare;
  }
 
@@ -44,6 +46,8 @@ static rb_tree_node_t* __tree_maximun (rb_tree_t* prb, rb_tree_node_t* pnode)
     }
     return pnode;
 }
+
+
 
 // 找该节点的下一个（比这个大的下一个）
 static rb_tree_node_t* __tree_successor (rb_tree_t* prb, rb_tree_node_t* pnode) 
@@ -295,7 +299,23 @@ static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int(*setup)(type_va
     pz->right = _null(prb);
     pz->color = _rb_red;
     prb->_size++;
-    return __rb_tree_insert_fixup(prb, pz);
+    // 修改 first 或者 last
+    __rb_tree_insert_fixup(prb, pz);
+
+    /* 更新 first 与 last */
+    if (prb->_first == _null(prb)) {
+        prb->_first = __tree_minimum(prb, prb->_root);
+    } else if (prb->_first->left != _null(prb)) {
+        prb->_first = prb->_first->left;
+    }
+
+    if (prb->_last == _null(prb)) {
+        prb->_last = __tree_maximun(prb, prb->_root);
+    } else if (prb->_last->right != _null(prb)) {
+        prb->_last = prb->_last->right;
+    }
+    
+    return 0;
 }
 
 static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
@@ -410,6 +430,15 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 {
     if (pz != _null(prb)){
         
+        // 更新 tree 的 first 和 last
+        if (prb->_first == pz) {
+            prb->_first = __tree_successor(prb, pz);
+        } 
+        
+        if (prb->_last == pz) {
+            prb->_last = __tree_predecessor(prb, pz);
+        }
+
         rb_tree_node_t *py = _null(prb);
         rb_tree_node_t *px = _null(prb);
         if (pz->left == _null(prb) || pz->right == _null(prb)){
@@ -456,7 +485,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
         //return rdata;
         return 0;
     }else{
-        // 空节点，返回-1;
+        // 恶意删除，空节点，返回-1;
         return -1;
     }
 }
@@ -489,14 +518,18 @@ static iterator_t _move(iterator_t it, int step)
 static iterator_t _rb_tree_first(container_t* container) 
 {
     rb_tree_t* tree = container;
-    rb_tree_node_t* pnode = __tree_minimum(tree, tree->_root);
+    /* 用计算的方式来获取第一个随着节点的增加变得慢 */
+    //rb_tree_node_t* pnode = __tree_minimum(tree, tree->_root);
+    rb_tree_node_t* pnode = tree->_first;
     return __iterator(pnode, container,_move);
 }
 
 static iterator_t _rb_tree_last(container_t* container) 
 {
     rb_tree_t* tree = container;
-    rb_tree_node_t* pnode = __tree_maximun(tree, tree->_root);
+    /* 用计算方式来获取最后一个节点，随着节点的数量增多变慢 */
+    //rb_tree_node_t* pnode = __tree_maximun(tree, tree->_root);
+    rb_tree_node_t* pnode = tree->_last;
     return __iterator(pnode, container, _move);
 }
 
@@ -533,6 +566,7 @@ static int _rb_tree_sort(container_t* container, int(*compare)(type_value_t, typ
 }
 static int _rb_tree_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int (*callback)(void*))
 {
+    // rb 树不能wring
     return -1;
 }
 

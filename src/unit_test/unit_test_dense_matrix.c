@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-12 12:23:02
- * @LastEditTime: 2020-11-17 13:30:10
+ * @LastEditTime: 2020-12-09 09:24:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dense_matrix.c
@@ -35,9 +35,9 @@ static void test_dense_matrix_set_get (void)
 {
     extern float test_data_float[TEST_DATA_SIZE];
     DenseMatrix* matrix = DenseMatrix_load(25, 4, test_data_float);
-    printf("\n\n");
-    printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
-    PR_DENSEMATRIX(matrix);
+    // printf("\n\n");
+    // printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
+    // PR_DENSEMATRIX(matrix);
     DenseMatrix_destroy(matrix);
     CU_ASSERT_TRUE(1);
 }
@@ -46,17 +46,17 @@ static void test_dense_matrix_trans (void)
 {
     extern float test_data_float[TEST_DATA_SIZE];
     DenseMatrix* matrix = DenseMatrix_load(25, 4, test_data_float);
-    printf("\n\n");
-    printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
-    PR_DENSEMATRIX(matrix);
-    printf("\n\n");
-    Matrix_trans(matrix);
-    printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
-    PR_DENSEMATRIX(matrix);
-    printf("\n\n");
-    Matrix_trans(matrix);
-    printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
-    PR_DENSEMATRIX(matrix);
+    // printf("\n\n");
+    // printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
+    // PR_DENSEMATRIX(matrix);
+    // printf("\n\n");
+    // Matrix_trans(matrix);
+    // printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
+    // PR_DENSEMATRIX(matrix);
+    // printf("\n\n");
+    // Matrix_trans(matrix);
+    // printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
+    // PR_DENSEMATRIX(matrix);
     DenseMatrix_destroy(matrix);
     CU_ASSERT_TRUE(1);
 }
@@ -82,9 +82,9 @@ static void test_dense_matrix_product(void)
     DenseMatrix* product = DenseMatrix_create(Matrix_rows(matrix1), Matrix_cols(matrix2));
     product = Matrix_product(matrix1, matrix2, product);
 
-    printf("\n\n");
-    printf("rows %d cols %d\n", Matrix_rows(product), Matrix_cols(product));
-    PR_DENSEMATRIX(product);
+    //printf("\n\n");
+    //printf("rows %d cols %d\n", Matrix_rows(product), Matrix_cols(product));
+    //PR_DENSEMATRIX(product);
 
     DenseMatrix_destroy(matrix1);
     DenseMatrix_destroy(matrix2);

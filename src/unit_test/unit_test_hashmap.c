@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-12-03 14:01:15
+ * @LastEditTime: 2020-12-09 10:11:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -463,6 +463,107 @@ static void test_hashmap_set_n_get (void)
     Hashmap_(hashmap);
 }
 
+static void test_treemap_first_last(void) 
+{
+    Map treemap = _Treemap(entity_int_insert_cmp);
+    Map_set(treemap, 1, 1);
+    It first = CN_first(treemap);
+    Entity* entity = It_getptr(first);
+    CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(1)) == 0 );
+
+    It last = CN_last(treemap);
+    entity = It_getptr(last);
+    CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(1)) == 0 );
+
+    // 插入一个2
+    Map_set(treemap, 2, 2);
+
+    first = CN_first(treemap);
+    entity = It_getptr(first);
+    CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(1)) == 0);
+
+    last = CN_last(treemap);
+    entity = It_getptr(last);
+    CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(2)) == 0);
+    //PRINTF_TV_ON_INT(entity->tv[0]);
+    
+    Map_del(treemap, 1, NULL);
+    first = CN_first(treemap);
+    entity = It_getptr(first);
+    CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(2)) == 0);
+
+
+    last  = CN_last(treemap);
+    entity = It_getptr(last);
+    CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(2)) == 0);
+    Treemap_(treemap);
+    
+    Map treemap2 = _Treemap(entity_int_insert_cmp);
+    List list    = _List(NULL);
+    for (int i=0; i<100; ++i) {
+        Map_set(treemap2, getTSi(i), getTSi(i));
+        CN_add(list, getTSi(i));
+    }
+    CN_sort(list, CMP_INT);
+    
+    Tv list_first = It_dref( CN_first(list) );
+    Tv list_last  = It_dref( CN_last(list) );
+    Tv list_sec   = It_dref( It_next(CN_first(list)) );
+    Tv list_rsec  = It_dref( It_prev(CN_last(list)) );
+
+    It tree2_first = CN_first(treemap2);
+    Entity* first_entity = It_getptr(tree2_first);
+    It tree2_last  = CN_last(treemap2);
+    Entity* last_entity = It_getptr(tree2_last);
+    CU_ASSERT_TRUE(CMP_INT(first_entity->tv[0], list_first) == 0);
+    CU_ASSERT_TRUE(CMP_INT(last_entity->tv[0], list_last) == 0);
+
+    Map_del(treemap2, getTSi(45), NULL);
+    Map_del(treemap2, getTSi(53), NULL);
+
+    tree2_first = CN_first(treemap2);
+    first_entity = It_getptr(tree2_first);
+    tree2_last  = CN_last(treemap2);
+    last_entity = It_getptr(tree2_last);
+
+    CU_ASSERT_TRUE(CMP_INT(first_entity->tv[0], list_first) == 0);
+    CU_ASSERT_TRUE(CMP_INT(last_entity->tv[0], list_last) == 0);
+    
+    // printf("\n");
+    // for (It first = CN_first(treemap2); !It_equal(first, CN_tail(treemap2)); first = It_next(first)) 
+    // {
+    //     Entity* entity = It_getptr(first);
+    //     PRINTF_TV_ON_INT(entity->tv[0]);
+    // }
+    // printf("\n");
+
+    Map_del(treemap2, list_first, NULL);
+    Map_del(treemap2, list_last, NULL);
+
+    // printf("\n");
+    // for (It first = CN_first(treemap2); !It_equal(first, CN_tail(treemap2)); first = It_next(first)) 
+    // {
+    //     Entity* entity = It_getptr(first);
+    //     PRINTF_TV_ON_INT(entity->tv[0]);
+    // }
+    // printf("\n");
+
+    tree2_first = CN_first(treemap2);
+    first_entity = It_getptr(tree2_first);
+    tree2_last  = CN_last(treemap2);
+    last_entity = It_getptr(tree2_last);
+
+    
+    CU_ASSERT_FALSE(CMP_INT(first_entity->tv[0], list_first) == 0);
+    CU_ASSERT_FALSE(CMP_INT(last_entity->tv[0], list_last) == 0);
+
+    CU_ASSERT_TRUE(CMP_INT(first_entity->tv[0], list_sec) == 0);
+    CU_ASSERT_TRUE(CMP_INT(last_entity->tv[0], list_rsec) == 0);
+
+    Treemap_(treemap2);
+    List_(list, NULL);
+}
+
 static void test_entity(void)
 {
     Entity entity;
@@ -528,5 +629,8 @@ int do_hashmap_test (void)
         return CU_get_error();
     }
 
-
+    if (NULL == CU_add_test(pSuite, "test treemap first last", test_treemap_first_last) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
