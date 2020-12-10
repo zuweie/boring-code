@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-12-08 16:13:03
+ * @LastEditTime: 2020-12-10 20:02:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -92,6 +92,7 @@
 
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
 #define CN_size(con) container_size(cc(con))
+#define CN_is_empty(con) (CN_size(con) == 0)
 #define CN_sort(con, sort_cmp) container_sort(cc(con), sort_cmp)
 #define CN_wring(con, cb) container_wring(cc(con), c_search_cmp(con), cb)
 
@@ -151,13 +152,9 @@
 
 // 两个容器合并。
 #define CN_merge(con1, con2) do { \
-    It first2  = CN_first(c2);    \
-    It tail2   = CN_tail(c2);     \
-    for(; !It_equal(first2, tail2); \
-        first2 = It_next(first2)) { \
-        Tv data = It_dref(first2);    \
-        CN_add(c1, data);             \
-    }                                 \
+    for(It __marco_first = CN_first(con2); !It_equal(__marco_first, CN_tail(con2)); __marco_first = It_next(__marco_first)) { \
+        CN_add(con1, It_dref(__marco_first)); \
+    } \
 }while(0)
 
 #define CN_initialize(con, label, search_cmp, setup, conflict_fix, ... ) do {  \

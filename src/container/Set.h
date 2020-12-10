@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-29 10:05:22
- * @LastEditTime: 2020-12-08 16:23:54
+ * @LastEditTime: 2020-12-10 17:00:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Set.h
@@ -77,10 +77,37 @@ typedef Container Set;
 #define Set_del(con, key, prdata) Set_delx(con, prdata, 1, key)
 
 #define Set_union(set1, set2) do { \
-    for (It first = CN_first(set2); !It_equal(first, CN_first(set2)); first = It_next(first)) { \
-        CN_set(set1, It_dref(first)); \
+    for (It first = CN_first(set2); !It_equal(first, CN_tail(set2)); first = It_next(first)) { \
+        Entity* __marco_entity = It_getptr(first); \
+        Entity __marco_temp_entity; \
+        Tv __marco_temp_tv[__marco_entity->number]; \
+        Entity_cypto_temp(__marco_entity, &__marco_temp_entity, __marco_temp_tv); \
+        CN_set(set1, p2t(&__marco_temp_entity)); \
     } \
 } while(0)
+
+#define Set_intersect(set1, set2) \
+    ({ \
+        int ret = 0; \
+        It first = CN_size(set1) < CN_size(set2) ? CN_first(set1) : CN_first(set2); \
+        It tail  = CN_size(set1) < CN_size(set2) ? CN_tail(set1) : CN_tail(set2); \
+        Set __marco_set = CN_size(set1) >= CN_size(set2) ? set1 : set2; \
+        for (;!It_equal(first, tail); first = It_next(first)) { \
+            It it = CN_search(__marco_set, __null_iterator, It_dref(first)); \
+            if (It_valid(it)) { \
+                ret = 1; \
+                break; \
+            } \
+        } \
+        ret; \
+    })
+
+#define Set_get_item(con, it) \
+    ({ \
+        Entity* __marco_entity = It_getptr(it); \
+        Tv __marco_tv = __marco_entity->tv[0]; \
+        __marco_tv; \
+    })
 
 static inline 
 int Set_setup (Tv* v1, Tv v2) 

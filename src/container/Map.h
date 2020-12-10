@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-12-09 08:56:19
+ * @LastEditTime: 2020-12-10 19:51:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -84,6 +84,13 @@ typedef Entity* (*Expose_Entity)(Tv);
 #define Map_del(con, key, prdata) Map_delx(con, prdata, 1, key)
 #define Map_del2(con, key1, key2, prdata) Map_delx(con, prdata, 2, key1, key2)
 #define Map_del3(con, key1, key2, key3, prdata) Map_delx(con, prdata, 3, key1, key2, key3)
+
+#define Map_get_entity(con,it) \ 
+    ({ \
+        Expose_Entity exposer = (Expose_Entity) c_extra_func(con); \
+        Entity* ent = exposer(It_dref(it)); \
+        ent; \
+    })
 
 static inline 
 int Map_setup (Tv* v1, Tv v2) 

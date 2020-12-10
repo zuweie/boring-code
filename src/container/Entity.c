@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-24 10:20:46
- * @LastEditTime: 2020-11-22 22:53:31
+ * @LastEditTime: 2020-12-09 10:35:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -25,7 +25,15 @@ void Entity_temp(Entity* entity, int num, int value_index, Tv t[], ...)
     entity->tv = t;
     va_end(valist);
 }
-
+void Entity_cypto_temp(Entity* from, Entity* to, Tv t[]) 
+{
+    for (int i=0; i<from->number; ++i) {
+        t[i] = from->tv[i];
+    }
+    to->number = from->number;
+    to->value_index = from->value_index;
+    to->tv = t;
+}
 Entity* Entity_cpyto_heap_entity(Entity* temp) 
 {
     Entity *lentity = (Entity*) malloc(sizeof(Entity) + sizeof(Tv)*(temp->number));

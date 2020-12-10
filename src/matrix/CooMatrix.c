@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2020-11-30 18:06:50
+ * @LastEditTime: 2020-12-10 19:51:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
@@ -49,7 +49,7 @@ int trans(imatrix_t* matrix_ptr)
     Map new_coo = _Hashmap(COOMATRIX_Keyhasher);
     
     for(It first = CN_first(cooMatrix->coo);!It_equal(first, CN_tail(cooMatrix->coo));first=It_next(first)) {
-        Entity* pentity = Hahsmap_node_2_entity(It_getptr(first));
+        Entity* pentity = Map_get_entity(cooMatrix->coo, first);
         Map_set2(new_coo, pentity->tv[1], pentity->tv[0], pentity->tv[2]);
     }
     

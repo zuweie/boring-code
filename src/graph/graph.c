@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-12-01 14:14:09
+ * @LastEditTime: 2020-12-10 19:52:04
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -185,7 +185,7 @@ int Graph_add_paths_by_matrix(Graph* graph, CooMatrix* coomatrix)
         Tv arr[size];
         CN_to_arr(graph->vertexes, arr);
         for (It first = CN_first(coomatrix->coo); !It_equal(first, CN_tail(coomatrix->coo)); first = It_next(first)) {
-           Entity* entity = Hahsmap_node_2_entity(It_getptr(first));
+           Entity* entity = Map_get_entity(coomatrix->coo, first);
            size_t x = t2i(entity->tv[0]);
            size_t y = t2i(entity->tv[1]);
            float  w = t2f(entity->tv[2]);

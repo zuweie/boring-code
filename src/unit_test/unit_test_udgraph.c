@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-01 08:42:35
- * @LastEditTime: 2020-12-08 16:02:19
+ * @LastEditTime: 2020-12-10 20:09:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_udgraph.c
@@ -28,7 +28,7 @@ static int suite_success_clean (void)
 
 static void test_udgraph_mst_kruskal(void) 
 {
-    UDGraph* graph = UDGraph_create(udgraph_match_vertex, udgraph_match_edge_2p, 0);
+    UDGraph* graph = UDGraph_create(udgraph_match_vertex, udgraph_match_edge_2p, sizeof(udg_kruskal_explor_t));
     List list = _List(NULL);
     
     UDGraph_add_vertex(graph, i2t('a'));
@@ -56,7 +56,7 @@ static void test_udgraph_mst_kruskal(void)
     CU_ASSERT_TRUE(UDGraph_add_edge(graph, i2t('h'), i2t('g'), 1) == 0);
     CU_ASSERT_TRUE(UDGraph_add_edge(graph, i2t('i'), i2t('h'), 7) == 0);
     
-    ugrp_calculate_mst_kruskal(graph, list, entity_int_insert_cmp);
+    ugrp_calculate_mst_kruskal(graph, list);
     
     printf("\n");
     int i = 0;

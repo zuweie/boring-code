@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:08:02
- * @LastEditTime: 2020-12-02 23:24:58
+ * @LastEditTime: 2020-12-09 10:39:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -19,7 +19,7 @@ typedef struct _entity {
 } Entity;
 
 void Entity_temp(Entity*, int num, int value_index, Tv t[],  ...);
-
+void Entity_cypto_temp(Entity*, Entity*, Tv t[]);
 // 这个需要手动释放内存。
 Entity* Entity_cpyto_heap_entity(Entity*);
 

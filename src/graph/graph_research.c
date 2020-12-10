@@ -2,15 +2,18 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-08 15:44:48
+ * @LastEditTime: 2020-12-10 21:46:12
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
 #include "container/Queue.h"
 #include "container/Tv.h"
 #include "container/It.h"
-#include "container/TreeSet.h"
+#include "container/List.h"
 #include "container/HashMap.h"
+#include "container/MxQueue.h"
+
+#define PRIM_MAX 9999999.99f;
 
 static int _topological_sort_cmp(Tv t1, Tv t2) 
 {
@@ -26,6 +29,13 @@ static int _udgaph_edge_weight_sort_cmp(Tv v1, Tv v2)
     uedge_t* e2 = t2p(v2);
     
     return CMP_FLT(f2t(e1->weight), f2t(e2->weight));
+}
+
+static int _free_list_in_group_list(Tv v) 
+{
+    List* l = t2p(v);
+    List_(*l, NULL);
+    free(l);
 }
 
 static void _init_bfs_exploring(void* exploring) 
@@ -189,44 +199,72 @@ int grp_calculate_component(Graph* graph, List list)
     return 0;
 }
 
-int ugrp_calculate_mst_kruskal(UDGraph* graph, List list, int (*entity_insert_cmp)(Tv, Tv)) 
+int ugrp_calculate_mst_kruskal(UDGraph* graph, List list) 
 {
-    for (int j, i; j<100; ++j) {
-        
-    }
-    // 把这个顶点编号建立起来。
-    UDGraph_indexing_vertex(graph);
+    List group_list = _List(NULL);
+    
+    for(It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); first = It_next(first)) {
 
-    size_t vertex_sz = CN_size(graph->uvertexs);
-    // 1 建立和 vertex 一样多的 set
-    Set vertexes_set[vertex_sz];
-    int i = 0;
-    for(It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); first = It_next(first), ++i) {
-        vertexes_set[i] = _Treeset(entity_insert_cmp);
+        List* l = malloc(sizeof(List));
+        *l = _List(NULL);//_Treeset(entity_insert_cmp);
+
         uvertex_t* vertex = It_getptr(first);
-        // 2 把每个顶点都放入 set 里面去
-        Set_set(vertexes_set[i], vertex->id);
+        // 为每个定点分配一个 list
+        CN_add(*l, p2t(vertex));
+        
+        // 存入一个 list 中
+        CN_add_tail(group_list, p2t(l));
+
+        // mark 下自己节点所在的 group 的 iterator
+        ((udg_kruskal_explor_t*)(vertex->exploring))->group_iterator = CN_last(group_list);
+
     }
     
-    // 3 以变得 weigth 递增的方式来排序。
+        // 3 以变得 weigth 递增的方式来排序。
     CN_sort(graph->uedges, _udgaph_edge_weight_sort_cmp);
 
     // 遍历每一条边。
     for (It first = CN_first(graph->uedges); !It_equal(first, CN_tail(graph->uedges)); first = It_next(first)){
         uedge_t* edge = It_getptr(first);
-        Tv epv_id = edge->epv->id;
-        Tv epw_id = edge->epw->id;
-        Set epv_set = vertexes_set[edge->epv->index];
 
-        if (!Set_has(vertexes_set, edge->epw->id)) {
-            Set epw_set = vertexes_set[edge->epw->index];
-            Set_union(epv_set, epw_set);
+        List* epv_list = It_getptr(((udg_kruskal_explor_t*)(edge->epv->exploring))->group_iterator);
+        List* epw_list = It_getptr(((udg_kruskal_explor_t*)(edge->epw->exploring))->group_iterator);
+
+        if (epv_list != epw_list) {
+
+            It epv_list_it = ((udg_kruskal_explor_t*)(edge->epv->exploring))->group_iterator;
+            It epw_list_it = ((udg_kruskal_explor_t*)(edge->epw->exploring))->group_iterator;
+            
+            for (It first = CN_first(*epw_list); !It_equal(first, CN_tail(*epw_list)); first = It_next(first)) {
+                //Tv v = Set_get_item(*epw_list, first);
+                uvertex_t* vertex = It_getptr(first);
+                // 把 epw list 都换成 epv 的 list;
+                ((udg_kruskal_explor_t*)(vertex->exploring))->group_iterator = epv_list_it;
+            }
+            // 把两个合并起来
+            CN_merge(*epv_list, *epw_list);
+            Tv rdata;
+            CN_remove(group_list, epw_list_it, &rdata);
+            // 把这个列 set 干掉。
+            //free(t2p(rdata));
+            _free_list_in_group_list(rdata);
             CN_add(list, p2t(edge));
         }
     }
-    // free all the set
-    for (int i=0; i<vertex_sz; ++i) {
-        Treeset_(vertexes_set[i]);
-    }
+    
+    List_(group_list, _free_list_in_group_list);
     return 0;
+}
+
+int ugrp_calculate_mst_prim(UDGraph* udgraph, uvertex_t* start)
+{
+    // 初始化
+    for (It first = CN_first(udgraph->uvertexs); !It_equal(first, CN_tail(udgraph->uvertexs)); first = It_next(first)) {
+        uvertex_t* v = It_getptr(first);
+        udg_prim_explor_t* explor = v->exploring;
+        explor->key = PRIM_MAX;
+        explor->pi  = NULL;
+    }
+
+
 }

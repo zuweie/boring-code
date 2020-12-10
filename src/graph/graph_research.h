@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-12-08 15:44:58
+ * @LastEditTime: 2020-12-10 20:09:02
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
@@ -30,6 +30,15 @@ typedef struct _dfs_explor {
     vertex_t* pi;
 } dfs_explor_t;
 
+typedef struct _udg_prim_explor {
+    uvertex_t* pi;
+    float key;
+} udg_prim_explor_t;
+
+typedef struct _udg_kruskal_explor {
+    It group_iterator;
+} udg_kruskal_explor_t;
+
 int grp_bfs_exploring(Graph* graph, vertex_t* start);
 int grp_dfs_exploring(Graph* graph);
 
@@ -38,6 +47,7 @@ int grp_topological_sort(Graph* graph);
 int grp_calculate_component(Graph* graph, List list);
 Graph* grp_calculate_strongly_connected_component_graph (Graph* graph);
 
-int ugrp_calculate_mst_kruskal(UDGraph*, List, int (*)(Tv, Tv));
+int ugrp_calculate_mst_kruskal(UDGraph*, List);
+int ugrp_calculate_mst_prim(UDGraph* udgraph, uvertex_t* start);
 
 #endif
