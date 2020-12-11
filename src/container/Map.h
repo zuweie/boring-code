@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2020-12-10 19:51:43
+ * @LastEditTime: 2020-12-11 13:25:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -14,7 +14,7 @@
 typedef Container   Map;
 typedef Entity* (*Expose_Entity)(Tv);
 
-#define Map_init(map, map_clazz, setup, conflict, ...) CN_initialize(map, map_clazz, NULL, setup, conflict, __VA_ARGS__);
+#define Map_init(map, map_clazz, setup, conflict, ...) CN_initialize(map, map_clazz, NULL, setup, conflict, __VA_ARGS__)
 
 #define Map_uninit(map, map_clazz, cleanup) CN_uninitialize(map, map_clazz, cleanup)
 
@@ -96,7 +96,7 @@ static inline
 int Map_setup (Tv* v1, Tv v2) 
 {
     Entity* temp = t2p(v2);
-    Entity* lentity = Entity_cpyto_heap_entity(temp);
+    Entity* lentity = Entity_malloc_copy_entity(temp);
     //printf("make a lentity %p \n", lentity);
     *v1 = p2t(lentity);
 }
@@ -117,7 +117,7 @@ int Map_conflict_fix(Tv* v1, Tv v2)
     } else {
         // 直接把旧的弄掉，换新的上去。
         free(lentity);
-        Entity* nentity = Entity_cpyto_heap_entity(temp);
+        Entity* nentity = Entity_malloc_copy_entity(temp);
         *v1 = p2t(nentity);
     } 
     return 0;

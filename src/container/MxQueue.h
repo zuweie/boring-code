@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-07 08:50:00
- * @LastEditTime: 2020-12-07 17:35:59
+ * @LastEditTime: 2020-12-10 23:10:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MxQueue.h
@@ -19,7 +19,7 @@ typedef struct {
     Container con;
     short build_max_heap;
 
-} MXQueue; 
+} MxQueue; 
 
 #define _MxQueue(sort_cmp) \
     ({ \

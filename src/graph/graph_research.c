@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-10 21:46:12
+ * @LastEditTime: 2020-12-11 14:44:54
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -53,6 +53,17 @@ static void _init_dfs_exploring(void* exploring)
     pn->pi = NULL;
     pn->d_time = -1;
     pn->f_time = -1;
+}
+
+static int udg_vertex_cmp (Tv v1, Tv v2) 
+{
+    udg_prim_explor_t* uv1_explor = ((uvertex_t*)t2p(v1))->exploring;
+    udg_prim_explor_t* uv2_explor = ((uvertex_t*)t2p(v2))->exploring;
+
+    if (uv1_explor->key == uv2_explor->key) return 0;
+    if (uv1_explor->key > uv2_explor->key) return 1;
+    if (uv1_explor->key < uv2_explor->key) return -1;
+    
 }
 
 // 广度优先算法
@@ -216,7 +227,7 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List list)
         CN_add_tail(group_list, p2t(l));
 
         // mark 下自己节点所在的 group 的 iterator
-        ((udg_kruskal_explor_t*)(vertex->exploring))->group_iterator = CN_last(group_list);
+        *((It*)(vertex->exploring)) = CN_last(group_list);
 
     }
     
@@ -227,19 +238,19 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List list)
     for (It first = CN_first(graph->uedges); !It_equal(first, CN_tail(graph->uedges)); first = It_next(first)){
         uedge_t* edge = It_getptr(first);
 
-        List* epv_list = It_getptr(((udg_kruskal_explor_t*)(edge->epv->exploring))->group_iterator);
-        List* epw_list = It_getptr(((udg_kruskal_explor_t*)(edge->epw->exploring))->group_iterator);
+        List* epv_list = It_getptr((*((It*)(edge->epv->exploring))));
+        List* epw_list = It_getptr((*((It*)(edge->epw->exploring))));
 
         if (epv_list != epw_list) {
 
-            It epv_list_it = ((udg_kruskal_explor_t*)(edge->epv->exploring))->group_iterator;
-            It epw_list_it = ((udg_kruskal_explor_t*)(edge->epw->exploring))->group_iterator;
+            It epv_list_it = *((It*)(edge->epv->exploring));
+            It epw_list_it = *((It*)(edge->epw->exploring));
             
             for (It first = CN_first(*epw_list); !It_equal(first, CN_tail(*epw_list)); first = It_next(first)) {
                 //Tv v = Set_get_item(*epw_list, first);
                 uvertex_t* vertex = It_getptr(first);
                 // 把 epw list 都换成 epv 的 list;
-                ((udg_kruskal_explor_t*)(vertex->exploring))->group_iterator = epv_list_it;
+                *((It*)(vertex->exploring)) = epv_list_it;
             }
             // 把两个合并起来
             CN_merge(*epv_list, *epw_list);
@@ -259,12 +270,42 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List list)
 int ugrp_calculate_mst_prim(UDGraph* udgraph, uvertex_t* start)
 {
     // 初始化
+    MxQueue q = _MxQueue(udg_vertex_cmp); 
     for (It first = CN_first(udgraph->uvertexs); !It_equal(first, CN_tail(udgraph->uvertexs)); first = It_next(first)) {
         uvertex_t* v = It_getptr(first);
         udg_prim_explor_t* explor = v->exploring;
         explor->key = PRIM_MAX;
         explor->pi  = NULL;
+        explor->in_queue = 1;
+        CN_add(q, p2t(v));
     }
+    
+    udg_prim_explor_t* explor = start->exploring;
+    explor->key = 0.0f;
 
+    Tv extracted_vertex;
+    while (MxQueue_extract(q, &extracted_vertex) != -1) {
 
+        uvertex_t* u = t2p(extracted_vertex);
+        udg_prim_explor_t* explor = v->exploring;
+        explor->in_queue = 0;
+
+        // 遍历这个顶点想邻接的边。
+        for (It first = CN_first(u->adjs); !It_equal(first, CN_tail(u->adjs)); first = It_next(first)) {
+            uvertex_t* v = It_getptr(first);
+            udg_prim_explor_t* v_explor = u->exploring;
+
+            if (v_explor->in_queue) {
+
+                float uv_weight;
+                UDGraph_get_edge_wight(u, v, &uv_weight);
+                
+                if (uv_weight < v_explor->key) {
+                    v_explor->pi = u;
+                    v_explor->key = uv_weight;
+                }
+            }
+        }
+    }
+    return 0;
 }

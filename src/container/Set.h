@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-29 10:05:22
- * @LastEditTime: 2020-12-10 17:00:40
+ * @LastEditTime: 2020-12-11 11:29:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Set.h
@@ -113,7 +113,7 @@ static inline
 int Set_setup (Tv* v1, Tv v2) 
 {
     Entity* temp = t2p(v2);
-    Entity* lentity = Entity_cpyto_heap_entity(temp);
+    Entity* lentity = Entity_malloc_copy_entity(temp);
     *v1 = p2t(lentity);
 }
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-24 10:20:46
- * @LastEditTime: 2020-12-09 10:35:10
+ * @LastEditTime: 2020-12-11 11:31:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -11,7 +11,16 @@
 #include "Entity.h"
 #include "Tv.h"
 
-void Entity_temp(Entity* entity, int num, int value_index, Tv t[], ...) 
+/**
+ * 
+ * 记录一下可变参数的原理：
+ * 1 va_list 其实就是 void*
+ * 2 va_start(va_list, last_arg_before_dot_dot_dot), 就是获取了 &last_arg_before_dot_dot_dot 的地址。
+ * 3 va_arg(va_list, type_you_dig) , 根据 type_you_dig 的数据类型(大小,size)。往 &last_arg_before_dot_dot_dot 的地址后面挖数据然后返回。
+ * 4 va_end(va_list) 把 va_list 置 0
+ * */
+
+Entity* Entity_temp(Entity* entity, int num, int value_index, Tv t[], ...) 
 {
     va_list valist;
     va_start(valist, t);
@@ -24,25 +33,40 @@ void Entity_temp(Entity* entity, int num, int value_index, Tv t[], ...)
     entity->value_index = value_index;
     entity->tv = t;
     va_end(valist);
+    return entity;
 }
-void Entity_cypto_temp(Entity* from, Entity* to, Tv t[]) 
+
+Entity* Entity_heap(int num, int value_index, ...) 
 {
-    for (int i=0; i<from->number; ++i) {
-        t[i] = from->tv[i];
+    Entity* entity = (Entity*) malloc (sizeof(Entity) + sizeof(Tv)*num);
+    entity->number = num;
+    entity->value_index = value_index;
+    entity->tv = &entity[1];
+
+    va_list valist;
+    va_start(valist, value_index);
+    for (int i=0; i<num; ++i) {
+        Tv v = va_arg(valist, Tv);
+        entity->tv[i] = v;
     }
-    to->number = from->number;
+    return entity;
+}
+
+void Entity_cypto_entity(Entity* from, Entity* to) {
+    memcpy(from->tv, to->tv, sizeof(Tv)*(to->number));
+    to->number      = from->number;
     to->value_index = from->value_index;
-    to->tv = t;
+    return;
 }
-Entity* Entity_cpyto_heap_entity(Entity* temp) 
+
+Entity* Entity_malloc_copy_entity(Entity* from) 
 {
-    Entity *lentity = (Entity*) malloc(sizeof(Entity) + sizeof(Tv)*(temp->number));
-    memcpy(&lentity[1], temp->tv, sizeof(Tv)*(temp->number));
-    lentity->number = temp->number;
-    lentity->value_index = temp->value_index;
-    lentity->tv = &lentity[1];
-    return lentity;
+    Entity *to = (Entity*) malloc(sizeof(Entity) + sizeof(Tv)*(from->number));
+    Entity_cypto_entity(from, to);
+    return to;
 }
+
+
 
 int Entity_copy_Value(Entity* e1, Entity* e2) 
 {

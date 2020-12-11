@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 17:37:16
- * @LastEditTime: 2020-12-08 15:18:37
+ * @LastEditTime: 2020-12-11 11:22:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_heap_sort.c
@@ -68,26 +68,26 @@ static void test_list_heap_sort(void)
 
 static void test_mx_queue (void) 
 {
-    MXQueue q = _MxQueue(CMP_INT);
+    // MxQueue q = _MxQueue(CMP_INT);
 
-    MxQueue_add(q, i2t(3));
-    MxQueue_add(q, i2t(1));
-    MxQueue_add(q, i2t(9));
-    MxQueue_add(q, i2t(6));
+    // MxQueue_add(q, i2t(3));
+    // MxQueue_add(q, i2t(1));
+    // MxQueue_add(q, i2t(9));
+    // MxQueue_add(q, i2t(6));
 
-    MxQueue_add(q, i2t(8));
-    MxQueue_add(q, i2t(5));
-    MxQueue_add(q, i2t(4));
-    MxQueue_add(q, i2t(12));
+    // MxQueue_add(q, i2t(8));
+    // MxQueue_add(q, i2t(5));
+    // MxQueue_add(q, i2t(4));
+    // MxQueue_add(q, i2t(12));
 
-    for (int i=0; i<8; ++i) {
-        Tv v;
-        MxQueue_extract(q, v);
-        PRINTF_TV_ON_INT(v);
-    }
+    // for (int i=0; i<8; ++i) {
+    //     Tv v;
+    //     MxQueue_extract(q, v);
+    //     PRINTF_TV_ON_INT(v);
+    // }
 
-    MxQueue_(q, NULL);
-    CU_ASSERT_TRUE(1);
+    // MxQueue_(q, NULL);
+    // CU_ASSERT_TRUE(1);
 }
 
 int do_heapsort_test(void) 

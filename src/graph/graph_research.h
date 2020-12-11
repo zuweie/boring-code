@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-12-10 20:09:02
+ * @LastEditTime: 2020-12-10 23:54:31
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
@@ -33,11 +33,9 @@ typedef struct _dfs_explor {
 typedef struct _udg_prim_explor {
     uvertex_t* pi;
     float key;
+    short in_queue;
 } udg_prim_explor_t;
 
-typedef struct _udg_kruskal_explor {
-    It group_iterator;
-} udg_kruskal_explor_t;
 
 int grp_bfs_exploring(Graph* graph, vertex_t* start);
 int grp_dfs_exploring(Graph* graph);
