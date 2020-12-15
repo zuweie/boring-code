@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2020-12-11 14:28:33
+ * @LastEditTime: 2020-12-14 07:35:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
@@ -18,7 +18,6 @@ static uvertex_t* _create_uvertex(UDGraph* graph, Tv vertex_id)
 {
     uvertex_t* vertex = malloc(sizeof(uvertex_t) + graph->exploring_size);
     vertex->id = vertex_id;
-    vertex->adjs = _LeList(graph->match_adj);
     if (graph->exploring_size) 
         vertex->exploring = &vertex[1];
     else
@@ -38,7 +37,6 @@ static uedge_t* _create_uedge(uvertex_t* vertex1, uvertex_t* vertex2, float weig
 static void _free_uvertex(Tv v) 
 {
     uvertex_t* vertex = t2p(v);
-    LeList_(vertex->edges);
     free(vertex);
 }
 
@@ -48,13 +46,12 @@ static void _free_uedge(Tv v)
     free(edge);
 }
 
-UDGraph* UDGraph_create(int (*match_vertex)(Tv, Tv), int(*match_edge)(Tv, Tv), int(*match_adj)(Tv v1, Tv v2), size_t exploring_size) 
+UDGraph* UDGraph_create(int (*match_vertex)(Tv, Tv), int(*match_edge)(Tv, Tv),  size_t exploring_size) 
 {
     UDGraph* graph = malloc(sizeof(UDGraph));
     graph->exploring_size = exploring_size;
     graph->uvertexs = _List(match_vertex);
     graph->uedges   = _List(match_edge);
-    graph->match_adj = match_adj;
     return graph;
 }
 
@@ -84,9 +81,6 @@ int UDGraph_add_edge(UDGraph* udgraph, Tv vertex_1, Tv vertex_2, float w)
         
         uedge_t* edge = _create_uedge(v1, v2, w);
         CN_add(udgraph->uedges, p2t(edge));
-        
-        LeCN_add2(v1->adjs, p2t(v2), f2t(w));
-        LeCN_add2(v2->adjs, p2t(v1), f2t(w));
 
         return 0;
     }
@@ -125,13 +119,4 @@ void UDGraph_indexing_vertex(UDGraph* graph)
     }
 }
 
-int UDGraph_get_edge_wight(uvertex_t* epv, uvertex_t* epw, float* ret)
-{
-    Entity* entity = LeCN_find(epv->adjs, epw);
-    if (entity) {
-        ret = t2f(entity->tv[1]);
-        return 0;
-    }
-    return -1;
-}
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 14:59:35
- * @LastEditTime: 2020-12-04 09:03:19
+ * @LastEditTime: 2020-12-15 08:58:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/operate/__heap_sort.c
@@ -13,7 +13,7 @@ int heap_max_heapify(container_t* container_ptr, size_t i, size_t heap_size, int
 {
     size_t left  = heap_left(i);
     size_t right = heap_right(i);
-    size_t largest = 0;
+    size_t largest = -1;
 
     type_value_t v_left = container_fetch(container_ptr, left);
     type_value_t v_i    = container_fetch(container_ptr, i);

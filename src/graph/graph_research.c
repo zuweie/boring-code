@@ -2,9 +2,10 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-11 14:44:54
+ * @LastEditTime: 2020-12-15 09:08:15
  * @LastEditors: Please set LastEditors
  */
+#include <stdio.h>
 #include "graph_research.h"
 #include "container/Queue.h"
 #include "container/Tv.h"
@@ -55,14 +56,14 @@ static void _init_dfs_exploring(void* exploring)
     pn->f_time = -1;
 }
 
-static int udg_vertex_cmp (Tv v1, Tv v2) 
+static int prim_explor_key_cmp (Tv v1, Tv v2) 
 {
-    udg_prim_explor_t* uv1_explor = ((uvertex_t*)t2p(v1))->exploring;
-    udg_prim_explor_t* uv2_explor = ((uvertex_t*)t2p(v2))->exploring;
+    prim_explor_t* uv1_explor = ((vertex_t*)t2p(v1))->exploring;
+    prim_explor_t* uv2_explor = ((vertex_t*)t2p(v2))->exploring;
 
     if (uv1_explor->key == uv2_explor->key) return 0;
-    if (uv1_explor->key > uv2_explor->key) return 1;
-    if (uv1_explor->key < uv2_explor->key) return -1;
+    if (uv1_explor->key > uv2_explor->key) return -1;
+    if (uv1_explor->key < uv2_explor->key) return 1;
     
 }
 
@@ -267,45 +268,43 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List list)
     return 0;
 }
 
-int ugrp_calculate_mst_prim(UDGraph* udgraph, uvertex_t* start)
+int grp_calculate_mst_prim(Graph* graph, vertex_t* start)
 {
     // 初始化
-    MxQueue q = _MxQueue(udg_vertex_cmp); 
-    for (It first = CN_first(udgraph->uvertexs); !It_equal(first, CN_tail(udgraph->uvertexs)); first = It_next(first)) {
-        uvertex_t* v = It_getptr(first);
-        udg_prim_explor_t* explor = v->exploring;
+    MxQueue q = _MxQueue(prim_explor_key_cmp); 
+    
+    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first = It_next(first)) {
+        vertex_t* v = It_getptr(first);
+        prim_explor_t* explor = v->exploring;
         explor->key = PRIM_MAX;
         explor->pi  = NULL;
         explor->in_queue = 1;
         CN_add(q, p2t(v));
     }
     
-    udg_prim_explor_t* explor = start->exploring;
+    prim_explor_t* explor = start->exploring;
     explor->key = 0.0f;
-
     Tv extracted_vertex;
-    while (MxQueue_extract(q, &extracted_vertex) != -1) {
+    while (MxQueue_extract(q, extracted_vertex) != -1) {
 
-        uvertex_t* u = t2p(extracted_vertex);
-        udg_prim_explor_t* explor = v->exploring;
+        vertex_t* u = t2p(extracted_vertex);
+        prim_explor_t* explor = u->exploring;
         explor->in_queue = 0;
 
         // 遍历这个顶点想邻接的边。
-        for (It first = CN_first(u->adjs); !It_equal(first, CN_tail(u->adjs)); first = It_next(first)) {
-            uvertex_t* v = It_getptr(first);
-            udg_prim_explor_t* v_explor = u->exploring;
+        for (It first = CN_first(u->paths); !It_equal(first, CN_tail(u->paths)); first = It_next(first)) {
+            path_t* uv_path = It_getptr(first);
+            vertex_t* v = uv_path->to;
+            prim_explor_t* v_explor = v->exploring;
 
             if (v_explor->in_queue) {
-
-                float uv_weight;
-                UDGraph_get_edge_wight(u, v, &uv_weight);
-                
-                if (uv_weight < v_explor->key) {
+                if (uv_path->weight < v_explor->key) {
                     v_explor->pi = u;
-                    v_explor->key = uv_weight;
+                    v_explor->key = uv_path->weight;
                 }
             }
         }
     }
+    MxQueue_(q,NULL);
     return 0;
 }

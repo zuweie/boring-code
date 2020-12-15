@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-12-07 13:26:08
+ * @LastEditTime: 2020-12-14 10:02:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -24,32 +24,22 @@
         printf("------> "); \
         for (It j = CN_first(pv->paths); !It_equal(j, CN_tail(pv->paths)); j = It_next(j)) { \
             path_t* pnode = It_getptr(j); \
-            printf(" ");\
+            printf("{ ");\
             printer(pnode->to->vertex_id); \
-            dfs_explor_t* explor = pnode->to->exploring; \
-            if (explor) { \
-                printf("["); \
-                /*printer(explor->pi->vertex_id);*/ \
-                printf("%d, %d", explor->d_time, explor->f_time);\
-                if (explor->pi) { \
-                    printf(", "); \
-                    printer(explor->pi->vertex_id); \
-                } \
-                printf("]"); \
-            } else { \
-                printf("[]") ;\
-            }\
+            exploring_printer(pnode->to->exploring); \
+            printf(" w:%f ", pnode->weight); \
+            printf(" }"); \
         }\
         printf("\n\n"); \
     } \
 }while(0)
 
-#define BFS_exploring_printer(exploring) \ 
+#define BFS_exploring_printer(exploring, printer, printer_from) \ 
     ({  \
         if (exploring) { \
             bfs_explor_t* __p_marco_explor = (bfs_explor_t*) exploring; \
             printf("[ distance: %d ] ", __p_marco_explor->distance); \
-            printf("[ pi_id: %d ] ", t2d(__p_marco_explor->pi->vertex_id)); \
+            printf("[ pi_id: %d ] ", t2i(__p_marco_explor->pi->vertex_id)); \
         } \
     })  
     
@@ -59,6 +49,16 @@
             dfs_explor_t* __p_marco_explor = (dfs_explor_t*) exploring; \
             printf("[ d time %d ]", __p_marco_explor->d_time); \
             printf("[ f time %d ]", __p_marco_explor->f_time); \
+        } \
+    })
+
+#define PRIM_exploring_printer(exploring) \
+    ({ \
+        if (exploring) { \
+            prim_explor_t* __p_marco_explor = (prim_explor_t*) exploring;   \
+            if (__p_marco_explor->pi) { \
+                printf("[ pi_id: %c, key:%f] ", t2i(__p_marco_explor->pi->vertex_id), __p_marco_explor->key); \
+            } \
         } \
     })
 
@@ -252,6 +252,48 @@ static void test_grap_strongly_connect(void) {
     CU_ASSERT_TRUE(1);
 }
 
+static void test_udgraph_mst_prim(void)
+{
+    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(prim_explor_t));
+
+    Graph_add_vertex(graph, i2t('a')); // 0
+    Graph_add_vertex(graph, i2t('b')); // 1
+    Graph_add_vertex(graph, i2t('c')); // 2
+    Graph_add_vertex(graph, i2t('d')); // 3
+    Graph_add_vertex(graph, i2t('e')); // 4
+    Graph_add_vertex(graph, i2t('f')); // 5
+    Graph_add_vertex(graph, i2t('g')); // 6
+    Graph_add_vertex(graph, i2t('h')); // 7
+    Graph_add_vertex(graph, i2t('i')); // 8
+
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
+    Matrix_set(matrix, 0, 1, 4); // ab
+    Matrix_set(matrix, 1, 2, 8); // bc
+    Matrix_set(matrix, 2, 3, 7); // cd
+    Matrix_set(matrix, 3, 4, 9); // de
+    Matrix_set(matrix, 4, 5, 10); // ef
+    Matrix_set(matrix, 5, 6, 2); // fg
+    Matrix_set(matrix, 6, 7, 1); // gh
+    Matrix_set(matrix, 0, 7, 8); // ah
+    Matrix_set(matrix, 1, 7, 11); // bh
+    Matrix_set(matrix, 7, 8, 7); // hi
+    Matrix_set(matrix, 6, 8, 6); // gi
+    Matrix_set(matrix, 2, 8, 2); // ci
+    Matrix_set(matrix, 2, 5, 4); // cf
+    Matrix_set(matrix, 3, 5, 14); // df
+    
+    Graph_add_paths_by_matrix(graph, matrix);
+
+    Matrix_trans(matrix);
+    Graph_add_paths_by_matrix(graph, matrix);
+    vertex_t* start = Graph_get_vertex(graph, i2t('a'));
+    grp_calculate_mst_prim(graph, start);
+    Graph_inspect(graph, PRINTF_TV_ON_CHAR, PRIM_exploring_printer);
+
+    Graph_destroy(graph);
+    CooMatrix_destroy(matrix);
+}
+
 int do_graph_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -285,4 +327,10 @@ int do_graph_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }    
+
+
+    if (NULL == CU_add_test(pSuite, "test mst prim", test_udgraph_mst_prim) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }

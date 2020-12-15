@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-11 08:25:16
- * @LastEditTime: 2020-12-11 13:56:23
+ * @LastEditTime: 2020-12-14 07:35:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MtCn.h
@@ -54,6 +54,7 @@
         } \
         ret; \
     })
+
 #define LeCN_get_entity(lecon, it) \
     ({ \
         Entity* __p_marco_entity = NULL; \
@@ -66,7 +67,7 @@
 static void
 CLEANUP_ENTITY(Tv v) 
 {
-    Entity* entity = p2t(v);
+    Entity* entity = t2p(v);
     free(entity);
 }
 #endif

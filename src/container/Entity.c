@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-24 10:20:46
- * @LastEditTime: 2020-12-11 11:31:05
+ * @LastEditTime: 2020-12-14 08:33:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -53,7 +53,7 @@ Entity* Entity_heap(int num, int value_index, ...)
 }
 
 void Entity_cypto_entity(Entity* from, Entity* to) {
-    memcpy(from->tv, to->tv, sizeof(Tv)*(to->number));
+    memcpy(to->tv, from->tv, sizeof(Tv)*(from->number));
     to->number      = from->number;
     to->value_index = from->value_index;
     return;
@@ -62,6 +62,7 @@ void Entity_cypto_entity(Entity* from, Entity* to) {
 Entity* Entity_malloc_copy_entity(Entity* from) 
 {
     Entity *to = (Entity*) malloc(sizeof(Entity) + sizeof(Tv)*(from->number));
+    to->tv = &to[1];
     Entity_cypto_entity(from, to);
     return to;
 }
