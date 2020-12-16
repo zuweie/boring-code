@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-15 09:08:15
+ * @LastEditTime: 2020-12-16 10:21:47
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -290,7 +290,6 @@ int grp_calculate_mst_prim(Graph* graph, vertex_t* start)
         vertex_t* u = t2p(extracted_vertex);
         prim_explor_t* explor = u->exploring;
         explor->in_queue = 0;
-
         // 遍历这个顶点想邻接的边。
         for (It first = CN_first(u->paths); !It_equal(first, CN_tail(u->paths)); first = It_next(first)) {
             path_t* uv_path = It_getptr(first);

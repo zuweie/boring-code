@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-07 08:50:00
- * @LastEditTime: 2020-12-13 11:08:38
+ * @LastEditTime: 2020-12-15 09:59:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MxQueue.h
@@ -14,49 +14,31 @@
 #include "base/__vector.h"
 #include "base/operate/__heap_sort.h"
 
-typedef struct {
-    
-    Container con;
-    short build_max_heap;
-
-} MxQueue; 
+typedef Container MxQueue;
 
 #define _MxQueue(sort_cmp) \
     ({ \
         MxQueue queue; \
-        CN_initialize(queue.con, vector, NULL, NULL, NULL); \
-        CN_set_extra_func(queue.con, sort_cmp); \
-        queue.build_max_heap = 0; \
+        CN_initialize(queue, vector, NULL, NULL, NULL); \
+        CN_set_extra_func(queue, sort_cmp); \
         queue; \
     })
 
-#define MxQueue_(queue, cleanup) CN_uninitialize(queue.con, vector, cleanup)
+#define MxQueue_(queue, cleanup) CN_uninitialize(queue, vector, cleanup)
 
 #define MxQueue_extract(queue, __marco_rdata) \
     ({  \
         int ret = -1; \
-        if (CN_size(queue.con) >= 0) { \
-            if (!queue.build_max_heap) {\
-                heap_build_max_heap(cc(queue.con), c_extra_func(queue.con)); \
-                queue.build_max_heap = 1; \
-            } else { \
-                heap_max_heapify(cc(queue.con), 0, CN_size(cc(queue.con)), c_extra_func(queue.con)); \
-            } \
-            It first = CN_first(queue.con); \
-            It last  = CN_last(queue.con); \
+        if (CN_size(queue) >= 0) { \
+            heap_max_heapify(cc(queue), 0, CN_size(cc(queue)), c_extra_func(queue)); \
+            It first = CN_first(queue); \
+            It last  = CN_last(queue); \
             It_exchange(first, last); \
-            ret = CN_rm_last(queue.con, &__marco_rdata); \
+            ret = CN_rm_last(queue, &__marco_rdata); \
         } else { \
             ret = -1; \
         } \
         ret; \
     })
 
-#define MxQueue_add(queue, data) \
-    ({ \
-        CN_add(queue.con, data);  \
-        queue.build_max_heap = 0; \
-    })
-
-#define MXQueue_reset(queue) (queue.build_max_heap=0)
 #endif
