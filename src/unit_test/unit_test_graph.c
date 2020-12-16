@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-12-16 16:15:32
+ * @LastEditTime: 2020-12-17 00:42:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -348,10 +348,28 @@ test_graph_dijkstra(void) {
     Graph_add_vertex(graph, i2t('z')); // 4
 
     CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
-    
+    Matrix_set(matrix, 0, 1, 10); // s t
+    Matrix_set(matrix, 0, 3, 5);  // s y
+    Matrix_set(matrix, 1, 2, 1); // t x
+    Matrix_set(matrix, 1, 3, 2); // t y
+    Matrix_set(matrix, 2, 4, 4); // x z
+    Matrix_set(matrix, 4, 2, 6); // z x
+    Matrix_set(matrix, 4, 0, 7); // z s
+    Matrix_set(matrix, 3, 1, 3); // y t
+    Matrix_set(matrix, 3, 2, 9); // y x
+    Matrix_set(matrix, 3, 4, 2); // y z
 
     Graph_connect_vertexes(graph, matrix);
+    vertex_t* start = Graph_get_vertex(graph, i2t('s'));
+    List list = _List(NULL);
 
+    grp_calculate_dijkstra(graph, start, list);
+
+    Graph_inspect(graph, PRINTF_TV_ON_CHAR, RELAX_exploring_printer);
+
+    Graph_connect_vertexes(graph, matrix);
+    CooMatrix_destroy(matrix);
+    List_(list, NULL);
     Graph_destroy(graph);
 }
 
@@ -401,5 +419,8 @@ int do_graph_test (void)
         return CU_get_error();
     }
 
-
+    if (NULL == CU_add_test(pSuite, "test graph dijkstra", test_graph_dijkstra) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }

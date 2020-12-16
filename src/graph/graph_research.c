@@ -2,10 +2,9 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-16 16:12:40
+ * @LastEditTime: 2020-12-17 02:51:04
  * @LastEditors: Please set LastEditors
  */
-#include <stdio.h>
 #include "graph_research.h"
 #include "container/Queue.h"
 #include "container/Tv.h"
@@ -161,7 +160,6 @@ int grp_dfs_exploring(Graph* graph)
         if (pudfs->color == _grp_whtie) {
             _dfs_visit(pu, &time);
         }
-        
     }
     return 0;
 }
@@ -373,11 +371,11 @@ int grp_calculate_dijkstra(Graph* graph, vertex_t* start, List list)
     ((relax_explor_t*)(start->exploring))->distance = 0;
     
     MxQueue q = _MxQueue(dijkstra_explor_distance_cmp);
-
     CN_duplicate(graph->vertexes, q);
-
     Tv extract;
     while(MxQueue_extract(q, extract) != -1) {
+        
+        vertex_t* extract_v = t2p(extract);
         CN_add(list, extract);
         vertex_t* u = t2p(extract);
         for (It first = CN_first(u->paths); !It_equal(first, CN_tail(u->paths)); first = It_next(first)) {

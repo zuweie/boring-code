@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-07 08:50:00
- * @LastEditTime: 2020-12-15 09:59:15
+ * @LastEditTime: 2020-12-17 02:33:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MxQueue.h
@@ -16,6 +16,7 @@
 
 typedef Container MxQueue;
 
+
 #define _MxQueue(sort_cmp) \
     ({ \
         MxQueue queue; \
@@ -29,8 +30,8 @@ typedef Container MxQueue;
 #define MxQueue_extract(queue, __marco_rdata) \
     ({  \
         int ret = -1; \
-        if (CN_size(queue) >= 0) { \
-            heap_max_heapify(cc(queue), 0, CN_size(cc(queue)), c_extra_func(queue)); \
+        if (CN_size(queue) > 0) { \
+            heap_build_max_heap(cc(queue), c_extra_func(queue)); \
             It first = CN_first(queue); \
             It last  = CN_last(queue); \
             It_exchange(first, last); \
