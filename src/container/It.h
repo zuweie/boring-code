@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-12-07 16:58:30
+ * @LastEditTime: 2020-12-16 13:01:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/it.h
@@ -26,6 +26,7 @@ typedef iterator_t It;
 #define It_getfloat(it) t2f(It_dref(it))
 #define It_getdouble(it) t2f(It_dref(it))
 #define It_getptr(it) t2p(It_dref(it))
+#define It_getstr(it) t2p(It_dref(it))
 
 #define It_valid(it)                  \
     ({                                \

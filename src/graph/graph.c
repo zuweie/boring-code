@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-12-10 19:52:04
+ * @LastEditTime: 2020-12-16 16:17:53
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -83,7 +83,7 @@ Graph* Graph_create_reverse(Graph* graph)
     CooMatrix* cooMatrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
     Graph_get_paths_matrix(graph, cooMatrix);
     Matrix_trans(cooMatrix);
-    Graph_add_paths_by_matrix(new_graph, cooMatrix);
+    Graph_connect_vertexes(new_graph, cooMatrix);
     CooMatrix_destroy(cooMatrix);
     
     return new_graph;
@@ -178,7 +178,7 @@ int Graph_get_paths_matrix(Graph* graph, CooMatrix* matrix)
     return -1;
 } 
 
-int Graph_add_paths_by_matrix(Graph* graph, CooMatrix* coomatrix)
+int Graph_connect_vertexes(Graph* graph, CooMatrix* coomatrix)
 {
     size_t size = CN_size(graph->vertexes);
     if (Matrix_rows(coomatrix) == size && Matrix_cols(coomatrix) == size ) {

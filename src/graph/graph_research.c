@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-16 10:21:47
+ * @LastEditTime: 2020-12-16 16:12:40
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -14,7 +14,7 @@
 #include "container/HashMap.h"
 #include "container/MxQueue.h"
 
-#define PRIM_MAX 9999999.99f;
+#define DISTANCE_MAX 9999999.99f;
 
 static int _topological_sort_cmp(Tv t1, Tv t2) 
 {
@@ -56,6 +56,20 @@ static void _init_dfs_exploring(void* exploring)
     pn->f_time = -1;
 }
 
+static void _init_prim_exploring(void* exploring) 
+{
+    prim_explor_t* explor = exploring;
+    explor->key = DISTANCE_MAX;
+    explor->pi  = NULL;
+    explor->in_queue = 1;
+}
+static void _init_relax_exploring(void* exploring) 
+{
+    relax_explor_t* explor = exploring;
+    explor->distance = DISTANCE_MAX;
+    explor->pi = NULL;
+}
+
 static int prim_explor_key_cmp (Tv v1, Tv v2) 
 {
     prim_explor_t* uv1_explor = ((vertex_t*)t2p(v1))->exploring;
@@ -63,10 +77,17 @@ static int prim_explor_key_cmp (Tv v1, Tv v2)
 
     if (uv1_explor->key == uv2_explor->key) return 0;
     if (uv1_explor->key > uv2_explor->key) return -1;
-    if (uv1_explor->key < uv2_explor->key) return 1;
+    return 1;
     
 }
+static int dijkstra_explor_distance_cmp (Tv v1, Tv v2) {
+    relax_explor_t* u_explor = ((vertex_t*)t2p(v1))->exploring;
+    relax_explor_t* v_explor = ((vertex_t*)t2p(v2))->exploring;
 
+    if (u_explor->distance == v_explor->distance) return 0;
+    if (u_explor->distance > v_explor->distance) return -1;
+    return 1;
+}
 // 广度优先算法
 int grp_bfs_exploring(Graph* graph, vertex_t* start) 
 {
@@ -273,18 +294,13 @@ int grp_calculate_mst_prim(Graph* graph, vertex_t* start)
     // 初始化
     MxQueue q = _MxQueue(prim_explor_key_cmp); 
     
-    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first = It_next(first)) {
-        vertex_t* v = It_getptr(first);
-        prim_explor_t* explor = v->exploring;
-        explor->key = PRIM_MAX;
-        explor->pi  = NULL;
-        explor->in_queue = 1;
-        CN_add(q, p2t(v));
-    }
+    Graph_initialize_exploring(graph, _init_prim_exploring);
+    CN_duplicate(graph->vertexes, q);
     
     prim_explor_t* explor = start->exploring;
     explor->key = 0.0f;
     Tv extracted_vertex;
+    
     while (MxQueue_extract(q, extracted_vertex) != -1) {
 
         vertex_t* u = t2p(extracted_vertex);
@@ -305,5 +321,70 @@ int grp_calculate_mst_prim(Graph* graph, vertex_t* start)
         }
     }
     MxQueue_(q,NULL);
+    return 0;
+}
+
+int grp_relex(vertex_t* u, vertex_t* v, float w)
+{
+    relax_explor_t* u_explor = u->exploring;
+    relax_explor_t* v_explor = v->exploring;
+
+    if (v_explor->distance > u_explor->distance + w) {
+        v_explor->distance = u_explor->distance + w;
+        v_explor->pi = u;
+    }
+}
+
+int grp_calculate_bellman_ford(Graph* graph, vertex_t* start)
+{
+    Graph_initialize_exploring(graph, _init_relax_exploring);
+    relax_explor_t* s_explor = start->exploring;
+    s_explor->distance = 0.0f;
+
+    // 进行 
+    for (int i=0; i<CN_size(graph->vertexes)-2; ++i) {
+        for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first=It_next(first)){
+            vertex_t* u = It_getptr(first);
+            for (It _f = CN_first(u->paths); !It_equal(_f, CN_tail(u->paths)); _f = It_next(_f)) {
+                path_t* path = It_getptr(_f);
+                grp_relex(u, path->to, path->weight);
+            }
+        }
+    }
+
+    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first=It_next(first)) {
+        vertex_t* u = It_getptr(first);
+        for (It _f = CN_first(u->paths); !It_equal(_f, CN_tail(u->paths)); _f = It_next(_f)) {
+            path_t* path = It_getptr(_f);
+            relax_explor_t* u_explor = u->exploring;
+            relax_explor_t* v_explor = path->to->exploring;
+
+            if (v_explor->distance > u_explor->distance + path->weight){
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int grp_calculate_dijkstra(Graph* graph, vertex_t* start, List list) 
+{
+    Graph_initialize_exploring(graph, _init_relax_exploring);
+    ((relax_explor_t*)(start->exploring))->distance = 0;
+    
+    MxQueue q = _MxQueue(dijkstra_explor_distance_cmp);
+
+    CN_duplicate(graph->vertexes, q);
+
+    Tv extract;
+    while(MxQueue_extract(q, extract) != -1) {
+        CN_add(list, extract);
+        vertex_t* u = t2p(extract);
+        for (It first = CN_first(u->paths); !It_equal(first, CN_tail(u->paths)); first = It_next(first)) {
+            path_t* path = It_getptr(first);
+            grp_relex(u, path->to, path->weight);
+        }
+    }
+    MxQueue_(q, NULL);
     return 0;
 }

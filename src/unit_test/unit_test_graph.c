@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-12-14 10:02:49
+ * @LastEditTime: 2020-12-16 16:15:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -61,6 +61,15 @@
             } \
         } \
     })
+#define RELAX_exploring_printer(exploring) \
+    ({ \
+        if (exploring) { \
+            relax_explor_t* __p_marco_explor = (relax_explor_t*) exploring; \
+            if (__p_marco_explor->pi) { \
+                printf("[ pi_id: %c, distance: %f] ", t2i(__p_marco_explor->pi->vertex_id), __p_marco_explor->distance); \
+            } \
+        } \
+    }) 
 
 #define NULL_exploring_printer(exploring) \
     ({ \
@@ -139,7 +148,7 @@ static void test_graph_matrix (void)
     Matrix_set(matrix, 0, 5, 1.0f);
     Matrix_set(matrix, 9, 0, 1.0f);
     Matrix_set(matrix, 13, 2, 1.0f);
-    Graph_add_paths_by_matrix(graph, matrix);
+    Graph_connect_vertexes(graph, matrix);
     Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
     
     printf("Create reverse Graph \n\n");
@@ -187,7 +196,7 @@ static void test_graph_dfs (void)
     Matrix_set(matrix, 2, 6, 1.0f); // c g
     Matrix_set(matrix, 6, 7, 1.0f); // g h
     Matrix_set(matrix, 7, 7, 1.0f); // h h
-    Graph_add_paths_by_matrix(graph, matrix);
+    Graph_connect_vertexes(graph, matrix);
     //Graph_inspect(graph, PRINTF_TV_ON_CHAR, NULL_exploring_printer);
     grp_dfs_exploring(graph);
     grp_topological_sort(graph);
@@ -228,7 +237,7 @@ static void test_grap_strongly_connect(void) {
     Matrix_set(matrix, 0, 1, 1.0f);
     Matrix_set(matrix, 0, 2, 1.0f);
     Matrix_set(matrix, 2, 1, 1.0f);
-    Graph_add_paths_by_matrix(graph, matrix);
+    Graph_connect_vertexes(graph, matrix);
 
     Graph* strongly_connected = grp_calculate_strongly_connected_component_graph(graph);
     List list = _List(CMP_PTR);
@@ -282,16 +291,68 @@ static void test_udgraph_mst_prim(void)
     Matrix_set(matrix, 2, 5, 4); // cf
     Matrix_set(matrix, 3, 5, 14); // df
     
-    Graph_add_paths_by_matrix(graph, matrix);
+    Graph_connect_vertexes(graph, matrix);
 
     Matrix_trans(matrix);
-    Graph_add_paths_by_matrix(graph, matrix);
+    Graph_connect_vertexes(graph, matrix);
     vertex_t* start = Graph_get_vertex(graph, i2t('a'));
     grp_calculate_mst_prim(graph, start);
     Graph_inspect(graph, PRINTF_TV_ON_CHAR, PRIM_exploring_printer);
 
     Graph_destroy(graph);
     CooMatrix_destroy(matrix);
+}
+
+static void 
+test_graph_bellman_ford(void) 
+{
+    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(relax_explor_t));
+    Graph_add_vertex(graph, i2t('s')); // 0
+    Graph_add_vertex(graph, i2t('t')); // 1
+    Graph_add_vertex(graph, i2t('x')); // 2
+    Graph_add_vertex(graph, i2t('y')); // 3
+    Graph_add_vertex(graph, i2t('z')); // 4
+
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
+    Matrix_set(matrix, 0, 1, 6); // s t
+    Matrix_set(matrix, 1, 2, 5); // t x
+    Matrix_set(matrix, 2, 1, -2); // x t
+    Matrix_set(matrix, 0, 3, 7); // s y
+    Matrix_set(matrix, 1, 3, 8); // t y
+    Matrix_set(matrix, 1, 4, -4);// t z
+    Matrix_set(matrix, 3, 4, 9); // y z
+    Matrix_set(matrix, 3, 2, -3);// y x
+    Matrix_set(matrix, 4, 2, 7); // z x
+    Matrix_set(matrix, 4, 0, 2); // z s
+
+    Graph_connect_vertexes(graph, matrix);
+    
+    vertex_t* start = Graph_get_vertex(graph, i2t('s'));
+
+    grp_calculate_bellman_ford(graph, start);
+
+    Graph_inspect(graph, PRINTF_TV_ON_CHAR, RELAX_exploring_printer);
+
+    Graph_destroy(graph);
+    CooMatrix_destroy(matrix);
+}
+
+static void
+test_graph_dijkstra(void) {
+
+    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(relax_explor_t));
+    Graph_add_vertex(graph, i2t('s')); // 0
+    Graph_add_vertex(graph, i2t('t')); // 1
+    Graph_add_vertex(graph, i2t('x')); // 2
+    Graph_add_vertex(graph, i2t('y')); // 3
+    Graph_add_vertex(graph, i2t('z')); // 4
+
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
+    
+
+    Graph_connect_vertexes(graph, matrix);
+
+    Graph_destroy(graph);
 }
 
 int do_graph_test (void) 
@@ -333,4 +394,12 @@ int do_graph_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+
+    if (NULL == CU_add_test(pSuite, "test bellman ford", test_graph_bellman_ford) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+
 }

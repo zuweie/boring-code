@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-12-16 10:33:29
+ * @LastEditTime: 2020-12-16 13:05:37
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
@@ -39,7 +39,8 @@ typedef struct _prim_explor {
 typedef struct _relax_explor {
     vertex_t* pi;
     float distance;
-}
+} relax_explor_t;
+
 int grp_bfs_exploring(Graph* graph, vertex_t* start);
 int grp_dfs_exploring(Graph* graph);
 
@@ -50,6 +51,7 @@ Graph* grp_calculate_strongly_connected_component_graph (Graph* graph);
 
 int ugrp_calculate_mst_kruskal(UDGraph*, List);
 int grp_calculate_mst_prim(Graph* graph, vertex_t* start);
-int grp_relex(vertex_t* from, vertex_t* to);
-
+int grp_relex(vertex_t* u, vertex_t* v, float w);
+int grp_calculate_bellman_ford(Graph* graph, vertex_t* start);
+int grp_calculate_dijkstra(Graph* graph, vertex_t* start, List list);
 #endif

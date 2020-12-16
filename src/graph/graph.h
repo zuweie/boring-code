@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2020-12-10 16:50:36
+ * @LastEditTime: 2020-12-16 15:45:48
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_H_
@@ -49,7 +49,7 @@ int Graph_add_path(vertex_t* from, vertex_t* to, float weight);
 int Graph_del_vertex(vertex_t* vertex);
 int Graph_del_path(vertex_t* from, vertex_t* edge);
 int Graph_get_paths_matrix(Graph* origin, CooMatrix* matrix);
-int Graph_add_paths_by_matrix(Graph* graph, CooMatrix* matrix);
+int Graph_connect_vertexes(Graph* graph, CooMatrix* matrix);
 vertex_t* Graph_get_vertex(Graph* graph, Tv vertex_id);
 path_t* Graph_get_path(vertex_t* from, Tv to_id);
 int Graph_set_path_matrix(Graph* graph, Tv from, Tv to, CooMatrix* matrix);
