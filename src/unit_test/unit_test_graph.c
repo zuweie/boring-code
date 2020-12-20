@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2020-12-17 00:42:16
+ * @LastEditTime: 2020-12-17 13:53:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -372,6 +372,20 @@ test_graph_dijkstra(void) {
     List_(list, NULL);
     Graph_destroy(graph);
 }
+static void
+test_pi_offset(void) {
+    ptrdiff_t offset = &(((relax_explor_t*)(0))->pi);
+    printf("\nrelax pi offset: %ld ", offset);
+
+    offset = &(((prim_explor_t*)0)->pi);
+    printf("\nprim pi offset: %ld", offset);
+
+    offset = &(((dfs_explor_t*)0)->pi);
+    printf("\ndfs pi offset: %ld\n", offset);
+
+    offset = &(((bfs_explor_t*)0)->pi);
+    printf("\nbfs pi offset: %ld\n", offset);
+}
 
 int do_graph_test (void) 
 {
@@ -420,6 +434,11 @@ int do_graph_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test graph dijkstra", test_graph_dijkstra) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test pi offset", test_pi_offset) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
