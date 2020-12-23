@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-11 08:25:16
- * @LastEditTime: 2020-12-14 07:35:51
+ * @LastEditTime: 2020-12-23 11:38:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MtCn.h
@@ -23,9 +23,9 @@
     CN_add(lecon, p2t(__p_marco_entity)); \
 } while (0)
 
-#define LeCN_add(lecon, tv1) MtCN_addx(lecon, 1, tv1)
-#define LeCN_add2(lecon, tv1, tv2) MtCN_addx(lecon, 2, tv1, tv2)
-#define LeCN_add3(lecon, tv1, tv2, tv3) MtCN_addx(lecon, 3, tv1, tv2, tv3)
+#define LeCN_add(lecon, tv1) LeCN_addx(lecon, 1, tv1)
+#define LeCN_add2(lecon, tv1, tv2) LeCN_addx(lecon, 2, tv1, tv2)
+#define LeCN_add3(lecon, tv1, tv2, tv3) LeCN_addx(lecon, 3, tv1, tv2, tv3)
 
 #define LeCN_findx(lecon, num, ...) \
     ({ \
@@ -38,7 +38,7 @@
 
 #define LeCN_find(lecon, tv) LeCN_findx(lecon, 1, tv)
 #define LeCN_find2(lecon, tv1, tv2) LeCN_findx(lecon, 2, tv1, tv2)
-#define LeCN_find3(lecon, tv1, tv2, tv3) LeCN_findx(lecon, 3, tv1, t2, tv3)
+#define LeCN_find3(lecon, tv1, tv2, tv3) LeCN_findx(lecon, 3, tv1, tv2, tv3)
 
 #define LeCN_remove(con, it, prentity) \
     ({  \
