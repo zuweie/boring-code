@@ -15,6 +15,7 @@ set (SOURCE
     src/unit_test/unit_test_udgraph.c
     src/unit_test/unit_test_heap_sort.c
     src/unit_test/unit_test_set.c
+    src/unit_test/unit_test_dft_fft.c
     src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c
@@ -30,6 +31,7 @@ set (SOURCE
     src/matrix/CooMatrix.c
     src/matrix/DenseMatrix.c
     src/mem_pool/__mem_pool.c
+    src/fourier_transform/fourier_transform.c
 )
 
 ## 连接 cunit 库

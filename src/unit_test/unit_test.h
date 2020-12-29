@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2020-12-04 07:45:21
+ * @LastEditTime: 2020-12-26 23:33:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -66,5 +66,6 @@ int do_graph_test(void);
 int do_udgraph_test (void);
 int do_set_test(void);
 int do_heapsort_test(void);
+int do_fft_test(void);
 
 #endif
