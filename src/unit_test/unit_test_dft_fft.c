@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:46:56
- * @LastEditTime: 2021-01-02 09:45:32
+ * @LastEditTime: 2021-01-04 09:56:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_complex.c
@@ -31,6 +31,7 @@ void text_complex (void) {
 void test_dft (void) {
     size_t N = 16;
     float sequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    //float sequence[] = {0, 1, 2, 3};
     complex_t out[N];
     discrete_fourier_transform(sequence, N, out);
     printf("\n");
@@ -39,6 +40,30 @@ void test_dft (void) {
         printf("\n");
     }
 }
+
+void test_rfft (void) {
+    size_t N = 16;
+    double sequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    //double sequence[] = {0, 1, 2, 3};
+    complex_t y[N];
+    recursive_fast_fourier_transform(sequence, N, y);
+
+    //double s1[N>>1];
+    //double s2[N>>1];
+    
+    printf("\n rfft: \n");
+    for (int i=0; i<N; ++i) {
+        PRINTF_COMPLEX(y[i]);
+        printf("\n");
+    }
+    //s1[0] = 1;
+    //s2[0] = 2;
+    //for (int i=0; i<(N>>1); ++i) {
+        //printf("%f, %f", s1[i], s2[i]);
+        //printf("%f, ", s1[i]);
+    //}
+   //int j=0;
+}   
 
 int do_fft_test (void) 
 {
@@ -54,7 +79,12 @@ int do_fft_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test complex", test_dft) ) {
+    if (NULL == CU_add_test(pSuite, "test dft", test_dft) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    
+    if (NULL == CU_add_test(pSuite, "test rfft", test_rfft) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
