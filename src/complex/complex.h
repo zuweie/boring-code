@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:33:18
- * @LastEditTime: 2021-01-04 09:54:50
+ * @LastEditTime: 2021-01-05 09:42:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/complex/complex.h
@@ -22,9 +22,9 @@ typedef struct  _complex
         complex; \
     })
 
-#define complex_w(N, k) _complex(cos(2*3.1415926/N*k), sin(2*3.1415926/N*k))
+#define complex_w(N, k) _complex(cos(2*3.1415926535898/N*k), sin(2*3.1415926535898/N*k))
 
-#define complex_rw(N, k) _complex(cos(2*3.1415926/N*k), -1 * sin(2*3.1415926/N*k))
+#define complex_rw(N, k) _complex(cos(2*3.1415926535898/N*k), -1 * sin(2*3.1415926535898/N*k))
 
 #define complex_add(c1, c2) _complex(c1.real+c2.real, c1.image+c2.image)
 
