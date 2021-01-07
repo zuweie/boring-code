@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:46:56
- * @LastEditTime: 2021-01-07 07:48:08
+ * @LastEditTime: 2021-01-08 00:48:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_complex.c
@@ -52,34 +52,57 @@ void test_rfft (void) {
     complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
     //double sequence[] = {0, 1, 2, 3};
     complex_t y[N];
-    Recursive_fast_fourier_transform(sequence, N, y);
-
-    //double s1[N>>1];
-    //double s2[N>>1];
+    Recursive_fast_fourier_transform(sequence, N, y, 0);
     
     printf("\n rfft: \n");
     for (int i=0; i<N; ++i) {
         PRINTF_COMPLEX(y[i]);
         printf("\n");
     }
-    //s1[0] = 1;
-    //s2[0] = 2;
-    //for (int i=0; i<(N>>1); ++i) {
-        //printf("%f, %f", s1[i], s2[i]);
-        //printf("%f, ", s1[i]);
-    //}
-   //int j=0;
+
 }   
 void test_ifft(void) {
     size_t N = 16;
     complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
     complex_t A[N];
-    Iterative_fast_fourier_transform(sequence, N, A);
+    Iterative_fast_fourier_transform(sequence, N, A, 0);
     printf("\n ifft: \n");
     for (int i=0; i<N; ++i) {
         PRINTF_COMPLEX(A[i]);
         printf("\n");
     }
+}
+
+void test_reverse_rfft(void) 
+{
+    size_t N = 16;
+    complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
+    //double sequence[] = {0, 1, 2, 3};
+    complex_t y[N];
+    Recursive_fast_fourier_transform(sequence, N, y, 0);
+    complex_t x[N];
+    Reverse_recursive_fast_fourier_transorm(y, N, x);
+    printf("\n resver_rfft: \n");
+    for (int i=0; i<N; ++i) {
+        PRINTF_COMPLEX(x[i]);
+        printf("\n");
+    }
+}
+
+void test_reverse_ifft(void) 
+{
+    size_t N = 16;
+    complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
+    complex_t A[N];
+    Iterative_fast_fourier_transform(sequence, N, A, 0);
+    complex_t x[N];
+    Reverse_iterative_fast_fourier_transorm(A, N, x);
+    printf("\n resver_ifft: \n");
+    for (int i=0; i<N; ++i) {
+        PRINTF_COMPLEX(x[i]);
+        printf("\n");
+    }
+
 }
 
 void test_bit_reverse(void)
@@ -125,8 +148,20 @@ int do_fft_test (void)
         return CU_get_error();
     }
 
+
+    if (NULL == CU_add_test(pSuite, "test reverse fft", test_reverse_rfft) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test reverse fft", test_reverse_ifft) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    
     if (NULL == CU_add_test(pSuite, "test bit reverse", test_bit_reverse) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
 }

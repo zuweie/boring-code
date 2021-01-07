@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-29 16:14:16
- * @LastEditTime: 2021-01-07 07:37:58
+ * @LastEditTime: 2021-01-08 00:36:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/fourier_transform/fourier_transform.h
@@ -24,7 +24,8 @@
     })
 
 int Discrete_fourier_transform (float[], size_t, complex_t[]);
-int Recursive_fast_fourier_transform(complex_t[], size_t, complex_t[]);
-int Iterative_fast_fourier_transform(complex_t[], size_t, complex_t[]);
-
+int Recursive_fast_fourier_transform(complex_t[], size_t, complex_t[], int reverse);
+int Iterative_fast_fourier_transform(complex_t[], size_t, complex_t[], int reverse);
+int Reverse_recursive_fast_fourier_transorm(complex_t[], size_t, complex_t[]);
+int Reverse_iterative_fast_fourier_transorm(complex_t[], size_t, complex_t[]);
 #endif

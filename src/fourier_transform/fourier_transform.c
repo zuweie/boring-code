@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-29 16:12:36
- * @LastEditTime: 2021-01-07 07:45:07
+ * @LastEditTime: 2021-01-08 00:49:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/fourier_transform/fourier_transform.c
@@ -32,7 +32,7 @@ int Discrete_fourier_transform (float sequence[], size_t sequence_size, complex_
     return 0;
 }
 
-int Recursive_fast_fourier_transform(complex_t sequence[], size_t n, complex_t y[]) 
+int Recursive_fast_fourier_transform(complex_t sequence[], size_t n, complex_t y[], int reverse) 
 {
     if (n == 1) {
         y[0] = sequence[0];
@@ -41,7 +41,7 @@ int Recursive_fast_fourier_transform(complex_t sequence[], size_t n, complex_t y
     
     size_t half_n = n>>1;
     complex_t sub_seq[n];
-    complex_t wn = complex_w(n, 1);
+    complex_t wn = reverse?complex_rw(n, 1):complex_w(n, 1);
     complex_t w1 = _complex(1,0);
 
     for (int i=0, j=0; i < n; i = i+2, ++j) {
@@ -50,8 +50,8 @@ int Recursive_fast_fourier_transform(complex_t sequence[], size_t n, complex_t y
     }
     
     complex_t yk[n];
-    Recursive_fast_fourier_transform(sub_seq, half_n, yk);
-    Recursive_fast_fourier_transform(&sub_seq[half_n], half_n, &yk[half_n]);
+    Recursive_fast_fourier_transform(sub_seq, half_n, yk, reverse);
+    Recursive_fast_fourier_transform(&sub_seq[half_n], half_n, &yk[half_n], reverse);
 
     for (int k=0; k < half_n; k++) {
         complex_t wy1 = complex_multiply(w1, yk[k+half_n]);
@@ -74,7 +74,7 @@ static void __Bit_reverse_copy(complex_t a[], size_t size_a, complex_t A[])
     return;
 }
 
-int Iterative_fast_fourier_transform(complex_t sequence[], size_t N, complex_t A[]) 
+int Iterative_fast_fourier_transform(complex_t sequence[], size_t N, complex_t A[], int reverse) 
 {
     // bit reverse_copy
     __Bit_reverse_copy(sequence, N, A);
@@ -84,7 +84,7 @@ int Iterative_fast_fourier_transform(complex_t sequence[], size_t N, complex_t A
     for (int s=1; s<=n; ++s) {
         int m = pow(2, s);
         int half_m = m>>1;
-        complex_t wm = complex_w(m, 1);
+        complex_t wm = reverse? complex_rw(m, 1):complex_w(m, 1);
         for (int k=0; k<N; k=k+m) {
             complex_t w = _complex(1, 0);
             for (int j=0; j<(half_m); ++j) {
@@ -95,6 +95,27 @@ int Iterative_fast_fourier_transform(complex_t sequence[], size_t N, complex_t A
                 w = complex_multiply(w, wm);
             }
         }
+    }
+    return 0;
+}
+
+int Reverse_recursive_fast_fourier_transorm(complex_t sequence[], size_t n, complex_t out[]) 
+{
+    Recursive_fast_fourier_transform(sequence, n, out, 1);
+    for (int i=0; i<n; ++i) {
+        out[i].real  /= (double) n;
+        out[i].image /= (double) n;
+    }
+    return 0;
+}
+
+int Reverse_iterative_fast_fourier_transorm(complex_t sequence[], size_t N, complex_t A[])
+{
+    Iterative_fast_fourier_transform(sequence, N, A, 1);
+
+    for (int i=0; i<N; ++i) {
+        A[i].real  /= (double) N;
+        A[i].image /= (double) N;
     }
     return 0;
 }
