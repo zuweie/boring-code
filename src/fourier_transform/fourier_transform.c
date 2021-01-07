@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-29 16:12:36
- * @LastEditTime: 2021-01-05 14:05:06
+ * @LastEditTime: 2021-01-07 07:45:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/fourier_transform/fourier_transform.c
@@ -32,15 +32,15 @@ int Discrete_fourier_transform (float sequence[], size_t sequence_size, complex_
     return 0;
 }
 
-int Recursive_fast_fourier_transform(double* sequence, size_t n, complex_t* y) 
+int Recursive_fast_fourier_transform(complex_t sequence[], size_t n, complex_t y[]) 
 {
     if (n == 1) {
-        y[0] = _complex(sequence[0], 0);
+        y[0] = sequence[0];
         return 0;
     }
     
     size_t half_n = n>>1;
-    double sub_seq[n];
+    complex_t sub_seq[n];
     complex_t wn = complex_w(n, 1);
     complex_t w1 = _complex(1,0);
 
@@ -62,18 +62,19 @@ int Recursive_fast_fourier_transform(double* sequence, size_t n, complex_t* y)
     return 0;
 }
 
-static void __Bit_reverse_copy(double a[], size_t size_a, complex_t A[]) 
+static void __Bit_reverse_copy(complex_t a[], size_t size_a, complex_t A[]) 
 {
     int r = log2(size_a);
 
     for (int k=0; k<size_a; ++k) {
         int k_index = Bit_reverse_32(k, r);
-        A[k_index] = _complex(a[k], 0);
+        A[k_index] = a[k];
     }
+    
     return;
 }
 
-int Iterative_fast_fourier_transform(double sequence[], size_t N, complex_t A[]) 
+int Iterative_fast_fourier_transform(complex_t sequence[], size_t N, complex_t A[]) 
 {
     // bit reverse_copy
     __Bit_reverse_copy(sequence, N, A);

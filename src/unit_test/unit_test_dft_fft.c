@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:46:56
- * @LastEditTime: 2021-01-05 08:55:51
+ * @LastEditTime: 2021-01-07 07:48:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_complex.c
@@ -49,7 +49,7 @@ void test_dft (void) {
 
 void test_rfft (void) {
     size_t N = 16;
-    double sequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
     //double sequence[] = {0, 1, 2, 3};
     complex_t y[N];
     Recursive_fast_fourier_transform(sequence, N, y);
@@ -72,7 +72,7 @@ void test_rfft (void) {
 }   
 void test_ifft(void) {
     size_t N = 16;
-    double sequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
     complex_t A[N];
     Iterative_fast_fourier_transform(sequence, N, A);
     printf("\n ifft: \n");
