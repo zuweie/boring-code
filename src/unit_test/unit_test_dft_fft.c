@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:46:56
- * @LastEditTime: 2021-01-08 00:48:42
+ * @LastEditTime: 2021-01-11 14:39:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_complex.c
@@ -73,6 +73,16 @@ void test_ifft(void) {
     }
 }
 
+void test_ifft2(void) {
+    size_t N = 16;
+    complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
+    Iterative_fast_fourier_transform2(sequence, N, 0);
+    printf("\n ifft 2: \n");
+    for (int i=0; i<N; ++i) {
+        PRINTF_COMPLEX(sequence[i]);
+        printf("\n");
+    }
+}
 void test_reverse_rfft(void) 
 {
     size_t N = 16;
@@ -105,6 +115,19 @@ void test_reverse_ifft(void)
 
 }
 
+void test_reverse_ifft2(void)
+{
+    size_t N = 16;
+    complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
+    Iterative_fast_fourier_transform2(sequence, N, 0);
+    Reverse_iterative_fast_fourier_transorm2(sequence, N);
+    printf("\n resver_ifft 2: \n");
+    for (int i=0; i<N; ++i) {
+        PRINTF_COMPLEX(sequence[i]);
+        printf("\n");
+    }
+}
+
 void test_bit_reverse(void)
 {
     int N = 16;
@@ -118,6 +141,19 @@ void test_bit_reverse(void)
     }
    
 }
+
+// void test_array_bit_reverse(void) 
+// {
+//     int N = 16;
+//     complex_t sequence[] = {_complex(0,0), _complex(1,0), _complex(2,0), _complex(3, 0), _complex(4, 0), _complex(5, 0), _complex(6, 0), _complex(7, 0), _complex(8, 0), _complex(9,0), _complex(10,0), _complex(11, 0), _complex(12, 0), _complex(13, 0), _complex(14, 0), _complex(15,0)};
+//     __Bit_reverse(sequence, N);
+//     printf("array bit reverse\n");
+//     for (int i=0; i<N; ++i) {
+//         PRINTF_COMPLEX(sequence[i]);
+//         printf ("\n");
+//     }
+//     printf ("\n");
+// }
 
 int do_fft_test (void) 
 {
@@ -159,9 +195,22 @@ int do_fft_test (void)
         return CU_get_error();
     }
     
-    if (NULL == CU_add_test(pSuite, "test bit reverse", test_bit_reverse) ) {
+    // if (NULL == CU_add_test(pSuite, "test bit reverse", test_bit_reverse) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+    
+    if (NULL == CU_add_test(pSuite, "test ifft 2", test_ifft2) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
+    if (NULL == CU_add_test(pSuite, "test reverse fft 2", test_reverse_ifft2) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    // if (NULL == CU_add_test(pSuite, "test array bit reverse", test_array_bit_reverse) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }
