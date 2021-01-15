@@ -32,6 +32,8 @@ set (SOURCE
     src/matrix/DenseMatrix.c
     src/mem_pool/__mem_pool.c
     src/fourier_transform/fourier_transform.c
+    src/cosine_transform/cosine_transform.c
+    src/mfcc/mfcc.c
 )
 
 ## 连接 cunit 库
