@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2020-12-26 23:34:09
+ * @LastEditTime: 2021-01-15 09:16:20
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -312,6 +312,7 @@ int main ()
     do_set_test();
     do_heapsort_test();
     do_fft_test();
+    do_dct_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);
