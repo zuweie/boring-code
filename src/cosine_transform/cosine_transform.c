@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-14 08:46:10
- * @LastEditTime: 2021-01-18 00:58:14
+ * @LastEditTime: 2021-01-18 19:24:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/Cosine_Transform/cosine_transform.c
@@ -20,7 +20,7 @@ double K_cosine_transform(int k, size_t N, double x[])
     }
 
     for (int i=0; i<N; ++i) {
-        a = x[i] * cos( 3.1415926535898*(i+0.5)*k/N );
+        a = x[i] * cos( 3.1415926535898*(i-0.5)*k/N );
         sum += a;
     }
     

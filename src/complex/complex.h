@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:33:18
- * @LastEditTime: 2021-01-05 09:42:08
+ * @LastEditTime: 2021-01-22 13:37:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/complex/complex.h
@@ -32,6 +32,10 @@ typedef struct  _complex
 
 #define complex_multiply(c1, c2) _complex(c1.real*c2.real-c1.image*c2.image, c1.image*c2.real+c1.real*c2.image)
 
-#define compled_divide(c1, c2) _complex((c1.real*c2.real+c1.image*c2.image)/(c2.real*c2.real+c2.image*c2.image)), (c1.image*c2.real-c1.real*c2.image)/(c2.real*c2.real+c2.image*c2.image))
+#define complex_divide(c1, c2) _complex((c1.real*c2.real+c1.image*c2.image)/(c2.real*c2.real+c2.image*c2.image)), (c1.image*c2.real-c1.real*c2.image)/(c2.real*c2.real+c2.image*c2.image))
+
+#define complex_pow(c) (c.real*c.real + c.image*c.image)
+
+#define complex_absolute(c) (sqrt(complex_pow(c)))
 
 #endif   
