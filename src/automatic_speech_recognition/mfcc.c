@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-01-24 15:20:54
+ * @LastEditTime: 2021-01-24 17:21:31
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -32,7 +32,7 @@ static int __calculate_fft_bin(double high_mel, double low_mel, int n_filter, in
 static int __calcate_mel_filterbank(int n_filter, int n_fft, int samplerate, int low_freq, int high_freq, double filters[][n_fft/2+1])
 {
     double low_mel  = __hz_2_mel(low_freq);
-    double high_mel = __hz_2_mel(high_mel);
+    double high_mel = __hz_2_mel(high_freq);
 
     int bin[n_filter+2];
     double per_mel = (high_mel - low_mel) / (double)(n_filter+1);
@@ -41,11 +41,11 @@ static int __calcate_mel_filterbank(int n_filter, int n_fft, int samplerate, int
         bin[i] = (int)(floor( (n_fft+1)*__mel_2_hz(mel_point)/(double)(samplerate) ));
     }
     for (int i=0; i<n_filter; ++i) {
-        for (int j=bin[j]; j<bin[j+i]; ++j) {
-            filters[i][j] = (double)(i-bin[j]) / (double)(bin[j+i]-bin[j]);
+        for (int j=bin[i]; j<bin[i+1]; ++j) {
+            filters[i][j] = (double)(j-bin[i]) / (double)(bin[i+1]-bin[i]);
         }
-        for (int j=bin[j+1]; j<bin[j+2]; ++j){
-            filters[i][j] = (double)(bin[j+2]-i) / (double)(bin[j+2] - bin[j+1]);
+        for (int j=bin[i+1]; j<bin[i+2]; ++j){
+            filters[i][j] = (double)(bin[i+2]-j) / (double)(bin[i+2] - bin[i+1]);
         }
     }
     return 0;
@@ -53,7 +53,7 @@ static int __calcate_mel_filterbank(int n_filter, int n_fft, int samplerate, int
 
 double** create_mel_filtebank(int n_filter, int n_fft, int samplerate, int low_freq, int high_freq) 
 {
-    double **filters = calloc(n_filter, n_fft/2+1);
+    double **filters = calloc(n_filter, (n_fft/2+1)*sizeof(double));
     __calcate_mel_filterbank(n_filter, n_fft, samplerate, low_freq, high_freq, filters);
     return filters;
 }
