@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-01-21 11:28:03
+ * @LastEditTime: 2021-01-24 15:20:54
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -14,11 +14,6 @@
 #define __mel_2_hz(m) (700.f *(pow(10.f, (m)/2595.f)-1.f))
 #define __min(x,y) ((x)<(y)?(x):(y))
 #define __max(x,y) __min(y,x)
-
-static int __div_frames(double *raw) 
-{
-
-}
 /**
  * 将高频和低频线性切分：
  * 
@@ -49,16 +44,16 @@ static int __calcate_mel_filterbank(int n_filter, int n_fft, int samplerate, int
         for (int j=bin[j]; j<bin[j+i]; ++j) {
             filters[i][j] = (double)(i-bin[j]) / (double)(bin[j+i]-bin[j]);
         }
-        for (int j=bin[j+1]; j<bin[j+2]){
+        for (int j=bin[j+1]; j<bin[j+2]; ++j){
             filters[i][j] = (double)(bin[j+2]-i) / (double)(bin[j+2] - bin[j+1]);
         }
     }
     return 0;
 }
 
-static double** __create_mel_filtebank(int n_filter, int n_fft, int samplerate, int low_freq, int high_freq, double **filters) 
+double** create_mel_filtebank(int n_filter, int n_fft, int samplerate, int low_freq, int high_freq) 
 {
-    double **filters = (double**)calloc(n_filter, n_fft/2+1);
+    double **filters = calloc(n_filter, n_fft/2+1);
     __calcate_mel_filterbank(n_filter, n_fft, samplerate, low_freq, high_freq, filters);
     return filters;
 }
