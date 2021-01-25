@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-21 11:28:35
- * @LastEditTime: 2021-01-24 14:47:23
+ * @LastEditTime: 2021-01-26 00:37:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/mfcc/signal_process.c
@@ -23,7 +23,7 @@ static int __do_processing_frames_raw(double* raw, size_t raw_length, int frame_
     // 大于 512 位的傅立叶变换就不搞了。
     if (frame_fft_n > 512) return -1;
 
-    // 预加权， 不知道有用。
+    // 预加权， 不知道有啥用。
     for (int i=1; i<raw_length; ++i) {
         raw[i] = raw[i] - emphasis * raw[i-1];
     }
@@ -53,10 +53,14 @@ static int __do_processing_frames_raw(double* raw, size_t raw_length, int frame_
         // 对每一帧做处理
         // 1 hamming 窗
         for (j=0; j<frame_fft_n; ++j) {
-            if (j <= frame_size) {
+            if (j < frame_size) {
                 frames[i][j] *= hamwin[j];
+                in[j] = _complex(frames[i][j], 0.f);
+            } else {
+                // 剩下的凑数。
+                in[j] = _complex(0.f, 0.f);
             }
-            in[j] = _complex(frames[i][j], 0.f);
+            
         }
         // 2 做fft 能量
         Iterative_fast_fourier_transform(in, frame_fft_n, out, 0);
@@ -81,8 +85,8 @@ double** frames_signale(double* raw, size_t raw_length, float frame_duration, fl
     }else{
         *frame_number = (int)floor((double)raw_length / (double)frame_step_length);
     }
-
-    double** frames = malloc((*frame_number) * (*frame_fftn) * sizeof(double));
+    // 申请内存
+    double** frames = malloc((*frame_number) * (*frame_size) * sizeof(double));
     __do_processing_frames_raw(raw, raw_length, frame_step_length, *frame_fftn, *frame_size, *frame_number, frames);
     
     return frames;
