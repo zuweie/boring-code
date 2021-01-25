@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-01-25 00:24:54
+ * @LastEditTime: 2021-01-25 13:40:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -34,12 +34,12 @@
             printf("\n\n");\
         } \
     })
-    
+
 #define PRINTF_WAV_INFO(w) \
     ({ \
-        wav_riff_t riff  = w->riff; \
-        wav_format_t fmt = w->fmt; \
-        wav_data_t data  = w->data; \
+        wav_riff_t riff  = (w)->riff; \
+        wav_format_t fmt = (w)->fmt; \
+        wav_data_t data  = (w)->data; \
         printf("ChunkID %c%c%c%c\n", riff.chunk_id[0], riff.chunk_id[1],riff.chunk_id[2], riff.chunk_id[3]); \
         printf("ChunkSize %d\n", riff.chunk_size); \
         printf("Format %c%c%c%c\n", riff.format[0], riff.format[1], riff.format[2], riff.format[3]); \
@@ -59,6 +59,16 @@
         printf("duration: %d \n", data.sub_chunk2_size / fmt.byte_rate); \
         printf("sizeof wav_t %d\n", sizeof(wav_t)); \
     })
+    
+#define PRINTF_WAV_BUFFER(buffer, buffer_n) \
+    ({ \
+        for(int i=0; i<buffer_n; ++i) { \
+            printf("%.2f ", buffer[i]); \
+            if ( (i+1) % 20 == 0) { \
+                printf("\n"); \
+            } \
+        } \
+    }) 
 
 static int  suite_success_init (void) 
 {
@@ -107,10 +117,17 @@ static void test_filter_bank (void)
 static void test_wav_load(void) 
 {
     wav_t w;
-    Simple_wav_load("english.wav", &w);
-    PRINTF_WAV_INFO(w);
+    double* buffer;
+    int buffer_n;
+    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
+    printf("\n wav info: \n");
+    PRINTF_WAV_INFO(&w);
+    printf("\n signal info: \n");
+    PRINTF_WAV_BUFFER(buffer, buffer_n);
+    if (buffer) free(buffer);
     return;
 }
+
 int do_asr_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -130,7 +147,7 @@ int do_asr_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test mel filter", test_wav_load) ) {
+    if (NULL == CU_add_test(pSuite, "test wav info", test_wav_load) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

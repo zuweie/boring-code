@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-01-24 17:21:31
+ * @LastEditTime: 2021-01-25 16:23:08
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -60,5 +60,5 @@ double** create_mel_filtebank(int n_filter, int n_fft, int samplerate, int low_f
 
 int mfcc(void) 
 {
-    return 0;
+    
 }

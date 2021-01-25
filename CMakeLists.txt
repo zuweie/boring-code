@@ -37,6 +37,7 @@ set (SOURCE
     src/cosine_transform/cosine_transform.c
     src/automatic_speech_recognition/mfcc.c
     src/automatic_speech_recognition/signal_process.c
+    src/automatic_speech_recognition/simple_wav.c
 )
 
 ## 连接 cunit 库

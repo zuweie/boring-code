@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 21:32:45
- * @LastEditTime: 2021-01-25 00:08:11
+ * @LastEditTime: 2021-01-25 13:31:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/simple_wav.h
@@ -39,6 +39,6 @@ typedef struct wav {
     wav_data_t data;
 } wav_t;
 
-char* Simple_wav_load(FILE* fp, wav_t* wav);
+int Wav_load(char *src_dir, wav_t* wav, double **buffer, int *buffer_n);
 
 #endif
