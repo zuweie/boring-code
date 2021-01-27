@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-29 16:12:36
- * @LastEditTime: 2021-01-11 14:33:02
+ * @LastEditTime: 2021-01-27 13:30:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/fourier_transform/fourier_transform.c
@@ -78,7 +78,7 @@ static void __Bit_reverse_copy(complex_t a[], size_t size_a, complex_t A[])
     return;
 }
 
-static void __Bit_reverse_copy2(complex_t a[], size_t size_a) 
+static void __Bit_reverse_local(complex_t a[], size_t size_a) 
 {
     int log_length = log2(size_a);
     for (int i=0, j=0; i<size_a; ++i, j=0) {
@@ -94,6 +94,24 @@ static void __Bit_reverse_copy2(complex_t a[], size_t size_a)
             a[j] = t;
         }
     }
+}
+
+static void __Real_Bit_reverse_local(double a[], size_t size_a) 
+{
+    int log_length = log2(size_a);
+    for (int i=0, j=0; i<size_a; ++i, j=0) {
+        for (int k=0; k<log_length; ++k) {
+            j = (j << 1)|(1 & (i>>k));
+        }
+
+        if (j<i) {
+            // 交换
+            double t;
+            t = a[i];
+            a[i] = a[j];
+            a[j] = t;
+        }
+    }   
 }
 
 int Iterative_fast_fourier_transform(complex_t sequence[], size_t N, complex_t A[], int reverse) 
@@ -124,7 +142,7 @@ int Iterative_fast_fourier_transform(complex_t sequence[], size_t N, complex_t A
 int Iterative_fast_fourier_transform2(complex_t sequence[], size_t N, int reverse)
 {
     // bit reverse_copy
-    __Bit_reverse_copy2(sequence, N);
+    __Bit_reverse_local(sequence, N);
     int n = log2(N);
 
     for (int s=1; s<=n; ++s) {
@@ -142,6 +160,108 @@ int Iterative_fast_fourier_transform2(complex_t sequence[], size_t N, int revers
             }
         }
     }
+    return 0;
+}
+
+int Real_fast_fourier_transform(double x[], size_t n, complex_t out[])
+{
+    // 一下这段神奇的代码看不懂：反正最后的结果是：
+    // [R(0), R(1), R(2), R(3), R(4), R(5)... R(N/2), i(n/2-1), i(n/2-2), i(n/2-3)....i(1)];
+    /** 使用 DTF 算出来的结果：
+    <276.000000 0.000000i, amplitude: 276.000000>
+    <66.910201 -124.659086i, amplitude: 141.480963>
+    <37.455819 -129.923888i, amplitude: 135.215217>
+    <-104.564860 -100.443498i, amplitude: 144.992090>
+    <-27.999990 54.000011i, amplitude: 60.827631>
+    <38.138405 -50.502409i, amplitude: 63.285317>
+    <-13.455880 -53.923874i, amplitude: 55.577377>
+    <-48.483870 -106.717911i, amplitude: 117.215179>
+    <-172.000000 0.000118i, amplitude: 172.000000>
+    <-48.483725 106.718005i, amplitude: 117.215204>
+    <-13.455784 53.923894i, amplitude: 55.577374>
+    <38.138472 50.502368i, amplitude: 63.285324>
+    <-28.000031 -53.999966i, amplitude: 60.827609>
+    <-104.564717 100.443626i, amplitude: 144.992076>
+    <37.456023 129.923839i, amplitude: 135.215227>
+    <66.910395 124.658947i, amplitude: 141.480931>
+    */
+
+   /**
+    * 使用本函数算出来的结果：
+    *  0 ~ 8 : 为实部：
+    *  276.000000(0)  66.910213  37.455844  -104.564833  -28.000000  38.138426  -13.455844  -48.483806  -172.000000(n/2)
+    *   9 ～ 15 为虚部：
+    *   106.717952  53.923882  50.502396  -54.000000  100.443522  129.923882  124.659078
+    * 
+    *   参考以上两组数据，可以补全完整的 fft 变换。
+   */
+
+    int i, j, k, m, i1, i2, i3, i4, n1, n2, n4;
+	double a, e, cc, ss, xt, t1, t2;
+    int N = n;
+	for(j = 1, i = 1; i < 16; i++) {
+		m = i;
+		j = 2 * j;
+		if(j == n) break;
+	}
+    
+	n1 = n - 1;
+	for(j = 0, i = 0; i < n1; i++) {
+		if(i < j) {
+			xt = x[j];
+			x[j] = x[i];
+			x[i] = xt;
+		}
+		k = n / 2;
+		while(k < (j + 1)) {
+			j = j - k;
+			k = k / 2;
+		}
+		j = j + k;
+	}
+	for(i = 0; i < n; i += 2) {
+		xt = x[i];
+		x[i] = xt + x[i + 1];
+		x[i + 1] = xt - x[i + 1];
+	}
+	n2 = 1;
+	for(k = 2; k <= m; k++) {
+		n4 = n2;
+		n2 = 2 * n4;
+		n1 = 2 * n2;
+		e = 6.28318530718 / n1;
+        // 此处开始收割计算结果
+		for(i = 0; i < n; i += n1) {
+			xt = x[i];
+			x[i] = xt + x[i + n2];
+			x[i + n2] = xt - x[i + n2];
+			x[i + n2 + n4] = -x[i + n2 + n4];
+			a = e;
+			for(j = 1; j <= (n4-1); j++) {
+				i1 = i + j;
+				i2 = i - j + n2;
+				i3 = i + j + n2;
+				i4 = i - j + n1;
+				cc = cos(a);
+				ss = sin(a);
+				a = a + e;
+				t1 = cc * x[i3] + ss * x[i4];
+				t2 = ss * x[i3] - cc * x[i4];
+				x[i4] = x[i2] - t2;
+				x[i3] = -x[i2] - t2;
+				x[i2] = x[i1] - t1;
+				x[i1] = x[i1] + t1;
+			}
+		}
+	}
+
+    //把结果打包成 complex 
+    for (i=1, j=N-1; i<N/2; ++i, --j) {
+        out[i].real = x[i];
+        out[i].image = (-1)*x[j];
+    }
+    out[0].real = x[0]; out[0].image = 0.f;
+    out[N/2].real = x[N/2]; out[N/2].image = 0.f;
     return 0;
 }
 

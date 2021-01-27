@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:46:56
- * @LastEditTime: 2021-01-11 14:39:30
+ * @LastEditTime: 2021-01-27 13:29:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_complex.c
@@ -12,7 +12,7 @@
 #include "complex/complex.h"
 #include "fourier_transform/fourier_transform.h"
 
-#define PRINTF_COMPLEX(complex) printf("<real: %f, image: %f, amplitude: %f>", complex.real, complex.image, sqrt(complex.real*complex.real + complex.image*complex.image))
+#define PRINTF_COMPLEX(complex) printf("<%f %fi, amplitude: %f>", complex.real, complex.image, sqrt(complex.real*complex.real + complex.image*complex.image))
 #define PRINTF_BIT(v) do { \
     for (int __marco_i=(sizeof(v)*8)-1; __marco_i>=0; --__marco_i) { \
         printf("%d", ((v & (1<<__marco_i)) >> __marco_i)); \
@@ -36,8 +36,13 @@ void text_complex (void) {
 }
 void test_dft (void) {
     size_t N = 16;
-    float sequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    //float sequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    float sequence[] = {0, 1,2,3,4,5,6,7,12,45,-1,-2,-4,88,33,77};
+
     //float sequence[] = {0, 1, 2, 3};
+    // size_t N = 8;
+    // float sequence[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    
     complex_t out[N];
     Discrete_fourier_transform(sequence, N, out);
     printf("\n");
@@ -128,6 +133,19 @@ void test_reverse_ifft2(void)
     }
 }
 
+void test_real_fft (void) {
+    size_t N = 16;
+    double x[] = {0, 1,2,3,4,5,6,7,12,45,-1,-2,-4,88,33,77};
+    complex_t out[N/2+1];
+    Real_fast_fourier_transform(x,N,out);
+    printf("\n real fft : \n");
+    for (int i=0; i<N/2+1; ++i) {
+        PRINTF_COMPLEX(out[i]);
+        printf("\n");
+    }
+    printf("\n");
+}
+
 void test_bit_reverse(void)
 {
     int N = 16;
@@ -164,51 +182,56 @@ int do_fft_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test complex", text_complex) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test complex", text_complex) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     if (NULL == CU_add_test(pSuite, "test dft", test_dft) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
     
-    if (NULL == CU_add_test(pSuite, "test rfft", test_rfft) ) {
+    // if (NULL == CU_add_test(pSuite, "test rfft", test_rfft) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test real fft", test_real_fft) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
     
-    if (NULL == CU_add_test(pSuite, "test ifft", test_ifft) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test ifft", test_ifft) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 
-    if (NULL == CU_add_test(pSuite, "test reverse fft", test_reverse_rfft) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test reverse fft", test_reverse_rfft) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test reverse fft", test_reverse_ifft) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test reverse fft", test_reverse_ifft) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     
     // if (NULL == CU_add_test(pSuite, "test bit reverse", test_bit_reverse) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
     
-    if (NULL == CU_add_test(pSuite, "test ifft 2", test_ifft2) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test ifft 2", test_ifft2) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test reverse fft 2", test_reverse_ifft2) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test reverse fft 2", test_reverse_ifft2) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     // if (NULL == CU_add_test(pSuite, "test array bit reverse", test_array_bit_reverse) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();

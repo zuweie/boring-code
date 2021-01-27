@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-29 16:14:16
- * @LastEditTime: 2021-01-11 14:24:50
+ * @LastEditTime: 2021-01-27 14:28:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/fourier_transform/fourier_transform.h
@@ -27,6 +27,10 @@ int Discrete_fourier_transform (float[], size_t, complex_t[]);
 int Recursive_fast_fourier_transform(complex_t[], size_t, complex_t[], int reverse);
 int Iterative_fast_fourier_transform(complex_t[], size_t, complex_t[], int reverse);
 int Iterative_fast_fourier_transform2(complex_t[], size_t, int reverse);
+
+// 实数序列的傅立叶变换。
+int Real_fast_fourier_transform(double[], size_t, complex_t[]);
+
 
 int Reverse_recursive_fast_fourier_transorm(complex_t[], size_t, complex_t[]);
 int Reverse_iterative_fast_fourier_transorm(complex_t[], size_t, complex_t[]);

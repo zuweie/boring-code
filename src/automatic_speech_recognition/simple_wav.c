@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 21:32:28
- * @LastEditTime: 2021-01-25 16:13:05
+ * @LastEditTime: 2021-01-27 11:59:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/sample_wav.c
@@ -35,7 +35,7 @@ double* Wav_load_signal(FILE* fp, wav_t* wav, char* raw, int* buffer_n)
 
 int Wav_load(char *src_dir, wav_t* wav, double **buffer, int *buffer_n) 
 {
-    //*buffer = NULL;
+    *buffer = NULL;
     FILE* fp = fopen(src_dir, "rb");
     if (fp) {
         fread(wav, 1, sizeof(wav_t), fp);

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-01-26 00:40:10
+ * @LastEditTime: 2021-01-26 23:00:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -82,16 +82,26 @@ static int suite_success_clean (void)
 
 static void test_frames_signal (void) 
 {
-    double raw[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
-    int samplerate = 100;
-    float step_duration = 0.03f;
-    float frame_duration = 0.05f;
+    // double raw[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
+    // int samplerate = 100;
+    // float step_duration = 0.03f;
+    // float frame_duration = 0.05f;
+    wav_t w;
+    double* buffer;
+    int buffer_n;
+    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
+
+    int samplerate = w.fmt.sample_rate;
+    float step_duration = 0.01f;
+    float frame_duration = 0.025f;
+
     int frame_size;
     int frame_number;
     int frame_fftn;
-    double* frames = frames_signale(raw, 17, frame_duration, step_duration, 100, &frame_fftn, &frame_size, &frame_number);
+    double* frames = frames_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
+    
     printf("\n raw frames data: \n");
-    PRINTF_FRAMES(frames, frame_number, frame_size);
+    PRINTF_FRAMES(frames, 1, frame_size);
     printf("fftn %d \n", frame_fftn);
     printf("frame_size %d \n", frame_size);
     printf("frame_number %d \n", frame_number);
@@ -142,13 +152,13 @@ int do_asr_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test mel filter", test_filter_bank) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test mel filter", test_filter_bank) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test wav info", test_wav_load) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test wav info", test_wav_load) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }
