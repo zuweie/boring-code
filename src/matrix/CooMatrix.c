@@ -1,11 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2020-12-10 19:51:55
+ * @LastEditTime: 2021-01-28 15:06:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
  */
+#include "matrix.h"
 #include "CooMatrix.h"
 #include "container/HashMap.h"
 #include "container/List.h"
@@ -21,7 +22,7 @@ int COOMATRIX_Keyhasher(Tv v, size_t slot_t)
 }
 
 static inline 
-float get(imatrix_t* matrix_ptr, size_t x, size_t y) 
+mx_float_t get(imatrix_t* matrix_ptr, size_t x, size_t y) 
 {
     CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
     Tv v;
@@ -34,7 +35,7 @@ float get(imatrix_t* matrix_ptr, size_t x, size_t y)
 }
 
 static inline 
-int set(imatrix_t* matrix_ptr, size_t x, size_t y, float v) 
+int set(imatrix_t* matrix_ptr, size_t x, size_t y, mx_float_t v) 
 {
     CooMatrix* cooMatrix = (CooMatrix*) matrix_ptr;
     Map_set2(cooMatrix->coo, i2t(x), i2t(y), f2t(v));
@@ -63,13 +64,13 @@ int trans(imatrix_t* matrix_ptr)
 }
 
 static 
-void get_row(imatrix_t* matrix_ptr, size_t row_index, float data[]) 
+void get_row(imatrix_t* matrix_ptr, size_t row_index, mx_float_t data[]) 
 {
     return;
 }
 
 static 
-void get_col(imatrix_t* matrix_ptr, size_t col_index, float data[]) 
+void get_col(imatrix_t* matrix_ptr, size_t col_index, mx_float_t data[]) 
 {
     return;
 }
@@ -82,10 +83,10 @@ CooMatrix* CooMatrix_create(size_t rows, size_t cols)
     return matrix;
 }
 
-CooMatrix* CooMatrix_load(size_t rows, size_t cols, float* data)
+CooMatrix* CooMatrix_load(size_t rows, size_t cols, mx_float_t* data)
 {
     CooMatrix* matrix = CooMatrix_create(rows, cols);
-    float(*raw)[Matrix_cols(matrix)] = data;
+    mx_float_t(*raw)[Matrix_cols(matrix)] = data;
 
     for (int i=0; i<Matrix_rows(matrix); ++i) {
         for (int j=0; j<Matrix_cols(matrix); ++j) {

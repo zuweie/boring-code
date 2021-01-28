@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2020-11-13 09:29:25
+ * @LastEditTime: 2021-01-28 14:48:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.h
@@ -12,12 +12,13 @@
 
 typedef struct _dense_matrix {
     imatrix_t matrix;
-    float elems[];
+    float* elems;
 
 }DenseMatrix;
 
 DenseMatrix* DenseMatrix_create(size_t x, size_t y);
-DenseMatrix* DenseMatrix_load(size_t x, size_t y, float* data);
+DenseMatrix* DenseMatrix_load(size_t x, size_t y, mx_float_t* data);
+DenseMatrix* DenseMatrix_set(size_t x, size_t y, mx_float_t* data);
 int DenseMatrix_destroy(DenseMatrix*);
 
 #endif

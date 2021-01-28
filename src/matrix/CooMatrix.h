@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:48
- * @LastEditTime: 2020-11-12 16:03:58
+ * @LastEditTime: 2021-01-28 13:30:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.h
@@ -19,7 +19,7 @@ typedef struct _coo_matrix {
 }CooMatrix;
 
 CooMatrix* CooMatrix_create(size_t x, size_t y);
-CooMatrix* CooMatrix_load(size_t x, size_t y, float* data);
+CooMatrix* CooMatrix_load(size_t x, size_t y, mx_float_t* data);
 int CooMatrix_destroy(CooMatrix*);
 
 #endif

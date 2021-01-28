@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-01-28 10:03:49
+ * @LastEditTime: 2021-01-28 15:23:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -120,6 +120,21 @@ static void test_frames_signal (void)
     free(frames);
     return;
 }
+
+static void test_mffc (void) 
+{
+    wav_t w;
+    double* buffer;
+    int buffer_n;
+    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
+
+    int samplerate = w.fmt.sample_rate;
+    float step_duration = 0.01f;
+    float frame_duration = 0.025f;
+    mfcc(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, 13);
+    return;
+}
+
 static void test_filter_bank (void) 
 {
     int filter_n = 26;
@@ -159,10 +174,10 @@ int do_asr_test (void)
         return CU_get_error();
     }
     
-    if (NULL == CU_add_test(pSuite, "test frame signal", test_frames_signal) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test frame signal", test_frames_signal) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     // if (NULL == CU_add_test(pSuite, "test mel filter", test_filter_bank) ) {
     //     CU_cleanup_registry();
@@ -173,4 +188,10 @@ int do_asr_test (void)
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+
+    // final test
+    if (NULL == CU_add_test(pSuite, "test mffc", test_mffc) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
