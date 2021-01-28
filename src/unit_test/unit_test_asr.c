@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-01-26 23:00:50
+ * @LastEditTime: 2021-01-28 10:03:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -14,11 +14,19 @@
 #include "automatic_speech_recognition/mfcc.h"
 #include "automatic_speech_recognition/simple_wav.h"
 
+#define PRINTF_FRAME(frame, frame_row, frame_size) \
+    ({ \
+        for (int __ii=0; __ii<frame_size; ++__ii) { \
+            printf("%lf ", frame[frame_row][__ii]); \
+        } \
+        printf("\n");\
+    })
+
 #define PRINTF_FRAMES(frames, frame_number, frame_size) \
     ({ \
         for (int i=0; i<frame_number; ++i) { \
             for (int j=0; j<frame_size; ++j) { \
-                printf("%lf ", frames[i*frame_size+j]); \
+                printf("%lf ", frames[i][j]); \
             } \
             printf("\n");\
         } \
@@ -98,10 +106,14 @@ static void test_frames_signal (void)
     int frame_size;
     int frame_number;
     int frame_fftn;
-    double* frames = frames_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
-    
+    void *data = frames_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
+    double (*frames)[frame_fftn/2+1] = data; 
     printf("\n raw frames data: \n");
-    PRINTF_FRAMES(frames, 1, frame_size);
+
+    PRINTF_FRAME(frames, 0, (frame_fftn/2+1));
+    printf("\n\n");
+    PRINTF_FRAME(frames, 425, (frame_fftn/2+1));
+
     printf("fftn %d \n", frame_fftn);
     printf("frame_size %d \n", frame_size);
     printf("frame_number %d \n", frame_number);

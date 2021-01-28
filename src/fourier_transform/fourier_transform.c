@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-29 16:12:36
- * @LastEditTime: 2021-01-27 13:30:40
+ * @LastEditTime: 2021-01-28 08:02:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/fourier_transform/fourier_transform.c
@@ -187,7 +187,7 @@ int Real_fast_fourier_transform(double x[], size_t n, complex_t out[])
     */
 
    /**
-    * 使用本函数算出来的结果：
+    * 使用本函数算出来的结果(一维数组):
     *  0 ~ 8 : 为实部：
     *  276.000000(0)  66.910213  37.455844  -104.564833  -28.000000  38.138426  -13.455844  -48.483806  -172.000000(n/2)
     *   9 ～ 15 为虚部：

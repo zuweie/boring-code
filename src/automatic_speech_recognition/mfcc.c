@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-01-25 16:23:08
+ * @LastEditTime: 2021-01-28 10:10:06
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -59,6 +59,6 @@ double** create_mel_filtebank(int n_filter, int n_fft, int samplerate, int low_f
 }
 
 int mfcc(void) 
-{
-    
+{  
+    // 最后努力了，可以出梅尔系数了。我操尼玛的。
 }
