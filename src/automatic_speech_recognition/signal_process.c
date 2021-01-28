@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-21 11:28:35
- * @LastEditTime: 2021-01-28 15:21:10
+ * @LastEditTime: 2021-01-28 15:33:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/mfcc/signal_process.c
@@ -37,11 +37,11 @@ static int __do_processing_frames_raw(double* raw, size_t raw_length, int frame_
         
     }
     // 申请哪一帧的做 fft 的时序内容... 
-    //double sequence[frame_fft_n];
-    double* sequence = malloc(frame_fft_n * sizeof(double));
+    double sequence[frame_fft_n];
+    //double* sequence = malloc(frame_fft_n * sizeof(double));
     // 因为是实数序列的输入，所以只需要 fft_n / 2 + 1 个复数保存复数数据。详情请搜索 实数时序的傅立叶变换。
-    //complex_t out[frame_fft_n / 2 + 1];
-    complex_t* out = malloc((frame_fft_n/2+1) * sizeof(complex_t));
+    complex_t out[frame_fft_n / 2 + 1];
+    //complex_t* out = malloc((frame_fft_n/2+1) * sizeof(complex_t));
     int i,j,k;
     
     // 分帧开始：
@@ -71,8 +71,8 @@ static int __do_processing_frames_raw(double* raw, size_t raw_length, int frame_
             frames[i][k] = 1.f / (float)(frame_fft_n) * complex_pow(out[k]);
         }
     }
-    free(sequence);
-    free(out);
+    //free(sequence);
+    //free(out);
     return 0;
 }
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-20 11:04:24
- * @LastEditTime: 2021-01-28 15:10:03
+ * @LastEditTime: 2021-01-28 15:49:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/__matrix.h
@@ -43,8 +43,8 @@ struct _imatrix {
 
 #define Matrix_set(matrix_ptr, row, col, value) ((imatrix_t*)(matrix_ptr))->set(((imatrix_t*)(matrix_ptr)), row, col, value)
 #define Matrix_get(matrix_ptr, row, col) ((imatrix_t*)(matrix_ptr))->get(((imatrix_t*)(matrix_ptr)),row, col)
-#define Matrix_rows(matrix_ptr) ((imatrix_t*)(matrix_ptr))->rows
-#define Matrix_cols(matrix_ptr) ((imatrix_t*)(matrix_ptr))->cols
+#define Matrix_rows(matrix_ptr) (((imatrix_t*)(matrix_ptr))->rows)
+#define Matrix_cols(matrix_ptr) (((imatrix_t*)(matrix_ptr))->cols)
 #define Matrix_get_row(matrix_ptr, row_index, data) ((imatrix_t*)(matrix_ptr))->get_row(((imatrix_t*)(matrix_ptr)), row_index, data)
 #define Matrix_get_col(matrix_ptr, col_index, data) ((imatrix_t*)(matrix_ptr))->get_col(((imatrix_t*)(matrix_ptr)), col_index, data)
 #define Matrix_trans(matrix_ptr) ((imatrix_t*)(matrix_ptr))->trans((imatrix_t*)(matrix_ptr))

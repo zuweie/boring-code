@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-01-28 15:04:12
+ * @LastEditTime: 2021-01-28 16:32:19
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -60,7 +60,7 @@ double** create_mel_filtebank(int filter_n, int fft_n, int samplerate, int low_f
     return filters;
 }
 
-int mfcc(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n, int coe_n)
+void* mfcc(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n, int coe_n)
 {  
     int frame_fftn;
     int frame_size;
@@ -70,7 +70,7 @@ int mfcc(double* raw, size_t raw_length, float frame_duration, float step_durati
     int high_freq = samplerate / 2;
 
     // 做分帧 426 * 129
-    void* frame_data   = frames_signale(raw, raw_length, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_size, NULL);
+    void* frame_data   = frames_signale(raw, raw_length, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
     // 获取梅尔滤波 26 * 129
     void* filter_data  = create_mel_filtebank(filter_n, frame_fftn, samplerate, low_freq, high_freq);
     
@@ -79,7 +79,7 @@ int mfcc(double* raw, size_t raw_length, float frame_duration, float step_durati
     DenseMatrix* filters = DenseMatrix_set(filter_n, frame_fftn/2+1, filter_data);
     DenseMatrix* fb      = DenseMatrix_create(frame_number, filter_n);
     Matrix_trans(filters);
-    Matrix_product(frames, filters, fb);
+    DenseMatrix_product(frames, filters, fb);
 
     // log 滤波后的的数据。
     // for (int i=0; i<frame_number; ++i) {
@@ -88,7 +88,8 @@ int mfcc(double* raw, size_t raw_length, float frame_duration, float step_durati
     //     }
     // }
 
-    
+    DenseMatrix_elem_ptr(fb, fb_elem);
+    mx_float_t (*ptr)[26] = fb_elem;
     // clean up memory
     DenseMatrix_destroy(frames);
     DenseMatrix_destroy(filters);
@@ -97,6 +98,6 @@ int mfcc(double* raw, size_t raw_length, float frame_duration, float step_durati
     // 两个数据做点
     free(frame_data);
     free(filter_data);
-
+    return fb_elem;
     // 最后努力了，可以出梅尔系数了。我操尼玛的。
 }
