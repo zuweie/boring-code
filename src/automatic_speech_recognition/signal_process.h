@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-21 11:28:28
- * @LastEditTime: 2021-01-26 10:36:35
+ * @LastEditTime: 2021-01-29 09:30:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/mfcc/signal_process.h
@@ -16,7 +16,7 @@
         fft_n; \
     })
 
-double** frames_signale( \
+double** do_frames_power_signale( \
     double* raw, \
     size_t raw_length, \
     float frame_duration, \

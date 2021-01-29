@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-14 08:46:10
- * @LastEditTime: 2021-01-18 19:24:51
+ * @LastEditTime: 2021-01-29 10:57:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/Cosine_Transform/cosine_transform.c
@@ -25,6 +25,20 @@ double K_cosine_transform(int k, size_t N, double x[])
     }
     
     return A*sum;
+}
+double K_cosine_tranform_i(int k, size_t N, double sequen[], int norm) 
+{
+    double 
+}
+
+double K_cosine_transform_ii(int k, size_t N, double sequence[], int norm) 
+{
+
+}
+
+double k_cosine_transform_iii(int k, size_t N, double sequence[], int norm) 
+{
+
 }
 
 int Discrete_cosine_transform(double sequence[], size_t N, double out[]) 

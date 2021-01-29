@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-01-28 16:32:19
+ * @LastEditTime: 2021-01-29 10:07:34
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -20,6 +20,24 @@
  * 将高频和低频线性切分：
  * 
  */
+
+static void __log_feat(mx_float_t* elem) {
+    if (*elem ! = 0.f) *elem = log(*elem);
+}
+
+static void* __calculate_frame_energy(void* frames, int frame_number, int frame_size) {
+    double* energy = malloc(frame_number * sizeof(double));
+    double (*ff)[frame_size]  = frames;
+    for (int i=0; i<frame_number; ++i) {
+        double total = 0.f;
+        for (int j=0; j<frame_size, ++j) {
+            total += ff[i][j];
+        }
+        energy[i] = total;
+    }
+    return energy;
+}
+
 static int __calculate_fft_bin(double high_mel, double low_mel, int n_filter, int n_fft, int bin[], int samplerate)
 {
     double _per_mel = (high_mel - low_mel) / (double)(n_filter+1);
@@ -69,35 +87,38 @@ void* mfcc(double* raw, size_t raw_length, float frame_duration, float step_dura
     int low_freq = 0;
     int high_freq = samplerate / 2;
 
-    // 做分帧 426 * 129
-    void* frame_data   = frames_signale(raw, raw_length, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
-    // 获取梅尔滤波 26 * 129
+    // 做分帧 以及计算每一帧的能量 返回 426 * 129 的数组
+    void* frame_data   = do_frames_power_signale(raw, raw_length, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
+
+    double* frame_enegry = __calculate_frame_energy(frame_data,frame_number, frame_fftn/2+1);
+
+    // 获取梅尔滤波 返回 26 * 129 的二维数组。
     void* filter_data  = create_mel_filtebank(filter_n, frame_fftn, samplerate, low_freq, high_freq);
     
+    // 申请一块空的内存装下 frame 与 filter 的内积。
+    void* bank         = malloc(frame_number*filter_n*sizeof(double));
     
-    DenseMatrix* frames  = DenseMatrix_set(frame_number, frame_fftn/2+1, frame_data);
-    DenseMatrix* filters = DenseMatrix_set(filter_n, frame_fftn/2+1, filter_data);
-    DenseMatrix* fb      = DenseMatrix_create(frame_number, filter_n);
+    DenseMatrix* frames  = DenseMatrix_wrap(frame_number, frame_fftn/2+1, frame_data);
+    DenseMatrix* filters = DenseMatrix_wrap(filter_n, frame_fftn/2+1, filter_data);
+    DenseMatrix* feat    = DenseMatrix_wrap(frame_number, filter_n, bank);
+
+    // 转置一下 filters
     Matrix_trans(filters);
-    DenseMatrix_product(frames, filters, fb);
 
-    // log 滤波后的的数据。
-    // for (int i=0; i<frame_number; ++i) {
-    //     for (int j; j<filter_n; ++j) {
-    //         fb[i][j] = log(fb[i][j]);
-    //     }
-    // }
+    // fft * mel filter banks
+    DenseMatrix_product(frames, filters, feat);
 
-    DenseMatrix_elem_ptr(fb, fb_elem);
-    mx_float_t (*ptr)[26] = fb_elem;
+    DenseMatrix_foreach(feat, __log_feat);
+
     // clean up memory
     DenseMatrix_destroy(frames);
     DenseMatrix_destroy(filters);
-    DenseMatrix_destroy(fb);
-    
-    // 两个数据做点
+    DenseMatrix_destroy(feat);
+
+    free(frame_enegry);
     free(frame_data);
     free(filter_data);
-    return fb_elem;
+    free(bank);
+    return NULL;
     // 最后努力了，可以出梅尔系数了。我操尼玛的。
 }

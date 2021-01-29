@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-01-28 16:01:12
+ * @LastEditTime: 2021-01-29 10:18:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -98,12 +98,43 @@ DenseMatrix* DenseMatrix_load(size_t row, size_t col, mx_float_t* data)
     memcpy(matrix->elems, data, sizeof(mx_float_t) * row * col);
     return matrix;
 }
-DenseMatrix* DenseMatrix_set(size_t row, size_t col, mx_float_t* data) 
+
+DenseMatrix* DenseMatrix_wrap(size_t row, size_t col, mx_float_t* data) 
 {
     DenseMatrix* matrix = malloc(sizeof(DenseMatrix));
     initialize_matrix(matrix, get, set, trans, get_row, get_col, row, col);
     matrix->elems = data;
     return matrix;
+}
+
+int DenseMatrix_foreach(DenseMatrix* m, void(*elem_func)(mx_float_t*)) 
+{
+    
+    DenseMatrix_elem_ptr(m, pelem);
+    for (int i=0; i<m->matrix.rows; ++i) {
+        for (int j=0; j<m->matrix.cols; ++j) {
+            elem_func(&pelem[i][j]);
+        }
+    }
+    return 0;
+}
+
+int DenseMatrix_foreach_row(DenseMatrix* m, void(*row_func)(mx_float_t* row, size_t elem_size)) 
+{
+    DenseMatrix_elem_ptr(m, pelem);
+    for (int i=0; i<m->matrix.rows; ++i) {
+        row_func(pelem[i], m->matrix.cols);
+    }
+    return 0;
+}
+
+int DenseMatrix_foreach_col(DenseMatrix* m, void(*col_func)(mx_float_t* col, size_t elem_size)) 
+{
+    trans(m);
+    DenseMatrix_elem_ptr(m, pelem);
+    DenseMatrix_foreach_row(m, col_func);
+    trans(m);
+    return 0;
 }
 
 int DenseMatrix_destroy(DenseMatrix* matrix)

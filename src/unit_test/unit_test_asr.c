@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-01-28 15:29:09
+ * @LastEditTime: 2021-01-29 09:21:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -41,6 +41,14 @@
             } \
             printf("\n\n");\
         } \
+    })
+    
+#define PRINTF_FB_INFO(fb, fb_row, fb_size) \
+    ({ \
+        for (int __i=0; __i<fb_size; ++__i) {    \
+            printf("%lf ", fb[fb_row][__i]); \
+        } \
+        printf("\n"); \
     })
 
 #define PRINTF_WAV_INFO(w) \
@@ -121,7 +129,7 @@ static void test_frames_signal (void)
     return;
 }
 
-static void test_mffc (void) 
+static void test_mfcc (void) 
 {
     wav_t w;
     double* buffer;
@@ -131,7 +139,15 @@ static void test_mffc (void)
     int samplerate = w.fmt.sample_rate;
     float step_duration = 0.01f;
     float frame_duration = 0.025f;
-    mfcc(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, 13);
+    double (*fb)[26] = mfcc(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, 13);
+    printf("\n fb \n");
+    PRINTF_FB_INFO(fb, 0, 26);
+     printf("\n");
+    PRINTF_FB_INFO(fb, 1, 26);
+    printf("\n");
+    PRINTF_FB_INFO(fb, 425, 26);
+    printf("\n");
+    //free(fb);
     return;
 }
 
@@ -190,7 +206,7 @@ int do_asr_test (void)
     // }
 
     // final test
-    if (NULL == CU_add_test(pSuite, "test mffc", test_mffc) ) {
+    if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
