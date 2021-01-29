@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-01-29 12:36:50
+ * @LastEditTime: 2021-01-29 14:02:54
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -21,18 +21,28 @@
  * 将高频和低频线性切分：
  * 
  */
+static void __lifter(double* feat, ize_t feat_size, int L) 
+{
+    double f[feat_size];
 
-static void __log_feat(mx_float_t* elem) {
-    if (*elem != 0.f) *elem = log(*elem);
+    if (L > 0) {
+        for (int n=0; i<feat_size; ++i) {
+            f[n] = 1 + (L/2.f)*sin(3.1415926535898 * n/L);
+        }
+    }
+    for (int i=0; i<feat_size; ++i){
+        feat[i] *= f[i];
+    }
+    return;
 }
 
 static void* __calculate_frame_energy(void* frames, int frame_number, int frame_size) {
     double* energy = malloc(frame_number * sizeof(double));
     double (*ff)[frame_size]  = frames;
     for (int i=0; i<frame_number; ++i) {
-        double total = 0.f;
+        double sum = 0.f;
         for (int j=0; j<frame_size; ++j) {
-            total += ff[i][j];
+            sum += ff[i][j];
         }
         energy[i] = total;
     }
@@ -79,7 +89,7 @@ double** create_mel_filtebank(int filter_n, int fft_n, int samplerate, int low_f
     return filters;
 }
 
-void* mfcc(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n, int coe_n)
+void* mfcc(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n, int coe_n, int ceplifter)
 {  
     int frame_fftn;
     int frame_size;
@@ -122,6 +132,8 @@ void* mfcc(double* raw, size_t raw_length, float frame_duration, float step_dura
         }
         // 每一帧做 dct
         Discrete_cosine_transform(pelem[i], filter_n, coe_n, dct_data[i], dct_ortho, dct_ii);
+        // 每一帧做 lifter
+        __lifter(dct_data[i], coe_n, ceplifter);
     }
 
     // clean up memory
