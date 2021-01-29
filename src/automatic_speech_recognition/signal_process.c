@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-21 11:28:35
- * @LastEditTime: 2021-01-29 09:30:34
+ * @LastEditTime: 2021-01-29 12:05:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/mfcc/signal_process.c
@@ -79,7 +79,7 @@ static int __do_processing_frames_raw(double* raw, size_t raw_length, int frame_
 /**
  * 分帧以及计算每一帧的能量。
 */
-double** do_frames_power_signale(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int *frame_fftn, int *frame_size, int *frame_number, int (*winfunc)(double* frame, int frame_size)) 
+double** frames_pow_signale(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int *frame_fftn, int *frame_size, int *frame_number, int (*winfunc)(double* frame, int frame_size)) 
 {
     // 计所有的帧所需要的
     *frame_size = frame_duration * samplerate;

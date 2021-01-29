@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-01-29 10:18:56
+ * @LastEditTime: 2021-01-29 12:19:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -107,32 +107,32 @@ DenseMatrix* DenseMatrix_wrap(size_t row, size_t col, mx_float_t* data)
     return matrix;
 }
 
-int DenseMatrix_foreach(DenseMatrix* m, void(*elem_func)(mx_float_t*)) 
+int DenseMatrix_foreach(DenseMatrix* m, void(*elem_func)(mx_float_t*, void*), void* param) 
 {
     
     DenseMatrix_elem_ptr(m, pelem);
     for (int i=0; i<m->matrix.rows; ++i) {
         for (int j=0; j<m->matrix.cols; ++j) {
-            elem_func(&pelem[i][j]);
+            elem_func(&pelem[i][j], param);
         }
     }
     return 0;
 }
 
-int DenseMatrix_foreach_row(DenseMatrix* m, void(*row_func)(mx_float_t* row, size_t elem_size)) 
+int DenseMatrix_foreach_row(DenseMatrix* m, void(*row_func)(mx_float_t*, size_t, void*), void* param) 
 {
     DenseMatrix_elem_ptr(m, pelem);
     for (int i=0; i<m->matrix.rows; ++i) {
-        row_func(pelem[i], m->matrix.cols);
+        row_func(pelem[i], m->matrix.cols, param);
     }
     return 0;
 }
 
-int DenseMatrix_foreach_col(DenseMatrix* m, void(*col_func)(mx_float_t* col, size_t elem_size)) 
+int DenseMatrix_foreach_col(DenseMatrix* m, void(*col_func)(mx_float_t*, size_t, void*), void*param) 
 {
     trans(m);
     DenseMatrix_elem_ptr(m, pelem);
-    DenseMatrix_foreach_row(m, col_func);
+    DenseMatrix_foreach_row(m, col_func, param);
     trans(m);
     return 0;
 }

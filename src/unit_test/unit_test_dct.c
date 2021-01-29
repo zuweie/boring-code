@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-15 09:14:00
- * @LastEditTime: 2021-01-18 00:57:19
+ * @LastEditTime: 2021-01-29 12:04:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dct.c
@@ -30,7 +30,7 @@ void test_dct_test(void)
         2,3,3,2
     };
     double X[N];
-    Discrete_cosine_transform(x, N, X);
+    Discrete_cosine_transform(x, N, N, X, dct_ortho, dct_ii);
     printf("\n DCT: \n");
     for(int i=0; i<N; ++i) {
         PRINTF_DOUBLES(X[i]);

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-01-29 09:21:58
+ * @LastEditTime: 2021-01-29 12:06:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -114,7 +114,7 @@ static void test_frames_signal (void)
     int frame_size;
     int frame_number;
     int frame_fftn;
-    void *data = frames_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
+    void *data = frames_pow_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
     double (*frames)[frame_fftn/2+1] = data; 
     printf("\n raw frames data: \n");
 
