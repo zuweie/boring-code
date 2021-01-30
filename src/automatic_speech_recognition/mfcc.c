@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-01-29 14:02:54
+ * @LastEditTime: 2021-01-30 00:09:33
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -21,6 +21,7 @@
  * 将高频和低频线性切分：
  * 
  */
+static void 
 static void __lifter(double* feat, ize_t feat_size, int L) 
 {
     double f[feat_size];
@@ -89,6 +90,7 @@ double** create_mel_filtebank(int filter_n, int fft_n, int samplerate, int low_f
     return filters;
 }
 
+int calculate_feat_energy()
 void* mfcc(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n, int coe_n, int ceplifter)
 {  
     int frame_fftn;
