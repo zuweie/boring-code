@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-01-29 12:06:34
+ * @LastEditTime: 2021-02-01 00:52:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -139,7 +139,7 @@ static void test_mfcc (void)
     int samplerate = w.fmt.sample_rate;
     float step_duration = 0.01f;
     float frame_duration = 0.025f;
-    double (*fb)[26] = mfcc(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, 13);
+    double (*fb)[26] = mfcc(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, 13, 22);
     printf("\n fb \n");
     PRINTF_FB_INFO(fb, 0, 26);
      printf("\n");

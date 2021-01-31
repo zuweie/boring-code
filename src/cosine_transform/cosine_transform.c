@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-14 08:46:10
- * @LastEditTime: 2021-01-29 12:29:04
+ * @LastEditTime: 2021-02-01 00:50:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/Cosine_Transform/cosine_transform.c
@@ -68,7 +68,7 @@ int Discrete_cosine_transform(double sequence[], size_t N, int cal_n, double out
 {
     for (int k=0; k<cal_n; ++k) {
         if (dct_type == dct_i) {
-            out[k] = K_cosine_tranform_i(k, N, sequence, dct_norm);
+            out[k] = K_cosine_transform_i(k, N, sequence, dct_norm);
         }else if (dct_type == dct_ii) {
             out[k] = K_cosine_transform_ii(k, N, sequence, dct_norm);
         }else if (dct_type == dct_iii ) {

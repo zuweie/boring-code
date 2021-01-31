@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 21:32:28
- * @LastEditTime: 2021-01-27 11:59:48
+ * @LastEditTime: 2021-02-01 00:56:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/sample_wav.c
@@ -35,6 +35,7 @@ double* Wav_load_signal(FILE* fp, wav_t* wav, char* raw, int* buffer_n)
 
 int Wav_load(char *src_dir, wav_t* wav, double **buffer, int *buffer_n) 
 {
+    int ret = -1;
     *buffer = NULL;
     FILE* fp = fopen(src_dir, "rb");
     if (fp) {
@@ -43,8 +44,8 @@ int Wav_load(char *src_dir, wav_t* wav, double **buffer, int *buffer_n)
         fread(raw, wav->data.sub_chunk2_size, 1, fp);
         *buffer = Wav_load_signal(fp, wav, raw, buffer_n);
         free(raw);
-        return 0;
+        ret = 0;
     }
     fclose(fp);
-    return -1;
+    return ret;
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-21 11:28:35
- * @LastEditTime: 2021-01-30 14:49:35
+ * @LastEditTime: 2021-02-01 00:57:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/mfcc/signal_process.c
@@ -11,7 +11,6 @@
 #include <math.h>
 #include "mem_pool/__mem_pool.h"
 #include "fourier_transform/fourier_transform.h"
-#include "frame_data.h"
 #include "signal_process.h"
 
 #define emphasis 0.97
@@ -79,7 +78,7 @@ static int __do_processing_frames_raw(double* raw, size_t raw_length, int frame_
 /**
  * 分帧以及计算每一帧的能量。
 */
-Frame_data_t frames_pow_signale(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int *frame_fftn, int *frame_size, int *frame_number, int (*winfunc)(double* frame, int frame_size)) 
+double** frames_pow_signale(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int *frame_fftn, int *frame_size, int *frame_number, int (*winfunc)(double* frame, int frame_size)) 
 {
     // 计所有的帧所需要的
     *frame_size = frame_duration * samplerate;
