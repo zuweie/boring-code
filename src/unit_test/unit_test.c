@@ -314,6 +314,7 @@ int main ()
     do_fft_test();
     do_dct_test();
     do_asr_test();
+    do_ultra_array_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);

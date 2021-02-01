@@ -18,6 +18,7 @@ set (SOURCE
     src/unit_test/unit_test_dft_fft.c
     src/unit_test/unit_test_dct.c
     src/unit_test/unit_test_asr.c
+    src/unit_test/unit_test_ultra_array.c
     src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c
@@ -38,6 +39,7 @@ set (SOURCE
     src/automatic_speech_recognition/mfcc.c
     src/automatic_speech_recognition/signal_process.c
     src/automatic_speech_recognition/simple_wav.c
+    src/ultra_array/ultra_array.c
 )
 
 ## 连接 cunit 库

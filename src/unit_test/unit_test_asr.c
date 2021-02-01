@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-02-01 00:52:56
+ * @LastEditTime: 2021-02-01 22:32:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -206,8 +206,8 @@ int do_asr_test (void)
     // }
 
     // final test
-    if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }

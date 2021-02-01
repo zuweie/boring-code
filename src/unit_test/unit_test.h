@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2021-01-24 12:26:53
+ * @LastEditTime: 2021-02-01 13:27:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -69,4 +69,5 @@ int do_heapsort_test(void);
 int do_fft_test(void);
 int do_dct_test(void);
 int do_asr_test(void);
+int do_ultra_array_test(void);
 #endif
