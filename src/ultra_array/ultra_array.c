@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-01 23:18:57
+ * @LastEditTime: 2021-02-02 15:21:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -75,7 +75,7 @@ void UArray_destroy(u_array_t* parr)
 }
 
 //操作完后降维产生副本。
-u_array_t UArray_operate_elems_copy(u_array_t* arr, int axis, operater_t op)
+u_array_t UArray_operate_new_copy(u_array_t* arr, int axis, operater_t op)
 {
     if (axis>=0 && axis<arr->axis_n) {
 
@@ -132,4 +132,47 @@ u_array_t UArray_operate_elems_copy(u_array_t* arr, int axis, operater_t op)
         }
         return n_arr;
     }
+}
+
+u_array_t UArray_transpose_new_copy(u_array_t* arr, size_t* trans_axis_index) 
+{
+    
+    // size_t trans_axes[arr->axis_n];
+    // for (int i=0; i<arr->axis_n; ++i) {
+    //     trans_axes[i] = UA_shape_axis_p(arr, trans_axis[i]);
+    // }
+
+    // u_array_t trans = UArray_create_with_axes_array(arr->alloc, arr->axis_n, trans_axes);
+
+    // double* trans_data = UA_data_ptr(trans);
+    // double* arr_data   = UA_data_ptr_p(arr);
+
+    // size_t trans_size = UA_size_p(arr);
+}
+
+size_t UArray_xd_coord_to_1d_index(u_array_t* arr, size_t* coord)
+{
+    size_t index = 0, axis_mulitply;
+    int axis_n = arr->axis_n;
+    for (int i=0; i<axis_n; ++i) {
+        size_t co = coord[i];
+        axis_mulitply = UA_axis_mulitply_p(arr, i+1);
+        index += co * axis_mulitply;
+    }
+    return index;
+}
+
+void UArray_1d_index_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord)
+{
+    size_t div, mod, i, axis_mulitply;
+    div = offset;
+    for(i=0; i<arr->axis_n-1; ++i) {
+        axis_mulitply = UA_axis_mulitply_p(arr, i+1);
+        div = div / axis_mulitply;
+        mod = div % axis_mulitply;
+        coord[i] = div;
+        div = mod;
+    }
+    coord[i] = mod;
+    return;
 }

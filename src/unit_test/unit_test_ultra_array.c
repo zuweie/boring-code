@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-02 00:29:42
+ * @LastEditTime: 2021-02-02 15:12:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -102,6 +102,15 @@ static void test_uarray_create ()
     UArray_(arr3d_sum_2);
 }
 
+static void test_coord_index (void) {
+    size_t coord[] = {1, 2, 6};
+    u_array_t arr_3d = _UArray3d(NULL, 2, 3, 8);
+    size_t offset = UA_cover_coordinate(arr_3d, coord);
+
+    CU_ASSERT_TRUE(offset == 46);
+    UArray_(arr_3d);
+}
+
 int do_ultra_array_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -116,4 +125,8 @@ int do_ultra_array_test (void)
         return CU_get_error();
     }
     
+    if (NULL == CU_add_test(pSuite, "test uarray coord index ", test_coord_index) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
