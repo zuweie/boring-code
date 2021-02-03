@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-03 10:47:05
+ * @LastEditTime: 2021-02-03 11:24:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -90,8 +90,8 @@ u_array_t UArray_create_with_axes_array(pool_t* alloc, int axis_n, size_t axes[]
 
 void UArray_range(u_array_t *a, int range)
 {
-    double* data   = UA_data_ptr_p(a);
-    size_t  size_a = UA_size_p(a);
+    double* data   = UA_data_ptr(a);
+    size_t  size_a = UA_size(a);
     
     for (int i=0; i<range && i<size_a; ++i) {
         data[i] = i;
@@ -102,10 +102,10 @@ void UArray_range(u_array_t *a, int range)
 int UArray_reshape(u_array_t* a, size_t axes[], int axis_n) 
 {
     size_t size_r = __axis_mulitply(axes, axis_n, 0);
-    size_t size_a = UA_size_p(a);
+    size_t size_a = UA_size(a);
     if (size_r == size_a) {
         if (a->axis_n == axis_n) {
-            memcpy(UA_shape_p(a), axes, axis_n * sizeof(size_t));
+            memcpy(UA_shape(a), axes, axis_n * sizeof(size_t));
         } else {
             // 否则需要重新分配内存。
             // 计算 size
@@ -116,7 +116,7 @@ int UArray_reshape(u_array_t* a, size_t axes[], int axis_n)
             //复制 axis 信息
             memcpy(start, axes, axis_n * sizeof(size_t));
             // 复制 data
-            memcpy( &(((size_t*)start)[axis_n]), UA_data_ptr_p(a),  data_size);
+            memcpy( &(((size_t*)start)[axis_n]), UA_data_ptr(a),  data_size);
 
             __recycle_start(a);
             a->start = start;
@@ -137,23 +137,23 @@ u_array_t UArray_operate_new_copy(u_array_t* arr, int axis, operater_t op)
     if (axis>=0 && axis<arr->axis_n) {
 
         size_t number = 1;
-        size_t* shape = UA_shape_p(arr);
+        size_t* shape = UA_shape(arr);
         size_t axes[axis == 0?1:axis];
 
         for (int i=0; i<axis; ++i) {
-            number  *= UA_shape_axis_p(arr, i);
-            axes[i]  = UA_shape_axis_p(arr, i);
+            number  *= UA_shape_axis(arr, i);
+            axes[i]  = UA_shape_axis(arr, i);
         }
         
         size_t step = 1;
         for (int j=axis; j<arr->axis_n; ++j) {
-            step *= UA_shape_axis_p(arr, j);
+            step *= UA_shape_axis(arr, j);
         }
         // 此处需要降维
         u_array_t n_arr = UArray_create_with_axes_array(arr->alloc, axis, axes);
 
-        double* arr_data_ptr  = UA_data_ptr_p(arr);
-        double* narr_data_ptr = UA_data_ptr(n_arr);
+        double* arr_data_ptr  = UA_data_ptr(arr);
+        double* narr_data_ptr = UA_data_ptr(&n_arr);
         
         double result;
 
@@ -194,7 +194,7 @@ u_array_t UArray_operate_new_copy(u_array_t* arr, int axis, operater_t op)
 
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from) 
 {
-    return __axis_mulitply(UA_shape_p(a), a->axis_n, axis_idx_from);
+    return __axis_mulitply(UA_shape(a), a->axis_n, axis_idx_from);
 }
 
 u_array_t UArray_transpose_new_copy(u_array_t* arr, size_t trans_axis_index[]) 
@@ -202,16 +202,16 @@ u_array_t UArray_transpose_new_copy(u_array_t* arr, size_t trans_axis_index[])
     size_t trans_axes[arr->axis_n];
 
     for (int i=0; i<arr->axis_n; ++i) {
-        trans_axes[i] = UA_shape_axis_p(arr, trans_axis_index[i]);
+        trans_axes[i] = UA_shape_axis(arr, trans_axis_index[i]);
     }
 
     u_array_t trans = UArray_create_with_axes_array(arr->alloc, arr->axis_n, trans_axes);
 
-    double* trans_data = UA_data_ptr(trans);
-    double* arr_data   = UA_data_ptr_p(arr);
+    double* trans_data = UA_data_ptr(&trans);
+    double* arr_data   = UA_data_ptr(arr);
     
-    size_t  trans_size = UA_size(trans);
-    size_t  arr_size   = UA_size_p(arr);
+    size_t  trans_size = UA_size(&trans);
+    size_t  arr_size   = UA_size(arr);
     
     size_t arr_coord[arr->axis_n];
     size_t trans_coord[trans.axis_n];
@@ -221,7 +221,7 @@ u_array_t UArray_transpose_new_copy(u_array_t* arr, size_t trans_axis_index[])
         for (int j=0; j<trans.axis_n; ++j) {
             trans_coord[j] = arr_coord[ trans_axis_index[j] ];
         }
-        size_t index = UA_cover_coordinate(trans, trans_coord);
+        size_t index = UA_cover_coordinate(&trans, trans_coord);
         trans_data[index] = arr_data[i];
     }
     return trans;

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-03 10:39:03
+ * @LastEditTime: 2021-02-03 11:16:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -43,31 +43,23 @@ void UArray_range(u_array_t *a, int range);
 // #define _UArray_range(palloc, range) UArray_range(palloc, range)
 
 /* make more dimen array: UArray_create(palloc, x, 1,2,3,4,5....) */
-#define UArray_(array) UArray_destroy(&array)
+#define UArray_(parray) UArray_destroy(parray)
 
-#define UA_sum(array, axis) UArray_operate_new_copy(&array, axis, ua_sum)
-#define UA_sub(array, axis) UArray_operate_new_copy(&array, axis, ua_sub)
-#define UA_mulitply(arry, axis) UArray_operate_new_copy(&array, axis, ua_mulitply)
-#define UA_div(array, axis) UArray_operate_new_copy(&array, axis, ua_div)
-#define UA_T(array) UArray_transform_new_copy(&array)
-#define UA_range(array, range) UArray_range(&array, range)
+#define UA_sum(parray, axis) UArray_operate_new_copy(parray, axis, ua_sum)
+#define UA_sub(parray, axis) UArray_operate_new_copy(parray, axis, ua_sub)
+#define UA_mulitply(parry, axis) UArray_operate_new_copy(parray, axis, ua_mulitply)
+#define UA_div(parray, axis) UArray_operate_new_copy(parray, axis, ua_div)
+#define UA_T(parray) UArray_transform_new_copy(parray)
+#define UA_range(parray, range) UArray_range(parray, range)
 
-#define UA_cover_coordinate(array, coord) UArray_xd_coord_to_1d_offset(&array, coord)
-#define UA_cover_offset(array, offset, coord) UArray_1d_offset_to_xd_coord(&array, offset, coord)
+#define UA_cover_coordinate(parray, coord) UArray_xd_coord_to_1d_offset(parray, coord)
+#define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)
 
-#define UA_shape_p(parray) ((size_t*)((parray)->start))
-#define UA_shape(array) UA_shape_p(&array)
+#define UA_shape(parray) ((size_t*)((parray)->start))
+#define UA_shape_axis(parray, axis_index) ((size_t*)((parray)->start))[axis_index]
+#define UA_data_ptr(parray) (&((size_t*)((parray)->start))[(parray)->axis_n])
 
-#define UA_shape_axis_p(parray, axis_index) ((size_t*)((parray)->start))[axis_index]
-#define UA_shape_axis(array, axis_index) UA_shape_axis_p(&array, axis_index)
-
-#define UA_data_ptr_p(parray) (&((size_t*)((parray)->start))[(parray)->axis_n])
-#define UA_data_ptr(array) UA_data_ptr_p(&array)    
-
-#define UA_size_p(parray) UArray_axis_mulitply(parray, 0)
-#define UA_size(array) UA_size_p(&array)
-
-#define UA_reshape_p(parray) UArray_reshape(parray)
-#define UA_reshape(array) UA_reshape_p(&array)
+#define UA_size(parray) UArray_axis_mulitply(parray, 0)
+#define UA_reshape(parray, axes, axis_n) UArray_reshape(parray, axes, axis_n)
 
 #endif
