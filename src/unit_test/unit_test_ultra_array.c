@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-02 15:12:16
+ * @LastEditTime: 2021-02-03 10:27:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -13,7 +13,7 @@
 #define PRINTF_ARRAY_AXIS(arr) \
     ({ \
         int axis_n = arr.axis_n; \
-        printf(" axis_n %d \n", arr.axis_n);\
+        printf("\n array axis_n %d \n", arr.axis_n);\
         for (int i=0; i<axis_n; ++i) { \
             size_t dimens = UA_shape_axis(arr, i); \
             printf(" axis(%d): %d ", i, dimens); \
@@ -22,6 +22,7 @@
     })
 #define PRINTF_ARRAY_DATA(arr) \
     ({ \
+        printf("\n array data :\n");\
         size_t number = 1; \
         for (int i=0; i<arr.axis_n; ++i) { \
             number *= UA_shape_axis(arr, i); \
@@ -32,7 +33,11 @@
         } \
         printf("\n"); \
     })
-    
+#define PRINTF_ARRAY(arr) \
+    ({ \
+        PRINTF_ARRAY_AXIS(arr);\
+        PRINTF_ARRAY_DATA(arr);\
+    })
 static int  suite_success_init (void) 
 {
     printf("\nUltra Array research suite success init\n");
@@ -108,7 +113,22 @@ static void test_coord_index (void) {
     size_t offset = UA_cover_coordinate(arr_3d, coord);
 
     CU_ASSERT_TRUE(offset == 46);
+
+    size_t coord2[3];
+    UA_cover_offset(arr_3d, 46, coord2);
+
+    CU_ASSERT_TRUE(coord2[0] == 1);
+    CU_ASSERT_TRUE(coord2[1] == 2);
+    CU_ASSERT_TRUE(coord2[2] == 6);
     UArray_(arr_3d);
+}
+
+static void test_ultra_array_transform(void) 
+{
+    u_array_t arr = _UArray2d(NULL, 7, 3);
+    UA_range(arr, 3*7);
+    PRINTF_ARRAY(arr);
+     
 }
 
 int do_ultra_array_test (void) 
@@ -126,6 +146,12 @@ int do_ultra_array_test (void)
     }
     
     if (NULL == CU_add_test(pSuite, "test uarray coord index ", test_coord_index) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    
+    if (NULL == CU_add_test(pSuite, "test ultra array transform ", test_ultra_array_transform) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
