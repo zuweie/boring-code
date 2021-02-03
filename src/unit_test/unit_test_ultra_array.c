@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-03 11:19:16
+ * @LastEditTime: 2021-02-03 12:14:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -133,8 +133,30 @@ static void test_ultra_array_transform(void)
     u_array_t ta =  UA_T(&arr);
     PRINTF_ARRAY(ta);
     
+
+    u_array_t arr2 = _UArray3d(NULL, 2, 2, 4);
+    UA_range(&arr2, 2*2*4);
+    PRINTF_ARRAY(arr2);
+    u_array_t ta2  = UA_T(&arr2);
+    PRINTF_ARRAY(ta2);
+
+    double* ta2_data = UA_data_ptr(&ta2);
+    double* ar2_data = UA_data_ptr(&arr2);
+
+    size_t ar2_coord[] = {1, 0, 2};
+    size_t ta2_coord[] = {2, 0, 1};
+
+    size_t ta2_index = UA_cover_coordinate(&ta2, ta2_coord);
+    size_t ar2_index = UA_cover_coordinate(&arr2, ar2_coord);
+    double ta2_value = ta2_data[ta2_index];
+    double ar2_value = ar2_data[ar2_index];
+    CU_ASSERT_TRUE(ta2_value == ar2_value);
+    
     UArray_(&arr);
     UArray_(&ta);
+
+    UArray_(&arr2);
+    UArray_(&ta2);
 }   
 
 int do_ultra_array_test (void) 

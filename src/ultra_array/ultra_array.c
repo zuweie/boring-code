@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-03 11:24:44
+ * @LastEditTime: 2021-02-03 11:31:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -210,7 +210,6 @@ u_array_t UArray_transpose_new_copy(u_array_t* arr, size_t trans_axis_index[])
     double* trans_data = UA_data_ptr(&trans);
     double* arr_data   = UA_data_ptr(arr);
     
-    size_t  trans_size = UA_size(&trans);
     size_t  arr_size   = UA_size(arr);
     
     size_t arr_coord[arr->axis_n];
@@ -218,6 +217,7 @@ u_array_t UArray_transpose_new_copy(u_array_t* arr, size_t trans_axis_index[])
     
     for (int i=0; i<arr_size; ++i) {
         UA_cover_offset(arr, i, arr_coord);
+        // 坐标转换啊。
         for (int j=0; j<trans.axis_n; ++j) {
             trans_coord[j] = arr_coord[ trans_axis_index[j] ];
         }
