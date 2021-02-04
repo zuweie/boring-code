@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-03 12:14:00
+ * @LastEditTime: 2021-02-04 14:45:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -56,22 +56,22 @@ static void test_uarray_create ()
     for (int i=0; i<2*3; ++i) {
         data[i] = i+1;
     }
-    printf("\n array axis: \n");
-    PRINTF_ARRAY_AXIS(arr);
-    printf("\n array data: \n");
-    PRINTF_ARRAY_DATA(arr);
+    //printf("\n array axis: \n");
+    //PRINTF_ARRAY_AXIS(arr);
+    //printf("\n array data: \n");
+    //PRINTF_ARRAY_DATA(arr);
     
     u_array_t arr_sum = UA_sum(&arr, 1);
-    printf("\n array axis: \n");
-    PRINTF_ARRAY_AXIS(arr_sum);
-    printf("\n array data: \n");
-    PRINTF_ARRAY_DATA(arr_sum);
+    //printf("\n array axis: \n");
+    //PRINTF_ARRAY_AXIS(arr_sum);
+    //printf("\n array data: \n");
+    //PRINTF_ARRAY_DATA(arr_sum);
 
     u_array_t arr_sum2 = UA_sum(&arr, 0);
-    printf("\n array axis: \n");
-    PRINTF_ARRAY_AXIS(arr_sum2);
-    printf("\n array data: \n");
-    PRINTF_ARRAY_DATA(arr_sum2);
+    //printf("\n array axis: \n");
+    //PRINTF_ARRAY_AXIS(arr_sum2);
+    //printf("\n array data: \n");
+    //PRINTF_ARRAY_DATA(arr_sum2);
     
     /* test 3d */
     u_array_t arr3d = _UArray3d(NULL, 2, 3, 4);
@@ -81,23 +81,23 @@ static void test_uarray_create ()
         pdata[i] = i+1;
     }
     
-    printf("\n array axis: \n");
-    PRINTF_ARRAY_AXIS(arr3d);
-    printf("\n array data: \n");
-    PRINTF_ARRAY_DATA(arr3d);
+    //printf("\n array axis: \n");
+    //PRINTF_ARRAY_AXIS(arr3d);
+    //printf("\n array data: \n");
+    //PRINTF_ARRAY_DATA(arr3d);
 
     u_array_t arr3d_sum = UA_sum(&arr3d, 2);
 
-    printf("\n array axis: \n");
-    PRINTF_ARRAY_AXIS(arr3d_sum);
-    printf("\n array data: \n");
-    PRINTF_ARRAY_DATA(arr3d_sum);
+    //printf("\n array axis: \n");
+    //PRINTF_ARRAY_AXIS(arr3d_sum);
+    //printf("\n array data: \n");
+    //PRINTF_ARRAY_DATA(arr3d_sum);
 
     u_array_t arr3d_sum_2 = UA_sum(&arr3d, 1);
-    printf("\n array axis: \n");
-    PRINTF_ARRAY_AXIS(arr3d_sum_2);
-    printf("\n array data: \n");
-    PRINTF_ARRAY_DATA(arr3d_sum_2);
+    //printf("\n array axis: \n");
+    //PRINTF_ARRAY_AXIS(arr3d_sum_2);
+    //printf("\n array data: \n");
+    //PRINTF_ARRAY_DATA(arr3d_sum_2);
 
     UArray_(&arr);
     UArray_(&arr_sum);
@@ -128,17 +128,17 @@ static void test_ultra_array_transform(void)
 
     u_array_t arr = _UArray2d(NULL, 7, 3);
     UA_range(&arr, 3*7);
-    PRINTF_ARRAY(arr);
+    //PRINTF_ARRAY(arr);
      
     u_array_t ta =  UA_T(&arr);
-    PRINTF_ARRAY(ta);
+    //PRINTF_ARRAY(ta);
     
 
     u_array_t arr2 = _UArray3d(NULL, 2, 2, 4);
     UA_range(&arr2, 2*2*4);
-    PRINTF_ARRAY(arr2);
+    //PRINTF_ARRAY(arr2);
     u_array_t ta2  = UA_T(&arr2);
-    PRINTF_ARRAY(ta2);
+    //PRINTF_ARRAY(ta2);
 
     double* ta2_data = UA_data_ptr(&ta2);
     double* ar2_data = UA_data_ptr(&arr2);
@@ -158,6 +158,26 @@ static void test_ultra_array_transform(void)
     UArray_(&arr2);
     UArray_(&ta2);
 }   
+
+
+static void test_array_dot (void) 
+{
+    u_array_t u1 = _UArray3d(NULL, 1, 2, 4);
+    UA_range(&u1, 1*2*4);
+    u_array_t u2 = _UArray3d(NULL, 2, 4, 3);
+    UA_range(&u2, 2*4*3);
+    u_array_t u3 = UA_dot(&u1, &u2);
+    
+    double* data = UA_data_ptr(&u3);
+    size_t size_u3 = UA_size(&u3);
+    CU_ASSERT_TRUE(data[0] == 42.f);
+    CU_ASSERT_TRUE(data[size_u3-1] == 422.f);
+
+    //PRINTF_ARRAY(u3); 
+    UArray_(&u1);
+    UArray_(&u2);
+    UArray_(&u3);   
+}
 
 int do_ultra_array_test (void) 
 {
@@ -180,6 +200,11 @@ int do_ultra_array_test (void)
 
     
     if (NULL == CU_add_test(pSuite, "test ultra array transform ", test_ultra_array_transform) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test ultra array dot ", test_array_dot) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-03 11:16:16
+ * @LastEditTime: 2021-02-04 19:21:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -29,6 +29,7 @@ void UArray_destroy(u_array_t* parr);
 u_array_t UArray_operate_new_copy(u_array_t* a, int axis, operater_t);
 u_array_t UArray_transpose_new_copy(u_array_t* a, size_t trans_axis_index[]);
 u_array_t UArray_transform_new_copy(u_array_t* a);
+u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2);
 
 /* 以下操作不会产生新副本 */
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
@@ -51,6 +52,7 @@ void UArray_range(u_array_t *a, int range);
 #define UA_div(parray, axis) UArray_operate_new_copy(parray, axis, ua_div)
 #define UA_T(parray) UArray_transform_new_copy(parray)
 #define UA_range(parray, range) UArray_range(parray, range)
+#define UA_dot(pa1, pa2) UArray_dot_new_copy(pa1, pa2)
 
 #define UA_cover_coordinate(parray, coord) UArray_xd_coord_to_1d_offset(parray, coord)
 #define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)
