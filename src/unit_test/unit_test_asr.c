@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-02-01 22:32:36
+ * @LastEditTime: 2021-02-06 14:37:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -34,10 +34,11 @@
     
 #define PRINTF_MEL_FILTER(filters, filter_number, filter_size) \
     ({ \
+        double* _filters = UA_data_ptr(&filters);\
         for (int i=0; i<filter_number; ++i) { \
             printf("filter %d \n", i+1);\
             for (int j=0; j<filter_size; ++j) { \
-                printf("%.2f ", filters[i*filter_size+j]); \
+                printf("%.2f ", _filters[i*filter_size+j]); \
             } \
             printf("\n\n");\
         } \
@@ -49,6 +50,35 @@
             printf("%lf ", fb[fb_row][__i]); \
         } \
         printf("\n"); \
+    })
+    
+#define PRINTF_ARRAY_AXIS(arr) \
+    ({ \
+        int axis_n = arr.axis_n; \
+        printf("\n array axis_n %d \n", arr.axis_n);\
+        for (int i=0; i<axis_n; ++i) { \
+            size_t dimens = UA_shape_axis(&arr, i); \
+            printf(" axis(%d): %d ", i, dimens); \
+        } \
+        printf("\n"); \
+    })
+#define PRINTF_ARRAY_DATA(arr) \
+    ({ \
+        printf("\n array data :\n");\
+        size_t number = 1; \
+        for (int i=0; i<arr.axis_n; ++i) { \
+            number *= UA_shape_axis(&arr, i); \
+        } \
+        double* data = UA_data_ptr(&arr); \
+        for (int j=0; j<number; ++j) { \
+            printf(" %.2f ", data[j]); \
+        } \
+        printf("\n"); \
+    })
+#define PRINTF_ARRAY(arr) \
+    ({ \
+        PRINTF_ARRAY_AXIS(arr);\
+        PRINTF_ARRAY_DATA(arr);\
     })
 
 #define PRINTF_WAV_INFO(w) \
@@ -114,18 +144,21 @@ static void test_frames_signal (void)
     int frame_size;
     int frame_number;
     int frame_fftn;
-    void *data = frames_pow_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL);
-    double (*frames)[frame_fftn/2+1] = data; 
-    printf("\n raw frames data: \n");
+    u_array_t frames = frames_pow_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL, NULL);
+    // double (*frames)[frame_fftn/2+1] = data; 
+    // printf("\n raw frames data: \n");
 
-    PRINTF_FRAME(frames, 0, (frame_fftn/2+1));
-    printf("\n\n");
-    PRINTF_FRAME(frames, 425, (frame_fftn/2+1));
+    // PRINTF_FRAME(frames, 0, (frame_fftn/2+1));
+    // printf("\n\n");
+    // PRINTF_FRAME(frames, 425, (frame_fftn/2+1));
 
-    printf("fftn %d \n", frame_fftn);
-    printf("frame_size %d \n", frame_size);
-    printf("frame_number %d \n", frame_number);
-    free(frames);
+    // printf("fftn %d \n", frame_fftn);
+    // printf("frame_size %d \n", frame_size);
+    // printf("frame_number %d \n", frame_number);
+    // free(frames);
+    
+    UArray_(&frames);
+
     return;
 }
 
@@ -139,14 +172,14 @@ static void test_mfcc (void)
     int samplerate = w.fmt.sample_rate;
     float step_duration = 0.01f;
     float frame_duration = 0.025f;
-    double (*fb)[26] = mfcc(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, 13, 22);
-    printf("\n fb \n");
-    PRINTF_FB_INFO(fb, 0, 26);
-     printf("\n");
-    PRINTF_FB_INFO(fb, 1, 26);
-    printf("\n");
-    PRINTF_FB_INFO(fb, 425, 26);
-    printf("\n");
+    //double (*fb)[26] = mfcc(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, 13, 22);
+    //printf("\n fb \n");
+    //PRINTF_FB_INFO(fb, 0, 26);
+    //printf("\n");
+    //PRINTF_FB_INFO(fb, 1, 26);
+    //printf("\n");
+    //PRINTF_FB_INFO(fb, 425, 26);
+    //printf("\n");
     //free(fb);
     return;
 }
@@ -159,11 +192,12 @@ static void test_filter_bank (void)
     int low_freq = 0;
     int high_freq = samplerate / 2;
 
-    double* filters = create_mel_filtebank(filter_n, fft_n, samplerate, low_freq, high_freq);
-    printf("\n filters :\n");
-    PRINTF_MEL_FILTER(filters, filter_n, (fft_n/2+1));
-    printf("\n\n");
-    free(filters);
+    //u_array_t filters = create_mel_filterbank(filter_n, fft_n, samplerate, low_freq, high_freq);
+    //printf("\n filters :\n");
+    //PRINTF_MEL_FILTER(filters, filter_n, (fft_n/2+1));
+    //PRINTF_ARRAY(filters);
+    //printf("\n\n");
+    //UArray_(&filters);
     return;
 }
 
@@ -180,7 +214,11 @@ static void test_wav_load(void)
     if (buffer) free(buffer);
     return;
 }
-
+static void test_sizeof_enum(void) 
+{
+    typedef enum {a, b, c, d} ttt;
+    printf("%d", sizeof(ttt));
+}
 int do_asr_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -205,8 +243,13 @@ int do_asr_test (void)
     //     return CU_get_error();
     // }
 
-    // final test
-    // if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
+    //final test
+    if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    // if (NULL == CU_add_test(pSuite, "test sizeof enum", test_sizeof_enum) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }

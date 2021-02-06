@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2020-12-09 09:23:45
+ * @LastEditTime: 2021-02-05 18:21:28
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -162,7 +162,7 @@ static rb_tree_node_t* __rb_tree_search(rb_tree_t* prb, rb_tree_node_t* pnode, t
 
 static int __rb_tree_insert_fixup (rb_tree_t* prb, rb_tree_node_t* pz)
 {
-    // 遇到nullnode 它的颜色是黑色的，就跳出循环了。
+    // 遇到 nullnode 它的颜色是黑色的，就跳出循环了。
     while (pz->parent->color == _rb_red)
     {
         // 能来到这里都违反了性质4 ： 老子是红色。但自己也是红色。

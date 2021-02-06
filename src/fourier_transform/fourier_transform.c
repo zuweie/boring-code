@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-29 16:12:36
- * @LastEditTime: 2021-01-29 08:22:19
+ * @LastEditTime: 2021-02-06 11:15:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/fourier_transform/fourier_transform.c
@@ -55,8 +55,8 @@ int Recursive_fast_fourier_transform(complex_t sequence[], size_t n, complex_t y
 
     for (int k=0; k < half_n; k++) {
         complex_t wy1 = complex_multiply(w1, yk[k+half_n]);
-        y[k] = complex_add(yk[k], wy1);
-        y[k+half_n] = complex_substract(yk[k], wy1);
+        y[k] = complex_sum(yk[k], wy1);
+        y[k+half_n] = complex_sub(yk[k], wy1);
         w1 = complex_multiply(w1, wn);
     }
     return 0;
@@ -130,8 +130,8 @@ int Iterative_fast_fourier_transform(complex_t sequence[], size_t N, complex_t A
             for (int j=0; j<(half_m); ++j) {
                 complex_t t = complex_multiply(w, A[k+j+half_m]);
                 complex_t u = A[k+j];
-                A[k+j] = complex_add(u, t);
-                A[k+j+half_m] = complex_substract(u, t);
+                A[k+j] = complex_sum(u, t);
+                A[k+j+half_m] = complex_sub(u, t);
                 w = complex_multiply(w, wm);
             }
         }
@@ -154,8 +154,8 @@ int Iterative_fast_fourier_transform2(complex_t sequence[], size_t N, int revers
             for (int j=0; j<(half_m); ++j) {
                 complex_t t = complex_multiply(w, sequence[k+j+half_m]);
                 complex_t u = sequence[k+j];
-                sequence[k+j] = complex_add(u, t);
-                sequence[k+j+half_m] = complex_substract(u, t);
+                sequence[k+j] = complex_sum(u, t);
+                sequence[k+j+half_m] = complex_sub(u, t);
                 w = complex_multiply(w, wm);
             }
         }
@@ -163,12 +163,13 @@ int Iterative_fast_fourier_transform2(complex_t sequence[], size_t N, int revers
     return 0;
 }
 
-int Real_fast_fourier_transform(double x[], size_t n, complex_t out[])
+int Real_fast_fourier_transform(double x[], size_t n)
 {
     // 一下这段神奇的代码看不懂：反正最后的结果是：
     // [R(0), R(1), R(2), R(3), R(4), R(5)... R(N/2), i(n/2-1), i(n/2-2), i(n/2-3)....i(1)];
     /** 使用 DTF 算出来的结果：
     <276.000000 0.000000i, amplitude: 276.000000>
+
     <66.910201 -124.659086i, amplitude: 141.480963>
     <37.455819 -129.923888i, amplitude: 135.215217>
     <-104.564860 -100.443498i, amplitude: 144.992090>
@@ -176,7 +177,9 @@ int Real_fast_fourier_transform(double x[], size_t n, complex_t out[])
     <38.138405 -50.502409i, amplitude: 63.285317>
     <-13.455880 -53.923874i, amplitude: 55.577377>
     <-48.483870 -106.717911i, amplitude: 117.215179>
+
     <-172.000000 0.000118i, amplitude: 172.000000>
+    
     <-48.483725 106.718005i, amplitude: 117.215204>
     <-13.455784 53.923894i, amplitude: 55.577374>
     <38.138472 50.502368i, amplitude: 63.285324>
@@ -254,17 +257,21 @@ int Real_fast_fourier_transform(double x[], size_t n, complex_t out[])
 			}
 		}
 	}
-
-    //把结果打包成 complex 
-    for (i=1, j=N-1; i<N/2; ++i, --j) {
-        out[i].real = x[i];
-        out[i].image = (-1)*x[j];
-    }
-    out[0].real = x[0]; out[0].image = 0.f;
-    out[N/2].real = x[N/2]; out[N/2].image = 0.f;
     return 0;
 }
 
+int Real_fast_fourier_transform_complex(double sequence[], size_t N, complex_t out[]) 
+{
+    Real_fast_fourier_transform(sequence, N);
+
+    for (int i=1, j=N-1; i<N/2; ++i, --j) {
+        out[i].real = sequence[i];
+        out[i].image = (-1)*sequence[j];
+    }
+    out[0].real = sequence[0]; out[0].image = 0.f;
+    out[N/2].real = sequence[N/2]; out[N/2].image = 0.f;
+    return 0;
+}
 int Reverse_recursive_fast_fourier_transorm(complex_t sequence[], size_t n, complex_t out[]) 
 {
     Recursive_fast_fourier_transform(sequence, n, out, 1);

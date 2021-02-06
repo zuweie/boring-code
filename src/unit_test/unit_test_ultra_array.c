@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-04 14:45:16
+ * @LastEditTime: 2021-02-06 11:06:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -51,60 +51,28 @@ static int suite_success_clean (void)
 static void test_uarray_create () 
 {
     u_array_t arr = _UArray2d(NULL, 2, 3);
-    double *data = UA_data_ptr(&arr);
-    
-    for (int i=0; i<2*3; ++i) {
-        data[i] = i+1;
-    }
-    //printf("\n array axis: \n");
-    //PRINTF_ARRAY_AXIS(arr);
-    //printf("\n array data: \n");
-    //PRINTF_ARRAY_DATA(arr);
-    
-    u_array_t arr_sum = UA_sum(&arr, 1);
-    //printf("\n array axis: \n");
-    //PRINTF_ARRAY_AXIS(arr_sum);
-    //printf("\n array data: \n");
-    //PRINTF_ARRAY_DATA(arr_sum);
+    UA_arange(&arr, 2*3);
 
-    u_array_t arr_sum2 = UA_sum(&arr, 0);
-    //printf("\n array axis: \n");
-    //PRINTF_ARRAY_AXIS(arr_sum2);
-    //printf("\n array data: \n");
-    //PRINTF_ARRAY_DATA(arr_sum2);
+    u_array_t arr1 = _UArray2d(NULL, 2, 3);
+    UA_arange(&arr1, 2*3);
+    
+    u_array_t arr3 = _UArray3d(NULL, 2, 3, 4);
+    UA_arange(&arr3, 2*3*4);
+
+    UA_sum(&arr, 1);
+    PRINTF_ARRAY(arr);
+
+    UA_sum(&arr1, 0);
+    PRINTF_ARRAY(arr1);
     
     /* test 3d */
-    u_array_t arr3d = _UArray3d(NULL, 2, 3, 4);
-    double* pdata = UA_data_ptr(&arr3d);
-
-    for (int i=0; i<2*3*4; ++i) {
-        pdata[i] = i+1;
-    }
-    
-    //printf("\n array axis: \n");
-    //PRINTF_ARRAY_AXIS(arr3d);
-    //printf("\n array data: \n");
-    //PRINTF_ARRAY_DATA(arr3d);
-
-    u_array_t arr3d_sum = UA_sum(&arr3d, 2);
-
-    //printf("\n array axis: \n");
-    //PRINTF_ARRAY_AXIS(arr3d_sum);
-    //printf("\n array data: \n");
-    //PRINTF_ARRAY_DATA(arr3d_sum);
-
-    u_array_t arr3d_sum_2 = UA_sum(&arr3d, 1);
-    //printf("\n array axis: \n");
-    //PRINTF_ARRAY_AXIS(arr3d_sum_2);
-    //printf("\n array data: \n");
-    //PRINTF_ARRAY_DATA(arr3d_sum_2);
+    UA_sum(&arr3, 2);
+    PRINTF_ARRAY(arr3);
 
     UArray_(&arr);
-    UArray_(&arr_sum);
-    UArray_(&arr_sum2);
-    UArray_(&arr3d);
-    UArray_(&arr3d_sum);
-    UArray_(&arr3d_sum_2);
+    UArray_(&arr1);
+    UArray_(&arr3);
+
 }
 
 static void test_coord_index (void) {
@@ -127,45 +95,36 @@ static void test_ultra_array_transform(void)
 {
 
     u_array_t arr = _UArray2d(NULL, 7, 3);
-    UA_range(&arr, 3*7);
-    //PRINTF_ARRAY(arr);
-     
-    u_array_t ta =  UA_T(&arr);
-    //PRINTF_ARRAY(ta);
-    
+    UA_arange(&arr, 7*3);
+
+    double (*data_arr)[3] = UA_data_copy(&arr);
+    UA_T(&arr);
+    double (*data_trans_arr)[7] = UA_data_ptr(&arr);
+    CU_ASSERT_TRUE( data_arr[6][2] == data_trans_arr[2][6] );
 
     u_array_t arr2 = _UArray3d(NULL, 2, 2, 4);
-    UA_range(&arr2, 2*2*4);
-    //PRINTF_ARRAY(arr2);
-    u_array_t ta2  = UA_T(&arr2);
-    //PRINTF_ARRAY(ta2);
+    UA_arange(&arr2, 2*2*4);
 
-    double* ta2_data = UA_data_ptr(&ta2);
-    double* ar2_data = UA_data_ptr(&arr2);
+    double (*data_arr2)[2][4] = UA_data_copy(&arr2);
+    UA_T(&arr2);
+    double (*data_trans_arr2)[4][2] = UA_data_ptr(&arr2); 
+    CU_ASSERT_TRUE( data_arr2[0][1][3] == data_trans_arr2[3][1][0] );
 
-    size_t ar2_coord[] = {1, 0, 2};
-    size_t ta2_coord[] = {2, 0, 1};
-
-    size_t ta2_index = UA_cover_coordinate(&ta2, ta2_coord);
-    size_t ar2_index = UA_cover_coordinate(&arr2, ar2_coord);
-    double ta2_value = ta2_data[ta2_index];
-    double ar2_value = ar2_data[ar2_index];
-    CU_ASSERT_TRUE(ta2_value == ar2_value);
+    free(data_arr2);
+    free(data_arr);
     
     UArray_(&arr);
-    UArray_(&ta);
-
     UArray_(&arr2);
-    UArray_(&ta2);
 }   
 
 
 static void test_array_dot (void) 
 {
     u_array_t u1 = _UArray3d(NULL, 1, 2, 4);
-    UA_range(&u1, 1*2*4);
+    UA_arange(&u1, 1*2*4);
     u_array_t u2 = _UArray3d(NULL, 2, 4, 3);
-    UA_range(&u2, 2*4*3);
+    UA_arange(&u2, 2*4*3);
+    
     u_array_t u3 = UA_dot(&u1, &u2);
     
     double* data = UA_data_ptr(&u3);

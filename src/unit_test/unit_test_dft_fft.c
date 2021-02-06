@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:46:56
- * @LastEditTime: 2021-01-27 13:29:38
+ * @LastEditTime: 2021-02-06 08:23:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_complex.c
@@ -137,7 +137,7 @@ void test_real_fft (void) {
     size_t N = 16;
     double x[] = {0, 1,2,3,4,5,6,7,12,45,-1,-2,-4,88,33,77};
     complex_t out[N/2+1];
-    Real_fast_fourier_transform(x,N,out);
+    Real_fast_fourier_transform_complex(x,N,out);
     printf("\n real fft : \n");
     for (int i=0; i<N/2+1; ++i) {
         PRINTF_COMPLEX(out[i]);

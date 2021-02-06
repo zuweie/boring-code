@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:33:18
- * @LastEditTime: 2021-01-22 13:37:23
+ * @LastEditTime: 2021-02-05 10:47:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/complex/complex.h
@@ -26,13 +26,13 @@ typedef struct  _complex
 
 #define complex_rw(N, k) _complex(cos(2*3.1415926535898/N*k), -1 * sin(2*3.1415926535898/N*k))
 
-#define complex_add(c1, c2) _complex(c1.real+c2.real, c1.image+c2.image)
+#define complex_sum(c1, c2) _complex(c1.real+c2.real, c1.image+c2.image)
 
-#define complex_substract(c1, c2) _complex(c1.real-c2.real, c1.image-c2.image)
+#define complex_sub(c1, c2) _complex(c1.real-c2.real, c1.image-c2.image)
 
 #define complex_multiply(c1, c2) _complex(c1.real*c2.real-c1.image*c2.image, c1.image*c2.real+c1.real*c2.image)
 
-#define complex_divide(c1, c2) _complex((c1.real*c2.real+c1.image*c2.image)/(c2.real*c2.real+c2.image*c2.image)), (c1.image*c2.real-c1.real*c2.image)/(c2.real*c2.real+c2.image*c2.image))
+#define complex_div(c1, c2) _complex((c1.real*c2.real+c1.image*c2.image)/(c2.real*c2.real+c2.image*c2.image)), (c1.image*c2.real-c1.real*c2.image)/(c2.real*c2.real+c2.image*c2.image))
 
 #define complex_pow(c) (c.real*c.real + c.image*c.image)
 
