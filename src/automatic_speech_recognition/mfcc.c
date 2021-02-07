@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-02-06 14:39:52
+ * @LastEditTime: 2021-02-07 10:07:39
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -97,6 +97,10 @@ void* mfcc(double* raw, size_t raw_length, float frame_duration, float step_dura
     // 获取梅尔滤波 返回 26 * 129 的二维数组。
     u_array_t filters = create_mel_filterbank(filter_n, frame_fftn, samplerate, low_freq, high_freq, alloc);
     
+    u_array_t feat = UA_dot(&frames, UA_T(&filters));
+
+    /*****************************************************************************************************/
+    // 以下为旧代码：
     // // 申请一块空的内存装下 frame 与 filter 的内积。
     // void* feat_data   = malloc(frame_number*filter_n*sizeof(double));
     

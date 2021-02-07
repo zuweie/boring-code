@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-07 09:27:19
+ * @LastEditTime: 2021-02-07 10:06:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -92,24 +92,24 @@ __dot_1d(double *a, double *b, size_t n)
     return v;
 }
 
-static void
-__dot_2d(double *a, size_t a_r, size_t a_c, double *b, size_t b_r, size_t b_c, double *c) 
-{
-    double (*_a)[a_c] = a;
-    double (*_b)[b_c] = b;
-    double (*_c)[b_c] = c;
-    double v = 0.f;
+// static void
+// __dot_2d(double *a, size_t a_r, size_t a_c, double *b, size_t b_r, size_t b_c, double *c) 
+// {
+//     double (*_a)[a_c] = a;
+//     double (*_b)[b_c] = b;
+//     double (*_c)[b_c] = c;
+//     double v = 0.f;
 
-    for (int i=0; i<a_r; ++i) {
-        for (int j=0; j<b_c; ++j) {
-            v = 0.f;
-            for (int k=0; k<a_c; ++k) {
-                v += _a[i][k] * _b[k][j];
-            }
-            _c[i][j] = v;
-        }
-    }
-}
+//     for (int i=0; i<a_r; ++i) {
+//         for (int j=0; j<b_c; ++j) {
+//             v = 0.f;
+//             for (int k=0; k<a_c; ++k) {
+//                 v += _a[i][k] * _b[k][j];
+//             }
+//             _c[i][j] = v;
+//         }
+//     }
+// }
 
 static size_t
 __xd_coord_to_1d_offset(size_t coord[], size_t axes[], int axis_n) {
@@ -211,7 +211,7 @@ void* UArray_data_copy(u_array_t* parr)
     return pdata;
 }
 
-void UArray_arange(u_array_t *a, int range)
+u_array_t* UArray_arange(u_array_t *a, int range)
 {
     double* data   = UA_data_ptr(a);
     size_t  size_a = UA_size(a);
@@ -219,22 +219,22 @@ void UArray_arange(u_array_t *a, int range)
     for (int i=0; i<range && i<size_a; ++i) {
         data[i] = i;
     }
-    return;
+    return a;
 }
 
-int UArray_reshape(u_array_t* a, size_t axes[], int axis_n) 
+u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n) 
 {
     size_t size_r = __axis_mulitply(axes, axis_n, 0);
     size_t size_a = UA_size(a);
     if (size_r == size_a) {
-        return __update_shape(a, axes, axis_n);
+        __update_shape(a, axes, axis_n);
     }
-    return -1;
+    return a;
 }
 
 
 //操作降维
-int UArray_operate(u_array_t* arr, int axis, operater_t op)
+u_array_t* UArray_operate(u_array_t* arr, int axis, operater_t op)
 {
     if (axis>=0 && axis<arr->axis_n) {
         double result;
@@ -284,9 +284,10 @@ int UArray_operate(u_array_t* arr, int axis, operater_t op)
 
         // update shape
         __update_shape(arr, shape_new, axisn_new);
-        return 0;
+        //return 0;
     }
-    return -1;
+    //return -1;
+    return arr;
 }
 
 
@@ -296,7 +297,7 @@ size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from)
 }
 
 
-int UArray_transpose(u_array_t* arr, size_t trans_axis_index[]) 
+u_array_t* UArray_transpose(u_array_t* arr, size_t trans_axis_index[]) 
 {
     size_t trans_shape[arr->axis_n];
 
@@ -308,21 +309,21 @@ int UArray_transpose(u_array_t* arr, size_t trans_axis_index[])
     size_t size_arr_tmp  = UA_size(arr) * sizeof(double);
     void*  data_arr_tmp  = malloc(size_arr_tmp);
 
-    void*  data_arr   = UA_data_ptr(arr);
-    size_t shape_arr  = UA_shape(arr);
+    void*   data_arr   = UA_data_ptr(arr);
+    size_t* shape_arr  = UA_shape(arr);
     
     memcpy(data_arr_tmp, data_arr, size_arr_tmp);
 
     ___transpose(data_arr_tmp, shape_arr, data_arr, trans_shape, arr->axis_n, trans_axis_index);
 
     __update_shape(arr, trans_shape, arr->axis_n);
-    
+
     free(data_arr_tmp);
 
-    return 0;
+    return arr;
 }
 
-int UArray_transform(u_array_t* arr) 
+u_array_t* UArray_transform(u_array_t* arr) 
 {
     size_t shape_trans[arr->axis_n];
     for (int i=0; i<arr->axis_n; ++i) {

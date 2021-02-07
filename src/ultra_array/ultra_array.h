@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-06 11:06:05
+ * @LastEditTime: 2021-02-07 10:01:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -28,16 +28,16 @@ void UArray_destroy(u_array_t* parr);
 /* 操作后产生新的 ultra array 副本的函数 */
 void* UArray_data_copy(u_array_t* a);
 
-int UArray_operate(u_array_t* a, int axis, operater_t);
-int UArray_transpose(u_array_t* a, size_t trans_axis_index[]);
-int UArray_transform(u_array_t* a);
-u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2);
+u_array_t* UArray_operate(u_array_t* a, int axis, operater_t);
+u_array_t* UArray_transpose(u_array_t* a, size_t trans_axis_index[]);
+u_array_t* UArray_transform(u_array_t* a);
+u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n);
+u_array_t* UArray_arange(u_array_t *a, int range);
 
+u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2);
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
 void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord);
-int UArray_reshape(u_array_t* a, size_t axes[], int axis_n);
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
-void UArray_arange(u_array_t *a, int range);
 
 //u_array_t UArray_fetch(u_array_t *a, int n, ...);
 
