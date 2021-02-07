@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-06 11:06:39
+ * @LastEditTime: 2021-02-07 09:29:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -104,10 +104,13 @@ static void test_ultra_array_transform(void)
 
     u_array_t arr2 = _UArray3d(NULL, 2, 2, 4);
     UA_arange(&arr2, 2*2*4);
+    //PRINTF_ARRAY(arr2);
 
     double (*data_arr2)[2][4] = UA_data_copy(&arr2);
     UA_T(&arr2);
-    double (*data_trans_arr2)[4][2] = UA_data_ptr(&arr2); 
+    //PRINTF_ARRAY(arr2);
+    
+    double (*data_trans_arr2)[2][2] = UA_data_ptr(&arr2); 
     CU_ASSERT_TRUE( data_arr2[0][1][3] == data_trans_arr2[3][1][0] );
 
     free(data_arr2);

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-06 15:01:08
+ * @LastEditTime: 2021-02-07 09:27:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -164,8 +164,8 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
 {
     if (arr->axis_n != axis_n ) {
         __recycle_memory(arr->alloc, UA_shape(arr));
-        //UA_shape(arr) = __alloc_shape(axis_n, axis_n, shape);
         arr->start[0] = __alloc_shape(arr->alloc, axis_n, shape);
+        arr->axis_n   = axis_n;
     } else if (axis_n != 0){
         memcpy(UA_shape(arr), shape, axis_n * sizeof(size_t));
     }
@@ -190,7 +190,7 @@ u_array_t UArray_create_with_axes_array(pool_t* alloc, int axis_n, size_t shape[
         u_array_t n_array;
         n_array.alloc  = alloc;
         n_array.axis_n = axis_n;
-        
+
         __alloc_start(alloc, axis_n, shape, n_array.start);
         
         return n_array;
@@ -198,9 +198,9 @@ u_array_t UArray_create_with_axes_array(pool_t* alloc, int axis_n, size_t shape[
     return ua_unable;
 }
 
-void UArray_destroy(u_array_t* parr)
+void UArray_destroy(u_array_t* arr)
 {  
-    return __recycle_start(parr->start);
+    return __recycle_start(arr->alloc, arr->start);
 }
 
 void* UArray_data_copy(u_array_t* parr) 
@@ -227,7 +227,7 @@ int UArray_reshape(u_array_t* a, size_t axes[], int axis_n)
     size_t size_r = __axis_mulitply(axes, axis_n, 0);
     size_t size_a = UA_size(a);
     if (size_r == size_a) {
-        return __update_shape(arr, axes, axis_n);
+        return __update_shape(a, axes, axis_n);
     }
     return -1;
 }
@@ -315,18 +315,20 @@ int UArray_transpose(u_array_t* arr, size_t trans_axis_index[])
 
     ___transpose(data_arr_tmp, shape_arr, data_arr, trans_shape, arr->axis_n, trans_axis_index);
 
+    __update_shape(arr, trans_shape, arr->axis_n);
+    
     free(data_arr_tmp);
 
     return 0;
 }
 
-int UArray_transform(u_array_t* a) 
+int UArray_transform(u_array_t* arr) 
 {
-    size_t axis_index[arr->axis_n];
+    size_t shape_trans[arr->axis_n];
     for (int i=0; i<arr->axis_n; ++i) {
-        axis_index[i] = arr->axis_n - i -1;
+        shape_trans[i] = arr->axis_n - i -1;
     }
-    return UArray_transpose(u_array_t* arr, size_t axis_index[]) 
+    return UArray_transpose(arr, shape_trans);
 }
 
 /**
