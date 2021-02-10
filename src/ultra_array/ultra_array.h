@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-07 10:01:11
+ * @LastEditTime: 2021-02-10 13:18:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -35,6 +35,9 @@ u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n);
 u_array_t* UArray_arange(u_array_t *a, int range);
 
 u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2);
+u_array_t UArray_fission(u_array_t* a, char router[]);
+u_array_t* UArray_assimilate(u_array_t* a, char router[], u_array_t* a2);
+
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
 void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord);
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
@@ -57,6 +60,8 @@ size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
 #define UA_arange(parray, range) UArray_arange(parray, range)
 #define UA_dot(pa1, pa2) UArray_dot_new_copy(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
+#define UA_fission(parray, router) UArray_fission(parr, router)
+#define UA_assimilate(pa1, router, pa2) UArray_assimilate(p1, router, p2)
 
 #define UA_cover_coordinate(parray, coord) UArray_xd_coord_to_1d_offset(parray, coord)
 #define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)

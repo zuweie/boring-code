@@ -40,6 +40,7 @@ set (SOURCE
     src/automatic_speech_recognition/signal_process.c
     src/automatic_speech_recognition/simple_wav.c
     src/ultra_array/ultra_array.c
+    src/ultra_array/ultra_router.c
 )
 
 ## 连接 cunit 库

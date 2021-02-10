@@ -1,14 +1,16 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-07 09:29:20
+ * @LastEditTime: 2021-02-10 11:32:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
  */
 #include <stdio.h>
+#include <string.h>
 #include <CUnit/Basic.h>
 #include "ultra_array/ultra_array.h"
+#include "ultra_array/ultra_router.h"
 
 #define PRINTF_ARRAY_AXIS(arr) \
     ({ \
@@ -38,6 +40,18 @@
         PRINTF_ARRAY_AXIS(arr);\
         PRINTF_ARRAY_DATA(arr);\
     })
+
+#define PRINTF_ROUTE_LIST(router, plist) \
+    ({ \
+        route_node_t* ptr = plist; \
+        printf("\n route list <%s>: \n", router); \
+        while(ptr != NULL) { \
+            printf("axis %d, axis_start %d, axis_tail %d \n", ptr->axis, ptr->axis_start, ptr->axis_tail); \
+            ptr = ptr->next; \
+        } \
+        printf("\n"); \
+    })
+    
 static int  suite_success_init (void) 
 {
     printf("\nUltra Array research suite success init\n");
@@ -91,6 +105,7 @@ static void test_coord_index (void) {
     UArray_(&arr_3d);
 }
 
+
 static void test_ultra_array_transform(void) 
 {
 
@@ -140,6 +155,55 @@ static void test_array_dot (void)
     UArray_(&u2);
     UArray_(&u3);   
 }
+static void test_array_router (void) 
+{
+    u_array_t u1 = _UArray3d(NULL, 2, 3, 4);
+    UA_arange(&u1, 2*3*4);
+
+    route_node_t* list;
+    char r1[] = "1,2,1:3";
+    Router_parse(&u1,r1, &list);
+
+    PRINTF_ROUTE_LIST(r1, list);
+
+    route_node_t* list2;
+    char r2[] = "1,,1:3";
+    Router_parse(&u1, r2, &list2);
+    PRINTF_ROUTE_LIST(r2, list2);
+
+    route_node_t* list3;
+    char r3[] = "1";
+    Router_parse(&u1, r3, &list3);
+    PRINTF_ROUTE_LIST(r3, list3);
+
+    route_node_t* list4;
+    char r4[] = "1,,2";
+    Router_parse(&u1, r4, &list4);
+    PRINTF_ROUTE_LIST(r4, list4);
+
+    route_node_t* list5;
+    char r5[] = ",,2";
+    Router_parse(&u1, r5, &list5);
+    PRINTF_ROUTE_LIST(r5, list5);
+
+    route_node_t* list6;
+    char r6[] = "0:1,,2";
+    Router_parse(&u1, r6, &list6);
+    PRINTF_ROUTE_LIST(r6, list6);
+
+    route_node_t* list7;
+    char r7[] = ",:-1,:-1";
+    Router_parse(&u1, r7, &list7);
+    PRINTF_ROUTE_LIST(r7, list7);
+
+    Router_release(list);
+    Router_release(list2);
+    Router_release(list3);
+    Router_release(list4);
+    Router_release(list5);
+    Router_release(list6);
+    Router_release(list7);
+}
 
 int do_ultra_array_test (void) 
 {
@@ -167,6 +231,12 @@ int do_ultra_array_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test ultra array dot ", test_array_dot) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+
+    if (NULL == CU_add_test(pSuite, "test ultra array router ", test_array_router) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

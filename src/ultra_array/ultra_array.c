@@ -1,15 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-07 10:06:31
+ * @LastEditTime: 2021-02-10 13:38:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
  */
 #include <stdarg.h>
 #include <string.h>
+#include "ultra_router.h"
 #include "ultra_array.h"
-
 u_array_t ua_unable = {
     .start = {NULL, NULL},
     .axis_n = -1,
@@ -129,7 +129,7 @@ __1d_offset_to_xd_coord( size_t offset, size_t axes[], int axis_n, size_t coord[
     size_t div, mod, i, axis_mulitply, middle_value;
     middle_value = offset;
     for(i=0; i<axis_n-1; ++i) {
-        axis_mulitply = __axis_mulitply(axes, axis_n, i+1);//UArray_axis_mulitply(arr, i+1);
+        axis_mulitply = __axis_mulitply(axes, axis_n, i+1);
         div = middle_value / axis_mulitply;
         mod = middle_value % axis_mulitply;
         coord[i] = div;
@@ -396,6 +396,30 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
         } 
     }
     return ua_unable;
+}
+
+u_array_t UArray_fission(u_array_t* a, char router[]);
+{
+    route_node_t* list;
+    Router_parse(a, router, &list);
+    
+    // 1 calculate the shape of new array
+
+    route_node_t* ptr = *list;
+    while(ptr != NULL) {
+        ptr = ptr->next;
+    }
+
+    // 2 calculate the size of new array
+    // 3 copy the value from original array
+    // 4 return the new array
+
+    Router_release(list);
+}
+
+u_array_t* UArray_assimilate(u_array_t* a, char router[], u_array_t* a2)
+{
+    
 }
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t coord[])

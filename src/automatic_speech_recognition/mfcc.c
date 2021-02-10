@@ -99,6 +99,8 @@ void* mfcc(double* raw, size_t raw_length, float frame_duration, float step_dura
     
     u_array_t feat = UA_dot(&frames, UA_T(&filters));
 
+    
+
     /*****************************************************************************************************/
     // 以下为旧代码：
     // // 申请一块空的内存装下 frame 与 filter 的内积。
