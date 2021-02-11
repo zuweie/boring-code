@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-10 11:32:59
+ * @LastEditTime: 2021-02-11 16:06:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -11,6 +11,15 @@
 #include <CUnit/Basic.h>
 #include "ultra_array/ultra_array.h"
 #include "ultra_array/ultra_router.h"
+
+#define PRINTF_SHAPE_AXIS(shape, axis_n) \
+    ({ \
+        printf("\n axis_n %d \n", axis_n); \
+        for (int i=0; i<axis_n; ++i) { \
+            printf(" axis(%d): %d ", i, shape[i]); \
+        } \
+        printf("\n"); \
+    })
 
 #define PRINTF_ARRAY_AXIS(arr) \
     ({ \
@@ -46,7 +55,7 @@
         route_node_t* ptr = plist; \
         printf("\n route list <%s>: \n", router); \
         while(ptr != NULL) { \
-            printf("axis %d, axis_start %d, axis_tail %d \n", ptr->axis, ptr->axis_start, ptr->axis_tail); \
+            printf("axis %d, picked %d, axis_start %d, axis_tail %d \n", ptr->axis, ptr->__picked, ptr->__start, ptr->__tail); \
             ptr = ptr->next; \
         } \
         printf("\n"); \
@@ -159,42 +168,127 @@ static void test_array_router (void)
 {
     u_array_t u1 = _UArray3d(NULL, 2, 3, 4);
     UA_arange(&u1, 2*3*4);
-
+    size_t* shape;
+    int axis_n;
+//-----------------------------------------------
+    //printf(" \nshape u1: 2 * 3 * 4 \n");
     route_node_t* list;
     char r1[] = "1,2,1:3";
-    Router_parse(&u1,r1, &list);
+    Router_parse(r1, &list);
+    //PRINTF_ROUTE_LIST(r1, list);
 
-    PRINTF_ROUTE_LIST(r1, list);
+    UArray_analysis_router(&u1, list, &shape, &axis_n);
+    //PRINTF_SHAPE_AXIS(shape, axis_n);
 
+    CU_ASSERT_TRUE(axis_n == 1);
+    CU_ASSERT_TRUE(shape[0] == 2);
+    if (shape) free(shape);
+// -------------------------------------------
     route_node_t* list2;
     char r2[] = "1,,1:3";
-    Router_parse(&u1, r2, &list2);
-    PRINTF_ROUTE_LIST(r2, list2);
+    Router_parse(r2, &list2);
+    //PRINTF_ROUTE_LIST(r2, list2);
+
+    UArray_analysis_router(&u1, list2, &shape, &axis_n);
+    //PRINTF_SHAPE_AXIS(shape, axis_n);
+
+    CU_ASSERT_TRUE(axis_n == 2);
+    CU_ASSERT_TRUE(shape[0] == 3);
+    CU_ASSERT_TRUE(shape[1] == 2);
+    if (shape) free(shape);
+
+// -------------------------------------------
 
     route_node_t* list3;
     char r3[] = "1";
-    Router_parse(&u1, r3, &list3);
-    PRINTF_ROUTE_LIST(r3, list3);
+    Router_parse(r3, &list3);
+    //PRINTF_ROUTE_LIST(r3, list3);
+
+    UArray_analysis_router(&u1, list3, &shape, &axis_n);
+    //PRINTF_SHAPE_AXIS(shape, axis_n);
+
+    CU_ASSERT_TRUE(axis_n == 2);
+    CU_ASSERT_TRUE(shape[0] == 3);
+    CU_ASSERT_TRUE(shape[1] == 4);
+
+    if (shape) free(shape);
+
+// -------------------------------------------
 
     route_node_t* list4;
-    char r4[] = "1,,2";
-    Router_parse(&u1, r4, &list4);
-    PRINTF_ROUTE_LIST(r4, list4);
+    char r4[] = "1,:,2";
+    Router_parse(r4, &list4);
+    //PRINTF_ROUTE_LIST(r4, list4);
+
+    UArray_analysis_router(&u1, list4, &shape, &axis_n);
+    //PRINTF_SHAPE_AXIS(shape, axis_n);
+
+    CU_ASSERT_TRUE(axis_n == 1);
+    CU_ASSERT_TRUE(shape[0] = 3);    
+    if (shape) free(shape);
+
+// -------------------------------------------
 
     route_node_t* list5;
-    char r5[] = ",,2";
-    Router_parse(&u1, r5, &list5);
-    PRINTF_ROUTE_LIST(r5, list5);
+    char r5[] = ":,,2";
+    Router_parse(r5, &list5);
+    //PRINTF_ROUTE_LIST(r5, list5);
+
+    UArray_analysis_router(&u1, list5, &shape, &axis_n);
+    //PRINTF_SHAPE_AXIS(shape, axis_n);
+
+    CU_ASSERT_TRUE( axis_n == 2);
+    CU_ASSERT_TRUE(shape[0] == 2);
+    CU_ASSERT_TRUE(shape[1] == 3); 
+    if (shape) free(shape);
+
+// -------------------------------------------
 
     route_node_t* list6;
     char r6[] = "0:1,,2";
-    Router_parse(&u1, r6, &list6);
-    PRINTF_ROUTE_LIST(r6, list6);
+    Router_parse(r6, &list6);
+    //PRINTF_ROUTE_LIST(r6, list6);
+
+    UArray_analysis_router(&u1, list6, &shape, &axis_n);
+    //PRINTF_SHAPE_AXIS(shape, axis_n);
+
+    CU_ASSERT_TRUE(axis_n == 2);
+    CU_ASSERT_TRUE(shape[0] == 1);
+    CU_ASSERT_TRUE(shape[1] == 3);
+    if (shape) free(shape);
+
+// -------------------------------------------
 
     route_node_t* list7;
     char r7[] = ",:-1,:-1";
-    Router_parse(&u1, r7, &list7);
-    PRINTF_ROUTE_LIST(r7, list7);
+    Router_parse(r7, &list7);
+    //PRINTF_ROUTE_LIST(r7, list7);
+
+    UArray_analysis_router(&u1, list7, &shape, &axis_n);
+    //PRINTF_SHAPE_AXIS(shape, axis_n);
+
+
+    CU_ASSERT_TRUE(axis_n == 3);
+    CU_ASSERT_TRUE(shape[0] == 2);
+    CU_ASSERT_TRUE(shape[1] == 2);
+    CU_ASSERT_TRUE(shape[2] == 3);
+    if (shape) free(shape);
+// -------------------------------------------
+
+    route_node_t* list8;
+    char r8[] = "";
+    Router_parse(r8, &list8);
+    //PRINTF_ROUTE_LIST(r8, list8);
+
+    UArray_analysis_router(&u1, list8, &shape, &axis_n);
+    //PRINTF_SHAPE_AXIS(shape, axis_n);
+
+    CU_ASSERT_TRUE(axis_n == 3);
+    CU_ASSERT_TRUE(shape[0] == 2);
+    CU_ASSERT_TRUE(shape[1] == 3);
+    CU_ASSERT_TRUE(shape[2] == 4);
+    if (shape) free(shape);
+// -------------------------------------------
 
     Router_release(list);
     Router_release(list2);
@@ -203,6 +297,7 @@ static void test_array_router (void)
     Router_release(list5);
     Router_release(list6);
     Router_release(list7);
+    Router_release(list8);
 }
 
 int do_ultra_array_test (void) 

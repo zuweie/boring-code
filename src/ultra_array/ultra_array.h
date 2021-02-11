@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-10 13:18:45
+ * @LastEditTime: 2021-02-11 14:04:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -10,6 +10,7 @@
 #define _ULTRA_ARRAY_H_
 
 #include "mem_pool/__mem_pool.h"
+#include "ultra_router.h"
 
 typedef enum {ua_sum = 1 , ua_sub, ua_mulitply, ua_div} operater_t;
 
@@ -41,7 +42,7 @@ u_array_t* UArray_assimilate(u_array_t* a, char router[], u_array_t* a2);
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
 void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord);
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
-
+int UArray_analysis_router(u_array_t*a, route_node_t* router, size_t** shape, int* axis_n);
 //u_array_t UArray_fetch(u_array_t *a, int n, ...);
 
 #define _UArray1d(palloc,...) UArray_create_with_axes_dots(palloc,1,__VA_ARGS__)

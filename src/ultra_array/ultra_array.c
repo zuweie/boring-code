@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-10 13:38:09
+ * @LastEditTime: 2021-02-11 15:47:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -332,6 +332,47 @@ u_array_t* UArray_transform(u_array_t* arr)
     return UArray_transpose(arr, shape_trans);
 }
 
+int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape, int* axis_n)
+{
+    *shape = NULL;
+    *axis_n = 0;
+
+    route_node_t* ptr = router;
+    int last_axis = -1;
+    // 计算总的维数
+    while(ptr != NULL) {
+        if (ptr->__picked == -1) (*axis_n)++;
+        last_axis = ptr->axis;
+        ptr = ptr->next;
+    }
+
+    if (last_axis >= arr->axis_n) {
+        return -1;
+    }
+
+    (*axis_n) = (*axis_n) + arr->axis_n - (last_axis+1);
+
+    if (*axis_n > 0) 
+        *shape = malloc( (*axis_n) * sizeof(size_t) );
+    else 
+        return -1;
+
+    ptr = router;
+    int axis_index = 0;
+    while(ptr != NULL) {
+
+        if (ptr->__picked == -1) {
+
+            (*shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
+        } 
+        ptr = ptr->next;
+    }
+    for (int i = (last_axis+1); i<arr->axis_n; ++i){
+        (*shape)[axis_index++] = UA_shape_axis(arr, i);
+    } 
+    return 0;
+}
+
 /**
  * 超级鸡吧复杂多维内积算法，核心思想就是用第一个数组的最后一维，点积第二个数组倒数第二维。
 */
@@ -398,15 +439,16 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
     return ua_unable;
 }
 
-u_array_t UArray_fission(u_array_t* a, char router[]);
+u_array_t UArray_fission(u_array_t* a, char router[])
 {
     route_node_t* list;
-    Router_parse(a, router, &list);
+    Router_parse(router, &list);
     
     // 1 calculate the shape of new array
 
-    route_node_t* ptr = *list;
+    route_node_t* ptr = list;
     while(ptr != NULL) {
+        
         ptr = ptr->next;
     }
 

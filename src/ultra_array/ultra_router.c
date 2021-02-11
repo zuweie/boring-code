@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-02-10 13:42:22
+ * @LastEditTime: 2021-02-11 10:48:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
@@ -11,13 +11,14 @@
 #include "ultra_router.h"
 #include "ultra_array.h"
 
-route_node_t* Router_create(int axis, size_t axis_start, size_t axis_tail)
+route_node_t* Router_create(int axis, int picked, int start, int tail)
 {
     route_node_t* route = malloc(sizeof(route_node_t));
     route->axis = axis;
-    route->axis_start = axis_start;
-    route->axis_tail   = axis_tail;
-    route->next       = NULL;
+    route->__picked = picked;
+    route->__start = start;
+    route->__tail  = tail;
+    route->next    = NULL;
     return route;
 }
 
@@ -33,7 +34,7 @@ void Router_addto_list(route_node_t** route_list, route_node_t* route)
     return;
 }
 
-void Router_parse(u_array_t* arr, char router[], route_node_t** route_list)
+void Router_parse(char router[], route_node_t** route_list)
 {
     *route_list = NULL;
     int curr_axis = 0;
@@ -41,8 +42,9 @@ void Router_parse(u_array_t* arr, char router[], route_node_t** route_list)
     const int BUF_SZ  = 256;
     char buf[BUF_SZ]  = {'\0'};
 
-    size_t axis_start = 0;
-    size_t axis_tail   = 0;
+    int axis_start = 0;
+    int axis_tail  = 0;
+    int    picked  = -1;
 
     char *forward, *buf_ptr;
     forward = router;
@@ -55,32 +57,31 @@ void Router_parse(u_array_t* arr, char router[], route_node_t** route_list)
         if ( *forward == ',' ) {
 
             if (buf[0] != '\0') {
-
+                // buf 不为空的情况
                 *(buf_ptr+1) = '\0';
-
                 if (scope_index == 0) {
-                    // axis_start 与 axis_tail 同一位置
-                    axis_start = atoi(buf);
-                    axis_tail   = axis_start + 1;
+                    picked = atoi(buf);
+                    axis_start = 0;
+                    axis_tail  = 0;
                 } else {
-                    tail = atoi(buf);
-                    if (tail <0) {
-                        axis_tail = tail + UA_shape_axis(arr, curr_axis);
-                    } else {
-                        axis_tail = tail;
-                    }
+                    picked = -1;
+                    axis_tail = atoi(buf);
                 }
             } else {
+                // buf 为空的情况
+                picked = -1;
                 if (scope_index == 0) {
+                    //'',
                     axis_start = 0;
-                }
-                axis_tail = UA_shape_axis(arr, curr_axis);
+                } 
+                //':'
+                axis_tail = 0;
             }
 
             buf[0] = '\0';
             buf_ptr = buf;
 
-            route_node_t* route = Router_create(curr_axis++, axis_start, axis_tail);
+            route_node_t* route = Router_create(curr_axis++, picked, axis_start, axis_tail);
             Router_addto_list(route_list, route);
             scope_index = 0;
 
@@ -100,7 +101,6 @@ void Router_parse(u_array_t* arr, char router[], route_node_t** route_list)
         } else {
             *buf_ptr++ = *forward;
         } 
-
         forward++;
     }
     //结束后看看还有没有
@@ -109,31 +109,24 @@ void Router_parse(u_array_t* arr, char router[], route_node_t** route_list)
         *(buf_ptr + 1) = '\0';
 
         if ( scope_index == 0 ) {
-            axis_start = atoi(buf);
-            axis_tail   = axis_start + 1;
+            picked = atoi(buf);
+            axis_start = 0;
+            axis_tail  = 0;
         } else {
-            tail = atoi(buf);
-            if (tail < 0) {
-                axis_tail = tail + UA_shape_axis(arr, curr_axis);
-            } else {
-                axis_tail = tail;
-            }
+            picked = -1;
+            axis_tail = atoi(buf);
         }
-        route_node_t* route = Router_create(curr_axis++, axis_start, axis_tail);
+        route_node_t* route = Router_create(curr_axis++, picked, axis_start, axis_tail);
         Router_addto_list(route_list, route);
+
     } else if ( scope_index == 1 ) {
-        
-        axis_tail = UA_shape_axis(arr, curr_axis);
+        picked = -1;
+        axis_tail = 0;
 
-        route_node_t* route = Router_create(curr_axis++, axis_start, axis_tail);
+        route_node_t* route = Router_create(curr_axis++, picked, axis_start, axis_tail);
         Router_addto_list(route_list, route);
-
     }
     return;
-}
-void Router_router_to_shape(route_node_t* list, u_array_t* arr, size_t **shape, int *axis_n) 
-{
-
 }
 
 void Router_release(route_node_t* route_list)
