@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-11 15:47:12
+ * @LastEditTime: 2021-02-12 15:32:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -172,6 +172,25 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
     return 0;
 }
 
+static int 
+__calculate_chuck_address(u_array_t* arr, size_t chunk_start_from, route_node_t* node, data_chunk_t* chunk_map, int* chunk_index)
+{
+    int axis_n = UA_axisn(arr);
+    if (node->next ==  NULL) {
+        // 最后一个 route node
+        int sub_chunk_number = 1;
+        if (node->__picked == -1) 
+            sub_chunk_number = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail) - node->__start;
+        size_t* shape = UA_shape(arr);
+        size_t sub_chunk_size = (node->axis < UA_axisn(arr) - 1 ?__axis_mulitply(shape, UA_axisn(arr), node->axis-1) : 1) * sizeof(double);
+
+        if (node->__picked == -1)
+    } else {
+        // 还不是最后一个。
+        
+    }
+}
+
 u_array_t UArray_create_with_axes_dots(pool_t* alloc, int axis_n, ...)
 {
     va_list valist;
@@ -332,7 +351,7 @@ u_array_t* UArray_transform(u_array_t* arr)
     return UArray_transpose(arr, shape_trans);
 }
 
-int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape, int* axis_n)
+int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape, int* axis_n, data_chunk_t** chunk_map, int *chunk_n)
 {
     *shape = NULL;
     *axis_n = 0;
@@ -350,7 +369,7 @@ int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape,
         return -1;
     }
 
-    (*axis_n) = (*axis_n) + arr->axis_n - (last_axis+1);
+    (*axis_n) = (*axis_n) + UA_axisn(arr) - (last_axis+1);
 
     if (*axis_n > 0) 
         *shape = malloc( (*axis_n) * sizeof(size_t) );
@@ -360,16 +379,53 @@ int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape,
     ptr = router;
     int axis_index = 0;
     while(ptr != NULL) {
-
         if (ptr->__picked == -1) {
-
             (*shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
         } 
         ptr = ptr->next;
     }
+
     for (int i = (last_axis+1); i<arr->axis_n; ++i){
         (*shape)[axis_index++] = UA_shape_axis(arr, i);
     } 
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+    // 分析数据块所在的位置。
+    // 1 计算有多少个数据块。
+    // 2 计算数据块的启始地址。
+    // 3 计算数据块的大小。
+    // 4 记录号数据块的位置。
+
+    ptr = router;
+    size_t* shape = UA_shape(arr);
+    int axis_n    = UA_axisn(arr);
+    
+    int chunk_index = 0;
+    *chunk_n = 1;
+    *chunk_map = NULL;
+
+    while(ptr != NULL) {
+
+        if (ptr->__picked == -1) {
+            *chunk_n = (*chunk_n) * (ptr->__tail<=0? UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
+        }
+        ptr = ptr->next;
+    }
+    
+    *chunk_map = malloc ((*chunk_n) * sizeof(data_chunk_t));
+
+    ptr = router;
+    while(ptr != NULL) {
+
+        if (ptr->__picked == -1) {
+            //
+            
+        } else {
+            // 
+        }
+
+        ptr = ptr->next;
+    }
     return 0;
 }
 
@@ -441,27 +497,12 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
 
 u_array_t UArray_fission(u_array_t* a, char router[])
 {
-    route_node_t* list;
-    Router_parse(router, &list);
-    
-    // 1 calculate the shape of new array
-
-    route_node_t* ptr = list;
-    while(ptr != NULL) {
-        
-        ptr = ptr->next;
-    }
-
-    // 2 calculate the size of new array
-    // 3 copy the value from original array
-    // 4 return the new array
-
-    Router_release(list);
+    return ua_unable;
 }
 
 u_array_t* UArray_assimilate(u_array_t* a, char router[], u_array_t* a2)
 {
-    
+    return NULL;
 }
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t coord[])

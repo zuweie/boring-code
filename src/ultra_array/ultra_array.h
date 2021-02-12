@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-11 14:04:33
+ * @LastEditTime: 2021-02-12 12:14:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -19,6 +19,13 @@ typedef struct _u_array {
     int axis_n;
     pool_t* alloc;
 } u_array_t;
+
+typedef struct _data_chunk data_chunk_t;
+
+typedef struct _data_chunk {
+    double* chunk;
+    size_t chunk_size;
+} data_chunk_t;
 
 extern u_array_t ua_unable;
 
@@ -42,7 +49,7 @@ u_array_t* UArray_assimilate(u_array_t* a, char router[], u_array_t* a2);
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
 void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord);
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
-int UArray_analysis_router(u_array_t*a, route_node_t* router, size_t** shape, int* axis_n);
+int UArray_analysis_router(u_array_t*a, route_node_t* router, size_t** shape, int* axis_n, data_chunk_t** chunk_map, int* chunk_n);
 //u_array_t UArray_fetch(u_array_t *a, int n, ...);
 
 #define _UArray1d(palloc,...) UArray_create_with_axes_dots(palloc,1,__VA_ARGS__)
@@ -68,6 +75,7 @@ int UArray_analysis_router(u_array_t*a, route_node_t* router, size_t** shape, in
 #define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)
 
 #define UA_shape(parray) ((size_t*)(parray)->start[0])//((size_t*)(*((parray)->start[0])))
+#define UA_axisn(parray) ((parray)->axis_n)
 #define UA_shape_axis(parray, axis_index) UA_shape(parray)[axis_index]
 #define UA_data_ptr(parray) ((double*)(parray)->start[1])//((double*)(*((parray)->start[1])))
 
