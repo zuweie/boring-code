@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-12 12:14:55
+ * @LastEditTime: 2021-02-12 22:38:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -23,7 +23,7 @@ typedef struct _u_array {
 typedef struct _data_chunk data_chunk_t;
 
 typedef struct _data_chunk {
-    double* chunk;
+    char* chunk_addr;
     size_t chunk_size;
 } data_chunk_t;
 

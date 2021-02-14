@@ -1,12 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-12 15:32:44
+ * @LastEditTime: 2021-02-14 11:15:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
  */
 #include <stdarg.h>
+#include <stddef.h>
 #include <string.h>
 #include "ultra_router.h"
 #include "ultra_array.h"
@@ -173,22 +174,45 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
 }
 
 static int 
-__calculate_chuck_address(u_array_t* arr, size_t chunk_start_from, route_node_t* node, data_chunk_t* chunk_map, int* chunk_index)
+__survey_chuck_address(u_array_t* arr, char* chunk_start_from, route_node_t* node, data_chunk_t* chunk_map, int* chunk_index)
 {
-    int axis_n = UA_axisn(arr);
-    if (node->next ==  NULL) {
-        // 最后一个 route node
-        int sub_chunk_number = 1;
-        if (node->__picked == -1) 
-            sub_chunk_number = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail) - node->__start;
-        size_t* shape = UA_shape(arr);
-        size_t sub_chunk_size = (node->axis < UA_axisn(arr) - 1 ?__axis_mulitply(shape, UA_axisn(arr), node->axis-1) : 1) * sizeof(double);
+    size_t sub_chunk_size = (node->axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), node->axis+1) : 1) * sizeof(double);
+    int sub_chunk_number = 1;
 
-        if (node->__picked == -1)
-    } else {
-        // 还不是最后一个。
+    if (node->next ==  NULL) {
+        // 最后一个 route nod         
+        ptrdiff_t offset = 0;
+
+        // 计算下一个维度每一个块的大小。
+
+        if (node->__picked == -1) {
+            sub_chunk_number = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail) - node->__start;
+            offset = node->__start * sub_chunk_size;
+        } else {
+            offset = node->__picked * sub_chunk_size;
+        }
         
+        data_chunk_t* chunk = &chunk_map[*chunk_index];
+        chunk->chunk_addr = chunk_start_from + offset;
+        chunk->chunk_size = sub_chunk_size * sub_chunk_number;
+        *chunk_index ++;
+        
+    } else {
+
+        if (node->__picked == -1) {
+            // : 的情况
+            int tail = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail);
+            for (int i=node->__start; i<tail; ++i) {
+                ptrdiff_t sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
+                __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map, chunk_index);
+            }
+        } else {
+            // index 的情况
+            ptrdiff_t sub_chunk_start_from = chunk_start_from + node->__picked * sub_chunk_size;
+            __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map, chunk_index);
+        }
     }
+    return 0;
 }
 
 u_array_t UArray_create_with_axes_dots(pool_t* alloc, int axis_n, ...)
@@ -396,10 +420,7 @@ int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape,
     // 3 计算数据块的大小。
     // 4 记录号数据块的位置。
 
-    ptr = router;
-    size_t* shape = UA_shape(arr);
-    int axis_n    = UA_axisn(arr);
-    
+    ptr = router;    
     int chunk_index = 0;
     *chunk_n = 1;
     *chunk_map = NULL;
@@ -413,18 +434,14 @@ int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape,
     }
     
     *chunk_map = malloc ((*chunk_n) * sizeof(data_chunk_t));
-
+    
     ptr = router;
-    while(ptr != NULL) {
-
-        if (ptr->__picked == -1) {
-            //
-            
-        } else {
-            // 
-        }
-
-        ptr = ptr->next;
+    if (ptr != NULL) {
+        int chunk_index = 0;
+        __survey_chuck_address(arr, UA_data_ptr(arr), ptr, (*chunk_map), &chunk_index);
+    } else {
+        (*chunk_map)[0].chunk_addr = UA_data_ptr(arr);
+        (*chunk_map)[0].chunk_size = UA_size(arr);
     }
     return 0;
 }
