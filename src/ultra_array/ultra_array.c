@@ -1,15 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-14 11:15:07
+ * @LastEditTime: 2021-02-15 00:02:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
  */
 #include <stdarg.h>
-#include <stddef.h>
 #include <string.h>
 #include "ultra_router.h"
+#include "ultra_data_chunk.h"
 #include "ultra_array.h"
 u_array_t ua_unable = {
     .start = {NULL, NULL},
@@ -174,14 +174,14 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
 }
 
 static int 
-__survey_chuck_address(u_array_t* arr, char* chunk_start_from, route_node_t* node, data_chunk_t* chunk_map, int* chunk_index)
+__survey_chuck_address(u_array_t* arr, char* chunk_start_from, route_node_t* node, data_chunk_t** chunk_map)
 {
     size_t sub_chunk_size = (node->axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), node->axis+1) : 1) * sizeof(double);
     int sub_chunk_number = 1;
 
     if (node->next ==  NULL) {
         // 最后一个 route nod         
-        ptrdiff_t offset = 0;
+        size_t offset = 0;
 
         // 计算下一个维度每一个块的大小。
 
@@ -192,24 +192,21 @@ __survey_chuck_address(u_array_t* arr, char* chunk_start_from, route_node_t* nod
             offset = node->__picked * sub_chunk_size;
         }
         
-        data_chunk_t* chunk = &chunk_map[*chunk_index];
-        chunk->chunk_addr = chunk_start_from + offset;
-        chunk->chunk_size = sub_chunk_size * sub_chunk_number;
-        *chunk_index ++;
-        
+        data_chunk_t* new_chunk = DataChunk_create(chunk_start_from + offset, sub_chunk_size * sub_chunk_number);
+        DataChunk_addto_list(chunk_map, new_chunk);
     } else {
 
         if (node->__picked == -1) {
             // : 的情况
             int tail = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail);
             for (int i=node->__start; i<tail; ++i) {
-                ptrdiff_t sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
-                __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map, chunk_index);
+                char* sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
+                __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map);
             }
         } else {
-            // index 的情况
-            ptrdiff_t sub_chunk_start_from = chunk_start_from + node->__picked * sub_chunk_size;
-            __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map, chunk_index);
+            // picked 的情况
+            char* sub_chunk_start_from = chunk_start_from + node->__picked * sub_chunk_size;
+            __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map);
         }
     }
     return 0;
@@ -375,11 +372,12 @@ u_array_t* UArray_transform(u_array_t* arr)
     return UArray_transpose(arr, shape_trans);
 }
 
-int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape, int* axis_n, data_chunk_t** chunk_map, int *chunk_n)
+int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape, int* axis_n, data_chunk_t** chunk_map)
 {
     *shape = NULL;
     *axis_n = 0;
-
+    *chunk_map = NULL;
+    
     route_node_t* ptr = router;
     int last_axis = -1;
     // 计算总的维数
@@ -414,36 +412,14 @@ int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape,
     } 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
-    // 分析数据块所在的位置。
-    // 1 计算有多少个数据块。
-    // 2 计算数据块的启始地址。
-    // 3 计算数据块的大小。
-    // 4 记录号数据块的位置。
-
     ptr = router;    
-    int chunk_index = 0;
-    *chunk_n = 1;
-    *chunk_map = NULL;
-
-    while(ptr != NULL) {
-
-        if (ptr->__picked == -1) {
-            *chunk_n = (*chunk_n) * (ptr->__tail<=0? UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
-        }
-        ptr = ptr->next;
-    }
-    
-    *chunk_map = malloc ((*chunk_n) * sizeof(data_chunk_t));
-    
-    ptr = router;
     if (ptr != NULL) {
         int chunk_index = 0;
-        __survey_chuck_address(arr, UA_data_ptr(arr), ptr, (*chunk_map), &chunk_index);
+        __survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_map);
     } else {
-        (*chunk_map)[0].chunk_addr = UA_data_ptr(arr);
-        (*chunk_map)[0].chunk_size = UA_size(arr);
+        *chunk_map = DataChunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(double));
     }
-    return 0;
+    return 0;  
 }
 
 /**

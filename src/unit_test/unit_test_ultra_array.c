@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-14 11:06:09
+ * @LastEditTime: 2021-02-15 00:19:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -11,6 +11,7 @@
 #include <CUnit/Basic.h>
 #include "ultra_array/ultra_array.h"
 #include "ultra_array/ultra_router.h"
+#include "ultra_array/ultra_data_chunk.h"
 
 #define PRINTF_SHAPE_AXIS(shape, axis_n) \
     ({ \
@@ -33,6 +34,7 @@
     })
 #define PRINTF_ARRAY_DATA(arr) \
     ({ \
+        printf("\n array data address %p \n", UA_data_ptr(&arr)); \
         printf("\n array data :\n");\
         size_t number = 1; \
         for (int i=0; i<arr.axis_n; ++i) { \
@@ -61,13 +63,20 @@
         printf("\n"); \
     })
 
-#define PRINTF_CHUNK_MAP(map, map_n) \
+#define PRINTF_CHUNK_MAP(map, pf_data) \
     ({  \
-        printf("\n chunk_map number : %d \n", map_n); \
-        for (int i=0; i<map_n; ++i) {   \
-            printf("chunk address %p \n", map[i].chunk_addr);   \
-            printf("chunk size %ld\n", map[i].chunk_size);  \
-        }   \
+        data_chunk_t* ptr = map; \
+        while(ptr != NULL) { \
+            printf(" chunk address %p \n", ptr->chunk_addr); \
+            if (pf_data) { \
+                printf(" data: \n"); \
+                double* data_ptr = ptr->chunk_addr; \
+                for (int i=0; i<(ptr->chunk_size / sizeof(double)); ++i) { \
+                    printf(" %0.2f \n", data_ptr[i]); \
+                } \
+            } \
+            ptr = ptr->next; \
+        } \
         printf("\n");   \
     })
     
@@ -185,22 +194,23 @@ static void test_array_router (void)
 //-----------------------------------------------
     #if 1
     //printf(" \nshape u1: 2 * 3 * 4 \n");
+    PRINTF_ARRAY(u1);
+    printf("router:\n");
     route_node_t* list;
-    char r1[] = "1";
+    char r1[] = ":2,2";
     Router_parse(r1, &list);
-    //PRINTF_ROUTE_LIST(r1, list);
+    PRINTF_ROUTE_LIST(r1, list);
 
-    UArray_analysis_router(&u1, list, &shape, &axis_n, &chunk_map, &chunk_size);
-    //PRINTF_SHAPE_AXIS(shape, axis_n);
-    PRINTF_CHUNK_MAP(chunk_map, chunk_size);
-
-    CU_ASSERT_TRUE(axis_n == 1);
-    CU_ASSERT_TRUE(shape[0] == 2);
+    UArray_analysis_router(&u1, list, &shape, &axis_n, &chunk_map);
+    PRINTF_CHUNK_MAP(chunk_map, 1);
+    PRINTF_SHAPE_AXIS(shape, axis_n);
+    //CU_ASSERT_TRUE(axis_n == 1);
+    //CU_ASSERT_TRUE(shape[0] == 2);
 
     if (shape) free(shape);
     Router_release(list);
 
-    if (chunk_map) free(chunk_map);
+    DataChunk_release(chunk_map);
     #endif
 // -------------------------------------------
 
