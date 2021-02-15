@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-02-11 10:48:04
+ * @LastEditTime: 2021-02-15 08:45:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
@@ -11,10 +11,10 @@
 #include "ultra_router.h"
 #include "ultra_array.h"
 
-route_node_t* Router_create(int axis, int picked, int start, int tail)
+ua_route_node_t* UA_router_create(int axis, int picked, int start, int tail)
 {
-    route_node_t* route = malloc(sizeof(route_node_t));
-    route->axis = axis;
+    ua_route_node_t* route = malloc(sizeof(route_node_t));
+    route->__axis = axis;
     route->__picked = picked;
     route->__start = start;
     route->__tail  = tail;
@@ -22,12 +22,12 @@ route_node_t* Router_create(int axis, int picked, int start, int tail)
     return route;
 }
 
-void Router_addto_list(route_node_t** route_list, route_node_t* route) 
+void ua_router_addto_list(route_node_t** route_map, route_node_t* route) 
 {
-    if (*route_list == NULL) {
-        *route_list = route;
+    if (*route_map == NULL) {
+        *route_map = route;
     } else {
-        route_node_t* ptr = *route_list;
+        route_node_t* ptr = *route_map;
         while (ptr->next != NULL && (ptr = ptr->next));
         ptr->next = route;
     }
