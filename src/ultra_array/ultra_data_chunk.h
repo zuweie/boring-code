@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-14 19:23:54
- * @LastEditTime: 2021-02-15 08:31:27
+ * @LastEditTime: 2021-02-16 23:25:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_data_chunk.h
@@ -22,5 +22,5 @@ typedef struct _ua_data_chunk {
 
 ua_data_chunk_t* UA_datachunk_create(char* addr, size_t size);
 void UA_datachunk_addto(ua_data_chunk_t** chunK_map, ua_data_chunk_t* chunk_node);
-void UA_dataChunk_release(ua_data_chunk_t* chunk_map);
+void UA_datachunk_release(ua_data_chunk_t* chunk_map);
 #endif

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-02-15 08:45:09
+ * @LastEditTime: 2021-02-17 00:20:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
@@ -9,34 +9,75 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ultra_router.h"
+#include "ultra_data_chunk.h"
 #include "ultra_array.h"
 
-ua_route_node_t* UA_router_create(int axis, int picked, int start, int tail)
+static int 
+UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* indicator, ua_chunk_note_t* chunk_note) 
 {
-    ua_route_node_t* route = malloc(sizeof(route_node_t));
-    route->__axis = axis;
-    route->__picked = picked;
-    route->__start = start;
-    route->__tail  = tail;
-    route->next    = NULL;
-    return route;
+
+    size_t sub_chunk_size = (indicator->axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), indicator->axis+1) : 1) * sizeof(double);
+    int sub_chunk_number = 1;
+
+    if (indicator->next ==  NULL) {
+        // 最后一个 route nod         
+        size_t offset = 0;
+
+        // 计算下一个维度每一个块的大小。
+
+        if (indicator->__picked == -1) {
+            sub_chunk_number = (indicator->__tail <= 0 ? UA_shape_axis(arr, indicator->axis) + indicator->__tail : indicator->__tail) - indicator->__start;
+            offset = indicator->__start * sub_chunk_size;
+        } else {
+            offset = indicator->__picked * sub_chunk_size;
+        }
+        
+        ua_data_chunk_t* new_chunk = UA_datachunk_create(chunk_start_from + offset, sub_chunk_size * sub_chunk_number);
+        UA_datachunk_addto(&(chunk_note->chunk_map), new_chunk);
+    } else {
+
+        if (indicator->__picked == -1) {
+            // : 的情况
+            int tail = (indicator->__tail <= 0 ? UA_shape_axis(arr, indicator->axis) + indicator->__tail : indicator->__tail);
+            for (int i=indicator->__start; i<tail; ++i) {
+                char* sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
+                UA_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_note);
+            }
+        } else {
+            // picked 的情况
+            char* sub_chunk_start_from = chunk_start_from + indicator->__picked * sub_chunk_size;
+            UA_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_node);
+        }
+    }
+    return 0;
 }
 
-void ua_router_addto_list(route_node_t** route_map, route_node_t* route) 
+ua_indicator_t* UA_indicator_create(int axis, int picked, int start, int tail)
 {
-    if (*route_map == NULL) {
-        *route_map = route;
+    ua_indicator_t* index = malloc(sizeof(ua_indicator_t));
+    index->__axis = axis;
+    index->__picked = picked;
+    index->__start = start;
+    index->__tail  = tail;
+    index->next    = NULL;
+    return index;
+}
+
+void UA_indicator_addto(ua_indicator_t** indicator_list, ua_indicator_t* indicator) 
+{
+    if (*indicator_list == NULL) {
+        *indicator_list = indicator;
     } else {
-        route_node_t* ptr = *route_map;
+        ua_indicator_t* ptr = *indicator_list;
         while (ptr->next != NULL && (ptr = ptr->next));
-        ptr->next = route;
+        ptr->next = indicator;
     }
     return;
 }
 
-void Router_parse(char router[], route_node_t** route_list)
+void UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
 {
-    *route_list = NULL;
+    *indicator_list = NULL;
     int curr_axis = 0;
 
     const int BUF_SZ  = 256;
@@ -47,7 +88,7 @@ void Router_parse(char router[], route_node_t** route_list)
     int    picked  = -1;
 
     char *forward, *buf_ptr;
-    forward = router;
+    forward = indicator_str;
     buf_ptr = buf;
 
     int scope_index = 0;;
@@ -81,8 +122,8 @@ void Router_parse(char router[], route_node_t** route_list)
             buf[0] = '\0';
             buf_ptr = buf;
 
-            route_node_t* route = Router_create(curr_axis++, picked, axis_start, axis_tail);
-            Router_addto_list(route_list, route);
+            ua_indicator_t* indicator = UA_indicator_create(curr_axis++, picked, axis_start, axis_tail);
+            UA_indicator_addto(indicator_list, indicator);
             scope_index = 0;
 
         } else if ( *forward == ':' ) {
@@ -116,27 +157,90 @@ void Router_parse(char router[], route_node_t** route_list)
             picked = -1;
             axis_tail = atoi(buf);
         }
-        route_node_t* route = Router_create(curr_axis++, picked, axis_start, axis_tail);
-        Router_addto_list(route_list, route);
+        ua_indicator_t* indicator = UA_indicator_create(curr_axis++, picked, axis_start, axis_tail);
+        UA_indicator_addto(indicator_list, indicator);
 
     } else if ( scope_index == 1 ) {
         picked = -1;
         axis_tail = 0;
 
-        route_node_t* route = Router_create(curr_axis++, picked, axis_start, axis_tail);
-        Router_addto_list(route_list, route);
+        ua_indicator_t* indicator = UA_indicator_create(curr_axis++, picked, axis_start, axis_tail);
+        UA_indicator_addto(indicator_list, indicator);
     }
     return;
 }
 
-void Router_release(route_node_t* route_list)
+
+void UA_idicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua_chunk_note_t* chunk_note) 
 {
-    route_node_t* ptr = route_list;
+    chunk_note->shape = NULL:
+    chunk_note->axis_n = 0;
+    chunk_note->chunk_map = NULL;
+
+    // *shape = NULL;
+    // *axis_n = 0;
+    // *chunk_map = NULL;
+    
+    ua_indicator_t* ptr = indicator_list;
+    int last_axis = -1;
+    // 计算总的维数
+    while(ptr != NULL) {
+        if (ptr->__picked == -1) (chunk_note->axis_n)++;
+        last_axis = ptr->axis;
+        ptr = ptr->next;
+    }
+
+    if (last_axis >= arr->axis_n) {
+        return -1;
+    }
+
+    chunk_note->axis_n = chunk_note->axis_n + UA_axisn(arr) - (last_axis+1);
+
+    if (chunk_note->axis_n > 0) 
+        chunk_note->shape = malloc( chunk_note->axis_n * sizeof(size_t) );
+    else 
+        return -1;
+
+    ptr = indicator_list;
+    int axis_index = 0;
+    while(ptr != NULL) {
+        if (ptr->__picked == -1) {
+            (chunk_note->shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
+        } 
+        ptr = ptr->next;
+    }
+
+    for (int i = (last_axis+1); i<arr->axis_n; ++i){
+        (chunk_note->shape)[axis_index++] = UA_shape_axis(arr, i);
+    }
+
+    // -------------------------
+    ptr = indicator_list;    
+    if (ptr != NULL) {
+        UA_survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_note);
+    } else {
+        chunk_note->chunk_map = UA_datachunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(double));
+    }
+    return 0;  
+}
+
+void UA_indicator_release(ua_indicator_t* indicator_list)
+{
+    ua_indicator_t* ptr = indicator_list;
     while (ptr!= NULL) {
          
-        route_node_t* node_del = ptr;
+        ua_indicator_t* node_del = ptr;
         ptr = ptr->next;
         free(node_del);
     }
+    return;
+}
+
+void UA_chunk_note_finalize(ua_chunk_note_t* chunk_note) 
+{
+    if (chunk_note->shape) free(chunk_note->shape);
+
+    UA_datachunk_release(chunk_note->chunk_map);
+
     return;
 }
