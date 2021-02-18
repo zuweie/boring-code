@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-18 09:25:32
+ * @LastEditTime: 2021-02-18 10:56:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -235,7 +235,32 @@ u_array_t UArray_create_with_axes_array(int axis_n, size_t shape[])
     }
     return ua_unable;
 }
+double UArray_get(u_array_t* arr, ...) 
+{
+    va_list valist;
+    va_start(valist, arr);
+    size_t coord[UA_axisn(arr)];
+    for (int i=0; i<UA_axisn(arr); ++i) {
+        coord[i] = va_arg(valist, size_t);
+    }
+    va_end(valist);
+    size_t offset = UA_cover_coordinate(arr, coord);
+    return ((double*)(UA_data_ptr(arr)))[offset];
+}
+void UArray_set(u_array_t* arr, double v, ...)
+{
 
+    va_list valist;
+    va_start(valist, arr);
+    size_t coord[UA_axisn(arr)];
+    for (int i=0; i<UA_axisn(arr); ++i) {
+        coord[i] = va_arg(valist, size_t);
+    }
+    va_end(valist);
+    size_t offset = UA_cover_coordinate(arr, coord);
+    ((double*)(UA_data_ptr(arr)))[offset] = v;
+    return;
+}
 void UArray_destroy(u_array_t* arr)
 {  
     return __recycle_start(arr->start);

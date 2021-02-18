@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-18 08:49:02
+ * @LastEditTime: 2021-02-18 10:38:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -40,6 +40,8 @@ u_array_t UArray_fission(u_array_t* a, char router[]);
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
 void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord);
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
+double UArray_get(u_array_t* arr, ...);
+void UArray_set(u_array_t* arr, double, ...);
 
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)
@@ -47,6 +49,9 @@ size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
 #define _UArrayXd(x,...) UArray_create_with_axes_dots(x, __VA_ARGS__)
 // #define _UArray_range(palloc, range) UArray_range(palloc, range)
 #define UArray_(parray) UArray_destroy(parray)
+
+#define UA_get(parray, ...) UArray_get(parray, __VA_ARGS__)
+#define UA_set(parray, v, ...) UArray_set(parray, v, __VA_ARGS__)
 
 #define UA_sum(parray, axis) UArray_operate(parray, axis, ua_sum)
 #define UA_sub(parray, axis) UArray_operate(parray, axis, ua_sub)
