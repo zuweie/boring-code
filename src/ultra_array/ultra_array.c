@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-15 00:02:43
+ * @LastEditTime: 2021-02-18 09:25:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -14,7 +14,6 @@
 u_array_t ua_unable = {
     .start = {NULL, NULL},
     .axis_n = -1,
-    .alloc = NULL
 };
 
 static size_t 
@@ -28,35 +27,35 @@ __axis_mulitply(size_t axes[], int tail, int from)
 }
 
 static void*
-__alloc_memory(pool_t* alloc, size_t n) 
+__alloc_memory(size_t n) 
 {
-    if (alloc) 
-        return allocate(alloc, n);
-    else
+    // if (alloc) 
+    //     return allocate(alloc, n);
+    // else
         return malloc(n);
 }
 
 static void 
-__recycle_memory(pool_t* alloc, void* p) 
+__recycle_memory(void* p) 
 {
-    if (alloc) 
-        deallocate(alloc, p);
-    else
+    // if (alloc) 
+    //     deallocate(alloc, p);
+    // else
         free(p);
 }
 
 static void*
-__alloc_data(pool_t* alloc, size_t data_n) 
+__alloc_data(size_t data_n) 
 {
-    void* p = __alloc_memory(alloc, data_n*sizeof(double));
+    void* p = __alloc_memory(data_n*sizeof(double));
     return p;
 }
 
 static void*
-__alloc_shape(pool_t* alloc, size_t axis_n, size_t shape[])
+__alloc_shape(size_t axis_n, size_t shape[])
 {
     if (axis_n > 0) {
-        void* p = __alloc_memory(alloc, (axis_n <=0? 1: axis_n) * sizeof(size_t));
+        void* p = __alloc_memory((axis_n <=0? 1: axis_n) * sizeof(size_t));
         memcpy(p, shape, axis_n * sizeof(size_t));
         return p;
     } 
@@ -64,21 +63,21 @@ __alloc_shape(pool_t* alloc, size_t axis_n, size_t shape[])
 }
 
 static void
-__alloc_start(pool_t* alloc, size_t axis_n, size_t shape[], char *start[]) 
+__alloc_start(size_t axis_n, size_t shape[], char *start[]) 
 {
-    start[0] = __alloc_shape(alloc, axis_n, shape);
-    start[1] = __alloc_data(alloc, __axis_mulitply(shape, axis_n, 0));
+    start[0] = __alloc_shape(axis_n, shape);
+    start[1] = __alloc_data(__axis_mulitply(shape, axis_n, 0));
     return;
 }
 
 static void
-__recycle_start(pool_t* alloc, char* start[]) 
+__recycle_start(char* start[]) 
 {
     if (start[0] != NULL) 
-        __recycle_memory(alloc, start[0]);
+        __recycle_memory(start[0]);
     
     if (start[1] != NULL) 
-        __recycle_memory(alloc, start[1]);
+        __recycle_memory(start[1]);
 
     return;
 }
@@ -164,8 +163,8 @@ static int
 __update_shape(u_array_t* arr, size_t shape[], int axis_n) 
 {
     if (arr->axis_n != axis_n ) {
-        __recycle_memory(arr->alloc, UA_shape(arr));
-        arr->start[0] = __alloc_shape(arr->alloc, axis_n, shape);
+        __recycle_memory(UA_shape(arr));
+        arr->start[0] = __alloc_shape(axis_n, shape);
         arr->axis_n   = axis_n;
     } else if (axis_n != 0){
         memcpy(UA_shape(arr), shape, axis_n * sizeof(size_t));
@@ -173,46 +172,46 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
     return 0;
 }
 
-static int 
-__survey_chuck_address(u_array_t* arr, char* chunk_start_from, route_node_t* node, data_chunk_t** chunk_map)
-{
-    size_t sub_chunk_size = (node->axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), node->axis+1) : 1) * sizeof(double);
-    int sub_chunk_number = 1;
+// static int 
+// __survey_chuck_address(u_array_t* arr, char* chunk_start_from, route_node_t* node, data_chunk_t** chunk_map)
+// {
+//     size_t sub_chunk_size = (node->axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), node->axis+1) : 1) * sizeof(double);
+//     int sub_chunk_number = 1;
 
-    if (node->next ==  NULL) {
-        // 最后一个 route nod         
-        size_t offset = 0;
+//     if (node->next ==  NULL) {
+//         // 最后一个 route nod         
+//         size_t offset = 0;
 
-        // 计算下一个维度每一个块的大小。
+//         // 计算下一个维度每一个块的大小。
 
-        if (node->__picked == -1) {
-            sub_chunk_number = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail) - node->__start;
-            offset = node->__start * sub_chunk_size;
-        } else {
-            offset = node->__picked * sub_chunk_size;
-        }
+//         if (node->__picked == -1) {
+//             sub_chunk_number = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail) - node->__start;
+//             offset = node->__start * sub_chunk_size;
+//         } else {
+//             offset = node->__picked * sub_chunk_size;
+//         }
         
-        data_chunk_t* new_chunk = DataChunk_create(chunk_start_from + offset, sub_chunk_size * sub_chunk_number);
-        DataChunk_addto_list(chunk_map, new_chunk);
-    } else {
+//         data_chunk_t* new_chunk = DataChunk_create(chunk_start_from + offset, sub_chunk_size * sub_chunk_number);
+//         DataChunk_addto_list(chunk_map, new_chunk);
+//     } else {
 
-        if (node->__picked == -1) {
-            // : 的情况
-            int tail = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail);
-            for (int i=node->__start; i<tail; ++i) {
-                char* sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
-                __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map);
-            }
-        } else {
-            // picked 的情况
-            char* sub_chunk_start_from = chunk_start_from + node->__picked * sub_chunk_size;
-            __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map);
-        }
-    }
-    return 0;
-}
+//         if (node->__picked == -1) {
+//             // : 的情况
+//             int tail = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail);
+//             for (int i=node->__start; i<tail; ++i) {
+//                 char* sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
+//                 __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map);
+//             }
+//         } else {
+//             // picked 的情况
+//             char* sub_chunk_start_from = chunk_start_from + node->__picked * sub_chunk_size;
+//             __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map);
+//         }
+//     }
+//     return 0;
+// }
 
-u_array_t UArray_create_with_axes_dots(pool_t* alloc, int axis_n, ...)
+u_array_t UArray_create_with_axes_dots(int axis_n, ...)
 {
     va_list valist;
     va_start(valist, axis_n);
@@ -221,17 +220,16 @@ u_array_t UArray_create_with_axes_dots(pool_t* alloc, int axis_n, ...)
         axes[i] = va_arg(valist, size_t);
     }
     va_end(valist);
-    return UArray_create_with_axes_array(alloc, axis_n, axes);
+    return UArray_create_with_axes_array(axis_n, axes);
 }
 
-u_array_t UArray_create_with_axes_array(pool_t* alloc, int axis_n, size_t shape[]) 
+u_array_t UArray_create_with_axes_array(int axis_n, size_t shape[]) 
 {
     if (axis_n >= 0) {
         u_array_t n_array;
-        n_array.alloc  = alloc;
         n_array.axis_n = axis_n;
 
-        __alloc_start(alloc, axis_n, shape, n_array.start);
+        __alloc_start(axis_n, shape, n_array.start);
         
         return n_array;
     }
@@ -240,7 +238,7 @@ u_array_t UArray_create_with_axes_array(pool_t* alloc, int axis_n, size_t shape[
 
 void UArray_destroy(u_array_t* arr)
 {  
-    return __recycle_start(arr->alloc, arr->start);
+    return __recycle_start(arr->start);
 }
 
 void* UArray_data_copy(u_array_t* parr) 
@@ -251,15 +249,23 @@ void* UArray_data_copy(u_array_t* parr)
     return pdata;
 }
 
-u_array_t* UArray_arange(u_array_t *a, int range)
+u_array_t* UArray_arange(u_array_t *arr, int range)
 {
-    double* data   = UA_data_ptr(a);
-    size_t  size_a = UA_size(a);
+    double* data   = UA_data_ptr(arr);
+    size_t  size_a = UA_size(arr);
     
     for (int i=0; i<range && i<size_a; ++i) {
         data[i] = i;
     }
-    return a;
+    return arr;
+}
+u_array_t* UArray_ones(u_array_t* arr, double v) {
+    double* data_ptr = UA_data_ptr(arr);
+    size_t  size_a   = UA_size(arr);
+    for (int i=0; i<size_a; ++i) {
+        data_ptr[i] = v;
+    }
+    return arr;
 }
 
 u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n) 
@@ -372,55 +378,55 @@ u_array_t* UArray_transform(u_array_t* arr)
     return UArray_transpose(arr, shape_trans);
 }
 
-int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape, int* axis_n, data_chunk_t** chunk_map)
-{
-    *shape = NULL;
-    *axis_n = 0;
-    *chunk_map = NULL;
+// int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape, int* axis_n, data_chunk_t** chunk_map)
+// {
+//     *shape = NULL;
+//     *axis_n = 0;
+//     *chunk_map = NULL;
     
-    route_node_t* ptr = router;
-    int last_axis = -1;
-    // 计算总的维数
-    while(ptr != NULL) {
-        if (ptr->__picked == -1) (*axis_n)++;
-        last_axis = ptr->axis;
-        ptr = ptr->next;
-    }
+//     route_node_t* ptr = router;
+//     int last_axis = -1;
+//     // 计算总的维数
+//     while(ptr != NULL) {
+//         if (ptr->__picked == -1) (*axis_n)++;
+//         last_axis = ptr->axis;
+//         ptr = ptr->next;
+//     }
 
-    if (last_axis >= arr->axis_n) {
-        return -1;
-    }
+//     if (last_axis >= arr->axis_n) {
+//         return -1;
+//     }
 
-    (*axis_n) = (*axis_n) + UA_axisn(arr) - (last_axis+1);
+//     (*axis_n) = (*axis_n) + UA_axisn(arr) - (last_axis+1);
 
-    if (*axis_n > 0) 
-        *shape = malloc( (*axis_n) * sizeof(size_t) );
-    else 
-        return -1;
+//     if (*axis_n > 0) 
+//         *shape = malloc( (*axis_n) * sizeof(size_t) );
+//     else 
+//         return -1;
 
-    ptr = router;
-    int axis_index = 0;
-    while(ptr != NULL) {
-        if (ptr->__picked == -1) {
-            (*shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
-        } 
-        ptr = ptr->next;
-    }
+//     ptr = router;
+//     int axis_index = 0;
+//     while(ptr != NULL) {
+//         if (ptr->__picked == -1) {
+//             (*shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
+//         } 
+//         ptr = ptr->next;
+//     }
 
-    for (int i = (last_axis+1); i<arr->axis_n; ++i){
-        (*shape)[axis_index++] = UA_shape_axis(arr, i);
-    } 
+//     for (int i = (last_axis+1); i<arr->axis_n; ++i){
+//         (*shape)[axis_index++] = UA_shape_axis(arr, i);
+//     } 
 
-// -----------------------------------------------------------------------------------------------------------------------------------------
-    ptr = router;    
-    if (ptr != NULL) {
-        int chunk_index = 0;
-        __survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_map);
-    } else {
-        *chunk_map = DataChunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(double));
-    }
-    return 0;  
-}
+// // -----------------------------------------------------------------------------------------------------------------------------------------
+//     ptr = router;    
+//     if (ptr != NULL) {
+//         int chunk_index = 0;
+//         __survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_map);
+//     } else {
+//         *chunk_map = DataChunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(double));
+//     }
+//     return 0;  
+// }
 
 /**
  * 超级鸡吧复杂多维内积算法，核心思想就是用第一个数组的最后一维，点积第二个数组倒数第二维。
@@ -449,7 +455,7 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
                 }
             }
 
-            u_array_t a3 = UArray_create_with_axes_array(a1->alloc, a1->axis_n + a2->axis_n - 2, n_axes);
+            u_array_t a3 = UArray_create_with_axes_array(a1->axis_n + a2->axis_n - 2, n_axes);
 
             // a1 的 总的行数
             size_t total_rows_number_a1  = __axis_mulitply(shape_a1, a1->axis_n-2, 0) * UA_shape_axis(a1, a1->axis_n-2);
@@ -488,14 +494,71 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
     return ua_unable;
 }
 
-u_array_t UArray_fission(u_array_t* a, char router[])
+u_array_t UArray_fission(u_array_t* a, char indicator_str[])
 {
-    return ua_unable;
+    ua_indicator_t* indicators;
+    ua_chunk_note_t chunk_note;
+    UA_indicator_parse(indicator_str, &indicators);
+    UA_indicator_analysis(indicators, a, &chunk_note);
+
+    u_array_t fission = UArray_create_with_axes_array(chunk_note.axis_n, chunk_note.shape);
+
+    ua_data_chunk_t* ptr = chunk_note.chunk_map;
+    char* data_ptr       = UA_data_ptr(&fission);
+    
+    while( ptr != NULL) {
+
+        memcpy(data_ptr, ptr->chunk_addr, ptr->chunk_size);
+        data_ptr += ptr->chunk_size;
+        ptr = ptr->next;
+
+    }
+
+    UA_indicator_release(indicators);
+    UA_chunk_note_finalize(&chunk_note);
+
+    return fission;
 }
 
-u_array_t* UArray_assimilate(u_array_t* a, char router[], u_array_t* a2)
+u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
 {
-    return NULL;
+    ua_indicator_t* indicators;
+    ua_chunk_note_t chunk_note;
+
+    UA_indicator_parse(indicator_str, &indicators);
+    UA_indicator_analysis(indicators, a1, &chunk_note);
+    int do_copy = 0;
+    if (UA_axisn(a2) == 0 
+    || __axis_mulitply(chunk_note.shape, chunk_note.axis_n, 0) % UA_size(a2) == 0 ) {
+        
+        ua_data_chunk_t* ptr = chunk_note.chunk_map;
+        size_t chunk_size_a2 = UA_size(a2)*sizeof(double);
+        char* data_ptr_a2 = UA_data_ptr(a2);
+
+        while(ptr != NULL) {
+            
+            if (chunk_size_a2 > ptr->chunk_size) {
+                
+                int cpy_step = chunk_size_a2 / ptr->chunk_size;
+                for (int i=0; i<cpy_step && ptr != NULL; ++i, ptr = ptr->next) {
+                    memcpy(ptr->chunk_addr, data_ptr_a2 + i * ptr->chunk_size, ptr->chunk_size);
+                }
+
+            } else {
+                char* chunk_addr_note = ptr->chunk_addr;
+                int cpy_step = ptr->chunk_size / chunk_size_a2;
+                for (int i=0; i<cpy_step; ++i) {
+                    memcpy(chunk_addr_note + i * chunk_size_a2, data_ptr_a2, chunk_size_a2);
+                }
+                ptr = ptr->next;
+            }
+        }
+        do_copy = 1;
+    } 
+    
+    UA_indicator_release(indicators);
+    UA_chunk_note_finalize(&chunk_note);
+    return do_copy? a1 : NULL;
 }
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t coord[])

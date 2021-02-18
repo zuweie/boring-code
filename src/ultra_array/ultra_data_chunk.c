@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-14 19:23:37
- * @LastEditTime: 2021-02-15 08:37:14
+ * @LastEditTime: 2021-02-17 17:04:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_data_chunk.c
@@ -26,7 +26,7 @@ void UA_datachunk_addto(ua_data_chunk_t** chunK_map, ua_data_chunk_t* chunk_node
     }
     return;
 }
-void UA_datachunk_release(data_chunk_t* chunk_map)
+void UA_datachunk_release(ua_data_chunk_t* chunk_map)
 {
     ua_data_chunk_t* ptr = chunk_map;
     while (ptr!= NULL) {

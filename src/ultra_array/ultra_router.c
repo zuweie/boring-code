@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-02-17 00:20:20
+ * @LastEditTime: 2021-02-17 21:37:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
@@ -12,11 +12,11 @@
 #include "ultra_data_chunk.h"
 #include "ultra_array.h"
 
-static int 
-UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* indicator, ua_chunk_note_t* chunk_note) 
+int UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* indicator, ua_chunk_note_t* chunk_note) 
 {
 
-    size_t sub_chunk_size = (indicator->axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), indicator->axis+1) : 1) * sizeof(double);
+    //size_t sub_chunk_size = (indicator->__axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), indicator->__axis+1) : 1) * sizeof(double);
+    size_t sub_chunk_size = (indicator->__axis < UA_axisn(arr) -1  ? UArray_axis_mulitply(arr, indicator->__axis + 1) : 1) * sizeof(double);
     int sub_chunk_number = 1;
 
     if (indicator->next ==  NULL) {
@@ -26,7 +26,7 @@ UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* 
         // 计算下一个维度每一个块的大小。
 
         if (indicator->__picked == -1) {
-            sub_chunk_number = (indicator->__tail <= 0 ? UA_shape_axis(arr, indicator->axis) + indicator->__tail : indicator->__tail) - indicator->__start;
+            sub_chunk_number = (indicator->__tail <= 0 ? UA_shape_axis(arr, indicator->__axis) + indicator->__tail : indicator->__tail) - indicator->__start;
             offset = indicator->__start * sub_chunk_size;
         } else {
             offset = indicator->__picked * sub_chunk_size;
@@ -38,7 +38,7 @@ UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* 
 
         if (indicator->__picked == -1) {
             // : 的情况
-            int tail = (indicator->__tail <= 0 ? UA_shape_axis(arr, indicator->axis) + indicator->__tail : indicator->__tail);
+            int tail = (indicator->__tail <= 0 ? UA_shape_axis(arr, indicator->__axis) + indicator->__tail : indicator->__tail);
             for (int i=indicator->__start; i<tail; ++i) {
                 char* sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
                 UA_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_note);
@@ -46,7 +46,7 @@ UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* 
         } else {
             // picked 的情况
             char* sub_chunk_start_from = chunk_start_from + indicator->__picked * sub_chunk_size;
-            UA_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_node);
+            UA_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_note);
         }
     }
     return 0;
@@ -75,7 +75,7 @@ void UA_indicator_addto(ua_indicator_t** indicator_list, ua_indicator_t* indicat
     return;
 }
 
-void UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
+int UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
 {
     *indicator_list = NULL;
     int curr_axis = 0;
@@ -167,26 +167,22 @@ void UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
         ua_indicator_t* indicator = UA_indicator_create(curr_axis++, picked, axis_start, axis_tail);
         UA_indicator_addto(indicator_list, indicator);
     }
-    return;
+    return 0;
 }
 
 
-void UA_idicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua_chunk_note_t* chunk_note) 
+int UA_indicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua_chunk_note_t* chunk_note) 
 {
-    chunk_note->shape = NULL:
+    chunk_note->shape = NULL;
     chunk_note->axis_n = 0;
     chunk_note->chunk_map = NULL;
-
-    // *shape = NULL;
-    // *axis_n = 0;
-    // *chunk_map = NULL;
     
     ua_indicator_t* ptr = indicator_list;
     int last_axis = -1;
     // 计算总的维数
     while(ptr != NULL) {
         if (ptr->__picked == -1) (chunk_note->axis_n)++;
-        last_axis = ptr->axis;
+        last_axis = ptr->__axis;
         ptr = ptr->next;
     }
 
@@ -205,7 +201,7 @@ void UA_idicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua_chu
     int axis_index = 0;
     while(ptr != NULL) {
         if (ptr->__picked == -1) {
-            (chunk_note->shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
+            (chunk_note->shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->__axis) + ptr->__tail:ptr->__tail) - ptr->__start;
         } 
         ptr = ptr->next;
     }

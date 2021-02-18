@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-15 00:19:09
+ * @LastEditTime: 2021-02-18 09:56:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -52,12 +52,12 @@
         PRINTF_ARRAY_DATA(arr);\
     })
 
-#define PRINTF_ROUTE_LIST(router, plist) \
+#define PRINTF_INDICATOR_LIST(router, plist) \
     ({ \
-        route_node_t* ptr = plist; \
+        ua_indicator_t* ptr = plist; \
         printf("\n route list <%s>: \n", router); \
         while(ptr != NULL) { \
-            printf("axis %d, picked %d, axis_start %d, axis_tail %d \n", ptr->axis, ptr->__picked, ptr->__start, ptr->__tail); \
+            printf("axis %d, picked %d, axis_start %d, axis_tail %d \n", ptr->__axis, ptr->__picked, ptr->__start, ptr->__tail); \
             ptr = ptr->next; \
         } \
         printf("\n"); \
@@ -65,7 +65,7 @@
 
 #define PRINTF_CHUNK_MAP(map, pf_data) \
     ({  \
-        data_chunk_t* ptr = map; \
+        ua_data_chunk_t* ptr = (map); \
         while(ptr != NULL) { \
             printf(" chunk address %p \n", ptr->chunk_addr); \
             if (pf_data) { \
@@ -92,13 +92,13 @@ static int suite_success_clean (void)
 
 static void test_uarray_create () 
 {
-    u_array_t arr = _UArray2d(NULL, 2, 3);
+    u_array_t arr = _UArray2d(2, 3);
     UA_arange(&arr, 2*3);
 
-    u_array_t arr1 = _UArray2d(NULL, 2, 3);
+    u_array_t arr1 = _UArray2d(2, 3);
     UA_arange(&arr1, 2*3);
     
-    u_array_t arr3 = _UArray3d(NULL, 2, 3, 4);
+    u_array_t arr3 = _UArray3d(2, 3, 4);
     UA_arange(&arr3, 2*3*4);
 
     UA_sum(&arr, 1);
@@ -119,7 +119,7 @@ static void test_uarray_create ()
 
 static void test_coord_index (void) {
     size_t coord[] = {1, 2, 6};
-    u_array_t arr_3d = _UArray3d(NULL, 2, 3, 8);
+    u_array_t arr_3d = _UArray3d(2, 3, 8);
     size_t offset = UA_cover_coordinate(&arr_3d, coord);
 
     CU_ASSERT_TRUE(offset == 46);
@@ -137,7 +137,7 @@ static void test_coord_index (void) {
 static void test_ultra_array_transform(void) 
 {
 
-    u_array_t arr = _UArray2d(NULL, 7, 3);
+    u_array_t arr = _UArray2d(7, 3);
     UA_arange(&arr, 7*3);
 
     double (*data_arr)[3] = UA_data_copy(&arr);
@@ -145,7 +145,7 @@ static void test_ultra_array_transform(void)
     double (*data_trans_arr)[7] = UA_data_ptr(&arr);
     CU_ASSERT_TRUE( data_arr[6][2] == data_trans_arr[2][6] );
 
-    u_array_t arr2 = _UArray3d(NULL, 2, 2, 4);
+    u_array_t arr2 = _UArray3d(2, 2, 4);
     UA_arange(&arr2, 2*2*4);
     //PRINTF_ARRAY(arr2);
 
@@ -166,9 +166,9 @@ static void test_ultra_array_transform(void)
 
 static void test_array_dot (void) 
 {
-    u_array_t u1 = _UArray3d(NULL, 1, 2, 4);
+    u_array_t u1 = _UArray3d(1, 2, 4);
     UA_arange(&u1, 1*2*4);
-    u_array_t u2 = _UArray3d(NULL, 2, 4, 3);
+    u_array_t u2 = _UArray3d(2, 4, 3);
     UA_arange(&u2, 2*4*3);
     
     u_array_t u3 = UA_dot(&u1, &u2);
@@ -185,32 +185,30 @@ static void test_array_dot (void)
 }
 static void test_array_router (void) 
 {
-    u_array_t u1 = _UArray3d(NULL, 3, 3, 4);
+    u_array_t u1 = _UArray3d(3, 3, 4);
     UA_arange(&u1, 3*3*4);
-    size_t* shape;
-    int axis_n;
-    data_chunk_t* chunk_map;
-    int chunk_size;
+    ua_chunk_note_t chunk_note;
 //-----------------------------------------------
     #if 1
     //printf(" \nshape u1: 2 * 3 * 4 \n");
     PRINTF_ARRAY(u1);
     printf("router:\n");
-    route_node_t* list;
-    char r1[] = ":2,2";
-    Router_parse(r1, &list);
-    PRINTF_ROUTE_LIST(r1, list);
-
-    UArray_analysis_router(&u1, list, &shape, &axis_n, &chunk_map);
-    PRINTF_CHUNK_MAP(chunk_map, 1);
-    PRINTF_SHAPE_AXIS(shape, axis_n);
+    ua_indicator_t* list;
+    char r1[] = ":,:,0";
+    UA_indicator_parse(r1, &list);
+    // PRINTF_INDICATOR_LIST(r1, list);
+ 
+    UA_indicator_analysis(list, &u1, &chunk_note);
+    
+    // PRINTF_CHUNK_MAP(chunk_note.chunk_map, 1);
+    // PRINTF_SHAPE_AXIS(chunk_note.shape, chunk_note.axis_n);
     //CU_ASSERT_TRUE(axis_n == 1);
     //CU_ASSERT_TRUE(shape[0] == 2);
 
-    if (shape) free(shape);
-    Router_release(list);
-
-    DataChunk_release(chunk_map);
+    //Router_release(list);
+    UA_indicator_release(list);
+    UA_chunk_note_finalize(&chunk_note);
+    
     #endif
 // -------------------------------------------
 
@@ -336,7 +334,59 @@ static void test_array_router (void)
     Router_release(list8);
     #endif
 // -------------------------------------------
+    UArray_(&u1);
+}
+static void test_fission(void) 
+{
+    u_array_t u1 = _UArray3d(3,3,4);
+    UA_arange(&u1, 3*3*4);
+    //PRINTF_ARRAY(u1);
 
+    u_array_t u2 = UA_fission(&u1, ":,:,1");
+    //PRINTF_ARRAY(u2);
+
+    UArray_(&u1);
+    UArray_(&u2);
+}
+
+static void test_assimilate(void) 
+{
+    u_array_t u1 = _UArray3d(3,3,4);
+    UA_ones(&u1, -10);
+    //PRINTF_ARRAY(u1);
+
+    u_array_t u2  = _UArray1d(3);
+    UA_arange(&u2, 3);
+    //PRINTF_ARRAY(u2);
+
+    UA_assimilate(&u1, ":,:,1", &u2);
+
+    //PRINTF_ARRAY(u1);
+
+
+
+    u_array_t u3 = _UArray3d(3,3,4);
+    UA_ones(&u3, -9);
+
+    u_array_t u4 = _UArray1d(4);
+    UA_arange(&u4, 4);
+    UA_assimilate(&u3, "2,2", &u4);
+
+    //PRINTF_ARRAY(u3);
+
+    u_array_t u5 = _UArray3d(3,4,7);
+    u_array_t u6 = _UArray1d(11);
+
+
+    u_array_t* result = UA_assimilate(&u5, "", &u6);
+    CU_ASSERT_FALSE(result);
+
+    UArray_(&u1);
+    UArray_(&u2);
+    UArray_(&u3);
+    UArray_(&u4);
+    UArray_(&u5);
+    UArray_(&u6);
 }
 
 int do_ultra_array_test (void) 
@@ -370,7 +420,12 @@ int do_ultra_array_test (void)
     }
 
 
-    if (NULL == CU_add_test(pSuite, "test ultra array router ", test_array_router) ) {
+    // if (NULL == CU_add_test(pSuite, "test ultra array fission ", test_fission) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test ultra array assimlate ", test_assimilate) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

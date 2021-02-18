@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-08 20:16:55
- * @LastEditTime: 2021-02-17 00:21:51
+ * @LastEditTime: 2021-02-17 21:37:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.h
@@ -33,8 +33,8 @@ void UA_indicator_release(ua_indicator_t* );
 
 void UA_indicator_addto(ua_indicator_t**, ua_indicator_t*);
 
-void UA_indicator_parse(char*, ua_indicator_t**);
-void UA_idicator_analysis(ua_indicator_t*, u_array_t*, ua_chunk_note_t*);
+int UA_indicator_parse(char*, ua_indicator_t**);
+int UA_indicator_analysis(ua_indicator_t*, u_array_t*, ua_chunk_note_t*);
 int UA_survey_chuck_address(u_array_t*, char*, ua_indicator_t*, ua_chunk_note_t*);
 
 void UA_chunk_note_finalize(ua_chunk_note_t*);
