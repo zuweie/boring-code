@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-02-06 14:37:55
+ * @LastEditTime: 2021-02-19 14:17:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -132,19 +132,19 @@ static void test_frames_signal (void)
     // int samplerate = 100;
     // float step_duration = 0.03f;
     // float frame_duration = 0.05f;
-    wav_t w;
-    double* buffer;
-    int buffer_n;
-    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
+    // wav_t w;
+    // double* buffer;
+    // int buffer_n;
+    // Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
 
-    int samplerate = w.fmt.sample_rate;
-    float step_duration = 0.01f;
-    float frame_duration = 0.025f;
+    // int samplerate = w.fmt.sample_rate;
+    // float step_duration = 0.01f;
+    // float frame_duration = 0.025f;
 
-    int frame_size;
-    int frame_number;
-    int frame_fftn;
-    u_array_t frames = frames_pow_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL, NULL);
+    // int frame_size;
+    // int frame_number;
+    // int frame_fftn;
+    // u_array_t frames = frames_pow_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL, NULL);
     // double (*frames)[frame_fftn/2+1] = data; 
     // printf("\n raw frames data: \n");
 
@@ -157,7 +157,7 @@ static void test_frames_signal (void)
     // printf("frame_number %d \n", frame_number);
     // free(frames);
     
-    UArray_(&frames);
+    // UArray_(&frames);
 
     return;
 }
@@ -172,25 +172,22 @@ static void test_mfcc (void)
     int samplerate = w.fmt.sample_rate;
     float step_duration = 0.01f;
     float frame_duration = 0.025f;
-    //double (*fb)[26] = mfcc(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, 13, 22);
-    //printf("\n fb \n");
-    //PRINTF_FB_INFO(fb, 0, 26);
-    //printf("\n");
-    //PRINTF_FB_INFO(fb, 1, 26);
-    //printf("\n");
-    //PRINTF_FB_INFO(fb, 425, 26);
-    //printf("\n");
-    //free(fb);
+    int fft_n = calculate_fft_n(frame_duration * samplerate);
+    int freq_low = 0;
+    int freq_high = samplerate / 2;
+    u_array_t feat = mfcc(buffer, buffer_n, samplerate, frame_duration, step_duration, 13, 26, fft_n, freq_low, freq_high, 0.97, 22, 1);
+    PRINTF_ARRAY(feat);
+    UArray_(&feat);
     return;
 }
 
 static void test_filter_bank (void) 
 {
-    int filter_n = 26;
-    int fft_n = 256;
-    int samplerate = 8000;
-    int low_freq = 0;
-    int high_freq = samplerate / 2;
+    // int filter_n = 26;
+    // int fft_n = 256;
+    // int samplerate = 8000;
+    // int low_freq = 0;
+    // int high_freq = samplerate / 2;
 
     //u_array_t filters = create_mel_filterbank(filter_n, fft_n, samplerate, low_freq, high_freq);
     //printf("\n filters :\n");

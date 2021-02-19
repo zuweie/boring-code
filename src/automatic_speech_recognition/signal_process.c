@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-21 11:28:35
- * @LastEditTime: 2021-02-06 14:41:53
+ * @LastEditTime: 2021-02-19 14:23:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/mfcc/signal_process.c
@@ -12,8 +12,6 @@
 #include "fourier_transform/fourier_transform.h"
 #include "signal_process.h"
 #include "ultra_array/ultra_array.h"
-
-#define emphasis 0.97
 
 static int hamwin_func(double* frame, int frame_size)
 {
@@ -26,12 +24,12 @@ static int hamwin_func(double* frame, int frame_size)
  * 将原始数据切成一帧一帧并且，对每一帧做相关的预处理。
  * */
 
-static u_array_t __do_processing_frames_raw(double* raw, size_t raw_length, int frame_step_length, int frame_fft_n, int frame_size, int frame_number,int (*winfunc)(double*, int), pool_t* alloc)
+static u_array_t __do_processing_frames_raw(double* raw, size_t raw_length, int frame_step_length, int frame_fft_n, int frame_size, int frame_number, float emphasis, int (*winfunc)(double*, int))
 {
     // 大于 512 位的傅立叶变换就不搞了。
     if (frame_fft_n > 512) return ua_unable;
 
-    u_array_t frames = _UArray2d(alloc, frame_number, frame_fft_n/2+1);
+    u_array_t frames = _UArray2d(frame_number, frame_fft_n/2+1);
     
     // 预加权， 不知道有啥用。
     for (int i=raw_length-1; i>=1; --i) {
@@ -79,20 +77,20 @@ static u_array_t __do_processing_frames_raw(double* raw, size_t raw_length, int 
 /**
  * 分帧以及计算每一帧的能量。
 */
-u_array_t frames_pow_signale(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int *frame_fftn, int *frame_size, int *frame_number, int (*winfunc)(double*, int), pool_t* alloc) 
+u_array_t frames_pow_signale(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int fft_n, float emphasis, int (*winfunc)(double*, int)) 
 {
     // 计所有的帧所需要的
-    *frame_size = frame_duration * samplerate;
-    *frame_fftn = calculate_fft_n(*frame_size);
+    int frame_size = frame_duration * samplerate;
     int frame_step_length = step_duration * samplerate;
-    // 
-    if (raw_length <= *frame_size) {
-        *frame_number = 1;
+    int frame_number = 0;
+
+    if (raw_length <= frame_size) {
+        frame_number = 1;
     }else{
-        *frame_number = (int)floor((double)raw_length / (double)frame_step_length);
+        frame_number = (int)floor((double)raw_length / (double)frame_step_length);
     }
     // 申请内存
     // 输入的信号为实数序列，做 fft 后只需要 每帧只需要 fft / 2 +1 位数据。
 
-    return __do_processing_frames_raw(raw, raw_length, frame_step_length, *frame_fftn, *frame_size, *frame_number, winfunc, alloc);
+    return __do_processing_frames_raw(raw, raw_length, frame_step_length, fft_n, frame_size, frame_number, emphasis, winfunc);
 }

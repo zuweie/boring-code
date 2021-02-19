@@ -1,13 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-18 10:56:54
+ * @LastEditTime: 2021-02-19 13:42:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
  */
 #include <stdarg.h>
 #include <string.h>
+#include <math.h>
 #include "ultra_router.h"
 #include "ultra_data_chunk.h"
 #include "ultra_array.h"
@@ -584,6 +585,16 @@ u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
     UA_indicator_release(indicators);
     UA_chunk_note_finalize(&chunk_note);
     return do_copy? a1 : NULL;
+}
+
+u_array_t* UArray_log(u_array_t* arr) 
+{
+    size_t size_a    = UA_size(arr);
+    double* data_ptr = UA_data_ptr(arr);
+    for (size_t i=0; i<size_a; ++i) {
+        data_ptr[i] = log(data_ptr[i]);
+    }
+    return arr;
 }
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t coord[])
