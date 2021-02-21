@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-02-17 21:37:30
+ * @LastEditTime: 2021-02-21 12:04:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
@@ -119,7 +119,8 @@ int UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
                 axis_tail = 0;
             }
 
-            buf[0] = '\0';
+            //buf[0] = '\0';
+            memset(buf, 0, strlen(buf));
             buf_ptr = buf;
 
             ua_indicator_t* indicator = UA_indicator_create(curr_axis++, picked, axis_start, axis_tail);
@@ -134,9 +135,9 @@ int UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
             } else {
                 axis_start = 0;
             }
-
+            
+            memset(buf, 0, strlen(buf));
             buf_ptr = buf;
-            buf[0] = '\0';
             scope_index = 1;
 
         } else {
@@ -201,7 +202,8 @@ int UA_indicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua_chu
     int axis_index = 0;
     while(ptr != NULL) {
         if (ptr->__picked == -1) {
-            (chunk_note->shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->__axis) + ptr->__tail:ptr->__tail) - ptr->__start;
+            int tail = (ptr->__tail<=0?UA_shape_axis(arr, ptr->__axis) + ptr->__tail:ptr->__tail);
+            (chunk_note->shape)[axis_index++] =  tail - ptr->__start;
         } 
         ptr = ptr->next;
     }

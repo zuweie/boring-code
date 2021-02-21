@@ -1,11 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-19 13:42:59
+ * @LastEditTime: 2021-02-21 12:05:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
  */
+#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <math.h>
@@ -172,45 +173,6 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
     }
     return 0;
 }
-
-// static int 
-// __survey_chuck_address(u_array_t* arr, char* chunk_start_from, route_node_t* node, data_chunk_t** chunk_map)
-// {
-//     size_t sub_chunk_size = (node->axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), node->axis+1) : 1) * sizeof(double);
-//     int sub_chunk_number = 1;
-
-//     if (node->next ==  NULL) {
-//         // 最后一个 route nod         
-//         size_t offset = 0;
-
-//         // 计算下一个维度每一个块的大小。
-
-//         if (node->__picked == -1) {
-//             sub_chunk_number = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail) - node->__start;
-//             offset = node->__start * sub_chunk_size;
-//         } else {
-//             offset = node->__picked * sub_chunk_size;
-//         }
-        
-//         data_chunk_t* new_chunk = DataChunk_create(chunk_start_from + offset, sub_chunk_size * sub_chunk_number);
-//         DataChunk_addto_list(chunk_map, new_chunk);
-//     } else {
-
-//         if (node->__picked == -1) {
-//             // : 的情况
-//             int tail = (node->__tail <= 0 ? UA_shape_axis(arr, node->axis) + node->__tail : node->__tail);
-//             for (int i=node->__start; i<tail; ++i) {
-//                 char* sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
-//                 __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map);
-//             }
-//         } else {
-//             // picked 的情况
-//             char* sub_chunk_start_from = chunk_start_from + node->__picked * sub_chunk_size;
-//             __survey_chuck_address(arr, sub_chunk_start_from, node->next, chunk_map);
-//         }
-//     }
-//     return 0;
-// }
 
 u_array_t UArray_create_with_axes_dots(int axis_n, ...)
 {
@@ -404,56 +366,6 @@ u_array_t* UArray_transform(u_array_t* arr)
     return UArray_transpose(arr, shape_trans);
 }
 
-// int UArray_analysis_router(u_array_t* arr, route_node_t* router, size_t** shape, int* axis_n, data_chunk_t** chunk_map)
-// {
-//     *shape = NULL;
-//     *axis_n = 0;
-//     *chunk_map = NULL;
-    
-//     route_node_t* ptr = router;
-//     int last_axis = -1;
-//     // 计算总的维数
-//     while(ptr != NULL) {
-//         if (ptr->__picked == -1) (*axis_n)++;
-//         last_axis = ptr->axis;
-//         ptr = ptr->next;
-//     }
-
-//     if (last_axis >= arr->axis_n) {
-//         return -1;
-//     }
-
-//     (*axis_n) = (*axis_n) + UA_axisn(arr) - (last_axis+1);
-
-//     if (*axis_n > 0) 
-//         *shape = malloc( (*axis_n) * sizeof(size_t) );
-//     else 
-//         return -1;
-
-//     ptr = router;
-//     int axis_index = 0;
-//     while(ptr != NULL) {
-//         if (ptr->__picked == -1) {
-//             (*shape)[axis_index++] = (ptr->__tail<=0?UA_shape_axis(arr, ptr->axis) + ptr->__tail:ptr->__tail) - ptr->__start;
-//         } 
-//         ptr = ptr->next;
-//     }
-
-//     for (int i = (last_axis+1); i<arr->axis_n; ++i){
-//         (*shape)[axis_index++] = UA_shape_axis(arr, i);
-//     } 
-
-// // -----------------------------------------------------------------------------------------------------------------------------------------
-//     ptr = router;    
-//     if (ptr != NULL) {
-//         int chunk_index = 0;
-//         __survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_map);
-//     } else {
-//         *chunk_map = DataChunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(double));
-//     }
-//     return 0;  
-// }
-
 /**
  * 超级鸡吧复杂多维内积算法，核心思想就是用第一个数组的最后一维，点积第二个数组倒数第二维。
 */
@@ -585,6 +497,64 @@ u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
     UA_indicator_release(indicators);
     UA_chunk_note_finalize(&chunk_note);
     return do_copy? a1 : NULL;
+}
+
+void UA_cover_pad_n_to_router(ua_pad_n_t pad_n[], int pad_n_size, char buffer[]) 
+{
+    char start_str[128];
+    char tail_str[128];
+    int buffer_count = 0;
+    int start_str_count = 0;
+    int tail_str_count = 0;
+    for (int i=0; i<pad_n_size; ++i) {
+        ua_pad_n_t pad = pad_n[i];
+        int start = pad.before_n;
+        int tail  = -1 * pad.after_n;
+        sprintf(start_str, "%d", start);
+        sprintf(tail_str, "%d", tail);
+
+        while(1) {
+            buffer[buffer_count++] = start_str[start_str_count++];
+            if (start_str[start_str_count] == '\0') break;
+        }
+        start_str_count = 0;
+
+        buffer[buffer_count++] = ':';
+
+        while (1)
+        {
+            buffer[buffer_count++] = tail_str[tail_str_count++];
+            if (tail_str[tail_str_count] == '\0') break;
+        }
+        tail_str_count = 0;
+        if (i != pad_n_size -1 ) {
+            buffer[buffer_count++] = ',';
+        }
+    }
+}
+
+u_array_t UArray_pad(u_array_t* arr, ua_pad_n_t pad_n[], ua_pad_mode_t pad_mode)
+{
+    char router[256] = {'\0'};
+
+    int axisn = UA_axisn(arr);
+    size_t pad_shape[axisn];
+
+    for (int i=0; i<axisn; ++i) {
+        ua_pad_n_t pad = pad_n[i];
+        pad_shape[i] = UA_shape_axis(arr, i) + pad.before_n + pad.after_n;
+    }
+
+    u_array_t pad_arr = UArray_create_with_axes_array(axisn, pad_shape);
+    UA_ones(&pad_arr, 0.f);
+
+    UA_cover_pad_n_to_router(pad_n, axisn, router);
+
+    UA_assimilate(&pad_arr, router, arr);
+
+    // 开始填充周边的数字
+
+    return pad_arr;
 }
 
 u_array_t* UArray_log(u_array_t* arr) 

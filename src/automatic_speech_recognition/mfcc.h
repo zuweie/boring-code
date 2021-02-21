@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:25
- * @LastEditTime: 2021-02-19 14:08:10
+ * @LastEditTime: 2021-02-20 22:15:36
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.h
@@ -22,5 +22,7 @@ u_array_t mfcc(double* raw, size_t raw_len, int samplerate, \
     int filter_n, int fft_n, \
     int freq_low, int freq_high, \
     float preemph, int cep_lifter_n, int append_energy);
+
+
 
 #endif
