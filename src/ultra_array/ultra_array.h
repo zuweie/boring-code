@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-21 10:18:19
+ * @LastEditTime: 2021-02-23 06:57:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -16,13 +16,13 @@ typedef struct _u_array {
     int axis_n;
 } u_array_t;
 
-typedef struct _ua_pad_n {
+typedef struct _ua_pad_width {
     int before_n;
     int after_n;
     int default_v;
-} ua_pad_n_t;
+} ua_pad_width_t;
 
-typedef enum {ua_pad_constanst = 1, ua_pad_edge} ua_pad_mode_t;
+typedef enum {ua_pad_mode_constanst = 1, ua_pad_mode_edge} ua_pad_mode_t;
 
 extern u_array_t ua_unable;
 
@@ -45,14 +45,14 @@ u_array_t* UArray_log(u_array_t* a);
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2);
 u_array_t UArray_fission(u_array_t* a, char router[]);
-u_array_t UArray_pad(u_array_t* a, ua_pad_n_t[], ua_pad_mode_t);
+u_array_t UArray_padding(u_array_t* a, ua_pad_width_t[], ua_pad_mode_t);
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
 void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord);
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
 double UArray_get(u_array_t* arr, ...);
 void UArray_set(u_array_t* arr, double, ...);
-void UA_cover_pad_n_to_router(ua_pad_n_t pad_n[], int pad_n_size, char buffer[]);
+void UA_cover_pad_width_to_router(ua_pad_width_t padding[], int pad_n_size, char buffer[]);
 
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)

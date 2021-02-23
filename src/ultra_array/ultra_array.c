@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-21 12:05:22
+ * @LastEditTime: 2021-02-23 09:14:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -499,7 +499,7 @@ u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
     return do_copy? a1 : NULL;
 }
 
-void UA_cover_pad_n_to_router(ua_pad_n_t pad_n[], int pad_n_size, char buffer[]) 
+void UA_cover_pad_width_to_router(ua_pad_width_t pad_n[], int pad_n_size, char buffer[]) 
 {
     char start_str[128];
     char tail_str[128];
@@ -507,7 +507,7 @@ void UA_cover_pad_n_to_router(ua_pad_n_t pad_n[], int pad_n_size, char buffer[])
     int start_str_count = 0;
     int tail_str_count = 0;
     for (int i=0; i<pad_n_size; ++i) {
-        ua_pad_n_t pad = pad_n[i];
+        ua_pad_width_t pad = pad_n[i];
         int start = pad.before_n;
         int tail  = -1 * pad.after_n;
         sprintf(start_str, "%d", start);
@@ -533,26 +533,70 @@ void UA_cover_pad_n_to_router(ua_pad_n_t pad_n[], int pad_n_size, char buffer[])
     }
 }
 
-u_array_t UArray_pad(u_array_t* arr, ua_pad_n_t pad_n[], ua_pad_mode_t pad_mode)
+
+
+u_array_t UArray_padding(u_array_t* arr, ua_pad_width_t padding[], ua_pad_mode_t pad_mode)
 {
     char router[256] = {'\0'};
 
-    int axisn = UA_axisn(arr);
-    size_t pad_shape[axisn];
+    int axisn_arr = UA_axisn(arr);
+    size_t pad_shape[axisn_arr];
 
-    for (int i=0; i<axisn; ++i) {
-        ua_pad_n_t pad = pad_n[i];
+    for (int i=0; i<axisn_arr; ++i) {
+        ua_pad_width_t pad = padding[i];
         pad_shape[i] = UA_shape_axis(arr, i) + pad.before_n + pad.after_n;
     }
 
-    u_array_t pad_arr = UArray_create_with_axes_array(axisn, pad_shape);
+    u_array_t pad_arr = UArray_create_with_axes_array(axisn_arr, pad_shape);
     UA_ones(&pad_arr, 0.f);
 
-    UA_cover_pad_n_to_router(pad_n, axisn, router);
+    UA_cover_pad_width_to_router(padding, axisn_arr, router);
 
     UA_assimilate(&pad_arr, router, arr);
 
     // 开始填充周边的数字
+    
+    ua_indicator_t* indicators;
+    UA_indicator_parse(router, &indicators);
+
+    char *first_elem_addr[axisn_arr];
+    int axis_index = 0;
+    char *data_ptr = UA_data_ptr(&pad_arr);
+    while(indicators != NULL){
+        size_t chunk_size = UArray_axis_mulitply(&pad_arr, indicators->__axis + 1) * sizeof(double);
+        first_elem_addr[axis_index] = axis_index == 0 ? (UA_data_ptr(&pad_arr) + indicators->__start *  chunk_size) : ( first_elem_addr[axis_index-1] + indicators->__start * chunk_size); 
+        indicators = indicators->next;
+        axis_index++;
+    }
+
+    UA_indicator_release(indicators);
+    
+    int k,l,m,o,p;
+    for (k=axisn_arr-1; k>=0; --k) {
+
+        ua_pad_width_t pad = padding[k];
+        size_t chunk_size = UArray_axis_mulitply(&pad_arr, k+1) * sizeof(double);
+
+        for (l=0, m=1; l<pad.before_n; ++l, ++m) {
+            
+            if (pad_mode == ua_pad_mode_constanst) {
+                
+            } else if (pad_mode == ua_pad_mode_edge) {
+                memcpy((first_elem_addr[k] - m * chunk_size), first_elem_addr[k], chunk_size);
+            }
+        }
+        size_t chunk_number = UA_shape_axis(arr, k);
+
+        char* last_elem_addr = first_elem_addr[k] + (chunk_number-1) * chunk_size;
+
+        for (o=0, p=1; o<pad.after_n; ++o, ++p) {
+            if (pad_mode == ua_pad_mode_constanst) {
+
+            } else if (pad_mode == ua_pad_mode_edge) {
+                memcpy((last_elem_addr + p * chunk_size), last_elem_addr, chunk_size);
+            }
+        }
+    }
 
     return pad_arr;
 }

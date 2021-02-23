@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-21 12:01:40
+ * @LastEditTime: 2021-02-23 08:45:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -452,7 +452,7 @@ static void test_printf_uarray(void)
 static void test_ua_cover_padn_to_router(void) 
 {
     char buffer[256];
-    ua_pad_n_t pad_ns[3];
+    ua_pad_width_t pad_ns[3];
     pad_ns[0].before_n = 1;
     pad_ns[0].after_n = 1;
 
@@ -462,7 +462,7 @@ static void test_ua_cover_padn_to_router(void)
     pad_ns[2].before_n = 1;
     pad_ns[2].after_n = 1;
 
-    UA_cover_pad_n_to_router(pad_ns, 3, buffer);
+    UA_cover_pad_width_to_router(pad_ns, 3, buffer);
     
     ua_indicator_t* indicators;
     UA_indicator_parse(buffer, &indicators);
@@ -474,18 +474,18 @@ static void test_ua_cover_padn_to_router(void)
 static void test_ua_pad(void) 
 {
     u_array_t u1 = _UArray3d(1,3,3);
-    UA_arange(&u1,1*3*3);
+    UA_ones(&u1,1);
     printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
     
-    ua_pad_n_t padn[3];
+    ua_pad_width_t padn[3];
     padn[0].after_n = 0;
     padn[0].before_n = 0;
     padn[1].after_n = 1;
     padn[1].before_n = 1;
-    padn[2].after_n = 1;
-    padn[2].before_n = 1;
+    padn[2].after_n = 2;
+    padn[2].before_n = 2;
 
-    u_array_t u2 = UArray_pad(&u1, padn, 1);
+    u_array_t u2 = UArray_padding(&u1, padn, 2);
     printf("\n");
     printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
 
