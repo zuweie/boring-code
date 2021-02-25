@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-23 08:45:15
+ * @LastEditTime: 2021-02-25 09:53:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -473,17 +473,17 @@ static void test_ua_cover_padn_to_router(void)
 }
 static void test_ua_pad(void) 
 {
-    u_array_t u1 = _UArray3d(1,3,3);
-    UA_ones(&u1,1);
+    u_array_t u1 = _UArray3d(2,3,3);
+    UA_arange(&u1,2*3*3);
     printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
     
     ua_pad_width_t padn[3];
-    padn[0].after_n = 0;
-    padn[0].before_n = 0;
-    padn[1].after_n = 1;
+    padn[0].after_n = 1;
+    padn[0].before_n = 3;
+    padn[1].after_n = 3;
     padn[1].before_n = 1;
     padn[2].after_n = 2;
-    padn[2].before_n = 2;
+    padn[2].before_n = 8;
 
     u_array_t u2 = UArray_padding(&u1, padn, 2);
     printf("\n");
