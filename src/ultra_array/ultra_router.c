@@ -1,21 +1,20 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-02-21 12:04:35
+ * @LastEditTime: 2021-02-26 16:19:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
  */
 #include <stdlib.h>
 #include <string.h>
-#include "ultra_router.h"
 #include "ultra_data_chunk.h"
 #include "ultra_array.h"
+#include "ultra_router.h"
 
-int UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* indicator, ua_chunk_note_t* chunk_note) 
+int UArray_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* indicator, ua_chunk_note_t* chunk_note) 
 {
 
-    //size_t sub_chunk_size = (indicator->__axis < UA_axisn(arr) - 1 ?__axis_mulitply(UA_shape(arr), UA_axisn(arr), indicator->__axis+1) : 1) * sizeof(double);
     size_t sub_chunk_size = (indicator->__axis < UA_axisn(arr) -1  ? UArray_axis_mulitply(arr, indicator->__axis + 1) : 1) * sizeof(double);
     int sub_chunk_number = 1;
 
@@ -32,8 +31,9 @@ int UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator
             offset = indicator->__picked * sub_chunk_size;
         }
         
-        ua_data_chunk_t* new_chunk = UA_datachunk_create(chunk_start_from + offset, sub_chunk_size * sub_chunk_number);
-        UA_datachunk_addto(&(chunk_note->chunk_map), new_chunk);
+        ua_data_chunk_t* new_chunk = UArray_datachunk_create(chunk_start_from + offset, sub_chunk_size * sub_chunk_number);
+        UArray_datachunk_addto(&(chunk_note->chunk_map), new_chunk);
+        
     } else {
 
         if (indicator->__picked == -1) {
@@ -41,18 +41,18 @@ int UA_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator
             int tail = (indicator->__tail <= 0 ? UA_shape_axis(arr, indicator->__axis) + indicator->__tail : indicator->__tail);
             for (int i=indicator->__start; i<tail; ++i) {
                 char* sub_chunk_start_from = chunk_start_from + i * sub_chunk_size;
-                UA_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_note);
+                UArray_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_note);
             }
         } else {
             // picked 的情况
             char* sub_chunk_start_from = chunk_start_from + indicator->__picked * sub_chunk_size;
-            UA_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_note);
+            UArray_survey_chuck_address(arr, sub_chunk_start_from, indicator->next, chunk_note);
         }
     }
     return 0;
 }
 
-ua_indicator_t* UA_indicator_create(int axis, int picked, int start, int tail)
+ua_indicator_t* UArray_indicator_create(int axis, int picked, int start, int tail)
 {
     ua_indicator_t* index = malloc(sizeof(ua_indicator_t));
     index->__axis = axis;
@@ -63,7 +63,7 @@ ua_indicator_t* UA_indicator_create(int axis, int picked, int start, int tail)
     return index;
 }
 
-void UA_indicator_addto(ua_indicator_t** indicator_list, ua_indicator_t* indicator) 
+void UArray_indicator_addto(ua_indicator_t** indicator_list, ua_indicator_t* indicator) 
 {
     if (*indicator_list == NULL) {
         *indicator_list = indicator;
@@ -75,7 +75,7 @@ void UA_indicator_addto(ua_indicator_t** indicator_list, ua_indicator_t* indicat
     return;
 }
 
-int UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
+int UArray_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
 {
     *indicator_list = NULL;
     int curr_axis = 0;
@@ -123,8 +123,8 @@ int UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
             memset(buf, 0, strlen(buf));
             buf_ptr = buf;
 
-            ua_indicator_t* indicator = UA_indicator_create(curr_axis++, picked, axis_start, axis_tail);
-            UA_indicator_addto(indicator_list, indicator);
+            ua_indicator_t* indicator = UArray_indicator_create(curr_axis++, picked, axis_start, axis_tail);
+            UArray_indicator_addto(indicator_list, indicator);
             scope_index = 0;
 
         } else if ( *forward == ':' ) {
@@ -158,21 +158,21 @@ int UA_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
             picked = -1;
             axis_tail = atoi(buf);
         }
-        ua_indicator_t* indicator = UA_indicator_create(curr_axis++, picked, axis_start, axis_tail);
-        UA_indicator_addto(indicator_list, indicator);
+        ua_indicator_t* indicator = UArray_indicator_create(curr_axis++, picked, axis_start, axis_tail);
+        UArray_indicator_addto(indicator_list, indicator);
 
     } else if ( scope_index == 1 ) {
         picked = -1;
         axis_tail = 0;
 
-        ua_indicator_t* indicator = UA_indicator_create(curr_axis++, picked, axis_start, axis_tail);
-        UA_indicator_addto(indicator_list, indicator);
+        ua_indicator_t* indicator = UArray_indicator_create(curr_axis++, picked, axis_start, axis_tail);
+        UArray_indicator_addto(indicator_list, indicator);
     }
     return 0;
 }
 
 
-int UA_indicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua_chunk_note_t* chunk_note) 
+int UArray_indicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua_chunk_note_t* chunk_note) 
 {
     chunk_note->shape = NULL;
     chunk_note->axis_n = 0;
@@ -215,14 +215,14 @@ int UA_indicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua_chu
     // -------------------------
     ptr = indicator_list;    
     if (ptr != NULL) {
-        UA_survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_note);
+        UArray_survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_note);
     } else {
-        chunk_note->chunk_map = UA_datachunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(double));
+        chunk_note->chunk_map = UArray_datachunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(double));
     }
     return 0;  
 }
 
-void UA_indicator_release(ua_indicator_t* indicator_list)
+void UArray_indicator_release(ua_indicator_t* indicator_list)
 {
     ua_indicator_t* ptr = indicator_list;
     while (ptr!= NULL) {
@@ -234,11 +234,11 @@ void UA_indicator_release(ua_indicator_t* indicator_list)
     return;
 }
 
-void UA_chunk_note_finalize(ua_chunk_note_t* chunk_note) 
+void UArray_chunk_note_finalize(ua_chunk_note_t* chunk_note) 
 {
     if (chunk_note->shape) free(chunk_note->shape);
 
-    UA_datachunk_release(chunk_note->chunk_map);
+    UArray_datachunk_release(chunk_note->chunk_map);
 
     return;
 }

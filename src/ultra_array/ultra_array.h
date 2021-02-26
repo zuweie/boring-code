@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-23 06:57:32
+ * @LastEditTime: 2021-02-26 16:15:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -11,16 +11,21 @@
 
 typedef enum {ua_sum = 1 , ua_sub, ua_mulitply, ua_div} operater_t;
 
-typedef struct _u_array {
+typedef struct _ua_chunk_note ua_chunk_note_t;
+typedef struct _ua_data_chunk ua_data_chunk_t;
+typedef struct _ua_indicator ua_indicator_t;
+typedef struct _u_array u_array_t;
+
+struct _u_array {
     char *start[2];
     int axis_n;
-} u_array_t;
+};
 
-typedef struct _ua_pad_width {
-    int before_n;
-    int after_n;
-    int default_v;
-} ua_pad_width_t;
+// typedef struct _ua_pad_width {
+//     int before_n;
+//     int after_n;
+//     int default_v;
+// } ua_pad_width_t;
 
 typedef enum {ua_pad_mode_constanst = 1, ua_pad_mode_edge} ua_pad_mode_t;
 
@@ -40,19 +45,21 @@ u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n);
 u_array_t* UArray_arange(u_array_t *a, int range);
 u_array_t* UArray_ones(u_array_t* a, double v);
 u_array_t* UArray_assimilate(u_array_t* a, char router[], u_array_t* a2);
+u_array_t* UArray_assimilate_with_indicators(u_array_t* a1, ua_indicator_t*, u_array_t* a2);
 u_array_t* UArray_log(u_array_t* a);
 
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2);
 u_array_t UArray_fission(u_array_t* a, char router[]);
-u_array_t UArray_padding(u_array_t* a, ua_pad_width_t[], ua_pad_mode_t);
+u_array_t UArray_fission_with_indicators(u_array_t* a, ua_indicator_t*);
+//u_array_t UArray_padding(u_array_t* a, ua_pad_width_t[], ua_pad_mode_t);
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
 void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord);
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
 double UArray_get(u_array_t* arr, ...);
 void UArray_set(u_array_t* arr, double, ...);
-void UA_cover_pad_width_to_router(ua_pad_width_t padding[], int pad_n_size, char buffer[]);
+//void UA_cover_pad_width_to_router(ua_pad_width_t padding[], int pad_n_size, char buffer[]);
 
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)
@@ -81,11 +88,10 @@ void UA_cover_pad_width_to_router(ua_pad_width_t padding[], int pad_n_size, char
 #define UA_cover_coordinate(parray, coord) UArray_xd_coord_to_1d_offset(parray, coord)
 #define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)
 
-#define UA_shape(parray) ((size_t*)(parray)->start[0])//((size_t*)(*((parray)->start[0])))
+#define UA_shape(parray) ((size_t*)(parray)->start[0])
 #define UA_axisn(parray) ((parray)->axis_n)
 #define UA_shape_axis(parray, axis_index) UA_shape(parray)[axis_index]
-#define UA_data_ptr(parray) ((char*)(parray)->start[1])//((double*)(*((parray)->start[1])))
-
+#define UA_data_ptr(parray) ((char*)(parray)->start[1])
 #define UA_size(parray) UArray_axis_mulitply(parray, 0)
 #define UA_reshape(parray, axes, axis_n) UArray_reshape(parray, axes, axis_n)
 #define UA_where(parray, condition, replace) \

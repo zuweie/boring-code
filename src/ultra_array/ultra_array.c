@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-25 09:51:20
+ * @LastEditTime: 2021-02-26 16:22:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -10,9 +10,10 @@
 #include <stdarg.h>
 #include <string.h>
 #include <math.h>
-#include "ultra_router.h"
 #include "ultra_data_chunk.h"
+#include "ultra_router.h"
 #include "ultra_array.h"
+
 u_array_t ua_unable = {
     .start = {NULL, NULL},
     .axis_n = -1,
@@ -435,10 +436,16 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
 u_array_t UArray_fission(u_array_t* a, char indicator_str[])
 {
     ua_indicator_t* indicators;
-    ua_chunk_note_t chunk_note;
-    UA_indicator_parse(indicator_str, &indicators);
-    UA_indicator_analysis(indicators, a, &chunk_note);
+    UArray_indicator_parse(indicator_str, &indicators);
+    u_array_t fission = UArray_fission_with_indicators(a, indicators);
+    UArray_indicator_release(indicators);
+    return fission;
+}
 
+u_array_t UArray_fission_with_indicators(u_array_t* a, ua_indicator_t* indicators) 
+{
+    ua_chunk_note_t chunk_note;
+    UArray_indicator_analysis(indicators, a, &chunk_note);
     u_array_t fission = UArray_create_with_axes_array(chunk_note.axis_n, chunk_note.shape);
 
     ua_data_chunk_t* ptr = chunk_note.chunk_map;
@@ -451,20 +458,23 @@ u_array_t UArray_fission(u_array_t* a, char indicator_str[])
         ptr = ptr->next;
 
     }
-
-    UA_indicator_release(indicators);
-    UA_chunk_note_finalize(&chunk_note);
-
+    UArray_chunk_note_finalize(&chunk_note);
     return fission;
 }
 
 u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
 {
     ua_indicator_t* indicators;
-    ua_chunk_note_t chunk_note;
+    UArray_indicator_parse(indicator_str, &indicators);
+    u_array_t* ass = UArray_assimilate_with_indicators(a1, indicator_str, a2);
+    UArray_indicator_release(indicators);
+    return ass;
+}
 
-    UA_indicator_parse(indicator_str, &indicators);
-    UA_indicator_analysis(indicators, a1, &chunk_note);
+u_array_t* UArray_assimilate_with_indicators(u_array_t* a1, ua_indicator_t* indicators, u_array_t* a2)
+{
+    ua_chunk_note_t chunk_note;
+    UArray_indicator_analysis(indicators, a1, &chunk_note);
     int do_copy = 0;
     if (UA_axisn(a2) == 0 
     || __axis_mulitply(chunk_note.shape, chunk_note.axis_n, 0) % UA_size(a2) == 0 ) {
@@ -492,193 +502,117 @@ u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
             }
         }
         do_copy = 1;
-    } 
-    
-    UA_indicator_release(indicators);
-    UA_chunk_note_finalize(&chunk_note);
+    }     
+    UArray_chunk_note_finalize(&chunk_note);
     return do_copy? a1 : NULL;
 }
 
-void UA_cover_pad_width_to_router(ua_pad_width_t pad_n[], int pad_n_size, char buffer[]) 
-{
-    char start_str[128];
-    char tail_str[128];
-    int buffer_count = 0;
-    int start_str_count = 0;
-    int tail_str_count = 0;
-    for (int i=0; i<pad_n_size; ++i) {
-        ua_pad_width_t pad = pad_n[i];
-        int start = pad.before_n;
-        int tail  = -1 * pad.after_n;
-        sprintf(start_str, "%d", start);
-        sprintf(tail_str, "%d", tail);
+// void UA_cover_pad_width_to_router(ua_pad_width_t pad_n[], int pad_n_size, char buffer[]) 
+// {
+//     char start_str[128];
+//     char tail_str[128];
+//     int buffer_count = 0;
+//     int start_str_count = 0;
+//     int tail_str_count = 0;
+//     for (int i=0; i<pad_n_size; ++i) {
+//         ua_pad_width_t pad = pad_n[i];
+//         int start = pad.before_n;
+//         int tail  = -1 * pad.after_n;
+//         sprintf(start_str, "%d", start);
+//         sprintf(tail_str, "%d", tail);
 
-        while(1) {
-            buffer[buffer_count++] = start_str[start_str_count++];
-            if (start_str[start_str_count] == '\0') break;
-        }
-        start_str_count = 0;
+//         while(1) {
+//             buffer[buffer_count++] = start_str[start_str_count++];
+//             if (start_str[start_str_count] == '\0') break;
+//         }
+//         start_str_count = 0;
 
-        buffer[buffer_count++] = ':';
+//         buffer[buffer_count++] = ':';
 
-        while (1)
-        {
-            buffer[buffer_count++] = tail_str[tail_str_count++];
-            if (tail_str[tail_str_count] == '\0') break;
-        }
-        tail_str_count = 0;
-        if (i != pad_n_size -1 ) {
-            buffer[buffer_count++] = ',';
-        }
-    }
-}
+//         while (1){
+//             buffer[buffer_count++] = tail_str[tail_str_count++];
+//             if (tail_str[tail_str_count] == '\0') break;
+//         }
+//         tail_str_count = 0;
+//         if (i != pad_n_size -1 ) {
+//             buffer[buffer_count++] = ',';
+//         }
+//     }
+// }
 
 
-static void __filling_pad_data(char* first, char* last, size_t cube_size, ua_pad_width_t* pad_width, ua_pad_mode_t mode)
-{
-    int l, m, o, p;
-    for (l=0, m=1; l<pad_width->before_n; ++l, ++m) {
+// static void __filling_pad_data(char* first, char* last, size_t cube_size, ua_pad_width_t* pad_width, ua_pad_mode_t mode)
+// {
+//     int l, m, o, p;
+//     for (l=0, m=1; l<pad_width->before_n; ++l, ++m) {
             
-        if (mode == ua_pad_mode_constanst) {
+//         if (mode == ua_pad_mode_constanst) {
 
-        } else if (mode == ua_pad_mode_edge) {
-            memcpy((first - m * cube_size), first, cube_size);
-        }
-    }
+//         } else if (mode == ua_pad_mode_edge) {
+//             memcpy((first - m * cube_size), first, cube_size);
+//         }
+//     }
 
-    for (o=0, p=1; o<pad_width->after_n; ++o, ++p) {
-        if (mode == ua_pad_mode_constanst) {
+//     for (o=0, p=1; o<pad_width->after_n; ++o, ++p) {
+//         if (mode == ua_pad_mode_constanst) {
 
-        } else if (mode == ua_pad_mode_edge) {
-            memcpy((last + p * cube_size), last, cube_size);
-        }
-    }
-    return;
-}
+//         } else if (mode == ua_pad_mode_edge) {
+//             memcpy((last + p * cube_size), last, cube_size);
+//         }
+//     }
+//     return;
+// }
 
-static void __do_filling_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, char* chunk_start, ua_pad_width_t pad_width[], ua_pad_mode_t mode) 
-{
-    if (target_axis == curr_axis) {
+// static void __do_filling_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, char* chunk_start, ua_pad_width_t pad_width[], ua_pad_mode_t mode) 
+// {
+//     if (target_axis == curr_axis) {
 
-        size_t cube_size = UArray_axis_mulitply(pad_arr, curr_axis+1) * sizeof(double);
-        char* first = chunk_start + pad_width[curr_axis].before_n * cube_size;
-        size_t curr_dimen = UA_shape_axis(pad_arr, curr_axis);
-        char* last = first + (curr_dimen - pad_width[curr_axis].before_n - pad_width[curr_axis].after_n - 1) * cube_size;
-        __filling_pad_data(first, last, cube_size, &pad_width[curr_axis], mode);
+//         size_t cube_size = UArray_axis_mulitply(pad_arr, curr_axis+1) * sizeof(double);
+//         char* first = chunk_start + pad_width[curr_axis].before_n * cube_size;
+//         size_t curr_dimen = UA_shape_axis(pad_arr, curr_axis);
+//         char* last = first + (curr_dimen - pad_width[curr_axis].before_n - pad_width[curr_axis].after_n - 1) * cube_size;
+//         __filling_pad_data(first, last, cube_size, &pad_width[curr_axis], mode);
 
-    } else {
+//     } else {
 
-        size_t cube_size = UArray_axis_mulitply(pad_arr, curr_axis + 1) * sizeof(double);
-        size_t curr_dimen = UA_shape_axis(pad_arr, curr_axis);
-        size_t fill_number = curr_dimen - pad_width[curr_axis].before_n - pad_width[curr_axis].after_n;
-        char* start = chunk_start + cube_size * pad_width[curr_axis].before_n;
-        for (int i=0; i<fill_number; ++i) {
-            char* __chunk_start = start + i * cube_size;
-            __do_filling_pad_data(pad_arr, target_axis, curr_axis+1, __chunk_start, pad_width, mode);
-        }
-    }
-    return;
-}
+//         size_t cube_size = UArray_axis_mulitply(pad_arr, curr_axis + 1) * sizeof(double);
+//         size_t curr_dimen = UA_shape_axis(pad_arr, curr_axis);
+//         size_t fill_number = curr_dimen - pad_width[curr_axis].before_n - pad_width[curr_axis].after_n;
+//         char* start = chunk_start + cube_size * pad_width[curr_axis].before_n;
+//         for (int i=0; i<fill_number; ++i) {
+//             char* __chunk_start = start + i * cube_size;
+//             __do_filling_pad_data(pad_arr, target_axis, curr_axis+1, __chunk_start, pad_width, mode);
+//         }
+//     }
+//     return;
+// }
 
-u_array_t UArray_padding(u_array_t* arr, ua_pad_width_t padding[], ua_pad_mode_t pad_mode)
-{
-    char router[256] = {'\0'};
+// u_array_t UArray_padding(u_array_t* arr, ua_pad_width_t padding[], ua_pad_mode_t pad_mode)
+// {
+//     char router[256] = {'\0'};
 
-    int axisn_arr = UA_axisn(arr);
-    size_t pad_shape[axisn_arr];
+//     int axisn_arr = UA_axisn(arr);
+//     size_t pad_shape[axisn_arr];
 
-    for (int i=0; i<axisn_arr; ++i) {
-        ua_pad_width_t pad = padding[i];
-        pad_shape[i] = UA_shape_axis(arr, i) + pad.before_n + pad.after_n;
-    }
+//     for (int i=0; i<axisn_arr; ++i) {
+//         ua_pad_width_t pad = padding[i];
+//         pad_shape[i] = UA_shape_axis(arr, i) + pad.before_n + pad.after_n;
+//     }
 
-    u_array_t pad_arr = UArray_create_with_axes_array(axisn_arr, pad_shape);
-    UA_ones(&pad_arr, 0.f);
+//     u_array_t pad_arr = UArray_create_with_axes_array(axisn_arr, pad_shape);
 
-    UA_cover_pad_width_to_router(padding, axisn_arr, router);
+//     UA_cover_pad_width_to_router(padding, axisn_arr, router);
 
-    UA_assimilate(&pad_arr, router, arr);
+//     UA_assimilate(&pad_arr, router, arr);
 
-    // 开始填充周边的数字
-    
-    // ua_indicator_t* indicators;
-    // UA_indicator_parse(router, &indicators);
+//     // 开始填充周边的数字
 
-    // char *first_elem_addr[axisn_arr];
-    // int axis_index = 0;
-    // char *data_ptr = UA_data_ptr(&pad_arr);
-    // while(indicators != NULL){
+//     for (int k=axisn_arr-1; k>=0; --k) {
+//         __do_filling_pad_data(&pad_arr, k, 0, UA_data_ptr(&pad_arr), padding, pad_mode);
+//     }
 
-    //     size_t chunk_size = UArray_axis_mulitply(&pad_arr, indicators->__axis + 1) * sizeof(double);
-    //     first_elem_addr[axis_index] = axis_index == 0 ? (UA_data_ptr(&pad_arr) + indicators->__start *  chunk_size) : ( first_elem_addr[axis_index-1] + indicators->__start * chunk_size); 
-    //     indicators = indicators->next;
-    //     axis_index++;
-
-    // }
-
-    // UA_indicator_release(indicators);
-    // double* first = first_elem_addr[axisn_arr-1];
-
-    for (int k=axisn_arr-1; k>=0; --k) {
-        __do_filling_pad_data(&pad_arr, k, 0, UA_data_ptr(&pad_arr), padding, pad_mode);
-    }
-
-    //int k,j,l,m,o,p;
-    //for (k=axisn_arr-1; k>=0; --k) {
-
-        // ua_pad_width_t pad = padding[k];
-
-        // size_t cube_size_pad_arr = UArray_axis_mulitply(&pad_arr, k+1) * sizeof(double);
-        // size_t chunk_size_pad_arr = UArray_axis_mulitply(&pad_arr, k) * sizeof(double);
-        // size_t up_axis = __axis_mulitply(UA_shape(arr), k, 0);
-
-        // for (j=0; j<up_axis; ++j) {
-
-        //     char* first = first_elem_addr[k] + j * chunk_size_pad_arr;
-
-        //     for (l=0, m=1; l<pad.before_n; ++l, ++m) {
-            
-        //         if (pad_mode == ua_pad_mode_constanst) {
-        //             // 填充指定的 constant 数据
-        //         } else if (pad_mode == ua_pad_mode_edge) {
-        //             memcpy((first - m * cube_size_pad_arr), first, cube_size_pad_arr);
-        //         }
-        //     }
-        //     size_t cube_number_arr = UA_shape_axis(arr, k);
-        //     char* last = first + (cube_number_arr-1) * cube_size_pad_arr;
-
-        //     for (o=0, p=1; o<pad.after_n; ++o, ++p) {
-        //         if (pad_mode == ua_pad_mode_constanst) {
-        //             // 填充指定的 constant 数据
-        //         } else if (pad_mode == ua_pad_mode_edge) {
-        //             memcpy((last + p * cube_size_pad_arr), last, cube_size_pad_arr);
-        //         }
-        //     }
-        // }
-
-        // 核心填充数据算法的代码。
-        // for (l=0, m=1; l<pad.before_n; ++l, ++m) {
-            
-        //     if (pad_mode == ua_pad_mode_constanst) {
-        //     } else if (pad_mode == ua_pad_mode_edge) {
-        //         memcpy((first_elem_addr[k] - m * chunk_size), first_elem_addr[k], chunk_size);
-        //     }
-        // }
-        
-        // size_t chunk_number = UA_shape_axis(arr, k);
-
-        // char* last_elem_addr = first_elem_addr[k] + (chunk_number-1) * chunk_size;
-
-        // for (o=0, p=1; o<pad.after_n; ++o, ++p) {
-        //     if (pad_mode == ua_pad_mode_constanst) {
-        //     } else if (pad_mode == ua_pad_mode_edge) {
-        //         memcpy((last_elem_addr + p * chunk_size), last_elem_addr, chunk_size);
-        //     }
-        // }
-    //}
-
-    return pad_arr;
-}
+//     return pad_arr;
+// }
 
 u_array_t* UArray_log(u_array_t* arr) 
 {

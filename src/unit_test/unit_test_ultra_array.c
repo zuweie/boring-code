@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-25 09:53:29
+ * @LastEditTime: 2021-02-26 16:21:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -240,10 +240,10 @@ static void test_array_router (void)
     printf("router:\n");
     ua_indicator_t* list;
     char r1[] = ":,:,0";
-    UA_indicator_parse(r1, &list);
+    UArray_indicator_parse(r1, &list);
     // PRINTF_INDICATOR_LIST(r1, list);
  
-    UA_indicator_analysis(list, &u1, &chunk_note);
+    UArray_indicator_analysis(list, &u1, &chunk_note);
     
     //PRINTF_CHUNK_MAP(chunk_note.chunk_map, 1);
     //PRINTF_SHAPE_AXIS(chunk_note.shape, chunk_note.axis_n);
@@ -251,8 +251,8 @@ static void test_array_router (void)
     CU_ASSERT_TRUE(chunk_note.shape[1] == 3);
 
     //Router_release(list);
-    UA_indicator_release(list);
-    UA_chunk_note_finalize(&chunk_note);
+    UArray_indicator_release(list);
+    UArray_chunk_note_finalize(&chunk_note);
     
     #endif
 // -------------------------------------------
@@ -451,46 +451,46 @@ static void test_printf_uarray(void)
 
 static void test_ua_cover_padn_to_router(void) 
 {
-    char buffer[256];
-    ua_pad_width_t pad_ns[3];
-    pad_ns[0].before_n = 1;
-    pad_ns[0].after_n = 1;
+    // char buffer[256];
+    // ua_pad_width_t pad_ns[3];
+    // pad_ns[0].before_n = 1;
+    // pad_ns[0].after_n = 1;
 
-    pad_ns[1].before_n = 1;
-    pad_ns[1].after_n = 1;
+    // pad_ns[1].before_n = 1;
+    // pad_ns[1].after_n = 1;
 
-    pad_ns[2].before_n = 1;
-    pad_ns[2].after_n = 1;
+    // pad_ns[2].before_n = 1;
+    // pad_ns[2].after_n = 1;
 
-    UA_cover_pad_width_to_router(pad_ns, 3, buffer);
+    // UA_cover_pad_width_to_router(pad_ns, 3, buffer);
     
-    ua_indicator_t* indicators;
-    UA_indicator_parse(buffer, &indicators);
+    // ua_indicator_t* indicators;
+    // UA_indicator_parse(buffer, &indicators);
 
-    printf("\nrouter %s\n", buffer);
-    PRINTF_INDICATOR_LIST(buffer, indicators);
-    UA_indicator_release(indicators);
+    // printf("\nrouter %s\n", buffer);
+    // PRINTF_INDICATOR_LIST(buffer, indicators);
+    // UA_indicator_release(indicators);
 }
 static void test_ua_pad(void) 
 {
-    u_array_t u1 = _UArray3d(2,3,3);
-    UA_arange(&u1,2*3*3);
-    printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+    // u_array_t u1 = _UArray3d(2,3,3);
+    // UA_arange(&u1,2*3*3);
+    // printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
     
-    ua_pad_width_t padn[3];
-    padn[0].after_n = 1;
-    padn[0].before_n = 3;
-    padn[1].after_n = 3;
-    padn[1].before_n = 1;
-    padn[2].after_n = 2;
-    padn[2].before_n = 8;
+    // ua_pad_width_t padn[3];
+    // padn[0].after_n = 1;
+    // padn[0].before_n = 3;
+    // padn[1].after_n = 3;
+    // padn[1].before_n = 1;
+    // padn[2].after_n = 2;
+    // padn[2].before_n = 8;
 
-    u_array_t u2 = UArray_padding(&u1, padn, 2);
-    printf("\n");
-    printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
+    // u_array_t u2 = UArray_padding(&u1, padn, 2);
+    // printf("\n");
+    // printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
 
-    UArray_(&u1);
-    UArray_(&u2);
+    // UArray_(&u1);
+    // UArray_(&u2);
 }
 
 int do_ultra_array_test (void) 
