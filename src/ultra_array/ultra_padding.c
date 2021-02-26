@@ -1,12 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-02-25 15:52:31
- * @LastEditTime: 2021-02-26 15:18:33
+ * @LastEditTime: 2021-02-26 23:44:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_padding.c
  */
-
+#include <string.h>
+#include <stdio.h>
+#include "ultra_array.h"
 #include "ultra_padding.h"
 
 void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pad_width_t* pad_width, ua_pad_mode_t mode)
@@ -54,4 +56,37 @@ void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, ch
         
     }
     return;
+}
+
+void UArray_cover_pad_width_to_router_str(ua_pad_width_t pad_n[], int pad_n_size, char router_str[])
+{
+    char start_str[128];
+    char tail_str[128];
+    int buffer_count = 0;
+    int start_str_count = 0;
+    int tail_str_count = 0;
+    for (int i=0; i<pad_n_size; ++i) {
+        ua_pad_width_t pad = pad_n[i];
+        int start = pad.before_n;
+        int tail  = -1 * pad.after_n;
+        sprintf(start_str, "%d", start);
+        sprintf(tail_str, "%d", tail);
+
+        while(1) {
+            router_str[buffer_count++] = start_str[start_str_count++];
+            if (start_str[start_str_count] == '\0') break;
+        }
+        start_str_count = 0;
+
+        router_str[buffer_count++] = ':';
+
+        while (1){
+            router_str[buffer_count++] = tail_str[tail_str_count++];
+            if (tail_str[tail_str_count] == '\0') break;
+        }
+        tail_str_count = 0;
+        if (i != pad_n_size -1 ) {
+            router_str[buffer_count++] = ',';
+        }
+    }
 }

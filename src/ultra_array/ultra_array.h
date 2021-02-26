@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-26 16:15:46
+ * @LastEditTime: 2021-02-26 23:49:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -15,51 +15,41 @@ typedef struct _ua_chunk_note ua_chunk_note_t;
 typedef struct _ua_data_chunk ua_data_chunk_t;
 typedef struct _ua_indicator ua_indicator_t;
 typedef struct _u_array u_array_t;
-
 struct _u_array {
     char *start[2];
     int axis_n;
 };
 
-// typedef struct _ua_pad_width {
-//     int before_n;
-//     int after_n;
-//     int default_v;
-// } ua_pad_width_t;
-
-typedef enum {ua_pad_mode_constanst = 1, ua_pad_mode_edge} ua_pad_mode_t;
-
 extern u_array_t ua_unable;
 
-u_array_t UArray_create_with_axes_dots(int axis_n, ...);
-u_array_t UArray_create_with_axes_array(int axis_n, size_t axes[]);
-void UArray_destroy(u_array_t* parr);
+u_array_t UArray_create_with_axes_dots(int, ...);
+u_array_t UArray_create_with_axes_array(int, size_t[]);
+void UArray_destroy(u_array_t*);
 
 /* 操作后产生新的 ultra array 副本的函数 */
-void* UArray_data_copy(u_array_t* a);
+void* UArray_data_copy(u_array_t*);
 
-u_array_t* UArray_operate(u_array_t* a, int axis, operater_t);
-u_array_t* UArray_transpose(u_array_t* a, size_t trans_axis_index[]);
-u_array_t* UArray_transform(u_array_t* a);
-u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n);
-u_array_t* UArray_arange(u_array_t *a, int range);
-u_array_t* UArray_ones(u_array_t* a, double v);
-u_array_t* UArray_assimilate(u_array_t* a, char router[], u_array_t* a2);
-u_array_t* UArray_assimilate_with_indicators(u_array_t* a1, ua_indicator_t*, u_array_t* a2);
-u_array_t* UArray_log(u_array_t* a);
+u_array_t* UArray_operate(u_array_t*, int, operater_t);
+u_array_t* UArray_transpose(u_array_t*, size_t[]);
+u_array_t* UArray_transform(u_array_t*);
+u_array_t* UArray_reshape(u_array_t*, size_t[], int);
+u_array_t* UArray_arange(u_array_t*, int);
+u_array_t* UArray_ones(u_array_t*, double);
+u_array_t* UArray_assimilate(u_array_t*, char[], u_array_t*);
+u_array_t* UArray_assimilate_with_indicators(u_array_t*, ua_indicator_t*, u_array_t*);
+u_array_t* UArray_log(u_array_t*);
 
 /* return new copy */
-u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2);
-u_array_t UArray_fission(u_array_t* a, char router[]);
-u_array_t UArray_fission_with_indicators(u_array_t* a, ua_indicator_t*);
-//u_array_t UArray_padding(u_array_t* a, ua_pad_width_t[], ua_pad_mode_t);
+u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
+u_array_t UArray_fission(u_array_t*, char[]);
+u_array_t UArray_fission_with_indicators(u_array_t*, ua_indicator_t*);
+u_array_t UArray_padding(u_array_t*, ua_pad_width_t[], ua_pad_mode_t);
 
-size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t* coord);
-void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t* coord);
-size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from);
-double UArray_get(u_array_t* arr, ...);
-void UArray_set(u_array_t* arr, double, ...);
-//void UA_cover_pad_width_to_router(ua_pad_width_t padding[], int pad_n_size, char buffer[]);
+size_t UArray_xd_coord_to_1d_offset(u_array_t*, size_t*);
+void UArray_1d_offset_to_xd_coord(u_array_t*, size_t, size_t*);
+size_t UArray_axis_mulitply(u_array_t* a, int);
+double UArray_get(u_array_t*, ...);
+void UArray_set(u_array_t*, double, ...);
 
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)
