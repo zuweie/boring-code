@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-25 15:52:31
- * @LastEditTime: 2021-02-26 23:44:00
+ * @LastEditTime: 2021-02-27 13:27:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_padding.c
@@ -53,9 +53,46 @@ void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, ch
             char* __chunk_start = start + i * cube_size;
             UArray_fill_pad_data(pad_arr, target_axis, curr_axis+1, __chunk_start, pad_width, mode);
         }
-        
     }
     return;
+}
+
+int UArray_parse_pad_width_str(char pad_width_str[], ua_pad_width_t pad_width[], int len) 
+{
+    int pad_width_str_len = strlen(pad_width_str);
+    const int BUF_SIZE = 128;
+    char buf[BUF_SIZE] = {'\0'};
+    int buf_index = 0;
+    int start_count = 0;
+    int pad_width_index = 0;
+
+    if (pad_width_str[0] == '(' && pad_width_str[pad_width_str_len-1] == ')') {
+        char* buf_ptr = buf;
+        char* forward = pad_width_str;
+        while (*forward != '\0' ) {
+            if ( *forward == '(') {
+                start_count++;
+            } else if ( *forward == ',') {
+                if (start_count == 2 && pad_width_index<len ) {
+                    pad_width[pad_width_index].before_n = atoi(buf);
+                    memset(buf, 0, strlen(buf));
+                    buf_ptr = buf;
+                }
+            } else if ( *forward == ')') {
+                start_count-- ;
+                if (start_count == 1 && pad_width_index<len ) {
+                    pad_width[pad_width_index++].after_n = atoi(buf);
+                    memset(buf, 0, strlen(buf));
+                    buf_ptr = buf;
+                }
+            } else {
+                *buf_ptr++ = *forward;
+            }
+            forward++;
+        }
+        return start_count? -1: 0;
+    } 
+    return -1;
 }
 
 void UArray_cover_pad_width_to_router_str(ua_pad_width_t pad_n[], int pad_n_size, char router_str[])

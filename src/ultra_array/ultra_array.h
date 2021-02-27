@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-26 23:49:32
+ * @LastEditTime: 2021-02-27 13:10:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -44,6 +44,8 @@ u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
 u_array_t UArray_fission(u_array_t*, char[]);
 u_array_t UArray_fission_with_indicators(u_array_t*, ua_indicator_t*);
 u_array_t UArray_padding(u_array_t*, ua_pad_width_t[], ua_pad_mode_t);
+u_array_t UArray_pad(u_array_t*, char[], ua_pad_mode_t);
+
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t*, size_t*);
 void UArray_1d_offset_to_xd_coord(u_array_t*, size_t, size_t*);

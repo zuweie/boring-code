@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-26 23:46:09
+ * @LastEditTime: 2021-02-27 13:18:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -467,7 +467,7 @@ u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
 {
     ua_indicator_t* indicators;
     UArray_indicator_parse(indicator_str, &indicators);
-    u_array_t* ass = UArray_assimilate_with_indicators(a1, indicator_str, a2);
+    u_array_t* ass = UArray_assimilate_with_indicators(a1, indicators, a2);
     UArray_indicator_release(indicators);
     return ass;
 }
@@ -533,6 +533,15 @@ u_array_t UArray_padding(u_array_t* arr, ua_pad_width_t padding[], ua_pad_mode_t
     }
 
     return pad_arr;
+}
+u_array_t UArray_pad(u_array_t* arr, char pad_width_str[], ua_pad_mode_t mode)
+{
+    int axisn_arr = UA_axisn(arr);
+    ua_pad_width_t pad_width[axisn_arr];
+    memset(pad_width, 0, axisn_arr * sizeof(ua_pad_width_t));
+
+    int ret = UArray_parse_pad_width_str(pad_width_str, pad_width, axisn_arr);
+    return ret == 0 ? UArray_padding(arr, pad_width, mode) : ua_unable;
 }
 
 u_array_t* UArray_log(u_array_t* arr) 

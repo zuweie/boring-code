@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-26 23:50:49
+ * @LastEditTime: 2021-02-27 13:28:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -87,7 +87,13 @@
             printf("  "); \
         } \
     })
-    
+
+#define PRINTF_PAD_WIDTH(pad_width, size) \
+    ({ \
+        for (int i=0; i<size; ++i) { \
+            printf(" before %d, after %d \n", pad_width[i].before_n, pad_width[i].after_n); \
+        } \
+    }) 
 static void printf_uarr(u_array_t* arr, int axis, char* ptr, int bank_number) 
 {
     bank_number++;
@@ -486,14 +492,24 @@ static void test_ua_pad(void)
     padn[2].after_n = 2;
     padn[2].before_n = 8;
 
-    u_array_t u2 = UArray_padding(&u1, padn, 2);
+    //u_array_t u2 = UArray_padding(&u1, padn, 2);
+    u_array_t u2 = UArray_pad(&u1, "((1,3),(3,1),(1,2))", ua_pad_mode_edge);
     printf("\n");
     printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
 
     UArray_(&u1);
     UArray_(&u2);
 }
-
+static void test_ua_pad_width_parse(void) 
+{
+    ua_pad_width_t pad_width[3] = {0};
+    printf("\n");
+    int ret = UArray_parse_pad_width_str("((1,3),(3,1),(1,2))", pad_width, 3);
+    CU_ASSERT_TRUE(ret == 0);
+    CU_ASSERT_TRUE(pad_width[0].before_n == 1);
+    CU_ASSERT_TRUE(pad_width[1].before_n == 3);
+    //PRINTF_PAD_WIDTH(pad_width, 3);
+}
 int do_ultra_array_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -549,6 +565,11 @@ int do_ultra_array_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test ultra pad ", test_ua_pad) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test pad width parse ", test_ua_pad_width_parse) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
