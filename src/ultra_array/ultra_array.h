@@ -1,20 +1,22 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-02-27 13:10:56
+ * @LastEditTime: 2021-03-01 00:12:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
  */
 #ifndef _ULTRA_ARRAY_H_
 #define _ULTRA_ARRAY_H_
+#include "ultra_padding.h"
 
-typedef enum {ua_sum = 1 , ua_sub, ua_mulitply, ua_div} operater_t;
+typedef enum _operator {ua_sum = 1 , ua_sub, ua_mulitply, ua_div} operater_t;
 
 typedef struct _ua_chunk_note ua_chunk_note_t;
 typedef struct _ua_data_chunk ua_data_chunk_t;
 typedef struct _ua_indicator ua_indicator_t;
 typedef struct _u_array u_array_t;
+
 struct _u_array {
     char *start[2];
     int axis_n;
@@ -34,6 +36,7 @@ u_array_t* UArray_transpose(u_array_t*, size_t[]);
 u_array_t* UArray_transform(u_array_t*);
 u_array_t* UArray_reshape(u_array_t*, size_t[], int);
 u_array_t* UArray_arange(u_array_t*, int);
+u_array_t* UArray_arange_scope(u_array_t*, int, int);
 u_array_t* UArray_ones(u_array_t*, double);
 u_array_t* UArray_assimilate(u_array_t*, char[], u_array_t*);
 u_array_t* UArray_assimilate_with_indicators(u_array_t*, ua_indicator_t*, u_array_t*);
@@ -45,7 +48,7 @@ u_array_t UArray_fission(u_array_t*, char[]);
 u_array_t UArray_fission_with_indicators(u_array_t*, ua_indicator_t*);
 u_array_t UArray_padding(u_array_t*, ua_pad_width_t[], ua_pad_mode_t);
 u_array_t UArray_pad(u_array_t*, char[], ua_pad_mode_t);
-
+u_array_t UArray_empty_like(u_array_t*);
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t*, size_t*);
 void UArray_1d_offset_to_xd_coord(u_array_t*, size_t, size_t*);
@@ -69,6 +72,8 @@ void UArray_set(u_array_t*, double, ...);
 #define UA_div(parray, axis) UArray_operate(parray, axis, ua_div)
 #define UA_T(parray) UArray_transform(parray)
 #define UA_arange(parray, range) UArray_arange(parray, range)
+#define UA_scope(parray, start, tail) UArray_arange_scope(parray, start, tail)
+
 #define UA_ones(parray, v) UArray_ones(parray, v)
 #define UA_dot(pa1, pa2) UArray_dot_new_copy(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
@@ -76,6 +81,8 @@ void UArray_set(u_array_t*, double, ...);
 #define UA_assimilate(pa1, router, pa2) UArray_assimilate(pa1, router, pa2)
 #define UA_copy(parray) UArray_fission(parray, "")
 #define UA_log(parray) UArray_log(parray)
+#define UA_empty_like(parray) UArray_empty_like(parray)
+#define UA_pad_edge(parray, pad_width) UArray_pad(parray, pad_width, ua_pad_mode_edge)
 
 #define UA_cover_coordinate(parray, coord) UArray_xd_coord_to_1d_offset(parray, coord)
 #define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)

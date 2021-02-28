@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-02-19 14:17:41
+ * @LastEditTime: 2021-03-01 00:20:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -198,6 +198,27 @@ static void test_filter_bank (void)
     return;
 }
 
+static void test_log_f_bank(void) {
+    wav_t w;
+    double* buffer;
+    int buffer_n;
+    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
+
+    int samplerate = w.fmt.sample_rate;
+    float step_duration = 0.01f;
+    float frame_duration = 0.025f;
+    int fft_n = calculate_fft_n(frame_duration * samplerate);
+    int freq_low = 0;
+    int freq_high = samplerate / 2;
+    //u_array_t feat = mfcc(buffer, buffer_n, samplerate, frame_duration, step_duration, 13, 26, fft_n, freq_low, freq_high, 0.97, 22, 1);
+    u_array_t log_feat = log_f_bank(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, fft_n, freq_low, freq_high, 0.97);
+    u_array_t print_feat = UA_fission(&log_feat, "1:3,:");
+    PRINTF_ARRAY(print_feat);
+    UArray_(&log_feat);
+    UArray_(&print_feat);
+    return;
+}
+
 static void test_wav_load(void) 
 {
     wav_t w;
@@ -241,11 +262,14 @@ int do_asr_test (void)
     // }
 
     //final test
-    if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
+    // if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+    if (NULL == CU_add_test(pSuite, "test log_f_bank", test_log_f_bank) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-
     // if (NULL == CU_add_test(pSuite, "test sizeof enum", test_sizeof_enum) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();

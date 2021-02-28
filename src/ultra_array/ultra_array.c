@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-02-27 13:18:15
+ * @LastEditTime: 2021-03-01 00:13:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -216,7 +216,7 @@ void UArray_set(u_array_t* arr, double v, ...)
 {
 
     va_list valist;
-    va_start(valist, arr);
+    va_start(valist, v);
     size_t coord[UA_axisn(arr)];
     for (int i=0; i<UA_axisn(arr); ++i) {
         coord[i] = va_arg(valist, size_t);
@@ -246,6 +246,16 @@ u_array_t* UArray_arange(u_array_t *arr, int range)
     
     for (int i=0; i<range && i<size_a; ++i) {
         data[i] = i;
+    }
+    return arr;
+}
+u_array_t* UArray_arange_scope(u_array_t* arr, int start, int tail) 
+{
+    double* data_ptr = UA_data_ptr(arr);
+    size_t size_arr  = UA_size(arr);
+    double per_step = (double)(tail-start) / (double)size_arr;
+    for (int i=0; i<size_arr; ++i) {
+        data_ptr[i] = start + i * per_step;
     }
     return arr;
 }
@@ -534,6 +544,7 @@ u_array_t UArray_padding(u_array_t* arr, ua_pad_width_t padding[], ua_pad_mode_t
 
     return pad_arr;
 }
+
 u_array_t UArray_pad(u_array_t* arr, char pad_width_str[], ua_pad_mode_t mode)
 {
     int axisn_arr = UA_axisn(arr);
@@ -542,6 +553,12 @@ u_array_t UArray_pad(u_array_t* arr, char pad_width_str[], ua_pad_mode_t mode)
 
     int ret = UArray_parse_pad_width_str(pad_width_str, pad_width, axisn_arr);
     return ret == 0 ? UArray_padding(arr, pad_width, mode) : ua_unable;
+}
+
+u_array_t UArray_empty_like(u_array_t* arr) 
+{
+    u_array_t copy = UArray_create_with_axes_array(UA_axisn(arr), UA_shape(arr));
+    return copy;
 }
 
 u_array_t* UArray_log(u_array_t* arr) 

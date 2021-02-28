@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-02-27 13:28:04
+ * @LastEditTime: 2021-03-01 00:21:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -510,6 +510,17 @@ static void test_ua_pad_width_parse(void)
     CU_ASSERT_TRUE(pad_width[1].before_n == 3);
     //PRINTF_PAD_WIDTH(pad_width, 3);
 }
+
+static void test_ua_scope(void) 
+{
+    u_array_t u1 = _UArray1d(5);
+    UA_scope(&u1, -2, 2+1);
+    printf("\n:ua scope\n");
+    //PRINTF_ARRAY(u1);
+    CU_ASSERT_TRUE(UA_get(&u1, 0) == -2.f);
+    CU_ASSERT_TRUE(UA_get(&u1, 4) == 2.f);
+}
+
 int do_ultra_array_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -518,7 +529,7 @@ int do_ultra_array_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     } 
-
+    #if 0
     if (NULL == CU_add_test(pSuite, "test uarray create ", test_uarray_create) ) {
         CU_cleanup_registry();
         return CU_get_error();
@@ -573,4 +584,10 @@ int do_ultra_array_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    
+    if (NULL == CU_add_test(pSuite, "test ua scope ", test_ua_scope) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    #endif
 }

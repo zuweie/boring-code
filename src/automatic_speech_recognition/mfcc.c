@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-02-19 14:22:46
+ * @LastEditTime: 2021-03-01 00:08:25
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -87,20 +87,17 @@ u_array_t create_mel_filterbank(int filter_n, int fft_n, int samplerate, int low
 
 
 
-int f_bank(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n,  int fft_n, float emphasis, u_array_t* feat, u_array_t* energy)
+int f_bank(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n,  int fft_n, int freq_low, int freq_high, float preemph, u_array_t* feat, u_array_t* energy)
 {  
-    int low_freq = 0;
-    int high_freq = samplerate / 2;
-
+    freq_high = freq_high ? freq_high : samplerate / 2;
     // 做分帧 以及计算每一帧的能量 返回 426 * 129 的数组
-    u_array_t frames = frames_pow_signale(raw, raw_length, frame_duration, step_duration, samplerate, fft_n, emphasis, NULL);
-    *energy = UA_copy(&frames);
-    UA_sum(energy, 1);
-
-    //double* energy_data = __calculate_frame_energy(frame_data,frame_number, frame_fftn/2+1);
-
+    u_array_t frames = frames_pow_signale(raw, raw_length, frame_duration, step_duration, samplerate, fft_n, preemph, NULL);
+    if (energy != NULL) {
+        *energy = UA_copy(&frames);
+        UA_sum(energy, 1);
+    }
     // 获取梅尔滤波 返回 26 * 129 的二维数组。 26 为 梅尔滤波的个数。filter_n 传入。
-    u_array_t filters = create_mel_filterbank(filter_n, fft_n, samplerate, low_freq, high_freq);
+    u_array_t filters = create_mel_filterbank(filter_n, fft_n, samplerate, freq_low, freq_high);
 
     // frames dot filters 后 为 426 X 26 的 数组。
     *feat = UA_dot(&frames, UA_T(&filters));
@@ -109,51 +106,15 @@ int f_bank(double* raw, size_t raw_length, float frame_duration, float step_dura
     UArray_(&frames);
     UArray_(&filters);
     return 0;
-    /*****************************************************************************************************/
-    // 以下为旧代码：
-    // // 申请一块空的内存装下 frame 与 filter 的内积。
-    // void* feat_data   = malloc(frame_number*filter_n*sizeof(double));
-    
-    // // 
-    // double (*dct_data)[coe_n] = malloc(frame_number * coe_n * sizeof(double));
+}
 
-    // DenseMatrix* frames  = DenseMatrix_wrap(frame_number, frame_fftn/2+1, frame_data);
-    // DenseMatrix* filters = DenseMatrix_wrap(filter_n, frame_fftn/2+1, filter_data);
-    // DenseMatrix* feat    = DenseMatrix_wrap(frame_number, filter_n, feat_data);
-
-    // // 转置一下 filters
-    // Matrix_trans(filters);
-
-    // // fft * mel filter banks
-    // DenseMatrix_product(frames, filters, feat);
-    // DenseMatrix_foreach(feat, __log_feat);
-    
-    
-
-    // DenseMatrix_elem_ptr(feat, pelem);
-
-    // for (int i=0; i<Matrix_rows(feat); ++i) {
-    //     // 每一帧做 log 
-    //     for (int j=0; j<Matrix_cols(feat); ++j) {
-    //         if (pelem[i][j] != 0.f) log(pelem[i][j]);
-    //     }
-    //     // 每一帧做 dct
-    //     Discrete_cosine_transform(pelem[i], filter_n, coe_n, dct_data[i], dct_ortho, dct_ii);
-    //     // 每一帧做 lifter
-    //     __lifter(dct_data[i], coe_n, ceplifter);
-    // }
-
-    // // clean up memory
-    // DenseMatrix_destroy(frames);
-    // DenseMatrix_destroy(filters);
-    // DenseMatrix_destroy(feat);
-
-    // free(energy_data);
-    // free(frame_data);
-    // free(filter_data);
-    // free(feat_data);
-    // free(dct_data);
-    // 最后努力了，可以出梅尔系数了。我操尼玛的。
+u_array_t log_f_bank(double* raw, size_t raw_len, float win_len, float win_step, int samplerate, int filter_n, int fft_n, int freq_low, int freq_high, float preemph)
+{
+    fft_n = fft_n == 0 ? calculate_fft_n(win_len * samplerate) : fft_n;
+    u_array_t feat;
+    f_bank(raw, raw_len, win_len, win_step, samplerate, filter_n, fft_n, freq_low, freq_high, preemph, &feat, NULL);
+    UA_log(&feat);
+    return feat;
 }
 
 u_array_t mfcc(double* raw, size_t raw_len, int samplerate, float win_len, \
@@ -163,7 +124,7 @@ u_array_t mfcc(double* raw, size_t raw_len, int samplerate, float win_len, \
     // 计算一帧所要的 fft_n 的点数。
     fft_n = fft_n == 0 ? calculate_fft_n(win_len * samplerate) : fft_n;
     u_array_t feat, energy;
-    f_bank(raw, raw_len, win_len, win_step, samplerate, filter_n, fft_n, preemph, &feat, &energy);
+    f_bank(raw, raw_len, win_len, win_step, samplerate, filter_n, fft_n, freq_low, freq_high, preemph, &feat, &energy);
     UA_log(&feat);
 
     __dct(&feat, cep_n);
@@ -180,4 +141,43 @@ u_array_t mfcc(double* raw, size_t raw_len, int samplerate, float win_len, \
     UArray_(&feat);
     UArray_(&energy);
     return feat1;
+}
+
+
+u_array_t delta(u_array_t* feat, int N) 
+{
+    if (N > 1) {
+        
+        size_t NUMFRAMES = UA_shape_axis(feat, 0);
+        int denominator = 0;
+        for (int i =1; i < N+1; ++i) {
+            denominator += i*i;
+        }
+        denominator *= 2;
+        u_array_t delta_feat = UA_empty_like(feat);
+
+        char pad_str_format = "((%d,%d),(0,0))";
+        char router_str_format = "%d:%d";
+        char router_str_format2 = "%d,:";
+        char str_buf[64];
+        sprintf(str_buf, pad_str_format, N, N);
+
+        u_array_t padded = UA_pad_edge(feat, str_buf);
+
+        u_array_t u1 = _UArray1d(5);
+        UA_scope(&u1, -1*N, N+1);
+
+        for (int t=0; t<NUMFRAMES; ++t) {
+            sprintf(str_buf, router_str_format, t, t+2*N+1);
+            u_array_t u2 = UA_fission(&padded, str_buf);
+            u_array_t u3 = UA_dot(&u1, &u2);
+            sprintf(str_buf, router_str_format2, t);
+            UA_assimilate(&delta_feat, str_buf, &u3);
+            UArray_(&u2);
+            UArray_(&u3);
+        }
+        UArray_(&u1);
+        return delta_feat;
+    }
+    return ua_unable;
 }
