@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-03-01 00:08:25
+ * @LastEditTime: 2021-03-02 15:34:04
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -13,6 +13,7 @@
 #include "signal_process.h"
 #include "matrix/DenseMatrix.h"
 #include "cosine_transform/cosine_transform.h"
+#include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
 #include "mfcc.h"
 
@@ -72,6 +73,8 @@ u_array_t create_mel_filterbank(int filter_n, int fft_n, int samplerate, int low
     }
 
     u_array_t filters = _UArray2d(filter_n, fft_n/2+1);
+    // 先把内存清 0.f;
+    UA_ones(&filters, 0.f);
     double (*_filters)[fft_n/2+1] = UA_data_ptr(&filters);
 
     for (int i=0; i<filter_n; ++i) {
@@ -90,19 +93,17 @@ u_array_t create_mel_filterbank(int filter_n, int fft_n, int samplerate, int low
 int f_bank(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n,  int fft_n, int freq_low, int freq_high, float preemph, u_array_t* feat, u_array_t* energy)
 {  
     freq_high = freq_high ? freq_high : samplerate / 2;
-    // 做分帧 以及计算每一帧的能量 返回 426 * 129 的数组
+    // 做分帧 以及计算每一帧的能量 返回 426 * xxx 的数组
     u_array_t frames = frames_pow_signale(raw, raw_length, frame_duration, step_duration, samplerate, fft_n, preemph, NULL);
     if (energy != NULL) {
         *energy = UA_copy(&frames);
         UA_sum(energy, 1);
     }
-    // 获取梅尔滤波 返回 26 * 129 的二维数组。 26 为 梅尔滤波的个数。filter_n 传入。
+    // 获取梅尔滤波 返回 26 * xxxx 的二维数组。 26 为 梅尔滤波的个数。filter_n 传入。
     u_array_t filters = create_mel_filterbank(filter_n, fft_n, samplerate, freq_low, freq_high);
-
-    // frames dot filters 后 为 426 X 26 的 数组。
+    // frames dot filters 后 为 426 X xxxx 的 数组。
     *feat = UA_dot(&frames, UA_T(&filters));
-    UA_where(feat, == 0.f, 0.001f);
-
+    //UA_where(feat, == 0.f, 0.001f);
     UArray_(&frames);
     UArray_(&filters);
     return 0;
@@ -157,8 +158,8 @@ u_array_t delta(u_array_t* feat, int N)
         u_array_t delta_feat = UA_empty_like(feat);
 
         char pad_str_format = "((%d,%d),(0,0))";
-        char router_str_format = "%d:%d";
-        char router_str_format2 = "%d,:";
+        //char router_str_format = "%d:%d";
+        //char router_str_format2 = "%d,:";
         char str_buf[64];
         sprintf(str_buf, pad_str_format, N, N);
 
@@ -168,11 +169,20 @@ u_array_t delta(u_array_t* feat, int N)
         UA_scope(&u1, -1*N, N+1);
 
         for (int t=0; t<NUMFRAMES; ++t) {
-            sprintf(str_buf, router_str_format, t, t+2*N+1);
-            u_array_t u2 = UA_fission(&padded, str_buf);
+
+            ua_indicator_t* indicators_fission = __indicators_start_tail(NULL, t, t+2*N+1);
+            
+            u_array_t u2 = UArray_fission_with_indicators(&padded, indicators_fission);//UA_fission(&padded, str_buf);
             u_array_t u3 = UA_dot(&u1, &u2);
-            sprintf(str_buf, router_str_format2, t);
-            UA_assimilate(&delta_feat, str_buf, &u3);
+
+            ua_indicator_t* indicators_assimilate = __indicators_picked(NULL, t);
+            indicators_assimilate = __indicators_start_tail(indicators_assimilate, 0, 0);
+
+            UArray_assimilate_with_indicators(&delta_feat, indicators_assimilate, &u3);
+
+            UArray_indicator_release(indicators_fission);
+            UArray_indicator_release(indicators_assimilate);
+            
             UArray_(&u2);
             UArray_(&u3);
         }

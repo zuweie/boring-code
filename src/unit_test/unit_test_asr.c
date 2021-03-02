@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-03-01 00:20:50
+ * @LastEditTime: 2021-03-02 15:35:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -115,6 +115,45 @@
             } \
         } \
     }) 
+    
+#define PRINTF_FORMAT_BANK(b_n) \
+    ({ \
+        for (int i=0; i<b_n; ++i) { \
+            printf("  "); \
+        } \
+    })
+    
+static void printf_uarr(u_array_t* arr, int axis, char* ptr, int bank_number) 
+{
+    bank_number++;
+    if (axis == UA_axisn(arr) - 1) {
+        double* data = ptr;
+
+        PRINTF_FORMAT_BANK(bank_number);
+
+        printf("[");
+
+        size_t chunk_number = UA_shape_axis(arr, axis);
+        
+        for (int i=0; i<chunk_number; ++i) {
+            printf("%0.5f ", data[i]);
+        }
+        printf("],\n");
+    } else {
+        
+        size_t chunk_number = UA_shape_axis(arr, axis);
+        size_t chunk_size = UArray_axis_mulitply(arr, axis+1) * sizeof(double);
+        PRINTF_FORMAT_BANK(bank_number);
+        printf("[\n");
+        for (int i=0; i<chunk_number; ++i) {
+            printf_uarr(arr, axis+1, ptr + i*chunk_size, bank_number);
+        }
+        PRINTF_FORMAT_BANK(bank_number);
+        printf("],\n");
+        
+    }
+    //bank_number--;
+}
 
 static int  suite_success_init (void) 
 {
@@ -207,13 +246,16 @@ static void test_log_f_bank(void) {
     int samplerate = w.fmt.sample_rate;
     float step_duration = 0.01f;
     float frame_duration = 0.025f;
-    int fft_n = calculate_fft_n(frame_duration * samplerate);
+    int fft_n = 512;//calculate_fft_n(frame_duration * samplerate);
     int freq_low = 0;
     int freq_high = samplerate / 2;
     //u_array_t feat = mfcc(buffer, buffer_n, samplerate, frame_duration, step_duration, 13, 26, fft_n, freq_low, freq_high, 0.97, 22, 1);
     u_array_t log_feat = log_f_bank(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, fft_n, freq_low, freq_high, 0.97);
     u_array_t print_feat = UA_fission(&log_feat, "1:3,:");
-    PRINTF_ARRAY(print_feat);
+    printf("\n log bank \n");
+    //PRINTF_ARRAY_AXIS(log_feat);
+    //PRINTF_ARRAY(print_feat);
+    printf_uarr(&print_feat, 0, UA_data_ptr(&print_feat), 0);
     UArray_(&log_feat);
     UArray_(&print_feat);
     return;
