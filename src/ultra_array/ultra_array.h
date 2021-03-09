@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-03-01 00:12:35
+ * @LastEditTime: 2021-03-08 11:06:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -41,6 +41,7 @@ u_array_t* UArray_ones(u_array_t*, double);
 u_array_t* UArray_assimilate(u_array_t*, char[], u_array_t*);
 u_array_t* UArray_assimilate_with_indicators(u_array_t*, ua_indicator_t*, u_array_t*);
 u_array_t* UArray_log(u_array_t*);
+u_array_t* UArray_pow2(u_array_t*);
 
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
@@ -81,6 +82,7 @@ void UArray_set(u_array_t*, double, ...);
 #define UA_assimilate(pa1, router, pa2) UArray_assimilate(pa1, router, pa2)
 #define UA_copy(parray) UArray_fission(parray, "")
 #define UA_log(parray) UArray_log(parray)
+#define UA_pow2(parray) UArray_pow2(parray)
 #define UA_empty_like(parray) UArray_empty_like(parray)
 #define UA_pad_edge(parray, pad_width) UArray_pad(parray, pad_width, ua_pad_mode_edge)
 

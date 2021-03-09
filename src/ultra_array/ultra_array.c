@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-03-01 00:13:43
+ * @LastEditTime: 2021-03-08 15:30:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -567,6 +567,16 @@ u_array_t* UArray_log(u_array_t* arr)
     double* data_ptr = UA_data_ptr(arr);
     for (size_t i=0; i<size_a; ++i) {
         data_ptr[i] = log(data_ptr[i]);
+    }
+    return arr;
+}
+
+u_array_t* UArray_pow2(u_array_t* arr) 
+{
+    size_t size_arr = UA_size(arr);
+    double* ptr = UA_data_ptr(arr);
+    for(size_t i=0; i<size_arr; ++i) {
+        ptr[i] = ptr[i] * ptr[i];
     }
     return arr;
 }
