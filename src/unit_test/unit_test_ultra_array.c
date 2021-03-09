@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-03-09 09:32:52
+ * @LastEditTime: 2021-03-09 21:07:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -614,10 +614,12 @@ int do_ultra_array_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
-    #endif
-
+    
     if (NULL == CU_add_test(pSuite, "test ultra pad const", test_ua_pad_const) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
+
+
 }

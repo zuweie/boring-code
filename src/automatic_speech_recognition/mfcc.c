@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-03-09 08:27:23
+ * @LastEditTime: 2021-03-09 20:58:16
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -192,47 +192,4 @@ u_array_t delta(u_array_t* feat, int N)
         return delta_feat;
     }
     return ua_unable;
-}
-
-u_array_t compare_mfcc_cosine(u_array_t* mfcc1, u_array_t* mfcc2) 
-{
-    //double score = 0.f;
-
-    size_t size_row = UA_shape_axis(mfcc1, 0) < UA_shape_axis(mfcc2, 0) ? UA_shape_axis(mfcc1, 0) : UA_shape_axis(mfcc2, 0);
-    u_array_t scores = _UArray1d(size_row);
-    
-    for (size_t i=0; i<size_row; ++i) {
-
-        ua_indicator_t* idx = __indicators_start_tail(NULL, i, i+1);
-        u_array_t u1 = UArray_fission_with_indicators(mfcc1, idx);
-        u_array_t u2 = UArray_fission_with_indicators(mfcc2, idx);
-        u_array_t u3 = UA_dot(&u1, UA_T(&u2));
-        UA_pow2(&u1);
-        UA_pow2(&u2);
-
-        double _dot = UA_get(&u3, 0, 0);
-        UA_sum(&u1, 0);
-        UA_sum(&u2, 0);
-
-        double sum_u1 = UA_get(&u1, 0);
-        double sum_u2 = UA_get(&u2, 0);
-        double mod_u1 = sqrt(sum_u1);
-        double mod_u2 = sqrt(sum_u2);
-        double _score = _dot / mod_u1 / mod_u2;
-
-        UA_set(&scores, _score, i);
-
-        // clean up
-        UArray_(&u1);
-        UArray_(&u2);
-        UArray_(&u3);
-        UArray_indicator_release(idx);
-    }
-
-    return scores;
-}
-
-u_array_t compare_mfcc_distance(u_array_t* mfcc1, u_array_t* mfcc2) 
-{
-    
 }

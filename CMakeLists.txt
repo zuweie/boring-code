@@ -39,6 +39,7 @@ set (SOURCE
     src/automatic_speech_recognition/mfcc.c
     src/automatic_speech_recognition/signal_process.c
     src/automatic_speech_recognition/simple_wav.c
+    src/automatic_speech_recognition/compare_mfcc.c
     src/ultra_array/ultra_array.c
     src/ultra_array/ultra_router.c
     src/ultra_array/ultra_data_chunk.c
