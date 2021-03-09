@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-03-08 15:30:11
+ * @LastEditTime: 2021-03-09 09:17:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -518,7 +518,7 @@ u_array_t* UArray_assimilate_with_indicators(u_array_t* a1, ua_indicator_t* indi
     return do_copy? a1 : NULL;
 }
 
-u_array_t UArray_padding(u_array_t* arr, ua_pad_width_t padding[], ua_pad_mode_t pad_mode)
+u_array_t UArray_padding(u_array_t* arr, ua_pad_width_t padding[], ua_pad_mode_t pad_mode, double* constansts)
 {
     char router[256] = {'\0'};
 
@@ -539,20 +539,20 @@ u_array_t UArray_padding(u_array_t* arr, ua_pad_width_t padding[], ua_pad_mode_t
     // 开始填充周边的数字
 
     for (int k=axisn_arr-1; k>=0; --k) {
-        UArray_fill_pad_data(&pad_arr, k, 0, UA_data_ptr(&pad_arr), padding, pad_mode);
+        UArray_fill_pad_data(&pad_arr, k, 0, UA_data_ptr(&pad_arr), padding, pad_mode, constansts);
     }
 
     return pad_arr;
 }
 
-u_array_t UArray_pad(u_array_t* arr, char pad_width_str[], ua_pad_mode_t mode)
+u_array_t UArray_pad(u_array_t* arr, char pad_width_str[], ua_pad_mode_t mode, double* constansts)
 {
     int axisn_arr = UA_axisn(arr);
     ua_pad_width_t pad_width[axisn_arr];
     memset(pad_width, 0, axisn_arr * sizeof(ua_pad_width_t));
 
     int ret = UArray_parse_pad_width_str(pad_width_str, pad_width, axisn_arr);
-    return ret == 0 ? UArray_padding(arr, pad_width, mode) : ua_unable;
+    return ret == 0 ? UArray_padding(arr, pad_width, mode, constansts) : ua_unable;
 }
 
 u_array_t UArray_empty_like(u_array_t* arr) 

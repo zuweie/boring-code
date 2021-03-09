@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:25
- * @LastEditTime: 2021-03-08 11:24:12
+ * @LastEditTime: 2021-03-09 08:27:10
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.h
@@ -30,6 +30,7 @@ u_array_t mfcc(double* raw, size_t raw_len, int samplerate, \
 
 u_array_t delta(u_array_t* feat, int N);
 
-u_array_t compare_mfcc(u_array_t* mfcc1, u_array_t* mfcc2);
+u_array_t compare_mfcc_cosine(u_array_t* mfcc1, u_array_t* mfcc2);
 
+u_array_t compare_mfcc_distance(u_array_t* mfcc1, u_array_t* mfcc2);
 #endif

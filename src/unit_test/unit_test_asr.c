@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-03-08 17:37:47
+ * @LastEditTime: 2021-03-09 09:27:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -311,7 +311,7 @@ static void test_compare_mfcc(void)
     int freq_high2 = samplerate_2 / 2;
     u_array_t feat2 = mfcc(buffer2, buffer_n2, samplerate_2, frame_duration_2, step_duration_2, 13, 26, fft_n2, freq_low2, freq_high2, 0.97, 22, 1);
     //u_array_t feat2 = log_f_bank(buffer2, buffer_n2, frame_duration_2, step_duration_2, samplerate_2, 26, fft_n2, freq_low2,freq_high2, 0.97);
-    u_array_t scores = compare_mfcc(&feat1, &feat2);
+    u_array_t scores = compare_mfcc_cosine(&feat1, &feat2);
     printf("\n ----------------------- \n");
     printf_uarr(&feat1, 0, UA_data_ptr(&feat1), 0);
     printf("\n ----------------------- \n");
@@ -374,9 +374,9 @@ int do_asr_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test compare mfcc", test_compare_mfcc) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test compare mfcc", test_compare_mfcc) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     
 }

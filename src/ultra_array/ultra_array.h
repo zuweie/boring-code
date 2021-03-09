@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-03-08 11:06:42
+ * @LastEditTime: 2021-03-09 09:24:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -47,8 +47,8 @@ u_array_t* UArray_pow2(u_array_t*);
 u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
 u_array_t UArray_fission(u_array_t*, char[]);
 u_array_t UArray_fission_with_indicators(u_array_t*, ua_indicator_t*);
-u_array_t UArray_padding(u_array_t*, ua_pad_width_t[], ua_pad_mode_t);
-u_array_t UArray_pad(u_array_t*, char[], ua_pad_mode_t);
+u_array_t UArray_padding(u_array_t*, ua_pad_width_t[], ua_pad_mode_t, double*);
+u_array_t UArray_pad(u_array_t*, char[], ua_pad_mode_t, double*);
 u_array_t UArray_empty_like(u_array_t*);
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t*, size_t*);
@@ -84,8 +84,9 @@ void UArray_set(u_array_t*, double, ...);
 #define UA_log(parray) UArray_log(parray)
 #define UA_pow2(parray) UArray_pow2(parray)
 #define UA_empty_like(parray) UArray_empty_like(parray)
-#define UA_pad_edge(parray, pad_width) UArray_pad(parray, pad_width, ua_pad_mode_edge)
-
+#define UA_pad_edge(parray, pad_width) UArray_pad(parray, pad_width, ua_pad_mode_edge, NULL)
+#define UA_pad_const(parray, pad_width, constanst) UArray_pad(parray, pad_width, ua_pad_mode_constanst, constanst)
+ 
 #define UA_cover_coordinate(parray, coord) UArray_xd_coord_to_1d_offset(parray, coord)
 #define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)
 

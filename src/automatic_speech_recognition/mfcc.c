@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-03-08 17:11:37
+ * @LastEditTime: 2021-03-09 08:27:23
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -194,7 +194,7 @@ u_array_t delta(u_array_t* feat, int N)
     return ua_unable;
 }
 
-u_array_t compare_mfcc(u_array_t* mfcc1, u_array_t* mfcc2) 
+u_array_t compare_mfcc_cosine(u_array_t* mfcc1, u_array_t* mfcc2) 
 {
     //double score = 0.f;
 
@@ -230,4 +230,9 @@ u_array_t compare_mfcc(u_array_t* mfcc1, u_array_t* mfcc2)
     }
 
     return scores;
+}
+
+u_array_t compare_mfcc_distance(u_array_t* mfcc1, u_array_t* mfcc2) 
+{
+    
 }

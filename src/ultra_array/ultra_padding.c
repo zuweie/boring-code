@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-25 15:52:31
- * @LastEditTime: 2021-02-27 13:27:08
+ * @LastEditTime: 2021-03-09 09:14:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_padding.c
@@ -11,12 +11,18 @@
 #include "ultra_array.h"
 #include "ultra_padding.h"
 
-void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pad_width_t* pad_width, ua_pad_mode_t mode)
+void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pad_width_t* pad_width, ua_pad_mode_t mode, double constanst)
 {
     int l, m, o, p;
     for (l=0, m=1; l<pad_width->before_n; ++l, ++m) {
             
         if (mode == ua_pad_mode_constanst) {
+            size_t fill_number = cube_size / sizeof(double);
+            double* first_elem = first - m * cube_size;
+
+            for (int i=0; i<fill_number; ++i) {
+                *(first_elem + i)  = constanst;
+            }
 
         } else if (mode == ua_pad_mode_edge) {
             memcpy((first - m * cube_size), first, cube_size);
@@ -26,6 +32,11 @@ void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pa
     for (o=0, p=1; o<pad_width->after_n; ++o, ++p) {
         if (mode == ua_pad_mode_constanst) {
 
+            size_t fill_number = cube_size / sizeof(double);
+            double* first_elem = last + p * cube_size;
+            for (int i=0; i<fill_number; ++i) {
+                *(first_elem + i)  = constanst;
+            }
         } else if (mode == ua_pad_mode_edge) {
             memcpy((last + p * cube_size), last, cube_size);
         }
@@ -33,7 +44,7 @@ void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pa
     return;
 }
 
-void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, char* chunk_start, ua_pad_width_t pad_width[], ua_pad_mode_t mode)
+void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, char* chunk_start, ua_pad_width_t pad_width[], ua_pad_mode_t mode, double* constansts)
 {
     if (target_axis == curr_axis) {
 
@@ -41,7 +52,11 @@ void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, ch
         char* first = chunk_start + pad_width[curr_axis].before_n * cube_size;
         size_t curr_dimen = UA_shape_axis(pad_arr, curr_axis);
         char* last = first + (curr_dimen - pad_width[curr_axis].before_n - pad_width[curr_axis].after_n - 1) * cube_size;
-        UArray_do_filling_pad_data(first, last, cube_size, &pad_width[curr_axis], mode);
+        double c = 0.f;
+        if (constansts) {
+            c = constansts[curr_axis];
+        }
+        UArray_do_filling_pad_data(first, last, cube_size, &pad_width[curr_axis], mode, c);
 
     } else {
 
@@ -51,7 +66,7 @@ void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, ch
         char* start = chunk_start + cube_size * pad_width[curr_axis].before_n;
         for (int i=0; i<fill_number; ++i) {
             char* __chunk_start = start + i * cube_size;
-            UArray_fill_pad_data(pad_arr, target_axis, curr_axis+1, __chunk_start, pad_width, mode);
+            UArray_fill_pad_data(pad_arr, target_axis, curr_axis+1, __chunk_start, pad_width, mode, constansts);
         }
     }
     return;
