@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-09 15:47:11
- * @LastEditTime: 2021-03-09 22:01:34
+ * @LastEditTime: 2021-03-10 11:18:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/compare_mfcc.c
@@ -13,7 +13,9 @@
 
 u_array_t compare_mfcc_cosine(u_array_t* mfcc1, u_array_t* mfcc2)
 {
-
+    size_t size_m1 = UA_shape_axis(mfcc1, 0);
+    size_t size_m2 = UA_shape_axis(mfcc2, 0);
+    
     size_t size_row = UA_shape_axis(mfcc1, 0) < UA_shape_axis(mfcc2, 0) ? UA_shape_axis(mfcc1, 0) : UA_shape_axis(mfcc2, 0);
     u_array_t scores = _UArray1d(size_row);
     

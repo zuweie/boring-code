@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-03-09 22:40:13
+ * @LastEditTime: 2021-03-10 11:19:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -267,12 +267,13 @@ static void test_wav_load(void)
     wav_t w;
     double* buffer;
     int buffer_n;
-    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/omg-man-2.wav", &w, &buffer, &buffer_n);
+    //Wav_load("/Users/zuweie/code/c-projects/boring-code/build/omg-man-2.wav", &w, &buffer, &buffer_n);
     //Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
+    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/Human_Male_1.wav", &w, &buffer, &buffer_n);
     printf("\n wav info: \n");
     PRINTF_WAV_INFO(&w);
     printf("\n signal info: \n");
-    PRINTF_WAV_BUFFER(buffer, buffer_n, 10000);
+    //PRINTF_WAV_BUFFER(buffer, buffer_n, 10000);
     if (buffer) free(buffer);
     return;
 }
@@ -289,7 +290,7 @@ static void test_compare_mfcc(void)
     //----------------------------------------------mfcc 1----------------------------------------------------------//
     double* buffer1;
     int buffer_n1;
-    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/fuck-you.wav", &w1, &buffer1, &buffer_n1);
+    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/Human_Male_1.wav", &w1, &buffer1, &buffer_n1);
 
     int samplerate_1 = w1.fmt.sample_rate;
     float step_duration_1 = 0.01f;
@@ -312,9 +313,9 @@ static void test_compare_mfcc(void)
     u_array_t feat2 = mfcc(buffer2, buffer_n2, samplerate_2, frame_duration_2, step_duration_2, 13, 26, fft_n2, freq_low2, freq_high2, 0.97, 22, 1);
     u_array_t scores = compare_mfcc_cosine(&feat1, &feat2);
     printf("\n ----------------------- \n");
-    printf_uarr(&feat1, 0, UA_data_ptr(&feat1), 0);
+    //printf_uarr(&feat1, 0, UA_data_ptr(&feat1), 0);
     printf("\n ----------------------- \n");
-    printf_uarr(&feat2, 0, UA_data_ptr(&feat2), 0);
+    //printf_uarr(&feat2, 0, UA_data_ptr(&feat2), 0);
     printf("\n compare mfcc \n");
     printf_uarr(&scores, 0, UA_data_ptr(&scores), 0);
     size_t size_scores = UA_shape_axis(&scores, 0);
@@ -432,9 +433,13 @@ int do_asr_test (void)
     //     return CU_get_error();
     // }
 
+    if (NULL == CU_add_test(pSuite, "test compare mfcc cosine", test_compare_mfcc) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    
     // if (NULL == CU_add_test(pSuite, "test compare mfcc", test_compare_mfcc_distance) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
-    
 }
