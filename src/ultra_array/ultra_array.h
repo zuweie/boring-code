@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-03-09 09:24:58
+ * @LastEditTime: 2021-03-11 11:04:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -56,6 +56,7 @@ void UArray_1d_offset_to_xd_coord(u_array_t*, size_t, size_t*);
 size_t UArray_axis_mulitply(u_array_t* a, int);
 double UArray_get(u_array_t*, ...);
 void UArray_set(u_array_t*, double, ...);
+void UArray_display(u_array_t*);
 
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)
@@ -96,6 +97,7 @@ void UArray_set(u_array_t*, double, ...);
 #define UA_data_ptr(parray) ((char*)(parray)->start[1])
 #define UA_size(parray) UArray_axis_mulitply(parray, 0)
 #define UA_reshape(parray, axes, axis_n) UArray_reshape(parray, axes, axis_n)
+#define UA_display(parray) UArray_display(parray)
 #define UA_where(parray, condition, replace) \
     ({ \
         double* data_ptr = UA_data_ptr(parray); \

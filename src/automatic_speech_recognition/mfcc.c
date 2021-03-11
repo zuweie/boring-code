@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-03-09 20:58:16
+ * @LastEditTime: 2021-03-11 11:46:46
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -129,20 +129,24 @@ u_array_t mfcc(double* raw, size_t raw_len, int samplerate, float win_len, \
     f_bank(raw, raw_len, win_len, win_step, samplerate, filter_n, fft_n, freq_low, freq_high, preemph, &feat, &energy);
     UA_log(&feat);
 
-    __dct(&feat, cep_n);
+    __dct(&feat, UA_shape_axis(&feat, 1));
     
-    char router[128] = {'\0'};
-    sprintf(router, ":,:%d", cep_n);
-    u_array_t feat1 = UA_fission(&feat, router); 
+    //char router[128] = {'\0'};
+    //sprintf(router, ":,:%d", cep_n);
+    ua_indicator_t* idx = __indicators_start_tail(NULL, 0, 0);
+    idx = __indicators_tail(idx, cep_n);
 
-    __lifter(&feat1, cep_lifter);
-    if (append_energy) {
-        UA_log(&energy);
-        UA_assimilate(&feat1, ":,0", &energy);
-    }
+    u_array_t feat1 = UArray_fission_with_indicators(&feat, idx); 
+
+    //__lifter(&feat1, cep_lifter);
+    //if (append_energy) {
+    //    UA_log(&energy);
+    //    UA_assimilate(&feat1, ":,0", &energy);
+    //}
     
     UArray_(&feat);
     UArray_(&energy);
+    UArray_indicator_release(idx);
     return feat1;
 }
 

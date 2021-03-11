@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-03-10 11:19:52
+ * @LastEditTime: 2021-03-11 11:42:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -216,8 +216,12 @@ static void test_mfcc (void)
     int freq_low = 0;
     int freq_high = samplerate / 2;
     u_array_t feat = mfcc(buffer, buffer_n, samplerate, frame_duration, step_duration, 13, 26, fft_n, freq_low, freq_high, 0.97, 22, 1);
-    PRINTF_ARRAY(feat);
+    //PRINTF_ARRAY(feat);
+    u_array_t feat2 = UA_fission(&feat, "1:4,:");
+    printf("\n mfcc:\n");
+    UA_display(&feat2);
     UArray_(&feat);
+    UArray_(&feat2);
     return;
 }
 
@@ -420,10 +424,10 @@ int do_asr_test (void)
     // }
 
     //final test
-    // if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     // if (NULL == CU_add_test(pSuite, "test log_f_bank", test_log_f_bank) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
@@ -433,10 +437,10 @@ int do_asr_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test compare mfcc cosine", test_compare_mfcc) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test compare mfcc cosine", test_compare_mfcc) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     
     // if (NULL == CU_add_test(pSuite, "test compare mfcc", test_compare_mfcc_distance) ) {
     //     CU_cleanup_registry();

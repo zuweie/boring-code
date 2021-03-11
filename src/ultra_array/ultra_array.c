@@ -1,12 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-03-09 09:17:53
+ * @LastEditTime: 2021-03-11 11:11:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
  */
-//#include <stdio.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <math.h>
@@ -94,6 +94,37 @@ __dot_1d(double *a, double *b, size_t n)
         v += a[i] * b[i];
     }
     return v;
+}
+
+static void
+__to_display(u_array_t* arr, int axis, char* ptr, int bank_number) 
+{
+    bank_number++;
+    if (axis == UA_axisn(arr) - 1) {
+        double* data = ptr;
+
+        for (int i=0; i<bank_number; ++i) printf("  "); 
+
+        printf("[");
+
+        size_t chunk_number = UA_shape_axis(arr, axis);
+        
+        for (int i=0; i<chunk_number; ++i) {
+            printf("%0.5f ", data[i]);
+        }
+        printf("],\n");
+    } else {
+        
+        size_t chunk_number = UA_shape_axis(arr, axis);
+        size_t chunk_size = UArray_axis_mulitply(arr, axis+1) * sizeof(double);
+        for (int i=0; i<bank_number; ++i) printf("  "); 
+        printf("[\n");
+        for (int i=0; i<chunk_number; ++i) {
+            __to_display(arr, axis+1, ptr + i*chunk_size, bank_number);
+        }
+        for (int i=0; i<bank_number; ++i) printf("  "); 
+        printf("],\n");
+    }
 }
 
 // static void
@@ -579,6 +610,12 @@ u_array_t* UArray_pow2(u_array_t* arr)
         ptr[i] = ptr[i] * ptr[i];
     }
     return arr;
+}
+
+
+void UArray_display(u_array_t* arr)
+{
+    return __to_display(arr, 0, UA_data_ptr(arr), 0);
 }
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t* arr, size_t coord[])
