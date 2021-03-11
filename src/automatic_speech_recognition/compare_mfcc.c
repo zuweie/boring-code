@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-09 15:47:11
- * @LastEditTime: 2021-03-10 11:18:49
+ * @LastEditTime: 2021-03-11 14:43:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/compare_mfcc.c
@@ -72,6 +72,71 @@ u_array_t compare_mfcc_distance(u_array_t* mfcc1, u_array_t* mfcc2)
         }
         distance = sqrt(distance);
         UA_set(&scores, distance, i);
+    }
+    return scores;
+}
+
+u_array_t compare_mfcc_pearson(u_array_t* mfcc1, u_array_t* mfcc2) 
+{
+    size_t row_mf1 = UA_shape_axis(mfcc1, 0);
+    size_t row_mf2 = UA_shape_axis(mfcc2, 0);
+    int need_free_pad = 0;
+    u_array_t u1, u2;
+    u_array_t scores = _UArray1d((row_mf1>row_mf2 ? row_mf1 :row_mf2));
+    if (row_mf1 != row_mf2) {
+        need_free_pad = 1;
+        ua_pad_width_t pad_width[2] = {0};
+        pad_width[0].after_n = abs(row_mf1 - row_mf2);
+
+        u1 = UArray_padding((row_mf1 < row_mf2 ? mfcc1 : mfcc2), pad_width, ua_pad_mode_constanst, NULL);
+        u2 = row_mf1 > row_mf2 ? *mfcc1 : *mfcc2;
+        
+    } else {
+        u1 = *mfcc1;
+        u2 = *mfcc2;
+    }
+    
+    // 做余弦比较
+    size_t col = UA_shape_axis(&u1, 1);
+    size_t row = UA_shape_axis(&u1, 0);
+    double (*row_ptr1)[col] = UA_data_ptr(&u1);
+    double (*row_ptr2)[col] = UA_data_ptr(&u2);
+    double x = 0.f;
+    for (size_t i=0; i<row; ++i) {
+        
+        double *ptr1 = row_ptr1[i];
+        double *ptr2 = row_ptr2[i];
+
+        double arvg1 = 0.f;
+        double arvg2 = 0.f;
+
+        for (int j=0; j<col; ++j) {
+            arvg1 += ptr1[j];
+            arvg2 += ptr2[j];
+        }
+
+        arvg1 = arvg1 / col;
+        arvg2 = arvg2 / col;
+        double dot = 0.f;
+        double mod1 = 0.f;
+        double mod2 = 0.f;
+
+        for (int k=0; k<col; ++k) {
+            dot += (ptr1[k] - arvg1) * (ptr2[k] - arvg2);
+            mod1 += ptr1[k] * ptr1[k];
+            mod2 += ptr2[k] * ptr2[k];
+        }
+        double v = 0.f;
+        if (mod1 != 0.f && mod2 != 0.f) {
+            v = dot / ( sqrt(mod1) * sqrt(mod2) );
+        } else {
+            v = -1 * pow(0.95, x++);
+        }
+        UA_set(&scores, v, i);
+    }
+
+    if (need_free_pad) {
+        UArray_(&u1);
     }
     return scores;
 }

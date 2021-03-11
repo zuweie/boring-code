@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-03-11 11:42:45
+ * @LastEditTime: 2021-03-11 14:48:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -397,7 +397,63 @@ static void test_compare_mfcc_distance(void)
     return;
 }
 
+static void test_compare_mfcc_pearson (void) 
+{
+     // log_f_bank(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, fft_n, freq_low, freq_high, 0.97);
+    wav_t w1, w2;
+    //----------------------------------------------mfcc 1----------------------------------------------------------//
+    double* buffer1;
+    int buffer_n1;
+    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/omg-man-3.wav", &w1, &buffer1, &buffer_n1);
 
+    int samplerate_1 = w1.fmt.sample_rate;
+    float step_duration_1 = 0.01f;
+    float frame_duration_1 = 0.01f;
+    int fft_n1 = calculate_fft_n(frame_duration_1 * samplerate_1);
+    int freq_low1 = 0;
+    int freq_high1 = samplerate_1 / 2;
+    u_array_t feat1 = mfcc(buffer1, buffer_n1, samplerate_1, frame_duration_1, step_duration_1, 13, 26, fft_n1, freq_low1, freq_high1, 0.97, 22, 1);
+    //------------------------------------------------mfcc 2---------------------------------------------------//
+    double* buffer2;
+    int buffer_n2;
+    Wav_load("/Users/zuweie/code/c-projects/boring-code/build/omg-man-4.wav", &w2, &buffer2, &buffer_n2);
+
+    int samplerate_2 = w2.fmt.sample_rate;
+    float step_duration_2 = 0.01f;
+    float frame_duration_2 = 0.01f;
+    int fft_n2 = calculate_fft_n(frame_duration_2 * samplerate_2);
+    int freq_low2 = 0;
+    int freq_high2 = samplerate_2 / 2;
+    u_array_t feat2 = mfcc(buffer2, buffer_n2, samplerate_2, frame_duration_2, step_duration_2, 13, 26, fft_n2, freq_low2, freq_high2, 0.97, 22, 1);
+    //------------------------------------ compare ------------------------------------------------------------//
+
+    u_array_t scores = compare_mfcc_pearson(&feat1, &feat2);
+
+    // printf("\n ----------------------- \n");
+    // printf_uarr(&feat1, 0, UA_data_ptr(&feat1), 0);
+    // printf("\n ----------------------- \n");
+    // printf_uarr(&feat2, 0, UA_data_ptr(&feat2), 0);
+
+    printf("\n compare mfcc \n");
+    UA_display(&scores);
+    //printf_uarr(&scores, 0, UA_data_ptr(&scores), 0);
+    size_t size_scores = UA_shape_axis(&scores, 0);
+    UA_sum(&scores, 0);
+    double total = UA_get(&scores, 0);
+    printf(" \n total: %lf, score: %lf, size: %d\n", total, (total/size_scores), size_scores);
+
+    // printf(" \n printf buffer\n ");
+    // for (int i=0; i<buffer_n2; ++i) {
+    //     printf(" %lf ", buffer2[i]);
+    // }
+    // ------------------------------ clean up ----------------------------------
+    UArray_(&scores);
+    UArray_(&feat1);
+    UArray_(&feat2);
+    free(buffer1);
+    free(buffer2);
+    return;
+}
 
 int do_asr_test (void) 
 {
@@ -424,10 +480,10 @@ int do_asr_test (void)
     // }
 
     //final test
-    if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test mfcc", test_mfcc) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     // if (NULL == CU_add_test(pSuite, "test log_f_bank", test_log_f_bank) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
@@ -446,4 +502,9 @@ int do_asr_test (void)
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+
+    if (NULL == CU_add_test(pSuite, "test compare mfcc pearson", test_compare_mfcc_pearson) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
