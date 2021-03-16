@@ -2,7 +2,7 @@
  * @Description: 一个简单的内存池模型
  * @Author: zuweie
  * @Date: 2019-09-03 17:13:11
- * @LastEditTime: 2020-11-03 10:32:08
+ * @LastEditTime: 2021-03-16 11:18:08
  * @LastEditors: Please set LastEditors
  */
 #ifndef _MEM_POOL_H_
@@ -45,7 +45,7 @@
 #define POOL_FREELIST_INDEX(x) (((x) + __ALIGN - 1) / __ALIGN - 1)
 
 #define POOL_ATTACH_SLOT_INFO_SIZE(x) (x + __SLOT_INFO_BYTES)
-#define POOL_DETACH_SLOT_INFO_SIZE(X) (x - __SLOT_INFO_BYTES)
+#define POOL_DETACH_SLOT_INFO_SIZE(x) (x - __SLOT_INFO_BYTES)
 
 #define POOL_EXPOSE_POINTER(p) ((char *)(p) + __SLOT_INFO_BYTES)
 #define POOL_RECOVER_POINTER(p) ((char *)(p) - __SLOT_INFO_BYTES)
