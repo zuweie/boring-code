@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-01-29 12:19:19
+ * @LastEditTime: 2021-03-23 16:49:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -136,6 +136,12 @@ int DenseMatrix_foreach_col(DenseMatrix* m, void(*col_func)(mx_float_t*, size_t,
     trans(m);
     return 0;
 }
+
+int DenseMatrix_augmented_solve(DenseMatrix* matrix) 
+{
+    
+}
+
 
 int DenseMatrix_destroy(DenseMatrix* matrix)
 {

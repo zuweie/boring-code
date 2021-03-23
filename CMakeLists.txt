@@ -44,6 +44,7 @@ set (SOURCE
     src/ultra_array/ultra_router.c
     src/ultra_array/ultra_data_chunk.c
     src/ultra_array/ultra_padding.c
+    src/machine_learning/linear_regression.c
 )
 
 ## 连接 cunit 库
