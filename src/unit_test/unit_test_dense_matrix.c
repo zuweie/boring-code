@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-12 12:23:02
- * @LastEditTime: 2021-03-27 12:45:47
+ * @LastEditTime: 2021-03-27 14:02:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dense_matrix.c
@@ -110,7 +110,7 @@ static void test_dense_matrix_lu (void)
     DenseMatrix_destroy(m1);
 }
 
-static void test_desnse_matrix_solve(void) 
+static void test_dense_matrix_solve(void) 
 {
     mx_float_t X[4] = {4,5,3,2};
     mx_float_t Y[2] = {37, 19};
@@ -119,6 +119,29 @@ static void test_desnse_matrix_solve(void)
     CU_ASSERT_TRUE(Y[0] == 3.f);
     CU_ASSERT_TRUE(Y[1] == 5.f);
     DenseMatrix_destroy(m1);
+}
+
+static void test_dense_matrix_inverse(void) 
+{
+    mx_float_t m[4] = {4,5,3,2};
+    DenseMatrix* m2 = DenseMatrix_load(2,2,m);
+    DenseMatrix* m1 = DenseMatrix_load(2,2,m);
+    DenseMatrix* m3 = DenseMatrix_create(2,2);
+    
+    DenseMatrix_inverse(m2);
+    DenseMatrix_dot(m1, m2, m3);
+    // printf("\n original: \n");
+    // PR_DENSEMATRIX(m1);
+    // printf("\n inverse \n");
+    // PR_DENSEMATRIX(m2);
+    printf("\n dot \n");
+    PR_DENSEMATRIX(m3);
+
+    DenseMatrix_elem_ptr(m3, ptr);
+
+    DenseMatrix_destroy(m1);
+    DenseMatrix_destroy(m2);
+    DenseMatrix_destroy(m3);
 }
 
 int do_dense_matrix_test (void) 
@@ -150,7 +173,12 @@ int do_dense_matrix_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test DenseMatrix solve", test_desnse_matrix_solve) ) {
+    if (NULL == CU_add_test(pSuite, "test DenseMatrix solve", test_dense_matrix_solve) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test DenseMatrix inverse", test_dense_matrix_inverse) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

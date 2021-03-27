@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-03-27 12:21:26
+ * @LastEditTime: 2021-03-27 13:53:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -180,6 +180,31 @@ int DenseMatrix_solve(DenseMatrix* matrix, mx_float_t Y[], size_t n)
     DenseMatrix_lu(matrix);
     return __solve_lu(matrix, Y, n);
 }
+
+
+int DenseMatrix_inverse(DenseMatrix* matrix) 
+{
+    size_t rows = Matrix_rows(matrix);
+    size_t cols = Matrix_cols(matrix);
+
+    mx_float_t inverse[rows][cols];
+    DenseMatrix_lu(matrix);
+
+    for (size_t i=0; i<rows; ++i) {
+
+        for (size_t j=0; j<cols; ++j) {
+            if (i == j) inverse[i][j] = 1.f;
+            else inverse[i][j] = 0.f;
+        }
+        
+        __solve_lu(matrix, inverse[i], cols);
+    }
+    // 计算完结果将其覆盖到原来的矩阵当中去
+    memcpy(matrix->elems, inverse, rows * cols * sizeof(mx_float_t));
+    Matrix_trans(matrix);
+    return 0;
+}
+
 
 int DenseMatrix_plu(DenseMatrix* matrix, mx_float_t P[])
 {

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-03-27 10:44:41
+ * @LastEditTime: 2021-03-27 13:37:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.h
@@ -22,9 +22,10 @@ DenseMatrix* DenseMatrix_wrap(size_t x, size_t y, mx_float_t* data);
 int DenseMatrix_destroy(DenseMatrix*);
 DenseMatrix* DenseMatrix_dot(DenseMatrix* matrix_ptr1, DenseMatrix* matrix_ptr2, DenseMatrix* product);
 
-
 int DenseMatrix_lu(DenseMatrix* matrix);
 int DenseMatrix_solve(DenseMatrix* matrix, mx_float_t[], size_t);
+int DenseMatrix_inverse(DenseMatrix* matrix);
+
 int DenseMatrix_plu(DenseMatrix* matrix, mx_float_t[]);
 
 
