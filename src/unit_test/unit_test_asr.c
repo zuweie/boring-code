@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 03:03:52
- * @LastEditTime: 2021-03-11 14:48:05
+ * @LastEditTime: 2021-03-26 11:56:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ars.c
@@ -457,6 +457,7 @@ static void test_compare_mfcc_pearson (void)
 
 int do_asr_test (void) 
 {
+    #if 0
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Test asr Suite", suite_success_init, suite_success_clean);
     if (NULL == pSuite){
@@ -507,4 +508,5 @@ int do_asr_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
 }

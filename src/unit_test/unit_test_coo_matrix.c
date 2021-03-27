@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-11 14:37:11
- * @LastEditTime: 2020-11-18 13:07:03
+ * @LastEditTime: 2021-03-26 11:53:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_coo_matrix.c
@@ -75,6 +75,7 @@ static void test_coo_matrix_product (void) {
 }
 int do_coo_matrix_test (void) 
 {
+    #if 0
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Test CooMatrix Suite", suite_success_init, suite_success_clean);
     if (NULL == pSuite){
@@ -96,4 +97,5 @@ int do_coo_matrix_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
 }

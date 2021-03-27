@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-12 12:23:02
- * @LastEditTime: 2020-12-09 09:24:42
+ * @LastEditTime: 2021-03-27 12:45:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dense_matrix.c
@@ -91,6 +91,36 @@ static void test_dense_matrix_product(void)
     DenseMatrix_destroy(product);
 }
 
+static void test_dense_matrix_lu (void) 
+{
+    mx_float_t m[6] = {2, 6, 4, 5, 7, 9};
+    DenseMatrix* m1 = DenseMatrix_load(2, 3, m);
+
+    DenseMatrix_lu(m1);
+
+    DenseMatrix_elem_ptr(m1, ptr);
+    CU_ASSERT_TRUE(ptr[0][0] == 2.f);
+    CU_ASSERT_TRUE(ptr[0][1] == 6.f);
+    CU_ASSERT_TRUE(ptr[0][2] == 4.f);
+    CU_ASSERT_TRUE(ptr[1][0] == 2.5f);
+    CU_ASSERT_TRUE(ptr[1][1] == -8.f);
+    CU_ASSERT_TRUE(ptr[1][2] == -1.f);
+    //PR_DENSEMATRIX(m1);
+
+    DenseMatrix_destroy(m1);
+}
+
+static void test_desnse_matrix_solve(void) 
+{
+    mx_float_t X[4] = {4,5,3,2};
+    mx_float_t Y[2] = {37, 19};
+    DenseMatrix* m1 = DenseMatrix_load(2,2,X);
+    DenseMatrix_solve(m1, Y, 2);
+    CU_ASSERT_TRUE(Y[0] == 3.f);
+    CU_ASSERT_TRUE(Y[1] == 5.f);
+    DenseMatrix_destroy(m1);
+}
+
 int do_dense_matrix_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -111,6 +141,16 @@ int do_dense_matrix_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test DenseMatrix product", test_dense_matrix_product) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test DenseMatrix lu decomp", test_dense_matrix_lu) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test DenseMatrix solve", test_desnse_matrix_solve) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-15 09:14:00
- * @LastEditTime: 2021-01-29 12:04:44
+ * @LastEditTime: 2021-03-26 12:06:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dct.c
@@ -40,6 +40,7 @@ void test_dct_test(void)
 
 int do_dct_test (void) 
 {
+    #if 0
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Test dct Suite", suite_success_init, suite_success_clean);
     if (NULL == pSuite){
@@ -51,4 +52,5 @@ int do_dct_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif 
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:46:56
- * @LastEditTime: 2021-02-06 08:23:09
+ * @LastEditTime: 2021-03-26 12:05:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_complex.c
@@ -175,6 +175,7 @@ void test_bit_reverse(void)
 
 int do_fft_test (void) 
 {
+    #if 0
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Test fft Suite", suite_success_init, suite_success_clean);
     if (NULL == pSuite){
@@ -236,4 +237,5 @@ int do_fft_test (void)
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+    #endif
 }
