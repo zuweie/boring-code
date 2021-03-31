@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2021-01-24 12:27:05
+ * @LastEditTime: 2021-03-31 22:07:26
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -315,6 +315,7 @@ int main ()
     do_dct_test();
     do_asr_test();
     do_ultra_array_test();
+    do_macine_learning_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);

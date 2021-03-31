@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-15 09:14:00
- * @LastEditTime: 2021-03-26 12:06:05
+ * @LastEditTime: 2021-03-31 22:10:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dct.c
@@ -23,7 +23,7 @@ static int suite_success_clean (void)
     printf("\ndct suite success clean\n");
 }
 
-void test_dct_test(void) 
+static void test_dct_test(void) 
 {
     int N = 4;
     double x[] = {
