@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-03-27 13:53:27
+ * @LastEditTime: 2021-03-29 15:19:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -201,6 +201,7 @@ int DenseMatrix_inverse(DenseMatrix* matrix)
     }
     // 计算完结果将其覆盖到原来的矩阵当中去
     memcpy(matrix->elems, inverse, rows * cols * sizeof(mx_float_t));
+    // 必须做转置才能还原逆矩阵
     Matrix_trans(matrix);
     return 0;
 }

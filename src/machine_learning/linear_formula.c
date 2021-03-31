@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-23 11:10:10
- * @LastEditTime: 2021-03-26 11:36:47
+ * @LastEditTime: 2021-03-28 18:53:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/linear_formula.c
@@ -45,17 +45,6 @@ int Linear_formula_solve(linear_formula_t *formulas[], int formula_n, double X[]
     // 第一步 找出最大的那多参数的那个式子。
     // 第二步 把参数都抽出来放入矩阵，组成增广矩阵。
     // 第三步 矩阵进行初等变换，求出所有的解。
-    
-    unsigned int max_coes = 0;
-    int max_coes_row = 0;
-    int ret = 0;
-    for (int i = 0; i<formula_n; ++i) {
-        linear_formula_t* f = formulas[i];
-        if (f->coefficient_n > max_coes) {
-            max_coes = f->coefficient_n;
-            max_coes_row = i;
-        }
-    }
 
     if (max_coes == formula_n) {
 
@@ -91,4 +80,3 @@ void Linear_formula_destroy(linear_formula_t* formula)
     free(formula->coefficients);
     return;
 }
-

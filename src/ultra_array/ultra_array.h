@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-03-11 11:04:10
+ * @LastEditTime: 2021-03-31 14:29:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -57,6 +57,7 @@ size_t UArray_axis_mulitply(u_array_t* a, int);
 double UArray_get(u_array_t*, ...);
 void UArray_set(u_array_t*, double, ...);
 void UArray_display(u_array_t*);
+void UArray_fission_raw(u_array_t*, ua_indicator_t*, double* raw_buff);
 
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)
@@ -80,6 +81,7 @@ void UArray_display(u_array_t*);
 #define UA_dot(pa1, pa2) UArray_dot_new_copy(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
 #define UA_fission(parray, router) UArray_fission(parray, router)
+#define UA_fission_raw(parray, router, raw_buff) UArray_fission_raw(parray, router, raw_buffer)
 #define UA_assimilate(pa1, router, pa2) UArray_assimilate(pa1, router, pa2)
 #define UA_copy(parray) UArray_fission(parray, "")
 #define UA_log(parray) UArray_log(parray)
