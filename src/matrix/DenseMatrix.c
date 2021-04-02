@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-04-02 16:53:52
+ * @LastEditTime: 2021-04-02 17:07:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -227,7 +227,7 @@ int DenseMatrix_pseudo_inverse(DenseMatrix* mat, DenseMatrix* pinv)
     DenseMatrix_dot(__mat_dot_matT, __mat_T, pinv);
 
     DenseMatrix_destroy(__mat_T);
-    Densematrix_destroy(__mat_dot_matT);
+    DenseMatrix_destroy(__mat_dot_matT);
     return 0;
 }
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-22 15:04:24
- * @LastEditTime: 2021-04-02 16:53:09
+ * @LastEditTime: 2021-04-02 17:17:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/linear_regression.c
@@ -105,7 +105,7 @@ int Linear_Regression_solve(u_array_t* X, u_array_t* Y,  double* W, double* b)
 
 int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, double* W, double* b) 
 {
-    int shape = UA_shape_axisn(X);
+    int shape = UA_axisn(X);
     size_t Xr, Xc, i, j, k;
     if (shape != 2) {
         
@@ -124,9 +124,9 @@ int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, double* W, doub
 
     // 最前面填入一行
     for (i=0; i<Xr; ++i) {
-        X_mat[i][0] = 1f;
+        X_ptr[i][0] = 1.f;
         for (j=0; j<Xc; ++j) {
-            X_mat[i][j+1] = UX_ptr[i][j];
+            X_ptr[i][j+1] = UX_ptr[i][j];
         }
     }
 
@@ -136,7 +136,7 @@ int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, double* W, doub
     DenseMatrix* W_mat = DenseMatrix_create(Matrix_rows(pinv_mat), Matrix_cols(Y_mat));
     DenseMatrix_dot(pinv_mat, Y_mat, W_mat);
 
-    DenseMatrix_elem_ptr(W_mat, W_ptr);
+    mx_float_t* W_ptr = W_mat->elems;
     
     *b = W_ptr[0];
 
