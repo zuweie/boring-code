@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-03-29 15:19:26
+ * @LastEditTime: 2021-04-02 16:53:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -15,7 +15,7 @@ void __get_col(imatrix_t* matrix_ptr, size_t col_index, mx_float_t data[])
     DenseMatrix* denseMatrix = (DenseMatrix*)matrix_ptr;
     mx_float_t (*src)[matrix_ptr->cols] = denseMatrix->elems;
 
-    for(int i=0; i<matrix_ptr->rows; ++i) {
+    for(size_t i=0; i<matrix_ptr->rows; ++i) {
         data[i] = src[i][col_index];
     }
     return;
@@ -109,11 +109,11 @@ DenseMatrix* DenseMatrix_dot(DenseMatrix* matrix_ptr1, DenseMatrix* matrix_ptr2,
     mx_float_t (*elem2)[mp2->matrix.cols] = mp2->elems;
     mx_float_t (*elemp)[mp->matrix.cols]  = mp->elems;
 
-    for (int i=0; i<Matrix_rows(mp1); ++i) {
-        for (int j=0; j<Matrix_cols((mp2)); ++j){
+    for (size_t i=0; i<Matrix_rows(mp1); ++i) {
+        for (size_t j=0; j<Matrix_cols((mp2)); ++j){
 
             mx_float_t v = 0.0f;
-            for (int k=0; k<Matrix_cols(mp1); ++k) {
+            for (size_t k=0; k<Matrix_cols(mp1); ++k) {
                 v += elem1[i][k] * elem2[k][j];
             }
             elemp[i][j] = v;
@@ -144,6 +144,15 @@ DenseMatrix* DenseMatrix_wrap(size_t row, size_t col, mx_float_t* data)
     matrix->elems = data;
     return matrix;
 }
+DenseMatrix* DenseMatrix_copy(DenseMatrix* mat) 
+{
+    size_t row, col;
+    row = Matrix_rows(mat);
+    col = Matrix_cols(mat);
+    DenseMatrix_elem_ptr(mat, ptr);
+
+    return DenseMatrix_load(row, col, ptr);
+}
 
 int DenseMatrix_lu(DenseMatrix* matrix)
 {
@@ -154,7 +163,7 @@ int DenseMatrix_lu(DenseMatrix* matrix)
 
     DenseMatrix_elem_ptr(matrix, mat_ptr);
 
-    for (int k=0; k<s; ++k) {
+    for (size_t k=0; k<s; ++k) {
         mx_float_t x = 1.0f / mat_ptr[k][k];
         
         for (size_t i=k+1; i<rows; ++i) {
@@ -203,6 +212,22 @@ int DenseMatrix_inverse(DenseMatrix* matrix)
     memcpy(matrix->elems, inverse, rows * cols * sizeof(mx_float_t));
     // 必须做转置才能还原逆矩阵
     Matrix_trans(matrix);
+    return 0;
+}
+
+int DenseMatrix_pseudo_inverse(DenseMatrix* mat, DenseMatrix* pinv) 
+{
+    DenseMatrix* __mat_T = DenseMatrix_copy(mat);
+    Matrix_trans(__mat_T);
+
+    DenseMatrix* __mat_dot_matT = DenseMatrix_create(Matrix_rows(mat), Matrix_cols(__mat_T));
+    DenseMatrix_dot(__mat_T, mat, __mat_dot_matT);
+    DenseMatrix_inverse(__mat_dot_matT);
+
+    DenseMatrix_dot(__mat_dot_matT, __mat_T, pinv);
+
+    DenseMatrix_destroy(__mat_T);
+    Densematrix_destroy(__mat_dot_matT);
     return 0;
 }
 
