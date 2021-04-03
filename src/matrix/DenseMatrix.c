@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-04-02 17:07:40
+ * @LastEditTime: 2021-04-03 10:35:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -220,7 +220,7 @@ int DenseMatrix_pseudo_inverse(DenseMatrix* mat, DenseMatrix* pinv)
     DenseMatrix* __mat_T = DenseMatrix_copy(mat);
     Matrix_trans(__mat_T);
 
-    DenseMatrix* __mat_dot_matT = DenseMatrix_create(Matrix_rows(mat), Matrix_cols(__mat_T));
+    DenseMatrix* __mat_dot_matT = DenseMatrix_create(Matrix_rows(__mat_T), Matrix_cols(mat));
     DenseMatrix_dot(__mat_T, mat, __mat_dot_matT);
     DenseMatrix_inverse(__mat_dot_matT);
 

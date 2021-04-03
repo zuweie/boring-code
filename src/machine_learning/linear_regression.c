@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-22 15:04:24
- * @LastEditTime: 2021-04-02 17:17:22
+ * @LastEditTime: 2021-04-03 11:07:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/linear_regression.c
@@ -107,17 +107,17 @@ int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, double* W, doub
 {
     int shape = UA_axisn(X);
     size_t Xr, Xc, i, j, k;
-    if (shape != 2) {
+    if (shape == 2) {
         
         Xr = UA_shape_axis(X, 0);
-        Xc = UA_shape_axis(X, 0);
+        Xc = UA_shape_axis(X, 1);
 
     } else return -1;
 
     if (UA_axisn(Y) != 1 && (Y, 0) != Xr) return -1;
 
     DenseMatrix* X_mat = DenseMatrix_create(Xr, Xc+1);
-    DenseMatrix* Y_mat = DenseMatrix_wrap(1, UA_shape_axis(Y, 0), UA_data_ptr(Y));
+    DenseMatrix* Y_mat = DenseMatrix_wrap(UA_shape_axis(Y,0), 1, UA_data_ptr(Y));
 
     DenseMatrix_elem_ptr(X_mat, X_ptr);
     double (*UX_ptr)[Xc] = UA_data_ptr(X);
@@ -130,7 +130,7 @@ int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, double* W, doub
         }
     }
 
-    DenseMatrix* pinv_mat = DenseMatrix_create(Matrix_cols(X_mat), Matrix_cols(X_mat));
+    DenseMatrix* pinv_mat = DenseMatrix_create(Matrix_cols(X_mat), Matrix_rows(X_mat));
     DenseMatrix_pseudo_inverse(X_mat, pinv_mat);
 
     DenseMatrix* W_mat = DenseMatrix_create(Matrix_rows(pinv_mat), Matrix_cols(Y_mat));
@@ -140,7 +140,7 @@ int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, double* W, doub
     
     *b = W_ptr[0];
 
-    for (k=1, i=0; k<Matrix_cols(W_mat); ++k, ++i) {
+    for (k=1, i=0; k<Matrix_rows(W_mat); ++k, ++i) {
         W[i] = W_ptr[k];
     }
 
