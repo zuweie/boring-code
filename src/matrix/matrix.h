@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-04-07 10:15:33
+ * @LastEditTime: 2021-04-07 10:47:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -34,7 +34,7 @@ int Mat_copy_elems(matrix_t* mat, float buffer[]);
 int Mat_get_row(matrix_t* mat, size_t row_index, float row[]);
 int Mat_get_col(matrix_t* mat, size_t col_index, float col[]);
 int Mat_move_rows(matrix_t* mat, int picked, int step);
-int Mat_move_cols(matrix_t* mat, int picked, int step, int debug_move, int debug_transfrom);
+int Mat_move_cols(matrix_t* mat, int picked, int step);
 int Mat_insert_row_by_value(matrix_t* mat, size_t i, float v);
 int Mat_insert_row_by_arr(matrix_t* mat, size_t i, float arr[]);
 int Mat_insert_col_by_value(matrix_t* mat, size_t i, float v);

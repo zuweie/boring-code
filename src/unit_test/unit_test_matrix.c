@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-06 22:15:11
- * @LastEditTime: 2021-04-07 10:18:57
+ * @LastEditTime: 2021-04-07 11:08:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_matrix.h
@@ -55,7 +55,7 @@ static void test_delete_col()
 static void test_move_row() 
 {
     matrix_t mat = Mat_create(3, 3);
-    Mat_arange(&mat, 1, 9);
+    Mat_arange(&mat, 1, 10);
     printf("\n");
     PRINTF_MATRIX(mat);
 
@@ -63,11 +63,19 @@ static void test_move_row()
     printf("\n");
     PRINTF_MATRIX(mat);
     
-    // Mat_move_rows(&mat, 0, -2);
-    // printf("\n");
-    // PRINTF_MATRIX(mat);
-
     Mat_move_rows(&mat,0, -2);
+    printf("\n");
+    PRINTF_MATRIX(mat);
+
+    Mat_move_rows(&mat, 0, 2);
+    printf("\n");
+    PRINTF_MATRIX(mat);
+
+    Mat_move_rows(&mat, 2, -4);
+    printf("\n");
+    PRINTF_MATRIX(mat);
+
+    Mat_move_rows(&mat, 1, 20);
     printf("\n");
     PRINTF_MATRIX(mat);
 
@@ -81,11 +89,11 @@ static void test_move_col()
     printf("\n");
     PRINTF_MATRIX(mat);
 
-    Mat_move_cols(&mat, 0, 2, 1, 1);
+    Mat_move_cols(&mat, 0, 2);
     printf("\n");
     PRINTF_MATRIX(mat);
 
-    Mat_move_cols(&mat, 0, -2, 1, 0);
+    Mat_move_cols(&mat, 0, -2);
     printf("\n");
     PRINTF_MATRIX(mat);
 

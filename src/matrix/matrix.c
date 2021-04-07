@@ -1,13 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-04-07 10:17:57
+ * @LastEditTime: 2021-04-07 11:07:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
  */
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "matrix.h"
 
 static float
@@ -180,11 +181,12 @@ int Mat_move_rows(matrix_t* mat, int picked, int step)
         // step < 0;
         int _step = step;
         if (_step + start < 0) {
-            start = -1 * (start + _step);
-            _step = start + 1;
-        } else {
-            _step *= -1;
-        }
+            // |start| < |step|
+            start = abs(_step);
+        } 
+        // |start| >= |step|
+        _step = abs(_step);
+        
         int move_chunk = rows - start;
 
         for (int i=start; move_chunk > 0 && i<start+move_chunk; ++i) {
@@ -195,13 +197,11 @@ int Mat_move_rows(matrix_t* mat, int picked, int step)
     return 0;
 }
 
-int Mat_move_cols(matrix_t* mat, int picked, int step, int debug_move, int debug_transfrom)
+int Mat_move_cols(matrix_t* mat, int picked, int step)
 {
     Mat_transpose(mat);
-    if (debug_move)
-        Mat_move_rows(mat, picked, step);
-    if (debug_transfrom)
-        Mat_transpose(mat);
+    Mat_move_rows(mat, picked, step);
+    Mat_transpose(mat);
     return 0;
 }
 
