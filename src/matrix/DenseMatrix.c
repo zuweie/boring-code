@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-04-03 10:35:44
+ * @LastEditTime: 2021-04-05 14:46:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -144,6 +144,7 @@ DenseMatrix* DenseMatrix_wrap(size_t row, size_t col, mx_float_t* data)
     matrix->elems = data;
     return matrix;
 }
+
 DenseMatrix* DenseMatrix_copy(DenseMatrix* mat) 
 {
     size_t row, col;

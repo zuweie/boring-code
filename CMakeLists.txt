@@ -20,6 +20,7 @@ set (SOURCE
     src/unit_test/unit_test_asr.c
     src/unit_test/unit_test_ultra_array.c
     src/unit_test/unit_test_machine_learning.c
+    src/unit_test/unit_test_matrix.c
     src/unit_test/test_data.c
     src/base/__list.c
     src/base/__rb_tree.c
@@ -34,6 +35,7 @@ set (SOURCE
     src/graph/ud_graph.c
     src/matrix/CooMatrix.c
     src/matrix/DenseMatrix.c
+    src/matrix/matrix.c
     src/mem_pool/__mem_pool.c
     src/fourier_transform/fourier_transform.c
     src/cosine_transform/cosine_transform.c
@@ -46,6 +48,7 @@ set (SOURCE
     src/ultra_array/ultra_data_chunk.c
     src/ultra_array/ultra_padding.c
     src/machine_learning/linear_regression.c
+    src/machine_learning/logistic_regression.c
 )
 
 ## 连接 cunit 库

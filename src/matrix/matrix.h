@@ -1,66 +1,49 @@
 /*
  * @Author: your name
- * @Date: 2020-10-20 11:04:24
- * @LastEditTime: 2021-01-28 15:49:19
+ * @Date: 2021-04-05 14:51:16
+ * @LastEditTime: 2021-04-07 10:15:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: /boring-code/src/matrix/__matrix.h
+ * @FilePath: /boring-code/src/matrix/matrix.h
  */
-#ifndef _MATRIX_INTERFACE_H_
-#define _MATRIX_INTERFACE_H_
-
+#ifndef _MATRIX_H_
+#define _MATRIX_H_
 #include <stdlib.h>
 
-#define __DOUBLE__ 1
-
-#if __DOUBLE__
-    typedef double mx_float_t;
-#else
-    typedef float mx_float_t ;
-#endif
-
-typedef struct _imatrix imatrix_t;
-struct _imatrix {
-    mx_float_t (*get)(imatrix_t*, size_t row, size_t col);
-    int   (*set)(imatrix_t*, size_t row, size_t col, mx_float_t);
-    int   (*trans)(imatrix_t*);
-    void  (*get_row)(imatrix_t*, size_t row_index, mx_float_t data[]);
-    void  (*get_col)(imatrix_t*, size_t col_index, mx_float_t data[]);
-    imatrix_t*  (*product)(imatrix_t*, imatrix_t*, imatrix_t*);
-    size_t cols;
+typedef struct _matrix
+{
+    /* data */
+    float* elems;
     size_t rows;
-};
+    size_t cols;
+    
+} matrix_t;
 
-#define initialize_matrix(matrix, _get, _set, _trans, _get_row, _get_col, _rows, _cols) do {   \
-    ((imatrix_t*)(matrix))->get     = (_get);                      \
-    ((imatrix_t*)(matrix))->set     = (_set);                      \
-    ((imatrix_t*)(matrix))->trans   = (_trans);                    \
-    ((imatrix_t*)(matrix))->get_row = (_get_row);                  \
-    ((imatrix_t*)(matrix))->get_col = (_get_col);                  \
-    ((imatrix_t*)(matrix))->rows    = (_rows);                     \
-    ((imatrix_t*)(matrix))->cols    = (_cols);                     \
-} while (0)
+matrix_t Mat_create(size_t rows, size_t cols);
+matrix_t Mat_load(size_t rows, size_t cols, float* elems);
+matrix_t Mat_copy(matrix_t* mat);
+int Mat_destroy(matrix_t* mat);
 
-#define Matrix_set(matrix_ptr, row, col, value) ((imatrix_t*)(matrix_ptr))->set(((imatrix_t*)(matrix_ptr)), row, col, value)
-#define Matrix_get(matrix_ptr, row, col) ((imatrix_t*)(matrix_ptr))->get(((imatrix_t*)(matrix_ptr)),row, col)
-#define Matrix_rows(matrix_ptr) (((imatrix_t*)(matrix_ptr))->rows)
-#define Matrix_cols(matrix_ptr) (((imatrix_t*)(matrix_ptr))->cols)
-#define Matrix_get_row(matrix_ptr, row_index, data) ((imatrix_t*)(matrix_ptr))->get_row(((imatrix_t*)(matrix_ptr)), row_index, data)
-#define Matrix_get_col(matrix_ptr, col_index, data) ((imatrix_t*)(matrix_ptr))->get_col(((imatrix_t*)(matrix_ptr)), col_index, data)
-#define Matrix_trans(matrix_ptr) ((imatrix_t*)(matrix_ptr))->trans((imatrix_t*)(matrix_ptr))
+int Mat_inverse(matrix_t* mat);
+int Mat_pseudo_inverse(matrix_t* mat);
+int Mat_solve(matrix_t* mat, float Y[]);
+int Mat_lu(matrix_t* mat);
+int Mat_dot(matrix_t* mat1, matrix_t* mat2);
+int Mat_transpose(matrix_t* mat);
+int Mat_copy_elems(matrix_t* mat, float buffer[]);
+int Mat_get_row(matrix_t* mat, size_t row_index, float row[]);
+int Mat_get_col(matrix_t* mat, size_t col_index, float col[]);
+int Mat_move_rows(matrix_t* mat, int picked, int step);
+int Mat_move_cols(matrix_t* mat, int picked, int step, int debug_move, int debug_transfrom);
+int Mat_insert_row_by_value(matrix_t* mat, size_t i, float v);
+int Mat_insert_row_by_arr(matrix_t* mat, size_t i, float arr[]);
+int Mat_insert_col_by_value(matrix_t* mat, size_t i, float v);
+int Mat_insert_col_by_arr(matrix_t* mat, size_t i, float arr[]);
+int Mat_fill(matrix_t* mat, float fill);
+int Mat_arange(matrix_t* mat, float from, float to);
 
-#define Matrix_product(matrix_ptr1, matrix_ptr2, matrix_product_ptr) \
-    ({ \
-        for (int i=0; i<Matrix_rows(matrix_ptr1); ++i) { \
-            for (int j=0; j<Matrix_cols((matrix_ptr2)); ++j){ \
-                mx_float_t v = 0.0f; \
-                for (int k=0; k<Matrix_cols(matrix_ptr1); ++k) { \
-                    v += Matrix_get(matrix_ptr1, i, k) * Matrix_get(matrix_ptr2, k, j); \
-                } \
-                Matrix_set(matrix_product_ptr, i, j, v); \
-            } \
-        } \
-        matrix_product_ptr; \
-    })
+#define Mat_rows(pmat) ((pmat)->rows)
+#define Mat_cols(pmat) ((pmat)->cols)
+#define Mat_eptr(pmat, ptr) float (*ptr)[(pmat)->cols] = (pmat)->elems
 
 #endif

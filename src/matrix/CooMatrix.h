@@ -9,7 +9,7 @@
 #ifndef _COO_MATRIX_H_
 #define _COO_MATRIX_H_
 
-#include "matrix.h"
+#include "imatrix.h"
 #include "container/Map.h"
 
 
