@@ -11,10 +11,10 @@
 #include <stdint.h>
 #include "simple_wav.h"
 
-double* Wav_load_signal(FILE* fp, wav_t* wav, char* raw, size_t raw_n, int* buffer_n) 
+vfloat_t* Wav_load_signal(FILE* fp, wav_t* wav, char* raw, size_t raw_n, int* buffer_n) 
 {
     *buffer_n = raw_n / (wav->fmt.bits_per_sample / 8);
-    double* buffer = malloc( (*buffer_n) * sizeof(double) );
+    vfloat_t* buffer = malloc( (*buffer_n) * sizeof(vfloat_t) );
     int byte_n = wav->fmt.bits_per_sample / 8;
     char v[byte_n];
     int i,j;
@@ -33,7 +33,7 @@ double* Wav_load_signal(FILE* fp, wav_t* wav, char* raw, size_t raw_n, int* buff
     return buffer;
 }
 
-int Wav_load(char *src_dir, wav_t* wav, double **buffer, int *buffer_n) 
+int Wav_load(char *src_dir, wav_t* wav, vfloat_t **buffer, int *buffer_n) 
 {
     int ret = -1;
     *buffer = NULL;

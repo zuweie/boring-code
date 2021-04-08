@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-20 11:04:24
- * @LastEditTime: 2021-01-28 15:49:19
+ * @LastEditTime: 2021-04-08 14:23:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/__matrix.h
@@ -10,22 +10,15 @@
 #define _MATRIX_INTERFACE_H_
 
 #include <stdlib.h>
-
-#define __DOUBLE__ 1
-
-#if __DOUBLE__
-    typedef double mx_float_t;
-#else
-    typedef float mx_float_t ;
-#endif
+#include "boring_type/vfloat_type.h"
 
 typedef struct _imatrix imatrix_t;
 struct _imatrix {
-    mx_float_t (*get)(imatrix_t*, size_t row, size_t col);
-    int   (*set)(imatrix_t*, size_t row, size_t col, mx_float_t);
+    vfloat_t (*get)(imatrix_t*, size_t row, size_t col);
+    int   (*set)(imatrix_t*, size_t row, size_t col, vfloat_t);
     int   (*trans)(imatrix_t*);
-    void  (*get_row)(imatrix_t*, size_t row_index, mx_float_t data[]);
-    void  (*get_col)(imatrix_t*, size_t col_index, mx_float_t data[]);
+    void  (*get_row)(imatrix_t*, size_t row_index, vfloat_t data[]);
+    void  (*get_col)(imatrix_t*, size_t col_index, vfloat_t data[]);
     imatrix_t*  (*product)(imatrix_t*, imatrix_t*, imatrix_t*);
     size_t cols;
     size_t rows;
@@ -53,7 +46,7 @@ struct _imatrix {
     ({ \
         for (int i=0; i<Matrix_rows(matrix_ptr1); ++i) { \
             for (int j=0; j<Matrix_cols((matrix_ptr2)); ++j){ \
-                mx_float_t v = 0.0f; \
+                vfloat_t v = 0.0f; \
                 for (int k=0; k<Matrix_cols(matrix_ptr1); ++k) { \
                     v += Matrix_get(matrix_ptr1, i, k) * Matrix_get(matrix_ptr2, k, j); \
                 } \

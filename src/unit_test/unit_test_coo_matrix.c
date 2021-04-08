@@ -33,7 +33,7 @@ static int suite_success_clean (void)
 
 static void test_coo_matrix_set_get (void)
 {
-    extern float test_data_float[TEST_DATA_SIZE];
+    extern vfloat_t test_data_float[TEST_DATA_SIZE];
     CooMatrix* matrix = CooMatrix_load(20, 5, test_data_float);
     printf("\n\n");
     PR_COOMATRIX(matrix);
@@ -43,7 +43,7 @@ static void test_coo_matrix_set_get (void)
 }
 static void test_coo_matrix_trans (void) 
 {
-    extern float test_data_float[TEST_DATA_SIZE];
+    extern vfloat_t test_data_float[TEST_DATA_SIZE];
     CooMatrix* matrix = CooMatrix_load(2, 10, test_data_float);
     printf("\n\n");
     PR_COOMATRIX(matrix);
@@ -58,8 +58,8 @@ static void test_coo_matrix_trans (void)
 
 static void test_coo_matrix_product (void) {
 
-    float m1[20] = {1, 3 ,-2, 0, 4, -2, -1, 5, -7, 2, 0, 8, 4, 1, -5, 3, -3, 2, -4, 1};
-    float m2[15] = {4, 5, -1, 2 ,-2, 6, 7, 8, 1, 0, 3, -5, 9, 8, -6};
+    vfloat_t m1[20] = {1, 3 ,-2, 0, 4, -2, -1, 5, -7, 2, 0, 8, 4, 1, -5, 3, -3, 2, -4, 1};
+    vfloat_t m2[15] = {4, 5, -1, 2 ,-2, 6, 7, 8, 1, 0, 3, -5, 9, 8, -6};
     CooMatrix* matrix1 = CooMatrix_load(4, 5, m1);
     DenseMatrix* matrix2 = DenseMatrix_load(5, 3, m2);
 

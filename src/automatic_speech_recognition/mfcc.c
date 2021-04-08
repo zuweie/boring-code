@@ -30,14 +30,14 @@ static void __lifter(u_array_t* arr, int L)
     
     size_t frame_size = UA_shape_axis(arr, 1);
     size_t frame_number = UA_shape_axis(arr, 0);
-    double lift[frame_size];
+    vfloat_t lift[frame_size];
 
     if (L > 0) {
         for (int n=0; n<frame_size; ++n) {
             lift[n] = 1 + (L/2.f)*sin(3.1415926535898 * n/L);
         }
     }
-    double (*__frames)[frame_size] = UA_data_ptr(arr);
+    vfloat_t (*__frames)[frame_size] = UA_data_ptr(arr);
     for (int i=0; i<frame_number; ++i) {
         for (int j=0; j<frame_size; ++j) {
             __frames[i][j] = lift[j] * __frames[i][j];
@@ -48,41 +48,41 @@ static void __lifter(u_array_t* arr, int L)
 
 static void
 __dct(u_array_t* arr, int cep_n) {
-    double (*__frames)[UA_shape_axis(arr, 1)] = UA_data_ptr(arr);
-    double dct[cep_n];
+    vfloat_t (*__frames)[UA_shape_axis(arr, 1)] = UA_data_ptr(arr);
+    vfloat_t dct[cep_n];
     for (int i=0; i<UA_shape_axis(arr, 0); ++i) {
         Discrete_cosine_transform(__frames[i], UA_shape_axis(arr, 1), cep_n, dct, dct_ortho, dct_ii);
         // 计算完了把结果复制到原来的数组。
-        memcpy(__frames[i], dct, cep_n * sizeof(double));
+        memcpy(__frames[i], dct, cep_n * sizeof(vfloat_t));
     }
     return;
 }
 
 u_array_t create_mel_filterbank(int filter_n, int fft_n, int samplerate, int low_freq, int high_freq)
 {
-    double low_mel  = __hz_2_mel(low_freq);
-    double high_mel = __hz_2_mel(high_freq);
+    vfloat_t low_mel  = __hz_2_mel(low_freq);
+    vfloat_t high_mel = __hz_2_mel(high_freq);
 
     int bin[filter_n+2];
-    double per_mel = (high_mel - low_mel) / (double)(filter_n+1);
+    vfloat_t per_mel = (high_mel - low_mel) / (vfloat_t)(filter_n+1);
 
     // 计算 bin 不知道有什么用。
     for (int i=0; i<(filter_n+2); ++i) {
-        double mel_point = i*per_mel + low_mel;
-        bin[i] = (int)(floor( (fft_n+1)*__mel_2_hz(mel_point)/(double)(samplerate) ));
+        vfloat_t mel_point = i*per_mel + low_mel;
+        bin[i] = (int)(floor( (fft_n+1)*__mel_2_hz(mel_point)/(vfloat_t)(samplerate) ));
     }
 
     u_array_t filters = _UArray2d(filter_n, fft_n/2+1);
     // 先把内存清 0.f;
     UA_ones(&filters, 0.f);
-    double (*_filters)[fft_n/2+1] = UA_data_ptr(&filters);
+    vfloat_t (*_filters)[fft_n/2+1] = UA_data_ptr(&filters);
 
     for (int i=0; i<filter_n; ++i) {
         for (int j=bin[i]; j<bin[i+1]; ++j) {
-            _filters[i][j] = (double)(j-bin[i]) / (double)(bin[i+1]-bin[i]);
+            _filters[i][j] = (vfloat_t)(j-bin[i]) / (vfloat_t)(bin[i+1]-bin[i]);
         }
         for (int j=bin[i+1]; j<bin[i+2]; ++j){
-            _filters[i][j] = (double)(bin[i+2]-j) / (double)(bin[i+2] - bin[i+1]);
+            _filters[i][j] = (vfloat_t)(bin[i+2]-j) / (vfloat_t)(bin[i+2] - bin[i+1]);
         }
     }
     return filters;
@@ -90,7 +90,7 @@ u_array_t create_mel_filterbank(int filter_n, int fft_n, int samplerate, int low
 
 
 
-int f_bank(double* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n,  int fft_n, int freq_low, int freq_high, float preemph, u_array_t* feat, u_array_t* energy)
+int f_bank(vfloat_t* raw, size_t raw_length, float frame_duration, float step_duration, int samplerate, int filter_n,  int fft_n, int freq_low, int freq_high, float preemph, u_array_t* feat, u_array_t* energy)
 {  
     freq_high = freq_high ? freq_high : samplerate / 2;
     // 做分帧 以及计算每一帧的能量 返回 426 * xxx 的数组
@@ -110,7 +110,7 @@ int f_bank(double* raw, size_t raw_length, float frame_duration, float step_dura
     return 0;
 }
 
-u_array_t log_f_bank(double* raw, size_t raw_len, float win_len, float win_step, int samplerate, int filter_n, int fft_n, int freq_low, int freq_high, float preemph)
+u_array_t log_f_bank(vfloat_t* raw, size_t raw_len, float win_len, float win_step, int samplerate, int filter_n, int fft_n, int freq_low, int freq_high, float preemph)
 {
     fft_n = fft_n == 0 ? calculate_fft_n(win_len * samplerate) : fft_n;
     u_array_t feat;
@@ -119,7 +119,7 @@ u_array_t log_f_bank(double* raw, size_t raw_len, float win_len, float win_step,
     return feat;
 }
 
-u_array_t mfcc(double* raw, size_t raw_len, int samplerate, float win_len, \
+u_array_t mfcc(vfloat_t* raw, size_t raw_len, int samplerate, float win_len, \
         float win_step, int cep_n, int filter_n, int fft_n, int freq_low, \
         int freq_high, float preemph, int cep_lifter, int append_energy) 
 {

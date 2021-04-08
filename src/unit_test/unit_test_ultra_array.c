@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-03-09 21:07:57
+ * @LastEditTime: 2021-04-08 22:03:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -41,7 +41,7 @@
         for (int i=0; i<arr.axis_n; ++i) { \
             number *= UA_shape_axis(&arr, i); \
         } \
-        double* data = UA_data_ptr(&arr); \
+        vfloat_t* data = UA_data_ptr(&arr); \
         for (int j=0; j<number; ++j) { \
             printf(" %.2f ", data[j]); \
         } \
@@ -71,8 +71,8 @@
             printf(" chunk address %p \n", ptr->chunk_addr); \
             if (pf_data) { \
                 printf(" data: \n"); \
-                double* data_ptr = ptr->chunk_addr; \
-                for (int i=0; i<(ptr->chunk_size / sizeof(double)); ++i) { \
+                vfloat_t* data_ptr = ptr->chunk_addr; \
+                for (int i=0; i<(ptr->chunk_size / sizeof(vfloat_t)); ++i) { \
                     printf(" %0.2f \n", data_ptr[i]); \
                 } \
             } \
@@ -98,7 +98,7 @@ static void printf_uarr(u_array_t* arr, int axis, char* ptr, int bank_number)
 {
     bank_number++;
     if (axis == UA_axisn(arr) - 1) {
-        double* data = ptr;
+        vfloat_t* data = ptr;
 
         PRINTF_FORMAT_BANK(bank_number);
 
@@ -113,7 +113,7 @@ static void printf_uarr(u_array_t* arr, int axis, char* ptr, int bank_number)
     } else {
         
         size_t chunk_number = UA_shape_axis(arr, axis);
-        size_t chunk_size = UArray_axis_mulitply(arr, axis+1) * sizeof(double);
+        size_t chunk_size = UArray_axis_mulitply(arr, axis+1) * sizeof(vfloat_t);
         PRINTF_FORMAT_BANK(bank_number);
         printf("[\n");
         for (int i=0; i<chunk_number; ++i) {
@@ -192,20 +192,20 @@ static void test_ultra_array_transform(void)
     u_array_t arr = _UArray2d(7, 3);
     UA_arange(&arr, 7*3);
 
-    double (*data_arr)[3] = UA_data_copy(&arr);
+    vfloat_t (*data_arr)[3] = UA_data_copy(&arr);
     UA_T(&arr);
-    double (*data_trans_arr)[7] = UA_data_ptr(&arr);
+    vfloat_t (*data_trans_arr)[7] = UA_data_ptr(&arr);
     CU_ASSERT_TRUE( data_arr[6][2] == data_trans_arr[2][6] );
 
     u_array_t arr2 = _UArray3d(2, 2, 4);
     UA_arange(&arr2, 2*2*4);
     //PRINTF_ARRAY(arr2);
 
-    double (*data_arr2)[2][4] = UA_data_copy(&arr2);
+    vfloat_t (*data_arr2)[2][4] = UA_data_copy(&arr2);
     UA_T(&arr2);
     //PRINTF_ARRAY(arr2);
     
-    double (*data_trans_arr2)[2][2] = UA_data_ptr(&arr2); 
+    vfloat_t (*data_trans_arr2)[2][2] = UA_data_ptr(&arr2); 
     CU_ASSERT_TRUE( data_arr2[0][1][3] == data_trans_arr2[3][1][0] );
 
     free(data_arr2);
@@ -225,7 +225,7 @@ static void test_array_dot (void)
     
     u_array_t u3 = UA_dot(&u1, &u2);
     
-    double* data = UA_data_ptr(&u3);
+    vfloat_t* data = UA_data_ptr(&u3);
     size_t size_u3 = UA_size(&u3);
     CU_ASSERT_TRUE(data[0] == 42.f);
     CU_ASSERT_TRUE(data[size_u3-1] == 422.f);
@@ -514,7 +514,7 @@ static void test_ua_pad_const(void)
     padn[1].before_n = 1;
     padn[2].after_n = 2;
     padn[2].before_n = 1;
-    double consts[3];
+    vfloat_t consts[3];
     consts[0] = 3;
     consts[1] = 2;
     consts[2] = 1;

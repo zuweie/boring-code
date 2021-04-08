@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-04-05 14:46:57
+ * @LastEditTime: 2021-04-08 15:06:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.c
@@ -10,10 +10,10 @@
 #include  "DenseMatrix.h"
 
 static 
-void __get_col(imatrix_t* matrix_ptr, size_t col_index, mx_float_t data[])
+void __get_col(imatrix_t* matrix_ptr, size_t col_index, vfloat_t data[])
 {
     DenseMatrix* denseMatrix = (DenseMatrix*)matrix_ptr;
-    mx_float_t (*src)[matrix_ptr->cols] = denseMatrix->elems;
+    vfloat_t (*src)[matrix_ptr->cols] = denseMatrix->elems;
 
     for(size_t i=0; i<matrix_ptr->rows; ++i) {
         data[i] = src[i][col_index];
@@ -22,74 +22,74 @@ void __get_col(imatrix_t* matrix_ptr, size_t col_index, mx_float_t data[])
 }
 
 static 
-void __get_row(imatrix_t* matrix_ptr, size_t row_index, mx_float_t data[])
+void __get_row(imatrix_t* matrix_ptr, size_t row_index, vfloat_t data[])
 {
     DenseMatrix* denseMatrix = (DenseMatrix*)matrix_ptr;
-    mx_float_t(*src)[matrix_ptr->cols] = denseMatrix->elems;
-    memcpy(data, src[row_index], sizeof(mx_float_t) * matrix_ptr->cols);
+    vfloat_t(*src)[matrix_ptr->cols] = denseMatrix->elems;
+    memcpy(data, src[row_index], sizeof(vfloat_t) * matrix_ptr->cols);
     return;
 }
 
 static  
-mx_float_t __get(imatrix_t* matrix_ptr, size_t x, size_t y) 
+vfloat_t __get(imatrix_t* matrix_ptr, size_t x, size_t y) 
 {
     DenseMatrix* densematrix = (DenseMatrix*) matrix_ptr;
-    return ((mx_float_t(*)[Matrix_cols(matrix_ptr)])(densematrix->elems))[x][y];
+    return ((vfloat_t(*)[Matrix_cols(matrix_ptr)])(densematrix->elems))[x][y];
 }
 
 static  
-int __set(imatrix_t* matrix_ptr, size_t x, size_t y, mx_float_t v) 
+int __set(imatrix_t* matrix_ptr, size_t x, size_t y, vfloat_t v) 
 {
     DenseMatrix* densematrix = (DenseMatrix*) matrix_ptr;
-    ((mx_float_t(*)[Matrix_cols(matrix_ptr)])(densematrix->elems))[x][y] = v;
+    ((vfloat_t(*)[Matrix_cols(matrix_ptr)])(densematrix->elems))[x][y] = v;
     return 0;
 }
 static  
 int __trans (imatrix_t* matrix_ptr) 
 {
     DenseMatrix* denmatrix = (DenseMatrix*) matrix_ptr;
-    mx_float_t tmp_data[matrix_ptr->cols][matrix_ptr->rows];
+    vfloat_t tmp_data[matrix_ptr->cols][matrix_ptr->rows];
 
     for(int i=0; i<matrix_ptr->cols; ++i) {
         Matrix_get_col(denmatrix, i, tmp_data[i]);
     }
-    memcpy(denmatrix->elems, tmp_data, sizeof(mx_float_t)*matrix_ptr->cols*matrix_ptr->rows);
+    memcpy(denmatrix->elems, tmp_data, sizeof(vfloat_t)*matrix_ptr->cols*matrix_ptr->rows);
     size_t o_cols = matrix_ptr->cols;
     matrix_ptr->cols = matrix_ptr->rows;
     matrix_ptr->rows = o_cols;
     return 0;
 }
 
-int __solve_l(DenseMatrix* lu, mx_float_t* Z, size_t n)
+int __solve_l(DenseMatrix* lu, vfloat_t* Z, size_t n)
 {
     DenseMatrix_elem_ptr(lu, lu_ptr);
 
     for (size_t i=1; i<n; ++i) {
         for (size_t j=0; j<i; ++j) {
-            mx_float_t debug = lu_ptr[i][j];
+            vfloat_t debug = lu_ptr[i][j];
             Z[i] = Z[i] - lu_ptr[i][j] * Z[j];
         }
     }
     return 0;
 }
 
-int __solve_u(DenseMatrix* lu, mx_float_t* X, size_t n)
+int __solve_u(DenseMatrix* lu, vfloat_t* X, size_t n)
 {   
     DenseMatrix_elem_ptr(lu, lu_ptr);
     
     for (size_t k=0; k<n; ++k ) {
         size_t i = n-k-1;
         for (size_t j=i+1; j<n; ++j) {
-            mx_float_t d1 = lu_ptr[i][j];
+            vfloat_t d1 = lu_ptr[i][j];
             X[i] = X[i] - lu_ptr[i][j] * X[j];
         }
-        mx_float_t d2 = lu_ptr[i][i];
+        vfloat_t d2 = lu_ptr[i][i];
         X[i] = X[i] / lu_ptr[i][i];
     }
     return 0;
 }
 
-int __solve_lu(DenseMatrix *lu, mx_float_t* Y, size_t n) 
+int __solve_lu(DenseMatrix *lu, vfloat_t* Y, size_t n) 
 {
     __solve_l(lu, Y, n);
     __solve_u(lu, Y, n);
@@ -105,14 +105,14 @@ DenseMatrix* DenseMatrix_dot(DenseMatrix* matrix_ptr1, DenseMatrix* matrix_ptr2,
     DenseMatrix* mp2 = matrix_ptr2;
     DenseMatrix* mp = product;
 
-    mx_float_t (*elem1)[mp1->matrix.cols] = mp1->elems;
-    mx_float_t (*elem2)[mp2->matrix.cols] = mp2->elems;
-    mx_float_t (*elemp)[mp->matrix.cols]  = mp->elems;
+    vfloat_t (*elem1)[mp1->matrix.cols] = mp1->elems;
+    vfloat_t (*elem2)[mp2->matrix.cols] = mp2->elems;
+    vfloat_t (*elemp)[mp->matrix.cols]  = mp->elems;
 
     for (size_t i=0; i<Matrix_rows(mp1); ++i) {
         for (size_t j=0; j<Matrix_cols((mp2)); ++j){
 
-            mx_float_t v = 0.0f;
+            vfloat_t v = 0.0f;
             for (size_t k=0; k<Matrix_cols(mp1); ++k) {
                 v += elem1[i][k] * elem2[k][j];
             }
@@ -124,20 +124,20 @@ DenseMatrix* DenseMatrix_dot(DenseMatrix* matrix_ptr1, DenseMatrix* matrix_ptr2,
 
 DenseMatrix* DenseMatrix_create(size_t row, size_t col)
 {
-    DenseMatrix* matrix = malloc(sizeof(DenseMatrix) + sizeof(mx_float_t)*row*col);
+    DenseMatrix* matrix = malloc(sizeof(DenseMatrix) + sizeof(vfloat_t)*row*col);
     initialize_matrix(matrix, __get, __set, __trans, __get_row, __get_col, row, col);
     matrix->elems = &matrix[1];
     return matrix;
 }
 
-DenseMatrix* DenseMatrix_load(size_t row, size_t col, mx_float_t* data)
+DenseMatrix* DenseMatrix_load(size_t row, size_t col, vfloat_t* data)
 {
     DenseMatrix* matrix = DenseMatrix_create(row, col);
-    memcpy(matrix->elems, data, sizeof(mx_float_t) * row * col);
+    memcpy(matrix->elems, data, sizeof(vfloat_t) * row * col);
     return matrix;
 }
 
-DenseMatrix* DenseMatrix_wrap(size_t row, size_t col, mx_float_t* data) 
+DenseMatrix* DenseMatrix_wrap(size_t row, size_t col, vfloat_t* data) 
 {
     DenseMatrix* matrix = malloc(sizeof(DenseMatrix));
     initialize_matrix(matrix, __get, __set, __trans, __get_row, __get_col, row, col);
@@ -165,7 +165,7 @@ int DenseMatrix_lu(DenseMatrix* matrix)
     DenseMatrix_elem_ptr(matrix, mat_ptr);
 
     for (size_t k=0; k<s; ++k) {
-        mx_float_t x = 1.0f / mat_ptr[k][k];
+        vfloat_t x = 1.0f / mat_ptr[k][k];
         
         for (size_t i=k+1; i<rows; ++i) {
             mat_ptr[i][k] = mat_ptr[i][k] * x;
@@ -185,7 +185,7 @@ int DenseMatrix_lu(DenseMatrix* matrix)
  * matrix 是包含系数的方阵
  * Y 是解
  */
-int DenseMatrix_solve(DenseMatrix* matrix, mx_float_t Y[], size_t n) 
+int DenseMatrix_solve(DenseMatrix* matrix, vfloat_t Y[], size_t n) 
 {
     DenseMatrix_lu(matrix);
     return __solve_lu(matrix, Y, n);
@@ -197,7 +197,7 @@ int DenseMatrix_inverse(DenseMatrix* matrix)
     size_t rows = Matrix_rows(matrix);
     size_t cols = Matrix_cols(matrix);
 
-    mx_float_t inverse[rows][cols];
+    vfloat_t inverse[rows][cols];
     DenseMatrix_lu(matrix);
 
     for (size_t i=0; i<rows; ++i) {
@@ -210,7 +210,7 @@ int DenseMatrix_inverse(DenseMatrix* matrix)
         __solve_lu(matrix, inverse[i], cols);
     }
     // 计算完结果将其覆盖到原来的矩阵当中去
-    memcpy(matrix->elems, inverse, rows * cols * sizeof(mx_float_t));
+    memcpy(matrix->elems, inverse, rows * cols * sizeof(vfloat_t));
     // 必须做转置才能还原逆矩阵
     Matrix_trans(matrix);
     return 0;
@@ -233,7 +233,7 @@ int DenseMatrix_pseudo_inverse(DenseMatrix* mat, DenseMatrix* pinv)
 }
 
 
-int DenseMatrix_plu(DenseMatrix* matrix, mx_float_t P[])
+int DenseMatrix_plu(DenseMatrix* matrix, vfloat_t P[])
 {
     return 0;
 }

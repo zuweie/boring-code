@@ -33,7 +33,7 @@ static int suite_success_clean (void)
 
 static void test_dense_matrix_set_get (void)
 {
-    extern float test_data_float[TEST_DATA_SIZE];
+    extern vfloat_t test_data_float[TEST_DATA_SIZE];
     DenseMatrix* matrix = DenseMatrix_load(25, 4, test_data_float);
     // printf("\n\n");
     // printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
@@ -44,7 +44,7 @@ static void test_dense_matrix_set_get (void)
 
 static void test_dense_matrix_trans (void) 
 {
-    extern float test_data_float[TEST_DATA_SIZE];
+    extern vfloat_t test_data_float[TEST_DATA_SIZE];
     DenseMatrix* matrix = DenseMatrix_load(25, 4, test_data_float);
     // printf("\n\n");
     // printf("rows %d cols %d\n", Matrix_rows(matrix), Matrix_cols(matrix));
@@ -65,8 +65,8 @@ static void test_dense_matrix_trans (void)
 static void test_dense_matrix_product(void)
 {
     //extern float test_data_float[TEST_DATA_SIZE];
-    float m1[20] = {1, 3 ,-2, 0, 4, -2, -1, 5, -7, 2, 0, 8, 4, 1, -5, 3, -3, 2, -4, 1};
-    float m2[15] = {4, 5, -1, 2 ,-2, 6, 7, 8, 1, 0, 3, -5, 9, 8, -6};
+    vfloat_t m1[20] = {1, 3 ,-2, 0, 4, -2, -1, 5, -7, 2, 0, 8, 4, 1, -5, 3, -3, 2, -4, 1};
+    vfloat_t m2[15] = {4, 5, -1, 2 ,-2, 6, 7, 8, 1, 0, 3, -5, 9, 8, -6};
     DenseMatrix* matrix1 = DenseMatrix_load(4, 5, m1);
     DenseMatrix* matrix2 = DenseMatrix_load(5, 3, m2);
 
@@ -93,7 +93,7 @@ static void test_dense_matrix_product(void)
 
 static void test_dense_matrix_lu (void) 
 {
-    mx_float_t m[6] = {2, 6, 4, 5, 7, 9};
+    vfloat_t m[6] = {2, 6, 4, 5, 7, 9};
     DenseMatrix* m1 = DenseMatrix_load(2, 3, m);
 
     DenseMatrix_lu(m1);
@@ -112,8 +112,8 @@ static void test_dense_matrix_lu (void)
 
 static void test_dense_matrix_solve(void) 
 {
-    mx_float_t X[4] = {4,5,3,2};
-    mx_float_t Y[2] = {37, 19};
+    vfloat_t X[4] = {4,5,3,2};
+    vfloat_t Y[2] = {37, 19};
     DenseMatrix* m1 = DenseMatrix_load(2,2,X);
     DenseMatrix_solve(m1, Y, 2);
     CU_ASSERT_TRUE(Y[0] == 3.f);
@@ -123,7 +123,7 @@ static void test_dense_matrix_solve(void)
 
 static void test_dense_matrix_inverse(void) 
 {
-    mx_float_t m[4] = {4,5,3,2};
+    vfloat_t m[4] = {4,5,3,2};
     DenseMatrix* m2 = DenseMatrix_load(2,2,m);
     DenseMatrix* m1 = DenseMatrix_load(2,2,m);
     DenseMatrix* m3 = DenseMatrix_create(2,2);

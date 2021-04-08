@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:34:16
- * @LastEditTime: 2020-10-17 09:04:17
+ * @LastEditTime: 2021-04-08 14:37:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.c
@@ -10,7 +10,7 @@
 #include "test_data.h"
 
 int test_data_int[TEST_DATA_SIZE];
-float test_data_float[TEST_DATA_SIZE];
+vfloat_t test_data_float[TEST_DATA_SIZE];
 char* test_data_string[] = {
         "abc",
         "efg",
@@ -165,7 +165,7 @@ Tv getTSf(int i)
 {
     return f2t(test_data_float[i]);
 }
-float getf(int i) {
+vfloat_t getf(int i) {
     return test_data_float[i];
 }
 

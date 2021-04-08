@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-08 20:16:55
- * @LastEditTime: 2021-03-02 12:11:09
+ * @LastEditTime: 2021-04-08 14:27:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.h
@@ -9,7 +9,6 @@
 #ifndef _ULTRA_ROUTER_
 #define _ULTRA_ROUTER_
 #include <stdlib.h>
-
 typedef struct _u_array u_array_t;
 typedef struct _ua_indicator ua_indicator_t;
 typedef struct _ua_chunk_note ua_chunk_note_t;

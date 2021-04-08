@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-14 08:46:10
- * @LastEditTime: 2021-03-11 12:02:39
+ * @LastEditTime: 2021-04-08 14:48:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/Cosine_Transform/cosine_transform.c
@@ -9,9 +9,9 @@
 #include <math.h>
 #include "cosine_transform.h"
 
-// double K_cosine_transform(int k, size_t N, double x[])
+// vfloat_t K_cosine_transform(int k, size_t N, vfloat_t x[])
 // {
-//     double A, a, sum = 0.0f;
+//     vfloat_t A, a, sum = 0.0f;
 
 //     if (k == 0) {
 //         A = sqrt(1.0 / N);
@@ -27,32 +27,32 @@
 //     return A*sum;
 // }
 
-double K_cosine_transform_i(int k, size_t N, double sequence[], dct_norm_t norm) 
+vfloat_t K_cosine_transform_i(int k, size_t N, vfloat_t sequence[], dct_norm_t norm) 
 {
-    double sum = 0.f;
+    vfloat_t sum = 0.f;
     for (int n=1; n<N-1; ++n) {
         sum += sequence[n] * cos( 3.1415926535898 * k * n / (N-1) );
     }
     return sequence[0] + pow(-1, k) * sequence[N-1] + 2 * sum;
 }
 
-double K_cosine_transform_ii(int k, size_t N, double sequence[], dct_norm_t norm) 
+vfloat_t K_cosine_transform_ii(int k, size_t N, vfloat_t sequence[], dct_norm_t norm) 
 {
-    double sum = 0.f;
+    vfloat_t sum = 0.f;
     for (int n=0; n<N; ++n) {
         sum += sequence[n] * cos( 3.1415926535898 * k * (2*n+1) / (2 * N) );
     }
     sum *= 2;
     if (norm == dct_ortho) {
-        double f = k ==0 ? (sqrt( 1.f / (4 * N) )) : (sqrt( 1.f / (2 * N) )) ;
+        vfloat_t f = k ==0 ? (sqrt( 1.f / (4 * N) )) : (sqrt( 1.f / (2 * N) )) ;
         sum *= f;
     }
     return sum;
 }   
 
-double k_cosine_transform_iii(int k, size_t N, double sequence[], dct_norm_t norm) 
+vfloat_t k_cosine_transform_iii(int k, size_t N, vfloat_t sequence[], dct_norm_t norm) 
 {
-    double sum = 0.f;
+    vfloat_t sum = 0.f;
     for (int n=1; n<N; ++n) {
         sum += sequence[n] * cos( 3.1415926535898 * (k+0.5) * n / N );
     }
@@ -64,7 +64,7 @@ double k_cosine_transform_iii(int k, size_t N, double sequence[], dct_norm_t nor
     return sum;
 }
 
-int Discrete_cosine_transform(double sequence[], size_t N, int cal_n, double out[], dct_norm_t dct_norm, dct_type_t dct_type) 
+int Discrete_cosine_transform(vfloat_t sequence[], size_t N, int cal_n, vfloat_t out[], dct_norm_t dct_norm, dct_type_t dct_type) 
 {
     for (int k=0; k<cal_n; ++k) {
         if (dct_type == dct_i) {

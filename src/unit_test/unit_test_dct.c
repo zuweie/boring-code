@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-15 09:14:00
- * @LastEditTime: 2021-03-31 22:10:33
+ * @LastEditTime: 2021-04-08 15:06:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dct.c
@@ -26,10 +26,10 @@ static int suite_success_clean (void)
 static void test_dct_test(void) 
 {
     int N = 4;
-    double x[] = {
+    vfloat_t x[] = {
         2,3,3,2
     };
-    double X[N];
+    vfloat_t X[N];
     Discrete_cosine_transform(x, N, N, X, dct_ortho, dct_ii);
     printf("\n DCT: \n");
     for(int i=0; i<N; ++i) {

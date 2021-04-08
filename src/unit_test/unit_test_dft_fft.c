@@ -36,12 +36,12 @@ void text_complex (void) {
 }
 void test_dft (void) {
     size_t N = 16;
-    //float sequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    float sequence[] = {0, 1,2,3,4,5,6,7,12,45,-1,-2,-4,88,33,77};
+    //vfloat_t sequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    vfloat_t sequence[] = {0, 1,2,3,4,5,6,7,12,45,-1,-2,-4,88,33,77};
 
-    //float sequence[] = {0, 1, 2, 3};
+    //vfloat_t sequence[] = {0, 1, 2, 3};
     // size_t N = 8;
-    // float sequence[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    // vfloat_t sequence[] = {0, 1, 2, 3, 4, 5, 6, 7};
     
     complex_t out[N];
     Discrete_fourier_transform(sequence, N, out);

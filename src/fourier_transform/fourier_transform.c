@@ -96,7 +96,7 @@ static void __Bit_reverse_local(complex_t a[], size_t size_a)
     }
 }
 
-static void __Real_Bit_reverse_local(double a[], size_t size_a) 
+static void __Real_Bit_reverse_local(vfloat_t a[], size_t size_a) 
 {
     int log_length = log2(size_a);
     for (int i=0, j=0; i<size_a; ++i, j=0) {
@@ -106,7 +106,7 @@ static void __Real_Bit_reverse_local(double a[], size_t size_a)
 
         if (j<i) {
             // 交换
-            double t;
+            vfloat_t t;
             t = a[i];
             a[i] = a[j];
             a[j] = t;
@@ -163,7 +163,7 @@ int Iterative_fast_fourier_transform2(complex_t sequence[], size_t N, int revers
     return 0;
 }
 
-int Real_fast_fourier_transform(double x[], size_t n)
+int Real_fast_fourier_transform(vfloat_t x[], size_t n)
 {
     // 一下这段神奇的代码看不懂：反正最后的结果是：
     // [R(0), R(1), R(2), R(3), R(4), R(5)... R(N/2), i(n/2-1), i(n/2-2), i(n/2-3)....i(1)];
@@ -200,7 +200,7 @@ int Real_fast_fourier_transform(double x[], size_t n)
    */
 
     int i, j, k, m, i1, i2, i3, i4, n1, n2, n4;
-	double a, e, cc, ss, xt, t1, t2;
+	vfloat_t a, e, cc, ss, xt, t1, t2;
     int N = n;
 	for(j = 1, i = 1; i < 16; i++) {
 		m = i;
@@ -260,7 +260,7 @@ int Real_fast_fourier_transform(double x[], size_t n)
     return 0;
 }
 
-int Real_fast_fourier_transform_complex(double sequence[], size_t N, complex_t out[]) 
+int Real_fast_fourier_transform_complex(vfloat_t sequence[], size_t N, complex_t out[]) 
 {
     Real_fast_fourier_transform(sequence, N);
 
@@ -276,8 +276,8 @@ int Reverse_recursive_fast_fourier_transorm(complex_t sequence[], size_t n, comp
 {
     Recursive_fast_fourier_transform(sequence, n, out, 1);
     for (int i=0; i<n; ++i) {
-        out[i].real  /= (double) n;
-        out[i].image /= (double) n;
+        out[i].real  /= (vfloat_t) n;
+        out[i].image /= (vfloat_t) n;
     }
     return 0;
 }
@@ -287,8 +287,8 @@ int Reverse_iterative_fast_fourier_transorm(complex_t sequence[], size_t N, comp
     Iterative_fast_fourier_transform(sequence, N, A, 1);
 
     for (int i=0; i<N; ++i) {
-        A[i].real  /= (double) N;
-        A[i].image /= (double) N;
+        A[i].real  /= (vfloat_t) N;
+        A[i].image /= (vfloat_t) N;
     }
     return 0;
 }
@@ -298,8 +298,8 @@ int Reverse_iterative_fast_fourier_transorm2(complex_t sequence[], size_t N)
     Iterative_fast_fourier_transform2(sequence, N, 1);
 
     for (int i=0; i<N; ++i) {
-        sequence[i].real  /= (double) N;
-        sequence[i].image /= (double) N;
+        sequence[i].real  /= (vfloat_t) N;
+        sequence[i].image /= (vfloat_t) N;
     }
     return 0;
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-02-26 16:19:34
+ * @LastEditTime: 2021-04-08 15:06:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
@@ -11,11 +11,11 @@
 #include "ultra_data_chunk.h"
 #include "ultra_array.h"
 #include "ultra_router.h"
-
+#include "boring_type/vfloat_type.h"
 int UArray_survey_chuck_address(u_array_t* arr, char* chunk_start_from, ua_indicator_t* indicator, ua_chunk_note_t* chunk_note) 
 {
 
-    size_t sub_chunk_size = (indicator->__axis < UA_axisn(arr) -1  ? UArray_axis_mulitply(arr, indicator->__axis + 1) : 1) * sizeof(double);
+    size_t sub_chunk_size = (indicator->__axis < UA_axisn(arr) -1  ? UArray_axis_mulitply(arr, indicator->__axis + 1) : 1) * sizeof(vfloat_t);
     int sub_chunk_number = 1;
 
     if (indicator->next ==  NULL) {
@@ -217,7 +217,7 @@ int UArray_indicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua
     if (ptr != NULL) {
         UArray_survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_note);
     } else {
-        chunk_note->chunk_map = UArray_datachunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(double));
+        chunk_note->chunk_map = UArray_datachunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(vfloat_t));
     }
     return 0;  
 }

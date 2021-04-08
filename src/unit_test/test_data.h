@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:26:56
- * @LastEditTime: 2021-04-01 18:01:19
+ * @LastEditTime: 2021-04-08 15:09:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.h
@@ -11,6 +11,7 @@
 
 #include "container/Tv.h"
 #include <math.h>
+#include "boring_type/vfloat_type.h"
 #define TEST_DATA_SIZE 100 
 void init_test_data_int(void);
 void init_test_data_float(void);
@@ -20,7 +21,7 @@ Tv getTSi(int i);
 Tv getTSf(int i);
 Tv getTSs(int i);
 int geti(int i);
-float getf(int i);
+vfloat_t getf(int i);
 char* getstr(int i);
 extern const int TEST_DATA_STR_SIZE;
 

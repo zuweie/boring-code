@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-31 22:05:01
- * @LastEditTime: 2021-04-04 15:20:45
+ * @LastEditTime: 2021-04-08 21:43:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_machine_learnling.c
@@ -29,8 +29,8 @@ static void test_linear_regression(void)
     u_array_t X = _UArray2d(6, 1);
     u_array_t Y = _UArray1d(6);
 
-    double * X_ptr = UA_data_ptr(&X);
-    double * Y_ptr = UA_data_ptr(&Y);
+    vfloat_t * X_ptr = UA_data_ptr(&X);
+    vfloat_t * Y_ptr = UA_data_ptr(&Y);
 
     X_ptr[0] = 1.51f;
     X_ptr[1] = 1.64f;
@@ -46,8 +46,8 @@ static void test_linear_regression(void)
     Y_ptr[4] = 1.76f;
     Y_ptr[5] = 1.86f;
 
-    double W[1];
-    double b;
+    vfloat_t W[1];
+    vfloat_t b;
     Linear_Regression_solve(&X, &Y, W, &b);
     CU_ASSERT_TRUE(equ_float(W[0],0.514133f));
     CU_ASSERT_TRUE(equ_float(b,0.858544f));
@@ -60,8 +60,8 @@ static void test_linear_regression_pinv(void)
     u_array_t X = _UArray2d(6, 1);
     u_array_t Y = _UArray1d(6);
 
-    double * X_ptr = UA_data_ptr(&X);
-    double * Y_ptr = UA_data_ptr(&Y);
+    vfloat_t * X_ptr = UA_data_ptr(&X);
+    vfloat_t * Y_ptr = UA_data_ptr(&Y);
 
     X_ptr[0] = 1.51f;
     X_ptr[1] = 1.64f;
@@ -77,8 +77,8 @@ static void test_linear_regression_pinv(void)
     Y_ptr[4] = 1.76f;
     Y_ptr[5] = 1.86f;
 
-    double W[1];
-    double b;
+    vfloat_t W[1];
+    vfloat_t b;
     Linear_Regression_pseudo_inverse(&X, &Y, W, &b);
     CU_ASSERT_TRUE(equ_float(W[0],0.514133f));
     CU_ASSERT_TRUE(equ_float(b,0.858544f));

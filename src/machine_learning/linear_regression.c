@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-22 15:04:24
- * @LastEditTime: 2021-04-03 11:07:41
+ * @LastEditTime: 2021-04-08 21:47:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/linear_regression.c
@@ -9,22 +9,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ultra_array/ultra_array.h"
-#include "matrix/DenseMatrix.h"
+#include "matrix/matrix.h"
 
-static double 
-__vet_dot_vet(double X[], double Y[], size_t n) 
+static vfloat_t 
+__vet_dot_vet(vfloat_t X[], vfloat_t Y[], size_t n) 
 {
-    double v = 0.f;
+    vfloat_t v = 0.f;
     for (size_t i=0; i<n; ++i) {
         v += X[i] * Y[i];
     }
     return v;
 }
 
-static double 
-__vet_sum(double X[], size_t n) 
+static vfloat_t 
+__vet_sum(vfloat_t X[], size_t n) 
 {
-    double v = 0.f;
+    vfloat_t v = 0.f;
     for (size_t i=0; i<n; ++i) {
 
         v += X[i];
@@ -33,8 +33,8 @@ __vet_sum(double X[], size_t n)
     return v;
 }
 
-// 线性回归算法
-int Linear_Regression_solve(u_array_t* X, u_array_t* Y,  double* W, double* b)
+// 线性回归算法 解方程法
+int Linear_Regression_solve(u_array_t* X, u_array_t* Y,  vfloat_t* W, vfloat_t* b)
 {
     // 把数据集做成线性方程。
     int shape = UA_axisn(X);
@@ -47,23 +47,23 @@ int Linear_Regression_solve(u_array_t* X, u_array_t* Y,  double* W, double* b)
 
     if (UA_axisn(Y) != 1 && UA_shape_axis(Y, 0) != Xr) return -1;
 
-    double* Y_ptr = UA_data_ptr(Y);
-    DenseMatrix* X_mat = DenseMatrix_wrap(Xr, Xc, UA_data_ptr(X));
+    vfloat_t* Y_ptr = UA_data_ptr(Y);
+    matrix_t X_mat = Mat_load(Xr, Xc, UA_data_ptr(X));
 
     // number of Xi + b = Xc + 1;
     size_t coe_n = Xc + 1; 
-    DenseMatrix* coe_mat = DenseMatrix_create(coe_n, coe_n);
-    DenseMatrix_elem_ptr(coe_mat, coe_ptr);
+    matrix_t coe_mat = Mat_create(coe_n, coe_n);
+    Mat_eptr(&coe_mat, coe_ptr);
     size_t i, j, k, l, m;
-    mx_float_t _Y[coe_n];
-    mx_float_t _X_col[Xr];
-    mx_float_t _X_col_2[Xr];
+    vfloat_t _Y[coe_n];
+    vfloat_t _X_col[Xr];
+    vfloat_t _X_col_2[Xr];
 
     // 计算 dRh / dW 的参数矩阵。
     for (i=0; i<Xc; ++i) {
         
         // Y 的参数列表
-        Matrix_get_col(X_mat, i, _X_col);
+        Mat_get_col(&X_mat, i, _X_col);
         _Y[i] = 2 * __vet_dot_vet(Y_ptr, _X_col, Xr);
 
         // w dot X 的参数列表 的参数列表
@@ -71,7 +71,7 @@ int Linear_Regression_solve(u_array_t* X, u_array_t* Y,  double* W, double* b)
             if (i == j) {
                 coe_ptr[i][j] = 2 * __vet_dot_vet(_X_col, _X_col, Xr);
             } else {
-                Matrix_get_col(X_mat, i, _X_col_2);
+                Mat_get_col(&X_mat, i, _X_col_2);
                 coe_ptr[i][j] = 2 * __vet_dot_vet(_X_col, _X_col_2, Xr);
             }
         }
@@ -86,24 +86,25 @@ int Linear_Regression_solve(u_array_t* X, u_array_t* Y,  double* W, double* b)
 
     // 最后一个 W dot X 的参数
     for (l=0; l<Xc; ++l) {
-        Matrix_get_col(X_mat, l, _X_col);
+        Mat_get_col(&X_mat, l, _X_col);
         coe_ptr[i][l] = 2 * __vet_sum(_X_col, Xr);
     }
     // 最后一个 b 的参数。
     coe_ptr[i][l] = 2 * Xr;
 
     // 线性方程求解
-    DenseMatrix_solve(coe_mat, _Y, coe_n);
+    Mat_solve(&coe_mat, _Y, coe_n);
     for (i=0; i<coe_n-1;++i) {
         W[i] = _Y[i];
     }
     *b = _Y[coe_n-1];
-    DenseMatrix_destroy(coe_mat);
-    DenseMatrix_destroy(X_mat);
+    Mat_destroy(&coe_mat);
+    Mat_destroy(&X_mat);
     return 0;
 }
 
-int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, double* W, double* b) 
+// 线性回归法，伪逆矩阵法
+int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, vfloat_t* W, vfloat_t* b) 
 {
     int shape = UA_axisn(X);
     size_t Xr, Xc, i, j, k;
@@ -116,42 +117,30 @@ int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, double* W, doub
 
     if (UA_axisn(Y) != 1 && (Y, 0) != Xr) return -1;
 
-    DenseMatrix* X_mat = DenseMatrix_create(Xr, Xc+1);
-    DenseMatrix* Y_mat = DenseMatrix_wrap(UA_shape_axis(Y,0), 1, UA_data_ptr(Y));
+    matrix_t X_mat = Mat_load(Xr, Xc, UA_data_ptr(X));
+    matrix_t Y_mat = Mat_load(UA_shape_axis(Y,0), 1, UA_data_ptr(Y));
 
-    DenseMatrix_elem_ptr(X_mat, X_ptr);
-    double (*UX_ptr)[Xc] = UA_data_ptr(X);
+    Mat_eptr(&X_mat, X_ptr);
+    vfloat_t (*UX_ptr)[Xc] = UA_data_ptr(X);
 
-    // 最前面填入一行
-    for (i=0; i<Xr; ++i) {
-        X_ptr[i][0] = 1.f;
-        for (j=0; j<Xc; ++j) {
-            X_ptr[i][j+1] = UX_ptr[i][j];
-        }
-    }
+    Mat_insert_col_by_value(&X_mat, 0, 1.f);
 
-    DenseMatrix* pinv_mat = DenseMatrix_create(Matrix_cols(X_mat), Matrix_rows(X_mat));
-    DenseMatrix_pseudo_inverse(X_mat, pinv_mat);
+    Mat_pseudo_inverse(&X_mat);
 
-    DenseMatrix* W_mat = DenseMatrix_create(Matrix_rows(pinv_mat), Matrix_cols(Y_mat));
-    DenseMatrix_dot(pinv_mat, Y_mat, W_mat);
-
-    mx_float_t* W_ptr = W_mat->elems;
+    Mat_dot(&X_mat, &Y_mat);
     
-    *b = W_ptr[0];
+    *b = X_mat.elems[0];
 
-    for (k=1, i=0; k<Matrix_rows(W_mat); ++k, ++i) {
-        W[i] = W_ptr[k];
+    for (k=1, i=0; k<Mat_rows(&X_mat); ++k, ++i) {
+        W[i] = X_mat.elems[k];
     }
 
-    DenseMatrix_destroy(X_mat);
-    DenseMatrix_destroy(Y_mat);
-    DenseMatrix_destroy(pinv_mat);
-    DenseMatrix_destroy(W_mat);
+    Mat_destroy(&X_mat);
+    Mat_destroy(&Y_mat);
     return 0;
 }
 
-double Linear_Regression_predict(u_array_t* X, double* w, size_t wn, double b)
+vfloat_t Linear_Regression_predict(u_array_t* X, vfloat_t* w, size_t wn, vfloat_t b)
 {
     return 0.f;
 }

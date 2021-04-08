@@ -11,14 +11,14 @@
 #include "ultra_array.h"
 #include "ultra_padding.h"
 
-void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pad_width_t* pad_width, ua_pad_mode_t mode, double constanst)
+void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pad_width_t* pad_width, ua_pad_mode_t mode, vfloat_t constanst)
 {
     int l, m, o, p;
     for (l=0, m=1; l<pad_width->before_n; ++l, ++m) {
             
         if (mode == ua_pad_mode_constanst) {
-            size_t fill_number = cube_size / sizeof(double);
-            double* first_elem = first - m * cube_size;
+            size_t fill_number = cube_size / sizeof(vfloat_t);
+            vfloat_t* first_elem = first - m * cube_size;
 
             for (int i=0; i<fill_number; ++i) {
                 *(first_elem + i)  = constanst;
@@ -32,8 +32,8 @@ void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pa
     for (o=0, p=1; o<pad_width->after_n; ++o, ++p) {
         if (mode == ua_pad_mode_constanst) {
 
-            size_t fill_number = cube_size / sizeof(double);
-            double* first_elem = last + p * cube_size;
+            size_t fill_number = cube_size / sizeof(vfloat_t);
+            vfloat_t* first_elem = last + p * cube_size;
             for (int i=0; i<fill_number; ++i) {
                 *(first_elem + i)  = constanst;
             }
@@ -44,15 +44,15 @@ void UArray_do_filling_pad_data(char* first, char* last, size_t cube_size, ua_pa
     return;
 }
 
-void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, char* chunk_start, ua_pad_width_t pad_width[], ua_pad_mode_t mode, double* constansts)
+void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, char* chunk_start, ua_pad_width_t pad_width[], ua_pad_mode_t mode, vfloat_t* constansts)
 {
     if (target_axis == curr_axis) {
 
-        size_t cube_size = UArray_axis_mulitply(pad_arr, curr_axis+1) * sizeof(double);
+        size_t cube_size = UArray_axis_mulitply(pad_arr, curr_axis+1) * sizeof(vfloat_t);
         char* first = chunk_start + pad_width[curr_axis].before_n * cube_size;
         size_t curr_dimen = UA_shape_axis(pad_arr, curr_axis);
         char* last = first + (curr_dimen - pad_width[curr_axis].before_n - pad_width[curr_axis].after_n - 1) * cube_size;
-        double c = 0.f;
+        vfloat_t c = 0.f;
         if (constansts) {
             c = constansts[curr_axis];
         }
@@ -60,7 +60,7 @@ void UArray_fill_pad_data(u_array_t* pad_arr, int target_axis, int curr_axis, ch
 
     } else {
 
-        size_t cube_size = UArray_axis_mulitply(pad_arr, curr_axis + 1) * sizeof(double);
+        size_t cube_size = UArray_axis_mulitply(pad_arr, curr_axis + 1) * sizeof(vfloat_t);
         size_t curr_dimen = UA_shape_axis(pad_arr, curr_axis);
         size_t fill_number = curr_dimen - pad_width[curr_axis].before_n - pad_width[curr_axis].after_n;
         char* start = chunk_start + cube_size * pad_width[curr_axis].before_n;

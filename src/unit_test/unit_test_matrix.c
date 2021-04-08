@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-06 22:15:11
- * @LastEditTime: 2021-04-07 11:08:53
+ * @LastEditTime: 2021-04-08 19:22:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_matrix.h
@@ -55,7 +55,7 @@ static void test_delete_col()
 static void test_move_row() 
 {
     matrix_t mat = Mat_create(3, 3);
-    Mat_arange(&mat, 1, 10);
+    Mat_arange(&mat, 1, 9);
     printf("\n");
     PRINTF_MATRIX(mat);
 
@@ -80,6 +80,7 @@ static void test_move_row()
     PRINTF_MATRIX(mat);
 
     Mat_destroy(&mat);
+    
 }
 
 static void test_move_col()
@@ -100,6 +101,28 @@ static void test_move_col()
     Mat_destroy(&mat);
 }
 
+static void test_mat_dot() 
+{
+    matrix_t mat1 = Mat_create(2,3);
+    Mat_arange(&mat1, 1.f, 6.f);
+
+    printf("\n");
+    PRINTF_MATRIX(mat1);
+
+    matrix_t mat2 = Mat_create(3, 2);
+    Mat_fill(&mat2, 1.f);
+
+    printf("\n");
+    PRINTF_MATRIX(mat2);
+
+    Mat_dot(&mat1, &mat2);
+
+    printf("\n");
+    PRINTF_MATRIX(mat1);
+    Mat_destroy(&mat1);
+
+}
+
 int do_matrix_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -115,6 +138,11 @@ int do_matrix_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test move col", test_move_col) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_dot) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -35,7 +35,7 @@
     
 #define PRINTF_MEL_FILTER(filters, filter_number, filter_size) \
     ({ \
-        double* _filters = UA_data_ptr(&filters);\
+        vfloat_t* _filters = UA_data_ptr(&filters);\
         for (int i=0; i<filter_number; ++i) { \
             printf("filter %d \n", i+1);\
             for (int j=0; j<filter_size; ++j) { \
@@ -70,7 +70,7 @@
         for (int i=0; i<arr.axis_n; ++i) { \
             number *= UA_shape_axis(&arr, i); \
         } \
-        double* data = UA_data_ptr(&arr); \
+        vfloat_t* data = UA_data_ptr(&arr); \
         for (int j=0; j<number; ++j) { \
             printf(" %.2f ", data[j]); \
         } \
@@ -128,7 +128,7 @@ static void printf_uarr(u_array_t* arr, int axis, char* ptr, int bank_number)
 {
     bank_number++;
     if (axis == UA_axisn(arr) - 1) {
-        double* data = ptr;
+        vfloat_t* data = ptr;
 
         PRINTF_FORMAT_BANK(bank_number);
 
@@ -143,7 +143,7 @@ static void printf_uarr(u_array_t* arr, int axis, char* ptr, int bank_number)
     } else {
         
         size_t chunk_number = UA_shape_axis(arr, axis);
-        size_t chunk_size = UArray_axis_mulitply(arr, axis+1) * sizeof(double);
+        size_t chunk_size = UArray_axis_mulitply(arr, axis+1) * sizeof(vfloat_t);
         PRINTF_FORMAT_BANK(bank_number);
         printf("[\n");
         for (int i=0; i<chunk_number; ++i) {
@@ -168,12 +168,12 @@ static int suite_success_clean (void)
 
 static void test_frames_signal (void) 
 {
-    // double raw[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
+    // vfloat_t raw[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
     // int samplerate = 100;
     // float step_duration = 0.03f;
     // float frame_duration = 0.05f;
     // wav_t w;
-    // double* buffer;
+    // vfloat_t* buffer;
     // int buffer_n;
     // Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
 
@@ -185,7 +185,7 @@ static void test_frames_signal (void)
     // int frame_number;
     // int frame_fftn;
     // u_array_t frames = frames_pow_signale(buffer, buffer_n, frame_duration, step_duration, samplerate, &frame_fftn, &frame_size, &frame_number, NULL, NULL);
-    // double (*frames)[frame_fftn/2+1] = data; 
+    // vfloat_t (*frames)[frame_fftn/2+1] = data; 
     // printf("\n raw frames data: \n");
 
     // PRINTF_FRAME(frames, 0, (frame_fftn/2+1));
@@ -205,7 +205,7 @@ static void test_frames_signal (void)
 static void test_mfcc (void) 
 {
     wav_t w;
-    double* buffer;
+    vfloat_t* buffer;
     int buffer_n;
     Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
 
@@ -244,13 +244,13 @@ static void test_filter_bank (void)
 
 static void test_log_f_bank(void) {
     wav_t w;
-    double* buffer;
+    vfloat_t* buffer;
     int buffer_n;
     Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
 
     int samplerate = w.fmt.sample_rate;
-    float step_duration = 0.01f;
-    float frame_duration = 0.025f;
+    vfloat_t step_duration = 0.01f;
+    vfloat_t frame_duration = 0.025f;
     int fft_n = 512;//calculate_fft_n(frame_duration * samplerate);
     int freq_low = 0;
     int freq_high = samplerate / 2;
@@ -269,7 +269,7 @@ static void test_log_f_bank(void) {
 static void test_wav_load(void) 
 {
     wav_t w;
-    double* buffer;
+    vfloat_t* buffer;
     int buffer_n;
     //Wav_load("/Users/zuweie/code/c-projects/boring-code/build/omg-man-2.wav", &w, &buffer, &buffer_n);
     //Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w, &buffer, &buffer_n);
@@ -292,25 +292,25 @@ static void test_compare_mfcc(void)
     // log_f_bank(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, fft_n, freq_low, freq_high, 0.97);
     wav_t w1, w2;
     //----------------------------------------------mfcc 1----------------------------------------------------------//
-    double* buffer1;
+    vfloat_t* buffer1;
     int buffer_n1;
     Wav_load("/Users/zuweie/code/c-projects/boring-code/build/Human_Male_1.wav", &w1, &buffer1, &buffer_n1);
 
     int samplerate_1 = w1.fmt.sample_rate;
-    float step_duration_1 = 0.01f;
-    float frame_duration_1 = 0.01f;
+    vfloat_t step_duration_1 = 0.01f;
+    vfloat_t frame_duration_1 = 0.01f;
     int fft_n1 = calculate_fft_n(frame_duration_1 * samplerate_1);
     int freq_low1 = 0;
     int freq_high1 = samplerate_1 / 2;
     u_array_t feat1 = mfcc(buffer1, buffer_n1, samplerate_1, frame_duration_1, step_duration_1, 13, 26, fft_n1, freq_low1, freq_high1, 0.97, 22, 1);
     //------------------------------------------------mfcc 2---------------------------------------------------//
-    double* buffer2;
+    vfloat_t* buffer2;
     int buffer_n2;
     Wav_load("/Users/zuweie/code/c-projects/boring-code/build/water.wav", &w2, &buffer2, &buffer_n2);
 
     int samplerate_2 = w2.fmt.sample_rate;
-    float step_duration_2 = 0.01f;
-    float frame_duration_2 = 0.01f;
+    vfloat_t step_duration_2 = 0.01f;
+    vfloat_t frame_duration_2 = 0.01f;
     int fft_n2 = calculate_fft_n(frame_duration_2 * samplerate_2);
     int freq_low2 = 0;
     int freq_high2 = samplerate_2 / 2;
@@ -324,7 +324,7 @@ static void test_compare_mfcc(void)
     printf_uarr(&scores, 0, UA_data_ptr(&scores), 0);
     size_t size_scores = UA_shape_axis(&scores, 0);
     UA_sum(&scores, 0);
-    double total = UA_get(&scores, 0) / (double)(size_scores);
+    vfloat_t total = UA_get(&scores, 0) / (vfloat_t)(size_scores);
     
     printf(" \n total: %lf \n", total);
 
@@ -346,25 +346,25 @@ static void test_compare_mfcc_distance(void)
     // log_f_bank(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, fft_n, freq_low, freq_high, 0.97);
     wav_t w1, w2;
     //----------------------------------------------mfcc 1----------------------------------------------------------//
-    double* buffer1;
+    vfloat_t* buffer1;
     int buffer_n1;
     Wav_load("/Users/zuweie/code/c-projects/boring-code/build/english.wav", &w1, &buffer1, &buffer_n1);
 
     int samplerate_1 = w1.fmt.sample_rate;
-    float step_duration_1 = 0.01f;
-    float frame_duration_1 = 0.01f;
+    vfloat_t step_duration_1 = 0.01f;
+    vfloat_t frame_duration_1 = 0.01f;
     int fft_n1 = calculate_fft_n(frame_duration_1 * samplerate_1);
     int freq_low1 = 0;
     int freq_high1 = samplerate_1 / 2;
     u_array_t feat1 = mfcc(buffer1, buffer_n1, samplerate_1, frame_duration_1, step_duration_1, 13, 26, fft_n1, freq_low1, freq_high1, 0.97, 22, 1);
     //------------------------------------------------mfcc 2---------------------------------------------------//
-    double* buffer2;
+    vfloat_t* buffer2;
     int buffer_n2;
     Wav_load("/Users/zuweie/code/c-projects/boring-code/build/water.wav", &w2, &buffer2, &buffer_n2);
 
     int samplerate_2 = w2.fmt.sample_rate;
-    float step_duration_2 = 0.01f;
-    float frame_duration_2 = 0.01f;
+    vfloat_t step_duration_2 = 0.01f;
+    vfloat_t frame_duration_2 = 0.01f;
     int fft_n2 = calculate_fft_n(frame_duration_2 * samplerate_2);
     int freq_low2 = 0;
     int freq_high2 = samplerate_2 / 2;
@@ -380,7 +380,7 @@ static void test_compare_mfcc_distance(void)
     printf_uarr(&scores, 0, UA_data_ptr(&scores), 0);
     //size_t size_scores = UA_shape_axis(&scores, 0);
     UA_sum(&scores, 0);
-    double total = UA_get(&scores, 0);
+    vfloat_t total = UA_get(&scores, 0);
     
     printf(" \n total: %lf \n", total);
 
@@ -402,25 +402,25 @@ static void test_compare_mfcc_pearson (void)
      // log_f_bank(buffer, buffer_n, frame_duration, step_duration, samplerate, 26, fft_n, freq_low, freq_high, 0.97);
     wav_t w1, w2;
     //----------------------------------------------mfcc 1----------------------------------------------------------//
-    double* buffer1;
+    vfloat_t* buffer1;
     int buffer_n1;
     Wav_load("/Users/zuweie/code/c-projects/boring-code/build/omg-man-3.wav", &w1, &buffer1, &buffer_n1);
 
     int samplerate_1 = w1.fmt.sample_rate;
-    float step_duration_1 = 0.01f;
-    float frame_duration_1 = 0.01f;
+    vfloat_t step_duration_1 = 0.01f;
+    vfloat_t frame_duration_1 = 0.01f;
     int fft_n1 = calculate_fft_n(frame_duration_1 * samplerate_1);
     int freq_low1 = 0;
     int freq_high1 = samplerate_1 / 2;
     u_array_t feat1 = mfcc(buffer1, buffer_n1, samplerate_1, frame_duration_1, step_duration_1, 13, 26, fft_n1, freq_low1, freq_high1, 0.97, 22, 1);
     //------------------------------------------------mfcc 2---------------------------------------------------//
-    double* buffer2;
+    vfloat_t* buffer2;
     int buffer_n2;
     Wav_load("/Users/zuweie/code/c-projects/boring-code/build/omg-man-4.wav", &w2, &buffer2, &buffer_n2);
 
     int samplerate_2 = w2.fmt.sample_rate;
-    float step_duration_2 = 0.01f;
-    float frame_duration_2 = 0.01f;
+    vfloat_t step_duration_2 = 0.01f;
+    vfloat_t frame_duration_2 = 0.01f;
     int fft_n2 = calculate_fft_n(frame_duration_2 * samplerate_2);
     int freq_low2 = 0;
     int freq_high2 = samplerate_2 / 2;
@@ -439,7 +439,7 @@ static void test_compare_mfcc_pearson (void)
     //printf_uarr(&scores, 0, UA_data_ptr(&scores), 0);
     size_t size_scores = UA_shape_axis(&scores, 0);
     UA_sum(&scores, 0);
-    double total = UA_get(&scores, 0);
+    vfloat_t total = UA_get(&scores, 0);
     printf(" \n total: %lf, score: %lf, size: %d\n", total, (total/size_scores), size_scores);
 
     // printf(" \n printf buffer\n ");
