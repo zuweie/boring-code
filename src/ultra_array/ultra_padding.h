@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-25 15:52:40
- * @LastEditTime: 2021-04-08 14:25:44
+ * @LastEditTime: 2021-04-09 09:28:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_padding.h
@@ -10,7 +10,7 @@
 #ifndef _ULTRA_PADDING_H_
 #define _ULTRA_PADDING_H_
 #include <stdlib.h>
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 typedef struct _u_array u_array_t;
 typedef struct _ua_pad_width ua_pad_width_t;
 

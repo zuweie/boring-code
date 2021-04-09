@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:25
- * @LastEditTime: 2021-03-09 20:58:05
+ * @LastEditTime: 2021-04-09 09:29:38
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.h
@@ -10,7 +10,7 @@
 #ifndef _MFCC_H_
 #define _MFCC_H_
 #include "ultra_array/ultra_array.h"
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 u_array_t create_mel_filterbank(int n_filter, int n_fft, int samplerate, int low_freq, int high_freq);
 
 int f_bank(vfloat_t* raw, size_t raw_length, float frame_duration, \

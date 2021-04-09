@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-29 16:14:16
- * @LastEditTime: 2021-04-08 14:29:14
+ * @LastEditTime: 2021-04-09 09:31:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/fourier_transform/fourier_transform.h
@@ -10,7 +10,7 @@
 #ifndef _FOURIER_TRANSFORM_
 #define _FOURIER_TRANSFORM_
 #include "complex/complex.h"
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 
 #define Bit_reverse_32(v, s) \
     ({ \
@@ -23,17 +23,17 @@
         __marco_r >> (32-s); \
     })
 
-int Discrete_fourier_transform (float[], size_t, complex_t[]);
-int Recursive_fast_fourier_transform(complex_t[], size_t, complex_t[], int reverse);
-int Iterative_fast_fourier_transform(complex_t[], size_t, complex_t[], int reverse);
-int Iterative_fast_fourier_transform2(complex_t[], size_t, int reverse);
+int Discrete_fourier_transform (float[], int, complex_t[]);
+int Recursive_fast_fourier_transform(complex_t[], int, complex_t[], int reverse);
+int Iterative_fast_fourier_transform(complex_t[], int, complex_t[], int reverse);
+int Iterative_fast_fourier_transform2(complex_t[], int, int reverse);
 
 // 实数序列的傅立叶变换。
-int Real_fast_fourier_transform(vfloat_t[], size_t);
-int Real_fast_fourier_transform_complex(vfloat_t[], size_t, complex_t[]);
+int Real_fast_fourier_transform(vfloat_t[], int);
+int Real_fast_fourier_transform_complex(vfloat_t[], int, complex_t[]);
 
-int Reverse_recursive_fast_fourier_transorm(complex_t[], size_t, complex_t[]);
-int Reverse_iterative_fast_fourier_transorm(complex_t[], size_t, complex_t[]);
-int Reverse_iterative_fast_fourier_transorm2(complex_t sequence[], size_t N);
+int Reverse_recursive_fast_fourier_transorm(complex_t[], int, complex_t[]);
+int Reverse_iterative_fast_fourier_transorm(complex_t[], int, complex_t[]);
+int Reverse_iterative_fast_fourier_transorm2(complex_t sequence[], int N);
 
 #endif

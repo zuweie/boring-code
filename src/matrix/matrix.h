@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-04-08 20:15:54
+ * @LastEditTime: 2021-04-09 09:30:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -9,7 +9,7 @@
 #ifndef _MATRIX_H_
 #define _MATRIX_H_
 #include <stdlib.h>
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 
 typedef struct _matrix
 {

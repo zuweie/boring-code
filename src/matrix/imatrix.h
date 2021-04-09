@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-20 11:04:24
- * @LastEditTime: 2021-04-08 14:23:51
+ * @LastEditTime: 2021-04-09 09:23:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/__matrix.h
@@ -10,7 +10,7 @@
 #define _MATRIX_INTERFACE_H_
 
 #include <stdlib.h>
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 
 typedef struct _imatrix imatrix_t;
 struct _imatrix {

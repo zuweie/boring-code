@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-08 14:22:18
+ * @LastEditTime: 2021-04-09 09:27:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -9,7 +9,7 @@
 #ifndef _ULTRA_ARRAY_H_
 #define _ULTRA_ARRAY_H_
 #include "ultra_padding.h"
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 typedef enum _operator {ua_sum = 1 , ua_sub, ua_mulitply, ua_div} operater_t;
 
 typedef struct _ua_chunk_note ua_chunk_note_t;

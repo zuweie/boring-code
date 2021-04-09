@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 21:32:45
- * @LastEditTime: 2021-04-08 15:07:03
+ * @LastEditTime: 2021-04-09 09:29:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/simple_wav.h
@@ -10,7 +10,7 @@
 #define _SIMPLE_WAV_H_
 
 #include <stdint.h>
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 typedef struct _wav_riff {
     char chunk_id[4];
     uint32_t chunk_size;

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-26 09:33:18
- * @LastEditTime: 2021-04-08 15:07:18
+ * @LastEditTime: 2021-04-09 09:24:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/complex/complex.h
@@ -9,7 +9,7 @@
 #ifndef _COMPLEX_H_
 #define _COMPLEX_H_
 #include <math.h>
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 typedef struct  _complex
 {
     vfloat_t real;

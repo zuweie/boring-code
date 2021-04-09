@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-09 15:47:11
- * @LastEditTime: 2021-04-08 14:48:24
+ * @LastEditTime: 2021-04-09 09:29:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/compare_mfcc.c
@@ -10,7 +10,7 @@
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
 #include "compare_mfcc.h"
-#include "boring_type/vfloat_type.h"
+#include "vtype/vfloat_type.h"
 u_array_t compare_mfcc_cosine(u_array_t* mfcc1, u_array_t* mfcc2)
 {
     size_t size_m1 = UA_shape_axis(mfcc1, 0);
