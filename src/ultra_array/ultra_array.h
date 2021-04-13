@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-09 09:27:47
+ * @LastEditTime: 2021-04-13 14:29:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -57,6 +57,7 @@ size_t UArray_axis_mulitply(u_array_t* a, int);
 vfloat_t UArray_get(u_array_t*, ...);
 void UArray_set(u_array_t*, vfloat_t, ...);
 void UArray_display(u_array_t*);
+vfloat_t UArray_linalg_norm(u_array_t*);
 
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)

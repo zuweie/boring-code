@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-08 14:48:04
+ * @LastEditTime: 2021-04-13 14:36:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -611,6 +611,17 @@ u_array_t* UArray_pow2(u_array_t* arr)
         ptr[i] = ptr[i] * ptr[i];
     }
     return arr;
+}
+
+vfloat_t UArray_linalg_norm(u_array_t* arr) 
+{
+    size_t size_arr = UA_size(arr);
+    vfloat_t* ptr = UA_data_ptr(arr);
+    vfloat_t v;
+    for (size_t i=0; i<size_arr; ++i) {
+        v += ptr[i] * ptr[i];
+    }
+    return sqrt(v);
 }
 
 
