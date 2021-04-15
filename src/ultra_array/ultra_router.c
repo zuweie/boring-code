@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-04-09 09:28:09
+ * @LastEditTime: 2021-04-15 09:57:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
@@ -217,7 +217,7 @@ int UArray_indicator_analysis(ua_indicator_t* indicator_list, u_array_t* arr, ua
     if (ptr != NULL) {
         UArray_survey_chuck_address(arr, UA_data_ptr(arr), ptr, chunk_note);
     } else {
-        chunk_note->chunk_map = UArray_datachunk_create(UA_data_ptr(arr), UA_size(arr)*sizeof(vfloat_t));
+        chunk_note->chunk_map = UArray_datachunk_create(UA_data_ptr(arr), UA_size(arr));
     }
     return 0;  
 }

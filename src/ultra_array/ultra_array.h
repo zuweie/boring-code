@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-13 14:29:25
+ * @LastEditTime: 2021-04-15 09:58:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -20,6 +20,7 @@ typedef struct _u_array u_array_t;
 struct _u_array {
     char *start[2];
     int axis_n;
+    size_t pool_size;
 };
 
 extern u_array_t ua_unable;
@@ -42,7 +43,7 @@ u_array_t* UArray_assimilate(u_array_t*, char[], u_array_t*);
 u_array_t* UArray_assimilate_with_indicators(u_array_t*, ua_indicator_t*, u_array_t*);
 u_array_t* UArray_log(u_array_t*);
 u_array_t* UArray_pow2(u_array_t*);
-
+u_array_t* UArray_dot(u_array_t*, u_array_t*);
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
 u_array_t UArray_fission(u_array_t*, char[]);
@@ -97,13 +98,14 @@ vfloat_t UArray_linalg_norm(u_array_t*);
 #define UA_axisn(parray) ((parray)->axis_n)
 #define UA_shape_axis(parray, axis_index) UA_shape(parray)[axis_index]
 #define UA_data_ptr(parray) ((char*)(parray)->start[1])
-#define UA_size(parray) UArray_axis_mulitply(parray, 0)
+#define UA_length(parray) UArray_axis_mulitply(parray, 0)
+#define UA_size(parray) (UArray_axis_mulitply(parray, 0) * sizeof(vfloat_t))
 #define UA_reshape(parray, axes, axis_n) UArray_reshape(parray, axes, axis_n)
 #define UA_display(parray) UArray_display(parray)
 #define UA_where(parray, condition, replace) \
     ({ \
         vfloat_t* data_ptr = UA_data_ptr(parray); \
-        size_t size_arr  = UA_size(parray); \
+        size_t size_arr  = UA_length(parray); \
         for (size_t i=0; i<size_arr; ++i) { \
             if ( data_ptr[i] condition ) { \
                 data_ptr[i] = replace; \

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-04-09 09:30:48
+ * @LastEditTime: 2021-04-14 14:20:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -14,7 +14,7 @@
 typedef struct _matrix
 {
     /* data */
-    vfloat_t* elems;
+    vfloat_t* pool;
     size_t rows;
     size_t cols;
     size_t pool_size;
@@ -46,6 +46,6 @@ int Mat_arange(matrix_t* mat, vfloat_t from, vfloat_t to);
 
 #define Mat_rows(pmat) ((pmat)->rows)
 #define Mat_cols(pmat) ((pmat)->cols)
-#define Mat_eptr(pmat, ptr) vfloat_t(*ptr)[(pmat)->cols] = (pmat)->elems
+#define Mat_eptr(pmat, ptr) vfloat_t(*ptr)[(pmat)->cols] = (pmat)->pool
 
 #endif

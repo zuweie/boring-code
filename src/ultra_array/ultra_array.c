@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-13 14:36:23
+ * @LastEditTime: 2021-04-15 09:59:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -18,6 +18,7 @@
 u_array_t ua_unable = {
     .start = {NULL, NULL},
     .axis_n = -1,
+    .pool_size = 0
 };
 
 static size_t 
@@ -33,19 +34,13 @@ __axis_mulitply(size_t axes[], int tail, int from)
 static void*
 __alloc_memory(size_t n) 
 {
-    // if (alloc) 
-    //     return allocate(alloc, n);
-    // else
-        return malloc(n);
+    return malloc(n);
 }
 
 static void 
 __recycle_memory(void* p) 
 {
-    // if (alloc) 
-    //     deallocate(alloc, p);
-    // else
-        free(p);
+    free(p);
 }
 
 static void*
@@ -127,25 +122,6 @@ __to_display(u_array_t* arr, int axis, char* ptr, int bank_number)
     }
 }
 
-// static void
-// __dot_2d(vfloat_t *a, size_t a_r, size_t a_c, vfloat_t *b, size_t b_r, size_t b_c, vfloat_t *c) 
-// {
-//     vfloat_t (*_a)[a_c] = a;
-//     vfloat_t (*_b)[b_c] = b;
-//     vfloat_t (*_c)[b_c] = c;
-//     vfloat_t v = 0.f;
-
-//     for (int i=0; i<a_r; ++i) {
-//         for (int j=0; j<b_c; ++j) {
-//             v = 0.f;
-//             for (int k=0; k<a_c; ++k) {
-//                 v += _a[i][k] * _b[k][j];
-//             }
-//             _c[i][j] = v;
-//         }
-//     }
-// }
-
 static size_t
 __xd_coord_to_1d_offset(size_t coord[], size_t axes[], int axis_n) {
 
@@ -207,6 +183,17 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
     return 0;
 }
 
+static int 
+__update_pool(u_array_t* arr, size_t new_size)
+{
+    if (arr->pool_size < new_size) {
+
+        vfloat_t* new_chunk = (vfloat_t*) malloc (new_size);
+        //memcpy(new_chunk, UA_data_ptr(arr), UA_size(arr));
+        arr->pool_size = new_size;
+    }
+}
+
 u_array_t UArray_create_with_axes_dots(int axis_n, ...)
 {
     va_list valist;
@@ -224,9 +211,7 @@ u_array_t UArray_create_with_axes_array(int axis_n, size_t shape[])
     if (axis_n >= 0) {
         u_array_t n_array;
         n_array.axis_n = axis_n;
-
         __alloc_start(axis_n, shape, n_array.start);
-        
         return n_array;
     }
     return ua_unable;
@@ -264,7 +249,7 @@ void UArray_destroy(u_array_t* arr)
 
 void* UArray_data_copy(u_array_t* parr) 
 {
-    size_t size_arr_data = UA_size(parr) * sizeof(vfloat_t);
+    size_t size_arr_data = UA_size(parr);
     void* pdata = malloc(size_arr_data);
     memcpy(pdata, UA_data_ptr(parr), size_arr_data);
     return pdata;
@@ -273,9 +258,9 @@ void* UArray_data_copy(u_array_t* parr)
 u_array_t* UArray_arange(u_array_t *arr, int range)
 {
     vfloat_t* data   = UA_data_ptr(arr);
-    size_t  size_a = UA_size(arr);
+    size_t  len_a = UA_length(arr);
     
-    for (int i=0; i<range && i<size_a; ++i) {
+    for (int i=0; i<range && i<len_a; ++i) {
         data[i] = i;
     }
     return arr;
@@ -283,17 +268,17 @@ u_array_t* UArray_arange(u_array_t *arr, int range)
 u_array_t* UArray_arange_scope(u_array_t* arr, int start, int tail) 
 {
     vfloat_t* data_ptr = UA_data_ptr(arr);
-    size_t size_arr  = UA_size(arr);
-    vfloat_t per_step = (vfloat_t)(tail-start) / (vfloat_t)size_arr;
-    for (int i=0; i<size_arr; ++i) {
+    size_t len_arr  = UA_length(arr);
+    vfloat_t per_step = (vfloat_t)(tail-start) / (vfloat_t)len_arr;
+    for (int i=0; i<len_arr; ++i) {
         data_ptr[i] = start + i * per_step;
     }
     return arr;
 }
 u_array_t* UArray_ones(u_array_t* arr, vfloat_t v) {
     vfloat_t* data_ptr = UA_data_ptr(arr);
-    size_t  size_a   = UA_size(arr);
-    for (int i=0; i<size_a; ++i) {
+    size_t  len_a   = UA_length(arr);
+    for (int i=0; i<len_a; ++i) {
         data_ptr[i] = v;
     }
     return arr;
@@ -301,11 +286,7 @@ u_array_t* UArray_ones(u_array_t* arr, vfloat_t v) {
 
 u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n) 
 {
-    size_t size_r = __axis_mulitply(axes, axis_n, 0);
-    size_t size_a = UA_size(a);
-    if (size_r == size_a) {
-        __update_shape(a, axes, axis_n);
-    }
+    __update_shape(a, axes, axis_n);
     return a;
 }
 
@@ -383,7 +364,7 @@ u_array_t* UArray_transpose(u_array_t* arr, size_t trans_axis_index[])
     }
 
 
-    size_t size_arr_tmp  = UA_size(arr) * sizeof(vfloat_t);
+    size_t size_arr_tmp  = UA_size(arr);
     void*  data_arr_tmp  = malloc(size_arr_tmp);
 
     void*   data_arr   = UA_data_ptr(arr);
@@ -474,6 +455,11 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
     } 
     return ua_unable;
 }
+// 这个版本的 dot 不产生新的 u_array_t，点积结果放在 第一个 u_array_t 的结果当中
+u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
+{
+    
+}
 
 u_array_t UArray_fission(u_array_t* a, char indicator_str[])
 {
@@ -520,10 +506,10 @@ u_array_t* UArray_assimilate_with_indicators(u_array_t* a1, ua_indicator_t* indi
     UArray_indicator_analysis(indicators, a1, &chunk_note);
     int do_copy = 0;
     if (UA_axisn(a2) == 0 
-    || __axis_mulitply(chunk_note.shape, chunk_note.axis_n, 0) % UA_size(a2) == 0 ) {
+    || __axis_mulitply(chunk_note.shape, chunk_note.axis_n, 0) % UA_length(a2) == 0 ) {
         
         ua_data_chunk_t* ptr = chunk_note.chunk_map;
-        size_t chunk_size_a2 = UA_size(a2)*sizeof(vfloat_t);
+        size_t chunk_size_a2 = UA_size(a2); 
         char* data_ptr_a2 = UA_data_ptr(a2);
 
         while(ptr != NULL) {
@@ -595,9 +581,9 @@ u_array_t UArray_empty_like(u_array_t* arr)
 
 u_array_t* UArray_log(u_array_t* arr) 
 {
-    size_t size_a    = UA_size(arr);
+    size_t len_a    = UA_length(arr);
     vfloat_t* data_ptr = UA_data_ptr(arr);
-    for (size_t i=0; i<size_a; ++i) {
+    for (size_t i=0; i<len_a; ++i) {
         data_ptr[i] = log(data_ptr[i]);
     }
     return arr;
@@ -605,9 +591,9 @@ u_array_t* UArray_log(u_array_t* arr)
 
 u_array_t* UArray_pow2(u_array_t* arr) 
 {
-    size_t size_arr = UA_size(arr);
+    size_t len_arr = UA_length(arr);
     vfloat_t* ptr = UA_data_ptr(arr);
-    for(size_t i=0; i<size_arr; ++i) {
+    for(size_t i=0; i<len_arr; ++i) {
         ptr[i] = ptr[i] * ptr[i];
     }
     return arr;
@@ -615,10 +601,10 @@ u_array_t* UArray_pow2(u_array_t* arr)
 
 vfloat_t UArray_linalg_norm(u_array_t* arr) 
 {
-    size_t size_arr = UA_size(arr);
+    size_t len_arr = UA_length(arr);
     vfloat_t* ptr = UA_data_ptr(arr);
     vfloat_t v;
-    for (size_t i=0; i<size_arr; ++i) {
+    for (size_t i=0; i<len_arr; ++i) {
         v += ptr[i] * ptr[i];
     }
     return sqrt(v);

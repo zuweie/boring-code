@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-04-08 22:03:32
+ * @LastEditTime: 2021-04-15 09:37:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -226,7 +226,7 @@ static void test_array_dot (void)
     u_array_t u3 = UA_dot(&u1, &u2);
     
     vfloat_t* data = UA_data_ptr(&u3);
-    size_t size_u3 = UA_size(&u3);
+    size_t size_u3 = UA_length(&u3);
     CU_ASSERT_TRUE(data[0] == 42.f);
     CU_ASSERT_TRUE(data[size_u3-1] == 422.f);
 

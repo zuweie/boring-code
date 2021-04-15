@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-04-08 20:18:53
+ * @LastEditTime: 2021-04-14 14:23:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
@@ -63,9 +63,9 @@ __resize_pool(matrix_t* mat, size_t new_size)
 {
     if  (mat->pool_size < new_size) {
         vfloat_t* new_chunk = (vfloat_t*) malloc (new_size);
-        memcpy(new_chunk, mat->elems, Mat_rows(mat) * Mat_cols(mat) * sizeof(vfloat_t));
-        free(mat->elems);
-        mat->elems = new_chunk;
+        memcpy(new_chunk, mat->pool, Mat_rows(mat) * Mat_cols(mat) * sizeof(vfloat_t));
+        free(mat->pool);
+        mat->pool = new_chunk;
         mat->pool_size = new_size;
     }
     return;
@@ -75,7 +75,7 @@ matrix_t Mat_create(size_t rows, size_t cols)
 {
     vfloat_t* elems = (vfloat_t*) malloc (sizeof(vfloat_t) * rows * cols);
     matrix_t mat = {
-        .elems = elems,
+        .pool = elems,
         .rows  = rows,
         .cols = cols,
         .pool_size = rows * cols * sizeof(vfloat_t)
@@ -89,7 +89,7 @@ matrix_t Mat_load(size_t rows, size_t cols, vfloat_t elems[])
     memcpy(_elems, elems, sizeof(vfloat_t) * rows * cols);
 
     matrix_t mat = {
-        .elems = _elems,
+        .pool = _elems,
         .rows  = rows,
         .cols  = cols,
         .pool_size = rows * cols * sizeof(vfloat_t)
@@ -98,7 +98,7 @@ matrix_t Mat_load(size_t rows, size_t cols, vfloat_t elems[])
 }
 int Mat_copy_elems(matrix_t* mat, vfloat_t buffer[])
 {
-    memcpy(buffer, mat->elems, sizeof(vfloat_t) * Mat_rows(mat) * Mat_cols(mat));
+    memcpy(buffer, mat->pool, sizeof(vfloat_t) * Mat_rows(mat) * Mat_cols(mat));
     return 0;
 }
 
@@ -108,9 +108,9 @@ matrix_t Mat_copy(matrix_t* mat)
     size_t cols = Mat_cols(mat);
 
     vfloat_t *elems = (vfloat_t*) malloc (sizeof(vfloat_t) * rows * cols);
-    memcpy( elems, mat->elems, sizeof(vfloat_t) * rows * cols );
+    memcpy( elems, mat->pool, sizeof(vfloat_t) * rows * cols );
     matrix_t matrix = {
-        .elems = elems,
+        .pool = elems,
         .rows = rows,
         .cols = cols,
         .pool_size = rows * cols * sizeof(vfloat_t)
@@ -120,7 +120,7 @@ matrix_t Mat_copy(matrix_t* mat)
 
 int Mat_destroy(matrix_t* mat)
 {
-    free(mat->elems);
+    free(mat->pool);
 }
 
 int Mat_get_row(matrix_t* mat, size_t row_index, vfloat_t row[])
@@ -194,7 +194,7 @@ int Mat_inverse(matrix_t* mat)
         __solve_lu(mat, inverse[i], cols);
     }
     // 计算完结果将其覆盖到原来的矩阵当中去
-    memcpy(mat->elems, inverse, rows * cols * sizeof(vfloat_t));
+    memcpy(mat->pool, inverse, rows * cols * sizeof(vfloat_t));
     // 必须做转置才能还原逆矩阵
     Mat_transpose(mat);
     return 0;
@@ -273,6 +273,7 @@ int Mat_dot(matrix_t* mat1, matrix_t* mat2)
                 vfloat_t col_2[rows_2];
                 Mat_get_col(mat2, j, col_2);
                 ptr1[i][j] = __vet_dot_vet(elems_1[i], col_2, rows_2);
+
             }
         }
         return 0;
@@ -290,7 +291,7 @@ int Mat_transpose(matrix_t* mat)
         Mat_get_col(mat, i, col_buffer);
         memcpy(elems_buffer[i], col_buffer, sizeof(vfloat_t) * rows);
     }
-    memcpy(mat->elems, elems_buffer, sizeof(vfloat_t) * rows * cols);
+    memcpy(mat->pool, elems_buffer, sizeof(vfloat_t) * rows * cols);
     Mat_rows(mat) = cols;
     Mat_cols(mat) = rows;
     return 0;
@@ -361,7 +362,7 @@ int Mat_arange(matrix_t* mat, vfloat_t from, vfloat_t to)
 
     for (size_t i=0; i<size_mat; ++i) {
 
-        mat->elems[i] = from + i * per;
+        mat->pool[i] = from + i * per;
 
     }
 

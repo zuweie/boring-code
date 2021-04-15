@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-22 15:04:24
- * @LastEditTime: 2021-04-08 21:47:01
+ * @LastEditTime: 2021-04-14 14:27:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/linear_regression.c
@@ -129,10 +129,10 @@ int Linear_Regression_pseudo_inverse(u_array_t* X, u_array_t* Y, vfloat_t* W, vf
 
     Mat_dot(&X_mat, &Y_mat);
     
-    *b = X_mat.elems[0];
+    *b = X_mat.pool[0];
 
     for (k=1, i=0; k<Mat_rows(&X_mat); ++k, ++i) {
-        W[i] = X_mat.elems[k];
+        W[i] = X_mat.pool[k];
     }
 
     Mat_destroy(&X_mat);
