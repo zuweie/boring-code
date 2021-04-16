@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-15 09:59:16
+ * @LastEditTime: 2021-04-16 08:51:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -170,9 +170,27 @@ ___transpose(vfloat_t* a, size_t shape_a[], vfloat_t* b, size_t shape_b[], int a
     }
     return;
 }
+
+
+static int 
+__update_pool(u_array_t* arr, size_t new_size)
+{
+    if (arr->pool_size < new_size) {
+        vfloat_t* new_chunk = (vfloat_t*) malloc (new_size);
+        memcpy(new_chunk, UA_data_ptr(arr), UA_size(arr));
+        __recycle_memory(UA_data_ptr(arr));
+        UA_data_ptr = new_chunk;
+        arr->pool_size = new_size;
+    }
+    return 0;
+}
+
 static int
 __update_shape(u_array_t* arr, size_t shape[], int axis_n) 
 {
+    size_t new_size = __axis_mulitply(shape, axis_n, 0) * sizeof(vfloat_t);
+    __update_pool(arr, new_size);
+
     if (arr->axis_n != axis_n ) {
         __recycle_memory(UA_shape(arr));
         arr->start[0] = __alloc_shape(axis_n, shape);
@@ -181,17 +199,6 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
         memcpy(UA_shape(arr), shape, axis_n * sizeof(size_t));
     }
     return 0;
-}
-
-static int 
-__update_pool(u_array_t* arr, size_t new_size)
-{
-    if (arr->pool_size < new_size) {
-
-        vfloat_t* new_chunk = (vfloat_t*) malloc (new_size);
-        //memcpy(new_chunk, UA_data_ptr(arr), UA_size(arr));
-        arr->pool_size = new_size;
-    }
 }
 
 u_array_t UArray_create_with_axes_dots(int axis_n, ...)
@@ -228,9 +235,9 @@ vfloat_t UArray_get(u_array_t* arr, ...)
     size_t offset = UA_cover_coordinate(arr, coord);
     return ((vfloat_t*)(UA_data_ptr(arr)))[offset];
 }
+
 void UArray_set(u_array_t* arr, vfloat_t v, ...)
 {
-
     va_list valist;
     va_start(valist, v);
     size_t coord[UA_axisn(arr)];
@@ -242,6 +249,7 @@ void UArray_set(u_array_t* arr, vfloat_t v, ...)
     ((vfloat_t*)(UA_data_ptr(arr)))[offset] = v;
     return;
 }
+
 void UArray_destroy(u_array_t* arr)
 {  
     return __recycle_start(arr->start);
@@ -289,7 +297,6 @@ u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n)
     __update_shape(a, axes, axis_n);
     return a;
 }
-
 
 //操作降维
 u_array_t* UArray_operate(u_array_t* arr, int axis, operater_t op)
@@ -390,12 +397,21 @@ u_array_t* UArray_transform(u_array_t* arr)
     return UArray_transpose(arr, shape_trans);
 }
 
+u_array_t* UArray_load(u_array_t* arr, vfloat_t data[])
+{
+    size_t size_arr = UA_size(arr);
+    vfloat_t* ptr = UA_data_ptr(arr);
+    memcpy(ptr, data, size_arr);
+    return arr;
+}
+
+
 /**
  * 超级鸡吧复杂多维内积算法，核心思想就是用第一个数组的最后一维，点积第二个数组倒数第二维。
 */
 u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2) 
 {
-    if (a1->axis_n >=2 && a2->axis_n >= 2) {
+    if (UA_axisn(a1) >=2 && UA_axisn(a2) >= 2) {
         size_t row_size_a1 = UA_shape_axis(a1, a1->axis_n-1);
         size_t col_size_a2 = UA_shape_axis(a2, a2->axis_n-2);
 
@@ -458,7 +474,88 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
 // 这个版本的 dot 不产生新的 u_array_t，点积结果放在 第一个 u_array_t 的结果当中
 u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
 {
-    
+    if (UA_axisn(a1) != 0 && UA_axisn(a2) != 0) {
+
+        if (UA_axisn(a1) == 1) {
+
+            size_t reshape[2] = {1, UA_shape_axis(a1, 0)};
+            UA_reshape(a1, reshape, 2);
+
+        }
+
+        if (UA_axisn(a2) == 1) {
+
+            size_t reshape[2] = {UA_shape_axis(a2, 0), 1};
+            UA_reshape(a2, reshape, 2);
+        }
+        
+        
+        size_t row_size_a1 = UA_shape_axis(a1, a1->axis_n-1);
+        size_t col_size_a2 = UA_shape_axis(a2, a2->axis_n-2);
+
+        if (row_size_a1 == col_size_a2){
+
+            int i,j,k,m=0,l=0;
+            // 组装新的shape
+            size_t n_axes[a1->axis_n + a2->axis_n - 2];
+
+            size_t* shape_a1 = UA_shape(a1);
+            size_t* shape_a2 = UA_shape(a2);
+
+            for (i=0; i<a1->axis_n-1; ++i) {
+                n_axes[i] = shape_a1[i];
+            }
+
+            for (j=0; j<a2->axis_n; ++j) {
+                if (j != a2->axis_n - 2) {
+                    n_axes[i++] = shape_a2[j];
+                }
+            }
+            
+            //u_array_t a3 = UArray_create_with_axes_array(a1->axis_n + a2->axis_n - 2, n_axes);
+            size_t len_a3 = __axis_mulitply(n_axes, a1->axis_n + a2->axis_n, 0);
+            
+            // a1 的 总的行数
+            size_t total_rows_number_a1  = __axis_mulitply(shape_a1, a1->axis_n-2, 0) * UA_shape_axis(a1, a1->axis_n-2);
+
+            // a2 的 二维块的总数
+            size_t cube_number_a2 = __axis_mulitply(shape_a2, a2->axis_n-2, 0);
+            // a2 的每个二维块的行的大小。
+            size_t col_number_a2   = UA_shape_axis(a2, a2->axis_n-1);
+            // a2 每个二维块的大小。
+            size_t cube_size_a2   = col_size_a2 * col_number_a2;
+
+            // a1 data
+            vfloat_t* data_a1 = UA_data_ptr(a1);
+            vfloat_t* data_a2 = UA_data_ptr(a2);
+            vfloat_t data_a3[len_a3]
+
+            vfloat_t col_data_a2[col_size_a2];
+            
+            // 这堆复杂的循环算法是什么鸡吧意思，写的太天才了，完全忘记了！！
+            for (i=0; i<total_rows_number_a1; ++i) {
+                for (j=0; j<cube_number_a2; ++j) {
+                    
+                    for (k=0; k<col_number_a2; ++k) {
+                        for (m=0; m<col_size_a2; ++m ) {
+
+                            size_t offset = j*cube_size_a2 + m * col_number_a2 + k;
+                            col_data_a2[m] = data_a2[offset];
+
+                        }
+                        data_a3[l++] =__dot_1d( &data_a1[i*row_size_a1], col_data_a2, row_size_a1);
+                    }
+                }
+            }
+
+            // 重新调整 a1 的形状尺寸，
+            UA_reshape(a1);
+            UA_load(a1, data);
+            
+            return a1;
+        }
+    }
+    return NULL;
 }
 
 u_array_t UArray_fission(u_array_t* a, char indicator_str[])

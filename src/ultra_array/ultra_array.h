@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-15 09:58:11
+ * @LastEditTime: 2021-04-16 08:50:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -44,6 +44,7 @@ u_array_t* UArray_assimilate_with_indicators(u_array_t*, ua_indicator_t*, u_arra
 u_array_t* UArray_log(u_array_t*);
 u_array_t* UArray_pow2(u_array_t*);
 u_array_t* UArray_dot(u_array_t*, u_array_t*);
+u_array_t* UArray_load(u_array_t*, vfloat_t[]);
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
 u_array_t UArray_fission(u_array_t*, char[]);
@@ -77,7 +78,7 @@ vfloat_t UArray_linalg_norm(u_array_t*);
 #define UA_T(parray) UArray_transform(parray)
 #define UA_arange(parray, range) UArray_arange(parray, range)
 #define UA_scope(parray, start, tail) UArray_arange_scope(parray, start, tail)
-
+#define UA_load(parray, data) UArray_load(parray, data)
 #define UA_ones(parray, v) UArray_ones(parray, v)
 #define UA_dot(pa1, pa2) UArray_dot_new_copy(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
