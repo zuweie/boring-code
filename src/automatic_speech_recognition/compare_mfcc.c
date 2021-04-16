@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-09 15:47:11
- * @LastEditTime: 2021-04-09 09:29:46
+ * @LastEditTime: 2021-04-16 14:53:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/compare_mfcc.c
@@ -24,7 +24,7 @@ u_array_t compare_mfcc_cosine(u_array_t* mfcc1, u_array_t* mfcc2)
         ua_indicator_t* idx = __indicators_start_tail(NULL, i, i+1);
         u_array_t u1 = UArray_fission_with_indicators(mfcc1, idx);
         u_array_t u2 = UArray_fission_with_indicators(mfcc2, idx);
-        u_array_t u3 = UA_dot(&u1, UA_T(&u2));
+        u_array_t u3 = UA_dot_new(&u1, UA_T(&u2));
         UA_pow2(&u1);
         UA_pow2(&u2);
 

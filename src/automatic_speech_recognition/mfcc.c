@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-12 07:19:35
- * @LastEditTime: 2021-03-11 12:11:38
+ * @LastEditTime: 2021-04-16 14:53:05
  * @LastEditors: Please set LastEditors
  * @Description: 倒梅儿系数计算
  * @FilePath: /boring-code/src/mfcc/mfcc.c
@@ -103,7 +103,7 @@ int f_bank(vfloat_t* raw, size_t raw_length, float frame_duration, float step_du
     // 获取梅尔滤波 返回 26 * xxxx 的二维数组。 26 为 梅尔滤波的个数。filter_n 传入。
     u_array_t filters = create_mel_filterbank(filter_n, fft_n, samplerate, freq_low, freq_high);
     // frames dot filters 后 为 426 X xxxx 的 数组。
-    *feat = UA_dot(&frames, UA_T(&filters));
+    *feat = UA_dot_new(&frames, UA_T(&filters));
     UA_where(feat, == 0.f, 0.001f);
     UArray_(&frames);
     UArray_(&filters);
@@ -179,7 +179,7 @@ u_array_t delta(u_array_t* feat, int N)
             ua_indicator_t* indicators_fission = __indicators_start_tail(NULL, t, t+2*N+1);
             
             u_array_t u2 = UArray_fission_with_indicators(&padded, indicators_fission);//UA_fission(&padded, str_buf);
-            u_array_t u3 = UA_dot(&u1, &u2);
+            u_array_t u3 = UA_dot_new(&u1, &u2);
 
             ua_indicator_t* indicators_assimilate = __indicators_picked(NULL, t);
             indicators_assimilate = __indicators_start_tail(indicators_assimilate, 0, 0);

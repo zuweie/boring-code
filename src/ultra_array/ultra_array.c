@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-16 08:51:28
+ * @LastEditTime: 2021-04-16 15:11:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -179,7 +179,7 @@ __update_pool(u_array_t* arr, size_t new_size)
         vfloat_t* new_chunk = (vfloat_t*) malloc (new_size);
         memcpy(new_chunk, UA_data_ptr(arr), UA_size(arr));
         __recycle_memory(UA_data_ptr(arr));
-        UA_data_ptr = new_chunk;
+        arr->start[1] = new_chunk;
         arr->pool_size = new_size;
     }
     return 0;
@@ -201,6 +201,23 @@ __update_shape(u_array_t* arr, size_t shape[], int axis_n)
     return 0;
 }
 
+static vfloat_t
+__operator_value(vfloat_t v1, vfloat_t v2, operater_t oper) 
+{
+    switch (oper)
+    {
+    case ua_sum:
+        return v1 + v2;
+    case ua_sub:
+        return v1 - v2;
+    case ua_mulitply:
+        return v1 * v2;
+    case ua_div:
+        return v1 / v2;
+    default:
+        return 0.f;
+    }
+}
 u_array_t UArray_create_with_axes_dots(int axis_n, ...)
 {
     va_list valist;
@@ -355,6 +372,103 @@ u_array_t* UArray_operate(u_array_t* arr, int axis, operater_t op)
     return arr;
 }
 
+u_array_t* UArray_collapse(u_array_t* arr, int axis, vfloat_t(*operator)(vfloat_t*, size_t))
+{
+    if (axis>=0 && axis<arr->axis_n) {
+        vfloat_t result;
+        size_t block_n   = __axis_mulitply(UA_shape(arr), axis, 0); 
+        size_t block_len = __axis_mulitply(UA_shape(arr), arr->axis_n, axis);
+        vfloat_t *arr_data_copy = UArray_data_copy(arr);
+        vfloat_t *ptr = UA_data_ptr(arr);
+        size_t shape_new[axis];
+        int    axisn_new = axis;
+
+        for (int i=0; i<axis; ++i) {
+            shape_new[i] = UA_shape_axis(arr, i);
+        }
+        
+        // 1 开始计算数据并更新数据。
+        for (int k=0, m=0; k<block_n; ++k, ++m) {
+            vfloat_t* block_ptr = &ptr[k*block_len];
+            ptr[m] = operator(block_ptr, block_len);
+        }
+        free(arr_data_copy);
+        // update shape
+        __update_shape(arr, shape_new, axisn_new);
+    }
+    return arr;
+}
+
+vfloat_t UArray_operator_sum(vfloat_t* block, size_t n)
+{
+    vfloat_t v = 0.f;
+    for (size_t i=0; i<n; ++i) {
+        v += block[i];
+    }
+    return v;
+}
+
+vfloat_t UArray_operator_mean(vfloat_t* block, size_t n)
+{
+    vfloat_t v = 0.f;
+    for (size_t i=0; i<n; ++i) {
+        v += block[i];
+    }
+    return (v / (vfloat_t) n);
+}
+
+u_array_t* UArray_operations_value(u_array_t* arr, vfloat_t v, operater_t oper)
+{
+    size_t len = UA_length(arr);
+    vfloat_t* ptr = UA_data_ptr(arr);
+
+    for (size_t i=0; i<len; ++i) {
+        ptr[i] = __operator_value(ptr[i], v, oper);
+    }
+    return arr;
+}
+
+u_array_t* UArray_operations_arr(u_array_t* arr, vfloat_t* v, size_t n, operater_t oper)
+{
+    size_t len = UA_length(arr);
+    if (len > n && len % n == 0) {
+        vfloat_t* ptr = UA_data_ptr(arr);
+        size_t block_n = len / n;
+        for (size_t i=0; i<block_n; ++i) {
+
+            vfloat_t *bptr = &ptr[i*n];
+
+            for (size_t j=0; j<n; ++j) {
+                bptr[j] = __operator_value(bptr[j], v[j], oper);
+            }
+        }
+    }
+    return arr;
+}
+
+u_array_t* UArray_operations_uarr(u_array_t* arr1, u_array_t* arr2, operater_t oper)
+{
+    size_t len_arr1 = UA_length(arr1);
+    size_t len_arr2 = UA_length(arr2);
+
+    if (len_arr1 > len_arr2 && len_arr1 % len_arr2 == 0) {
+        
+        size_t block_n = len_arr1 / len_arr2;
+        vfloat_t* ptr_arr1 = UA_data_ptr(arr1);
+        vfloat_t* ptr_arr2 = UA_data_ptr(arr2);
+        
+        for (size_t i=0; i<block_n; ++i) {
+
+            vfloat_t* bptr = &ptr_arr1[i*len_arr2];
+
+            for (size_t j=0; j<len_arr2; ++j) {
+                bptr[j] = __operator_value(bptr[j], ptr_arr2[j], oper);
+            }
+        }
+
+    }
+    return arr1;
+}
 
 size_t UArray_axis_mulitply(u_array_t* a, int axis_idx_from) 
 {
@@ -528,7 +642,7 @@ u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
             // a1 data
             vfloat_t* data_a1 = UA_data_ptr(a1);
             vfloat_t* data_a2 = UA_data_ptr(a2);
-            vfloat_t data_a3[len_a3]
+            vfloat_t data_a3[len_a3];
 
             vfloat_t col_data_a2[col_size_a2];
             
@@ -549,8 +663,8 @@ u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
             }
 
             // 重新调整 a1 的形状尺寸，
-            UA_reshape(a1);
-            UA_load(a1, data);
+            UA_reshape(a1, n_axes, a1->axis_n+a2->axis_n);
+            UA_load(a1, data_a3);
             
             return a1;
         }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-16 08:50:37
+ * @LastEditTime: 2021-04-16 14:50:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -33,6 +33,12 @@ void UArray_destroy(u_array_t*);
 void* UArray_data_copy(u_array_t*);
 
 u_array_t* UArray_operate(u_array_t*, int, operater_t);
+u_array_t* UArray_collapse(u_array_t*, int, vfloat_t(*)(vfloat_t*, size_t));
+
+u_array_t* UArray_operations_value(u_array_t*, vfloat_t, operater_t);
+u_array_t* UArray_operations_arr(u_array_t*, vfloat_t*, size_t, operater_t);
+u_array_t* UArray_operations_uarr(u_array_t*, u_array_t*, operater_t);
+
 u_array_t* UArray_transpose(u_array_t*, size_t[]);
 u_array_t* UArray_transform(u_array_t*);
 u_array_t* UArray_reshape(u_array_t*, size_t[], int);
@@ -45,6 +51,7 @@ u_array_t* UArray_log(u_array_t*);
 u_array_t* UArray_pow2(u_array_t*);
 u_array_t* UArray_dot(u_array_t*, u_array_t*);
 u_array_t* UArray_load(u_array_t*, vfloat_t[]);
+
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
 u_array_t UArray_fission(u_array_t*, char[]);
@@ -61,6 +68,9 @@ void UArray_set(u_array_t*, vfloat_t, ...);
 void UArray_display(u_array_t*);
 vfloat_t UArray_linalg_norm(u_array_t*);
 
+vfloat_t UArray_operator_sum(vfloat_t*, size_t);
+vfloat_t UArray_operator_mean(vfloat_t*, size_t);
+
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)
 #define _UArray3d(...) UArray_create_with_axes_dots(3,__VA_ARGS__)
@@ -71,16 +81,15 @@ vfloat_t UArray_linalg_norm(u_array_t*);
 #define UA_get(parray, ...) UArray_get(parray, __VA_ARGS__)
 #define UA_set(parray, v, ...) UArray_set(parray, v, __VA_ARGS__)
 
-#define UA_sum(parray, axis) UArray_operate(parray, axis, ua_sum)
-#define UA_sub(parray, axis) UArray_operate(parray, axis, ua_sub)
-#define UA_mulitply(parry, axis) UArray_operate(parray, axis, ua_mulitply)
-#define UA_div(parray, axis) UArray_operate(parray, axis, ua_div)
+#define UA_sum(parray, axis) UArray_collapse(parray, axis, UArray_operator_sum)//UArray_operate(parray, axis, ua_sum)
+#define UA_mean(parray, axis) UArray_collapse(parray, axis, UArray_operator_mean)
+
 #define UA_T(parray) UArray_transform(parray)
 #define UA_arange(parray, range) UArray_arange(parray, range)
 #define UA_scope(parray, start, tail) UArray_arange_scope(parray, start, tail)
 #define UA_load(parray, data) UArray_load(parray, data)
 #define UA_ones(parray, v) UArray_ones(parray, v)
-#define UA_dot(pa1, pa2) UArray_dot_new_copy(pa1, pa2)
+#define UA_dot_new(pa1, pa2) UArray_dot_new_copy(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
 #define UA_fission(parray, router) UArray_fission(parray, router)
 #define UA_fission_raw(parray, router, raw_buff) UArray_fission_raw(parray, router, raw_buffer)
