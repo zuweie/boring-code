@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-17 14:11:40
+ * @LastEditTime: 2021-04-18 06:49:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -461,20 +461,12 @@ vfloat_t UArray_mean(u_array_t* arr, int axis)
     
     if (axis < UA_axisn(arr) && axis >= 0) {
         
-        int cal_type = UA_axisn(arr) % 2;
-
-        cal_type = cal_type == 0? (axis + 1) % 2 : axis % 2;
 
         int axisn_arr     = UA_axisn(arr);
         size_t* shape_arr = UA_shape(arr);
 
         int    new_axisn = axisn_arr -1;
         size_t new_shape[new_axisn];
-
-        // 列数，最后一维
-        size_t col_len = UA_shape_axis(arr, UA_axisn(arr)-1);
-        // 行数，倒数第二维
-        size_t row_len = UA_shape_axis(arr, UA_axisn(arr)-2);
 
         // calculate the new shape
         for (int i=0,j=0; i<axisn_arr, ++i) {
@@ -483,19 +475,35 @@ vfloat_t UArray_mean(u_array_t* arr, int axis)
             }
         }
 
-        size_t new_len = __axis_mulitply(new_shape, new_axisn, 0);
-        vfloat_t buffer[new_len];
-        size_t i,j,k,l;
-        if (cal_type) {
-            // collapse from up to dow, collapse row
+        // alloc the buffer
+        size_t new_size = __axis_mulitply(new_shape, new_axisn, 0) * sizeof(vfloat_t);
+        vfloat_t buffer[new_size];
 
-        } else {
-            // collapse from left to rigth, collapse 
+        size_t n1 =  __axis_mulitply(UA_shape(arr), axis, 0);
+        size_t n2 =  UA_shape_axis(arr, axis);
+        size_t n3 = __axis_mulitply(UA_shape(arr), UA_axisn(arr), axis+1);
+        size_t n4 = __axis_mulitply(UA_shape(arr), UA_axisn(arr), axis);
+        
+        vfloat_t* ptr = UA_data_ptr(arr);
+        size_t k,l,m;
+
+        // 超级难的
+        vfloat_t v =0.f;
+
+        for (k=0; k<n1; ++k) {
             
-            for (i=0; i<col_len; ++i) {
-                
-            }
+            vfloat_t* sub_ptr = &ptr[k*n4];
+            for (l=0; l<n3; ++l) {
+                v = sub_ptr[]
+                for (m=0; l<n2; ++l) {
 
+                    v += sub_ptr[l+n3];
+                }
+            }
+            
+
+            // 重新置零。
+            v = 0.f;
         }
 
         UA_reshape(arr, new_shape, new_axisn);
@@ -583,14 +591,12 @@ u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
     if (UA_axisn(a1) != 0 && UA_axisn(a2) != 0) {
 
         if (UA_axisn(a1) == 1) {
-
             size_t reshape[2] = {1, UA_shape_axis(a1, 0)};
             UA_reshape(a1, reshape, 2);
-
         }
 
+        // BUG ： 这里修改了 a2 的维度信息，是不对的。必须改正。
         if (UA_axisn(a2) == 1) {
-
             size_t reshape[2] = {UA_shape_axis(a2, 0), 1};
             UA_reshape(a2, reshape, 2);
         }
