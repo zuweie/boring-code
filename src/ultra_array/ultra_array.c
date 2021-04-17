@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-17 11:29:50
+ * @LastEditTime: 2021-04-17 14:11:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -463,14 +463,18 @@ vfloat_t UArray_mean(u_array_t* arr, int axis)
         
         int cal_type = UA_axisn(arr) % 2;
 
-        cal_type = cal_type == 1 ? 
-
+        cal_type = cal_type == 0? (axis + 1) % 2 : axis % 2;
 
         int axisn_arr     = UA_axisn(arr);
         size_t* shape_arr = UA_shape(arr);
 
         int    new_axisn = axisn_arr -1;
         size_t new_shape[new_axisn];
+
+        // 列数，最后一维
+        size_t col_len = UA_shape_axis(arr, UA_axisn(arr)-1);
+        // 行数，倒数第二维
+        size_t row_len = UA_shape_axis(arr, UA_axisn(arr)-2);
 
         // calculate the new shape
         for (int i=0,j=0; i<axisn_arr, ++i) {
@@ -481,12 +485,16 @@ vfloat_t UArray_mean(u_array_t* arr, int axis)
 
         size_t new_len = __axis_mulitply(new_shape, new_axisn, 0);
         vfloat_t buffer[new_len];
-
-        if (cal_type == 1) {
+        size_t i,j,k,l;
+        if (cal_type) {
             // collapse from up to dow, collapse row
 
         } else {
             // collapse from left to rigth, collapse 
+            
+            for (i=0; i<col_len; ++i) {
+                
+            }
 
         }
 
