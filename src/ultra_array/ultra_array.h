@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-16 14:50:35
+ * @LastEditTime: 2021-04-17 10:35:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -32,7 +32,6 @@ void UArray_destroy(u_array_t*);
 /* 操作后产生新的 ultra array 副本的函数 */
 void* UArray_data_copy(u_array_t*);
 
-u_array_t* UArray_operate(u_array_t*, int, operater_t);
 u_array_t* UArray_collapse(u_array_t*, int, vfloat_t(*)(vfloat_t*, size_t));
 
 u_array_t* UArray_operations_value(u_array_t*, vfloat_t, operater_t);
@@ -51,6 +50,7 @@ u_array_t* UArray_log(u_array_t*);
 u_array_t* UArray_pow2(u_array_t*);
 u_array_t* UArray_dot(u_array_t*, u_array_t*);
 u_array_t* UArray_load(u_array_t*, vfloat_t[]);
+u_array_t* UArray_mean(u_array_t*, int);
 
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
@@ -67,9 +67,7 @@ vfloat_t UArray_get(u_array_t*, ...);
 void UArray_set(u_array_t*, vfloat_t, ...);
 void UArray_display(u_array_t*);
 vfloat_t UArray_linalg_norm(u_array_t*);
-
-vfloat_t UArray_operator_sum(vfloat_t*, size_t);
-vfloat_t UArray_operator_mean(vfloat_t*, size_t);
+vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 
 #define _UArray1d(...) UArray_create_with_axes_dots(1,__VA_ARGS__)
 #define _UArray2d(...) UArray_create_with_axes_dots(2,__VA_ARGS__)
@@ -81,7 +79,7 @@ vfloat_t UArray_operator_mean(vfloat_t*, size_t);
 #define UA_get(parray, ...) UArray_get(parray, __VA_ARGS__)
 #define UA_set(parray, v, ...) UArray_set(parray, v, __VA_ARGS__)
 
-#define UA_sum(parray, axis) UArray_collapse(parray, axis, UArray_operator_sum)//UArray_operate(parray, axis, ua_sum)
+#define UA_sum(parray, axis) UArray_collapse(parray, axis, __ua_operator_sum)
 #define UA_mean(parray, axis) UArray_collapse(parray, axis, UArray_operator_mean)
 
 #define UA_T(parray) UArray_transform(parray)

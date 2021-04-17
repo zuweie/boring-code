@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-16 15:11:59
+ * @LastEditTime: 2021-04-17 11:29:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -315,62 +315,6 @@ u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n)
     return a;
 }
 
-//操作降维
-u_array_t* UArray_operate(u_array_t* arr, int axis, operater_t op)
-{
-    if (axis>=0 && axis<arr->axis_n) {
-        vfloat_t result;
-        size_t number = __axis_mulitply(UA_shape(arr), axis, 0); 
-        size_t step   = __axis_mulitply(UA_shape(arr), arr->axis_n, axis);
-        vfloat_t *arr_data_copy = UArray_data_copy(arr);
-        vfloat_t *arr_data = UA_data_ptr(arr);
-        size_t shape_new[axis];
-        int    axisn_new = axis;
-
-        for (int i=0; i<axis; ++i) {
-            shape_new[i] = UA_shape_axis(arr, i);
-        }
-
-        // 1 开始计算数据并更新数据。
-        for (int k=0, m=0; k<number; ++k, ++m) {
-
-            if (op == ua_sub || op == ua_sum) {
-                result = 0.f;
-            } else {
-                result = 1.f;
-            }
-            
-            for (int l=0; l<step; ++l) {
-                switch (op)
-                {
-                case ua_sum:
-                    result += arr_data_copy[ k*step + l ];
-                    break;
-                case ua_sub:
-                    result -= arr_data_copy[ k*step + l ];
-                    break;
-                case ua_mulitply:
-                    result *= arr_data_copy[ k*step + l ];
-                    break;
-                case ua_div:
-                    if (arr_data_copy[ k*step +l ] != 0.f)
-                        result /= arr_data_copy[ k*step + l ];
-                    break;
-                default:
-                    break;
-                }
-            }
-            arr_data[m] = result;
-        }
-        free(arr_data_copy);
-
-        // update shape
-        __update_shape(arr, shape_new, axisn_new);
-        //return 0;
-    }
-    //return -1;
-    return arr;
-}
 
 u_array_t* UArray_collapse(u_array_t* arr, int axis, vfloat_t(*operator)(vfloat_t*, size_t))
 {
@@ -399,22 +343,13 @@ u_array_t* UArray_collapse(u_array_t* arr, int axis, vfloat_t(*operator)(vfloat_
     return arr;
 }
 
-vfloat_t UArray_operator_sum(vfloat_t* block, size_t n)
+vfloat_t __ua_operator_sum(vfloat_t* block, size_t n)
 {
     vfloat_t v = 0.f;
     for (size_t i=0; i<n; ++i) {
         v += block[i];
     }
     return v;
-}
-
-vfloat_t UArray_operator_mean(vfloat_t* block, size_t n)
-{
-    vfloat_t v = 0.f;
-    for (size_t i=0; i<n; ++i) {
-        v += block[i];
-    }
-    return (v / (vfloat_t) n);
 }
 
 u_array_t* UArray_operations_value(u_array_t* arr, vfloat_t v, operater_t oper)
@@ -519,6 +454,55 @@ u_array_t* UArray_load(u_array_t* arr, vfloat_t data[])
     return arr;
 }
 
+// 超鸡吧复杂的计算算数平均值。
+vfloat_t UArray_mean(u_array_t* arr, int axis) 
+{
+    vfloat_t v = 0.f;
+    
+    if (axis < UA_axisn(arr) && axis >= 0) {
+        
+        int cal_type = UA_axisn(arr) % 2;
+
+        cal_type = cal_type == 1 ? 
+
+
+        int axisn_arr     = UA_axisn(arr);
+        size_t* shape_arr = UA_shape(arr);
+
+        int    new_axisn = axisn_arr -1;
+        size_t new_shape[new_axisn];
+
+        // calculate the new shape
+        for (int i=0,j=0; i<axisn_arr, ++i) {
+            if (axis != i) {
+                new_shape[j++] = shape_arr[i];
+            }
+        }
+
+        size_t new_len = __axis_mulitply(new_shape, new_axisn, 0);
+        vfloat_t buffer[new_len];
+
+        if (cal_type == 1) {
+            // collapse from up to dow, collapse row
+
+        } else {
+            // collapse from left to rigth, collapse 
+
+        }
+
+        UA_reshape(arr, new_shape, new_axisn);
+        UA_load(arr, buffer);
+    } else {
+        // axis 小于0的情况，就是所有的数据的算数平均值。
+        size_t len_arr = UA_length(arr);
+        vfloat_t* ptr  = UA_data_ptr(arr);
+        for (size_t i=0; i<len_arr; ++i) {
+            v += ptr[i];
+        }
+        v = v / (vfloat_t)len_arr;
+    }
+    return v;
+}
 
 /**
  * 超级鸡吧复杂多维内积算法，核心思想就是用第一个数组的最后一维，点积第二个数组倒数第二维。

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-04-16 14:51:36
+ * @LastEditTime: 2021-04-16 15:48:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -135,7 +135,7 @@ static int suite_success_clean (void)
     printf("\nUltra Array research suite success clean\n");
 }
 
-static void test_uarray_create () 
+static void test_uarray_create (void) 
 {
     u_array_t arr = _UArray2d(2, 3);
     UA_arange(&arr, 2*3);
@@ -167,6 +167,17 @@ static void test_uarray_create ()
     UArray_(&arr1);
     UArray_(&arr3);
 
+}
+
+static void test_uarray_mean (void)
+{
+    u_array_t arr_3d = _UArray3d(2, 3, 8);
+    UA_arange(&arr_3d, 2*3*8);
+    printf_uarr(&arr_3d, 0, UA_data_ptr(&arr_3d), 0);
+    UA_mean(&arr_3d, 1);
+    printf_uarr(&arr_3d, 0, UA_data_ptr(&arr_3d), 0);
+
+    UArray_(&arr_3d);
 }
 
 static void test_coord_index (void) {
@@ -519,8 +530,8 @@ static void test_ua_pad_const(void)
     consts[1] = 2;
     consts[2] = 1;
     u_array_t u2 = UArray_pad(&u1, "((1,3),(3,1),(1,2))", ua_pad_mode_constanst, consts);
-    printf("\n");
-    printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
+    //printf("\n");
+    //printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
 
     UArray_(&u1);
     UArray_(&u2);
@@ -619,7 +630,10 @@ int do_ultra_array_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    if (NULL == CU_add_test(pSuite, "test uarray mean", test_uarray_mean) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     //#endif
-
-
 }
