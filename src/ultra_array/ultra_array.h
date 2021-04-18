@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-17 10:35:29
+ * @LastEditTime: 2021-04-18 09:37:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -50,7 +50,7 @@ u_array_t* UArray_log(u_array_t*);
 u_array_t* UArray_pow2(u_array_t*);
 u_array_t* UArray_dot(u_array_t*, u_array_t*);
 u_array_t* UArray_load(u_array_t*, vfloat_t[]);
-u_array_t* UArray_mean(u_array_t*, int);
+vfloat_t UArray_mean(u_array_t*, int);
 
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
@@ -80,7 +80,7 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_set(parray, v, ...) UArray_set(parray, v, __VA_ARGS__)
 
 #define UA_sum(parray, axis) UArray_collapse(parray, axis, __ua_operator_sum)
-#define UA_mean(parray, axis) UArray_collapse(parray, axis, UArray_operator_mean)
+#define UA_mean(parray, axis) UArray_mean(parray, axis)
 
 #define UA_T(parray) UArray_transform(parray)
 #define UA_arange(parray, range) UArray_arange(parray, range)

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-18 06:49:36
+ * @LastEditTime: 2021-04-18 20:31:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -54,7 +54,7 @@ static void*
 __alloc_shape(size_t axis_n, size_t shape[])
 {
     if (axis_n > 0) {
-        void* p = __alloc_memory((axis_n <=0? 1: axis_n) * sizeof(size_t));
+        void* p = __alloc_memory( axis_n * sizeof(size_t));
         memcpy(p, shape, axis_n * sizeof(size_t));
         return p;
     } 
@@ -236,6 +236,7 @@ u_array_t UArray_create_with_axes_array(int axis_n, size_t shape[])
         u_array_t n_array;
         n_array.axis_n = axis_n;
         __alloc_start(axis_n, shape, n_array.start);
+        n_array.pool_size = UA_size(&n_array);
         return n_array;
     }
     return ua_unable;
@@ -337,7 +338,6 @@ u_array_t* UArray_collapse(u_array_t* arr, int axis, vfloat_t(*operator)(vfloat_
             ptr[m] = operator(block_ptr, block_len);
         }
         free(arr_data_copy);
-        // update shape
         __update_shape(arr, shape_new, axisn_new);
     }
     return arr;
@@ -469,14 +469,14 @@ vfloat_t UArray_mean(u_array_t* arr, int axis)
         size_t new_shape[new_axisn];
 
         // calculate the new shape
-        for (int i=0,j=0; i<axisn_arr, ++i) {
+        for (int i=0,j=0; i<axisn_arr; ++i) {
             if (axis != i) {
                 new_shape[j++] = shape_arr[i];
             }
         }
 
         // alloc the buffer
-        size_t new_size = __axis_mulitply(new_shape, new_axisn, 0) * sizeof(vfloat_t);
+        size_t new_size = __axis_mulitply(new_shape, new_axisn, 0);
         vfloat_t buffer[new_size];
 
         size_t n1 =  __axis_mulitply(UA_shape(arr), axis, 0);
@@ -485,23 +485,26 @@ vfloat_t UArray_mean(u_array_t* arr, int axis)
         size_t n4 = __axis_mulitply(UA_shape(arr), UA_axisn(arr), axis);
         
         vfloat_t* ptr = UA_data_ptr(arr);
-        size_t k,l,m;
+        size_t k,l,m,n;
 
         // 超级难的
         vfloat_t v =0.f;
-
+        n=0;
         for (k=0; k<n1; ++k) {
-            
+
             vfloat_t* sub_ptr = &ptr[k*n4];
+
             for (l=0; l<n3; ++l) {
-                v = sub_ptr[]
-                for (m=0; l<n2; ++l) {
 
-                    v += sub_ptr[l+n3];
+                v = sub_ptr[l];
+
+                for (m=1; m<n2; ++m) {
+
+                    v += sub_ptr[l + m*n3];
                 }
+                v = v / (vfloat_t) n2;
+                buffer[n++] = v;
             }
-            
-
             // 重新置零。
             v = 0.f;
         }

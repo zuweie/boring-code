@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-04-16 15:48:58
+ * @LastEditTime: 2021-04-18 20:39:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -167,17 +167,6 @@ static void test_uarray_create (void)
     UArray_(&arr1);
     UArray_(&arr3);
 
-}
-
-static void test_uarray_mean (void)
-{
-    u_array_t arr_3d = _UArray3d(2, 3, 8);
-    UA_arange(&arr_3d, 2*3*8);
-    printf_uarr(&arr_3d, 0, UA_data_ptr(&arr_3d), 0);
-    UA_mean(&arr_3d, 1);
-    printf_uarr(&arr_3d, 0, UA_data_ptr(&arr_3d), 0);
-
-    UArray_(&arr_3d);
 }
 
 static void test_coord_index (void) {
@@ -557,6 +546,38 @@ static void test_ua_scope(void)
     CU_ASSERT_TRUE(UA_get(&u1, 4) == 2.f);
 }
 
+static void test_ua_mean(void)
+{
+    u_array_t u1 = _UArrayXd(4, 2,3,4,5);
+    u_array_t u2 = _UArrayXd(4, 2,3,4,5);
+    u_array_t u3 = _UArrayXd(4, 2,3,4,5);
+    u_array_t u4 = _UArrayXd(4, 2,3,4,5);
+
+    UA_arange(&u1, 2*3*4*5);
+    UA_arange(&u2, 2*3*4*5);
+    UA_arange(&u3, 2*3*4*5);
+    UA_arange(&u4, 2*3*4*5);
+
+    UA_mean(&u1, 0);
+    UA_mean(&u2, 1);
+    UA_mean(&u3, 2);
+    UA_mean(&u4, 3);
+    
+    printf("\n mean 0\n");
+    printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+    printf("\n mean 1\n");
+    printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
+    printf("\n mean 2\n");
+    printf_uarr(&u3, 0, UA_data_ptr(&u3), 0);
+    printf("\n mean 3\n");
+    printf_uarr(&u4, 0, UA_data_ptr(&u4), 0);
+
+    UArray_(&u1);
+    UArray_(&u2);
+    UArray_(&u3);
+    UArray_(&u4);
+}
+
 int do_ultra_array_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -631,7 +652,7 @@ int do_ultra_array_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test uarray mean", test_uarray_mean) ) {
+    if (NULL == CU_add_test(pSuite, "test uarray mean", test_ua_mean) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
