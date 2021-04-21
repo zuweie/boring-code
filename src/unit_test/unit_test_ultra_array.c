@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-04-18 20:39:55
+ * @LastEditTime: 2021-04-21 15:03:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -235,6 +235,23 @@ static void test_array_dot (void)
     UArray_(&u2);
     UArray_(&u3);   
 }
+
+static void test_array_dot2 (void) 
+{
+    u_array_t u1 = _UArray1d(5);
+    UA_arange(&u1, 5);
+    u_array_t u2 = _UArray1d(5);
+    UA_arange(&u2, 5);
+    UArray_dot(&u1, &u2);
+
+    vfloat_t* ptr = UA_data_ptr(&u1);
+
+    CU_ASSERT_TRUE(ptr[0] == 30.f);
+    
+    UArray_(&u1);
+    UArray_(&u2);
+}
+
 static void test_array_router (void) 
 {
     u_array_t u1 = _UArray3d(3, 3, 4);
@@ -604,6 +621,11 @@ int do_ultra_array_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test ultra array dot ", test_array_dot) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test ultra array dot2 ", test_array_dot2) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

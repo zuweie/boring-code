@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-18 09:37:00
+ * @LastEditTime: 2021-04-21 15:04:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -88,6 +88,7 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_load(parray, data) UArray_load(parray, data)
 #define UA_ones(parray, v) UArray_ones(parray, v)
 #define UA_dot_new(pa1, pa2) UArray_dot_new_copy(pa1, pa2)
+#define UA_dot(pa1, pa2) UArray_dot(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
 #define UA_fission(parray, router) UArray_fission(parray, router)
 #define UA_fission_raw(parray, router, raw_buff) UArray_fission_raw(parray, router, raw_buffer)

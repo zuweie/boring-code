@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-18 20:31:39
+ * @LastEditTime: 2021-04-21 15:06:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -591,44 +591,45 @@ u_array_t UArray_dot_new_copy(u_array_t* a1, u_array_t* a2)
 // 这个版本的 dot 不产生新的 u_array_t，点积结果放在 第一个 u_array_t 的结果当中
 u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
 {
-    if (UA_axisn(a1) != 0 && UA_axisn(a2) != 0) {
+    if (UA_axisn(a1) > 0 && UA_axisn(a2) > 0) {
 
-        if (UA_axisn(a1) == 1) {
-            size_t reshape[2] = {1, UA_shape_axis(a1, 0)};
-            UA_reshape(a1, reshape, 2);
-        }
-
-        // BUG ： 这里修改了 a2 的维度信息，是不对的。必须改正。
-        if (UA_axisn(a2) == 1) {
-            size_t reshape[2] = {UA_shape_axis(a2, 0), 1};
-            UA_reshape(a2, reshape, 2);
-        }
-        
-        
-        size_t row_size_a1 = UA_shape_axis(a1, a1->axis_n-1);
-        size_t col_size_a2 = UA_shape_axis(a2, a2->axis_n-2);
+        size_t row_size_a1 = UA_axisn(a1) == 1 ? UA_shape_axis(a1, 0) : UA_shape_axis(a1, a1->axis_n-1);
+        size_t col_size_a2 = UA_axisn(a2) == 1 ? UA_shape_axis(a2, 0) : UA_shape_axis(a2, a2->axis_n-2);
 
         if (row_size_a1 == col_size_a2){
+            unsigned char a2_shape_changed = 0;
+            if (UA_axisn(a1) == 1) {
+                size_t reshape[2] = {1, UA_shape_axis(a1, 0)};
+                UA_reshape(a1, reshape, 2);
+            }
+
+            // BUG ： 这里修改了 a2 的维度信息，是不对的。必须改正。
+            if (UA_axisn(a2) == 1) {
+                a2_shape_changed = 1;
+                size_t reshape[2] = {UA_shape_axis(a2, 0), 1};
+                UA_reshape(a2, reshape, 2);
+            }
 
             int i,j,k,m=0,l=0;
             // 组装新的shape
-            size_t n_axes[a1->axis_n + a2->axis_n - 2];
+            size_t n_shape[a1->axis_n + a2->axis_n - 2];
 
             size_t* shape_a1 = UA_shape(a1);
             size_t* shape_a2 = UA_shape(a2);
 
             for (i=0; i<a1->axis_n-1; ++i) {
-                n_axes[i] = shape_a1[i];
+                n_shape[i] = shape_a1[i];
             }
 
             for (j=0; j<a2->axis_n; ++j) {
                 if (j != a2->axis_n - 2) {
-                    n_axes[i++] = shape_a2[j];
+                    n_shape[i++] = shape_a2[j];
                 }
             }
             
             //u_array_t a3 = UArray_create_with_axes_array(a1->axis_n + a2->axis_n - 2, n_axes);
-            size_t len_a3 = __axis_mulitply(n_axes, a1->axis_n + a2->axis_n, 0);
+            int    n_axisn = a1->axis_n + a2->axis_n - 2;
+            size_t len_a3 = __axis_mulitply(n_shape, n_axisn, 0);
             
             // a1 的 总的行数
             size_t total_rows_number_a1  = __axis_mulitply(shape_a1, a1->axis_n-2, 0) * UA_shape_axis(a1, a1->axis_n-2);
@@ -664,11 +665,16 @@ u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
             }
 
             // 重新调整 a1 的形状尺寸，
-            UA_reshape(a1, n_axes, a1->axis_n+a2->axis_n);
+            UA_reshape(a1, n_shape, n_axisn);
             UA_load(a1, data_a3);
             
+            if (a2_shape_changed) {
+                size_t recover_shape[1] = {UA_shape_axis(a2, 0)};
+                UA_reshape(a2, recover_shape, 1);
+            }
+            
             return a1;
-        }
+        } 
     }
     return NULL;
 }
@@ -701,7 +707,6 @@ u_array_t UArray_fission_with_indicators(u_array_t* a, ua_indicator_t* indicator
     UArray_chunk_note_finalize(&chunk_note);
     return fission;
 }
-
 
 u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
 {
