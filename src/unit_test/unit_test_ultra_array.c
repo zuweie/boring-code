@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-04-21 16:36:33
+ * @LastEditTime: 2021-04-21 23:22:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -601,6 +601,18 @@ static void test_ua_operations(void)
     UA_ones(&u1, 1);
     UA_sumBy_var(&u1, 2);
     printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+    
+    vfloat_t arr[3] = {1,2,3};
+    UA_mulitBy_arr(&u1, arr, 3);
+    printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+
+    u_array_t u2 = _UArray1d(3);
+    UA_ones(&u2, -1.f);
+    UA_sumBy_uar(&u1, &u2);
+    printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+    
+    UArray_(&u1);
+    UArray_(&u2);
 }
 
 int do_ultra_array_test (void) 
