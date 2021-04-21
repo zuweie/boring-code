@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-04-21 15:06:29
+ * @LastEditTime: 2021-04-21 15:27:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -352,7 +352,7 @@ vfloat_t __ua_operator_sum(vfloat_t* block, size_t n)
     return v;
 }
 
-u_array_t* UArray_operations_value(u_array_t* arr, vfloat_t v, operater_t oper)
+u_array_t* UArray_operations_var(u_array_t* arr, vfloat_t v, operater_t oper)
 {
     size_t len = UA_length(arr);
     vfloat_t* ptr = UA_data_ptr(arr);
@@ -381,7 +381,7 @@ u_array_t* UArray_operations_arr(u_array_t* arr, vfloat_t* v, size_t n, operater
     return arr;
 }
 
-u_array_t* UArray_operations_uarr(u_array_t* arr1, u_array_t* arr2, operater_t oper)
+u_array_t* UArray_operations_uar(u_array_t* arr1, u_array_t* arr2, operater_t oper)
 {
     size_t len_arr1 = UA_length(arr1);
     size_t len_arr2 = UA_length(arr2);

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-04-21 15:03:00
+ * @LastEditTime: 2021-04-21 16:36:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -595,6 +595,14 @@ static void test_ua_mean(void)
     UArray_(&u4);
 }
 
+static void test_ua_operations(void) 
+{
+    u_array_t u1 = _UArray2d(2,3);
+    UA_ones(&u1, 1);
+    UA_sumBy_var(&u1, 2);
+    printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+}
+
 int do_ultra_array_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -675,6 +683,11 @@ int do_ultra_array_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test uarray mean", test_ua_mean) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test uarray operations", test_ua_operations) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-21 15:04:18
+ * @LastEditTime: 2021-04-21 16:37:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -34,9 +34,9 @@ void* UArray_data_copy(u_array_t*);
 
 u_array_t* UArray_collapse(u_array_t*, int, vfloat_t(*)(vfloat_t*, size_t));
 
-u_array_t* UArray_operations_value(u_array_t*, vfloat_t, operater_t);
+u_array_t* UArray_operations_var(u_array_t*, vfloat_t, operater_t);
 u_array_t* UArray_operations_arr(u_array_t*, vfloat_t*, size_t, operater_t);
-u_array_t* UArray_operations_uarr(u_array_t*, u_array_t*, operater_t);
+u_array_t* UArray_operations_uar(u_array_t*, u_array_t*, operater_t);
 
 u_array_t* UArray_transpose(u_array_t*, size_t[]);
 u_array_t* UArray_transform(u_array_t*);
@@ -81,6 +81,14 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 
 #define UA_sum(parray, axis) UArray_collapse(parray, axis, __ua_operator_sum)
 #define UA_mean(parray, axis) UArray_mean(parray, axis)
+
+#define UA_sumBy_arr(parray, arr, n) UArray_operations_arr(parray, arr, n ua_sum)
+#define UA_sumBy_var(parray, var) UArray_operations_var(parray, var, ua_sum)
+#define UA_sumBy_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_sum)
+
+#define UA_mulitBy_arr(parray, arr, n) UArray_operations_arr(parray, arr, n, ua_mulitply)
+#define UA_mulitBy_var(parray, var) UArray_operations_var(parray, var, ua_mulitply)
+#define UA_mulitBy_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_mulitply)
 
 #define UA_T(parray) UArray_transform(parray)
 #define UA_arange(parray, range) UArray_arange(parray, range)
