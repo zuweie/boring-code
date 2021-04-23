@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-21 16:37:21
+ * @LastEditTime: 2021-04-23 11:15:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -82,13 +82,13 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_sum(parray, axis) UArray_collapse(parray, axis, __ua_operator_sum)
 #define UA_mean(parray, axis) UArray_mean(parray, axis)
 
-#define UA_sumBy_arr(parray, arr, n) UArray_operations_arr(parray, arr, n ua_sum)
-#define UA_sumBy_var(parray, var) UArray_operations_var(parray, var, ua_sum)
-#define UA_sumBy_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_sum)
+#define UA_sum_arr(parray, arr, n) UArray_operations_arr(parray, arr, n ua_sum)
+#define UA_sum_var(parray, var) UArray_operations_var(parray, var, ua_sum)
+#define UA_sum_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_sum)
 
-#define UA_mulitBy_arr(parray, arr, n) UArray_operations_arr(parray, arr, n, ua_mulitply)
-#define UA_mulitBy_var(parray, var) UArray_operations_var(parray, var, ua_mulitply)
-#define UA_mulitBy_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_mulitply)
+#define UA_mulitply_arr(parray, arr, n) UArray_operations_arr(parray, arr, n, ua_mulitply)
+#define UA_mulitply_var(parray, var) UArray_operations_var(parray, var, ua_mulitply)
+#define UA_mulitply_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_mulitply)
 
 #define UA_T(parray) UArray_transform(parray)
 #define UA_arange(parray, range) UArray_arange(parray, range)
