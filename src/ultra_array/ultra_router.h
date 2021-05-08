@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-08 20:16:55
- * @LastEditTime: 2021-04-08 14:27:28
+ * @LastEditTime: 2021-05-08 11:55:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.h
@@ -39,6 +39,10 @@ int UArray_survey_chuck_address(u_array_t*, char*, ua_indicator_t*, ua_chunk_not
 
 void UArray_chunk_note_finalize(ua_chunk_note_t*);
 
+/*
+ *
+ * 
+ */
 #define __indicators(_p_marco_indicator, marco_picked, marco_start, marco_tail) \
     ({ \
         ua_indicator_t* __p_indicator = _p_marco_indicator; \
@@ -54,6 +58,34 @@ void UArray_chunk_note_finalize(ua_chunk_note_t*);
 #define __indicators_start_tail(_p_marco_indicator, marco_start, marco_tail) __indicators(_p_marco_indicator, -1, marco_start, marco_tail)
 #define __indicators_start(_p_marco_indicator, marco_start) __indicators(_p_marco_indicator, -1, marco_start, 0)
 #define __indicators_tail(_p_marco_indicator, marco_tail) __indicators(_p_marco_indicator, -1, 0, marco_tail)
+
+#define __indicators_scope_init(marco_indicators_arr, marco_n) \
+    ua_indicator_t marco_indicators_arr[marco_n]; \
+    { \
+        for(int i=0; i<(marco_n-1); ++i) { \
+            marco_indicators_arr[i].next = &marco_indicators_arr[i+1]; \
+            marco_indicators_arr[i].__axis = i; \
+        } \
+        marco_indicators_arr[(marco_n)-1].next = NULL;  \
+        marco_indicators_arr[(marco_n)-1].__axis = marco_n-1; \
+    }
+
+#define __indicators_scope(__p_marco_indicator, marco_picked, marco_start, marco_tail) \
+    ({ \
+        ua_indicator_t* __p_indicator = __p_marco_indicator; \
+        if ( __p_indicator ) { \
+            __p_indicator->__picked = marco_picked; \
+            __p_indicator->__start  = marco_start; \
+            __p_indicator->__tail   = marco_tail; \
+        } \
+        __p_indicator = __p_indicator->next; \
+        __p_indicator; \
+    })
+
+#define __indicators_scope_picked(__p_marco_indicator, marco_picked) __indicators_scope(__p_marco_indicator, marco_picked, 0, 0)
+#define __indicators_scope_start_tail(__p_marco_indicator, marco_start, marco_tail) __indicators_scope(__p_marco_indicator, -1, marco_start, marco_tail)
+#define __indicators_scope_start(__p_marco_indicator, marco_start) __indicators_scope(__p_marco_indicator, -1, marco_start, 0)
+#define __indicators_scope_tail(__p_marco_indicator, marco_tail) __indicators_scope(__p_marco_indicator, -1, 0, marco_tail)
 
 #endif
 

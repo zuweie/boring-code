@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-04-23 11:15:07
+ * @LastEditTime: 2021-05-08 16:18:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -48,6 +48,7 @@ u_array_t* UArray_assimilate(u_array_t*, char[], u_array_t*);
 u_array_t* UArray_assimilate_with_indicators(u_array_t*, ua_indicator_t*, u_array_t*);
 u_array_t* UArray_log(u_array_t*);
 u_array_t* UArray_pow2(u_array_t*);
+u_array_t* UArray_exp(u_array_t*);
 u_array_t* UArray_dot(u_array_t*, u_array_t*);
 u_array_t* UArray_load(u_array_t*, vfloat_t[]);
 vfloat_t UArray_mean(u_array_t*, int);
@@ -82,13 +83,17 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_sum(parray, axis) UArray_collapse(parray, axis, __ua_operator_sum)
 #define UA_mean(parray, axis) UArray_mean(parray, axis)
 
-#define UA_sum_arr(parray, arr, n) UArray_operations_arr(parray, arr, n ua_sum)
+#define UA_sum_arr(parray, arr, n) UArray_operations_arr(parray, arr, n, ua_sum)
 #define UA_sum_var(parray, var) UArray_operations_var(parray, var, ua_sum)
 #define UA_sum_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_sum)
 
 #define UA_mulitply_arr(parray, arr, n) UArray_operations_arr(parray, arr, n, ua_mulitply)
 #define UA_mulitply_var(parray, var) UArray_operations_var(parray, var, ua_mulitply)
 #define UA_mulitply_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_mulitply)
+
+#define UA_div_arr(parray, arr, n) UArray_operations_arr(parray, arr, n, ua_div)
+#define UA_div_var(parray, var) UArray_operations_var(parray, var, ua_div)
+#define UA_div_uar(parray1, parray2) UArray_operations_uar(parray1, parray2, ua_div);
 
 #define UA_T(parray) UArray_transform(parray)
 #define UA_arange(parray, range) UArray_arange(parray, range)
@@ -99,14 +104,16 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_dot(pa1, pa2) UArray_dot(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
 #define UA_fission(parray, router) UArray_fission(parray, router)
-#define UA_fission_raw(parray, router, raw_buff) UArray_fission_raw(parray, router, raw_buffer)
+#define UA_fission_indicator(parray, indictor) UArray_fission_with_indicators(parray, indicator)
 #define UA_assimilate(pa1, router, pa2) UArray_assimilate(pa1, router, pa2)
 #define UA_copy(parray) UArray_fission(parray, "")
 #define UA_log(parray) UArray_log(parray)
+#define UA_exp(parray) UArray_exp(parray)
 #define UA_pow2(parray) UArray_pow2(parray)
 #define UA_empty_like(parray) UArray_empty_like(parray)
 #define UA_pad_edge(parray, pad_width) UArray_pad(parray, pad_width, ua_pad_mode_edge, NULL)
 #define UA_pad_const(parray, pad_width, constanst) UArray_pad(parray, pad_width, ua_pad_mode_constanst, constanst)
+#define UA_norm(parray) UArray_linalg_norm(parray)
  
 #define UA_cover_coordinate(parray, coord) UArray_xd_coord_to_1d_offset(parray, coord)
 #define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)

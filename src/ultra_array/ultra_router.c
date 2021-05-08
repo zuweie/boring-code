@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-04-15 09:57:30
+ * @LastEditTime: 2021-05-07 09:52:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
@@ -61,6 +61,10 @@ ua_indicator_t* UArray_indicator_create(int axis, int picked, int start, int tai
     index->__tail  = tail;
     index->next    = NULL;
     return index;
+}
+ua_indicator_t* UArray_indicator_init(ua_indicator_t* index, int axis, int picked, int start, int tail) 
+{
+    
 }
 
 void UArray_indicator_addto(ua_indicator_t** indicator_list, ua_indicator_t* indicator) 

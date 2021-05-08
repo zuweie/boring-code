@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-04-23 11:19:56
+ * @LastEditTime: 2021-05-08 12:16:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -416,6 +416,25 @@ static void test_fission(void)
     UArray_(&u2);
 }
 
+static void test_fission2(void) {
+
+    __indicators_scope_init(index, 3);
+    void* i_next = __indicators_scope_start_tail(index, 0, 0);
+    i_next = __indicators_scope_start_tail(i_next,0, 0);
+    __indicators_scope_picked(i_next, 1);
+
+    u_array_t u1 = _UArray3d(2,3,4);
+    UA_arange(&u1, 2*3*4);
+
+    //printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+
+    u_array_t u2 = UArray_fission_with_indicators(&u1, index);
+    //printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
+    
+    UArray_(&u1);
+    UArray_(&u2);
+}
+
 static void test_assimilate(void) 
 {
     u_array_t u1 = _UArray3d(3,3,4);
@@ -633,7 +652,6 @@ int do_ultra_array_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
-
     
     if (NULL == CU_add_test(pSuite, "test ultra array transform ", test_ultra_array_transform) ) {
         CU_cleanup_registry();
@@ -659,6 +677,11 @@ int do_ultra_array_test (void)
         return CU_get_error();
     }
 
+    if (NULL == CU_add_test(pSuite, "test ultra array fission2 ", test_fission2) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    
     if (NULL == CU_add_test(pSuite, "test ultra array assimlate ", test_assimilate) ) {
         CU_cleanup_registry();
         return CU_get_error();
