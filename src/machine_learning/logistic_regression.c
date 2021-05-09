@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-04 15:29:30
- * @LastEditTime: 2021-05-08 16:31:02
+ * @LastEditTime: 2021-05-09 10:30:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/logistic_regression.c
@@ -84,14 +84,7 @@ static vfloat_t __dRh_dw(u_array_t* X, u_array_t* y, size_t i, u_array_t* W)
     
 }
 
-static vfloat_t __norm_arr(vfloat_t arr[], size_t n)
-{
-    vfloat_t v = 0.f;
-    for (size_t i=0; i<n; ++i) {
-        v += arr[i] * arr[i];
-    }
-    return sqrt(v);
-}
+
 
 /**
  *  X 训练集
@@ -103,21 +96,20 @@ static vfloat_t __norm_arr(vfloat_t arr[], size_t n)
  */
 int logistic_regression_train(u_array_t* X, u_array_t* y, u_array_t* W, vfloat_t eta, vfloat_t epochs, vfloat_t epsilon)
 {
-    size_t Wn = UA_shape_axis(W, 0);
-    u_array_t drhdw = UA_empty_like(W);
+    u_array_t drh_dw = UA_empty_like(W);
     for (int i=0; i<epochs; ++i) {
 
         for (size_t j=0; j<Wn; ++j) {
-            vfloat_t v = dRhdw(X, y, j, W);
-            UA_set(drhdw, v, j);
+            vfloat_t v = __dRh_dw(X, y, j, W);
+            UA_set(drh_dw, v, j);
         }
 
-        if (__norm_arr(new_W, Wn) < epsilon) break;
+        if (UArray_linalg_norm(drh_dw) < epsilon) break;
 
-        UA_mulitply_var(&drhdw, -1* (eta));
+        UA_mulitply_var(&drh_dw, -1* (eta));
         
-        UA_sum_uar(W, &drhdw);
+        UA_sum_uar(W, &drh_dw);
     }
-    UArray_(&drhdw);
+    UArray_(&drh_dw);
     return 0;
 }
