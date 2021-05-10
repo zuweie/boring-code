@@ -50,6 +50,7 @@ set (SOURCE
     src/ultra_array/ultra_padding.c
     src/machine_learning/linear_regression.c
     src/machine_learning/logistic_regression.c
+    src/machine_learning/support_vector_machines.c
 )
 
 ## 连接 cunit 库

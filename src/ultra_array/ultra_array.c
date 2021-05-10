@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-05-10 10:25:47
+ * @LastEditTime: 2021-05-10 23:07:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -670,6 +670,7 @@ u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
             UA_reshape(a1, n_shape, n_axisn);
             UA_load(a1, data_a3);
             
+            // recover the a2 shape
             if (a2_shape_changed) {
                 size_t recover_shape[1] = {UA_shape_axis(a2, 0)};
                 UA_reshape(a2, recover_shape, 1);
