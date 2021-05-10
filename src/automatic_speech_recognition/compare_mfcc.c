@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-09 15:47:11
- * @LastEditTime: 2021-04-16 14:53:31
+ * @LastEditTime: 2021-05-10 07:08:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/compare_mfcc.c
@@ -38,7 +38,7 @@ u_array_t compare_mfcc_cosine(u_array_t* mfcc1, u_array_t* mfcc2)
         vfloat_t mod_u2 = sqrt(sum_u2);
         vfloat_t _score = _dot / mod_u1 / mod_u2;
 
-        UA_set(&scores, _score, i);
+        UA_set(&scores, i, _score);
 
         // clean up
         UArray_(&u1);
@@ -71,7 +71,7 @@ u_array_t compare_mfcc_distance(u_array_t* mfcc1, u_array_t* mfcc2)
            distance +=  (_data_2[j] - _data_1[j])*(_data_2[j] - _data_1[j]);
         }
         distance = sqrt(distance);
-        UA_set(&scores, distance, i);
+        UA_set(&scores, i, distance);
     }
     return scores;
 }
@@ -132,7 +132,7 @@ u_array_t compare_mfcc_pearson(u_array_t* mfcc1, u_array_t* mfcc2)
         } else {
             v = -1 * pow(0.95, x++);
         }
-        UA_set(&scores, v, i);
+        UA_set(&scores, i, v);
     }
 
     if (need_free_pad) {

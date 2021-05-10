@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-05-08 16:18:57
+ * @LastEditTime: 2021-05-10 07:15:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -60,12 +60,13 @@ u_array_t UArray_fission_with_indicators(u_array_t*, ua_indicator_t*);
 u_array_t UArray_padding(u_array_t*, ua_pad_width_t[], ua_pad_mode_t, vfloat_t*);
 u_array_t UArray_pad(u_array_t*, char[], ua_pad_mode_t, vfloat_t*);
 u_array_t UArray_empty_like(u_array_t*);
+u_array_t UArray_copy(u_array_t*);
 
 size_t UArray_xd_coord_to_1d_offset(u_array_t*, size_t*);
 void UArray_1d_offset_to_xd_coord(u_array_t*, size_t, size_t*);
 size_t UArray_axis_mulitply(u_array_t* a, int);
 vfloat_t UArray_get(u_array_t*, ...);
-void UArray_set(u_array_t*, vfloat_t, ...);
+void UArray_set(u_array_t*, ...);
 void UArray_display(u_array_t*);
 vfloat_t UArray_linalg_norm(u_array_t*);
 vfloat_t __ua_operator_sum(vfloat_t*, size_t);
@@ -78,7 +79,7 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UArray_(parray) UArray_destroy(parray)
 
 #define UA_get(parray, ...) UArray_get(parray, __VA_ARGS__)
-#define UA_set(parray, v, ...) UArray_set(parray, v, __VA_ARGS__)
+#define UA_set(parray, ...) UArray_set(parray, __VA_ARGS__)
 
 #define UA_sum(parray, axis) UArray_collapse(parray, axis, __ua_operator_sum)
 #define UA_mean(parray, axis) UArray_mean(parray, axis)
@@ -104,9 +105,9 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_dot(pa1, pa2) UArray_dot(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
 #define UA_fission(parray, router) UArray_fission(parray, router)
-#define UA_fission_indicator(parray, indictor) UArray_fission_with_indicators(parray, indicator)
+#define UA_fission_indicator(parray, indicator) UArray_fission_with_indicators(parray, indicator)
 #define UA_assimilate(pa1, router, pa2) UArray_assimilate(pa1, router, pa2)
-#define UA_copy(parray) UArray_fission(parray, "")
+#define UA_copy(parray) UArray_copy(parray)
 #define UA_log(parray) UArray_log(parray)
 #define UA_exp(parray) UArray_exp(parray)
 #define UA_pow2(parray) UArray_pow2(parray)

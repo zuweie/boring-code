@@ -1,12 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-01-15 09:14:00
- * @LastEditTime: 2021-04-09 15:14:58
+ * @LastEditTime: 2021-05-10 08:17:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dct.c
  */
 #include <stdio.h>
+#include <stdarg.h>
 #include <CUnit/Basic.h>
 #include "test_data.h"
 
@@ -91,6 +92,24 @@ static void test_toutiao_test(void)
     printf(" *c 的值: %d \n", *c);
 }
 
+static void dots_params(char flag, ...)
+{
+    va_list valist;
+    va_start(valist, flag);
+    char i = va_arg(valist, char);
+    int  j = va_arg(valist, int);
+    size_t  k = va_arg(valist, size_t);
+    float l = va_arg(valist, double);
+    double m = va_arg(valist, double);
+    va_end(valist);
+
+}
+
+static void test_dots_params(void)
+{
+    dots_params('c', 'd', 1, 3, 4.2, 3.5);
+}
+
 int do_toutiao_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -100,27 +119,32 @@ int do_toutiao_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test toutiao", test_toutiao_test) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test toutiao", test_toutiao_test) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test toutiao", test_toutiao1_test) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test toutiao", test_toutiao1_test) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test toutiao2", test_toutiao2_test) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-    if (NULL == CU_add_test(pSuite, "test toutiao3", test_toutiao3_test) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test toutiao2", test_toutiao2_test) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+    // if (NULL == CU_add_test(pSuite, "test toutiao3", test_toutiao3_test) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     
-    if (NULL == CU_add_test(pSuite, "test toutiao4", test_toutiao4_test) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test toutiao4", test_toutiao4_test) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, "test dots_params", test_dots_params) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }

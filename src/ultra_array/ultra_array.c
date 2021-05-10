@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-05-08 15:08:03
+ * @LastEditTime: 2021-05-10 10:25:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -254,17 +254,19 @@ vfloat_t UArray_get(u_array_t* arr, ...)
     return ((vfloat_t*)(UA_data_ptr(arr)))[offset];
 }
 
-void UArray_set(u_array_t* arr, vfloat_t v, ...)
+void UArray_set(u_array_t* arr, ...)
 {
     va_list valist;
-    va_start(valist, v);
+    va_start(valist, arr);
     size_t coord[UA_axisn(arr)];
+    vfloat_t value;
     for (int i=0; i<UA_axisn(arr); ++i) {
         coord[i] = va_arg(valist, size_t);
     }
+    value = va_arg(valist, double);
     va_end(valist);
     size_t offset = UA_cover_coordinate(arr, coord);
-    ((vfloat_t*)(UA_data_ptr(arr)))[offset] = v;
+    ((vfloat_t*)(UA_data_ptr(arr)))[offset] = value;
     return;
 }
 
@@ -366,7 +368,7 @@ u_array_t* UArray_operations_var(u_array_t* arr, vfloat_t v, operater_t oper)
 u_array_t* UArray_operations_arr(u_array_t* arr, vfloat_t* v, size_t n, operater_t oper)
 {
     size_t len = UA_length(arr);
-    if (len > n && len % n == 0) {
+    if (len >= n && len % n == 0) {
         vfloat_t* ptr = UA_data_ptr(arr);
         size_t block_n = len / n;
         for (size_t i=0; i<block_n; ++i) {
@@ -386,7 +388,7 @@ u_array_t* UArray_operations_uar(u_array_t* arr1, u_array_t* arr2, operater_t op
     size_t len_arr1 = UA_length(arr1);
     size_t len_arr2 = UA_length(arr2);
 
-    if (len_arr1 > len_arr2 && len_arr1 % len_arr2 == 0) {
+    if (len_arr1 >= len_arr2 && len_arr1 % len_arr2 == 0) {
         
         size_t block_n = len_arr1 / len_arr2;
         vfloat_t* ptr_arr1 = UA_data_ptr(arr1);
@@ -793,6 +795,13 @@ u_array_t UArray_pad(u_array_t* arr, char pad_width_str[], ua_pad_mode_t mode, v
 u_array_t UArray_empty_like(u_array_t* arr) 
 {
     u_array_t copy = UArray_create_with_axes_array(UA_axisn(arr), UA_shape(arr));
+    return copy;
+}
+
+u_array_t UArray_copy(u_array_t* arr)
+{
+    u_array_t copy = UArray_create_with_axes_array(UA_axisn(arr), UA_shape(arr));
+    UArray_load(&copy, UA_data_ptr(arr));
     return copy;
 }
 

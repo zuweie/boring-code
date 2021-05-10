@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-31 22:05:01
- * @LastEditTime: 2021-05-09 16:59:53
+ * @LastEditTime: 2021-05-10 12:21:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_machine_learnling.c
@@ -115,13 +115,18 @@ static void test_logistic_regression_train()
     vfloat_t W_t[3] = {0};
 
     u_array_t X = _UArray2d(100, 3);
-    u_array_t y = _UArray2d(100, 1);
-    u_array_t W = _UArray2d(3, 1);
+    u_array_t y = _UArray1d(100);
+    u_array_t W = _UArray1d(3);
     
     UA_load(&X, X_t);
     UA_load(&y, y_t);
     UA_load(&W, W_t);
     
+    // UA_display(&X);
+    // UA_display(&y);
+    // UA_display(&W);
+
+    //return;
     vfloat_t eta = 0.1f;
     vfloat_t epochs = 10000000;
     vfloat_t epsilon = 0.0005;
@@ -153,5 +158,11 @@ int do_macine_learning_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    if (NULL == CU_add_test(pSuite, "test logistic regressing", test_logistic_regression_train) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    
 }
 

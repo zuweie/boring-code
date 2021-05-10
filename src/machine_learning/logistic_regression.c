@@ -1,11 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-04-04 15:29:30
- * @LastEditTime: 2021-05-09 10:30:55
+ * @LastEditTime: 2021-05-10 12:32:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/logistic_regression.c
  */
+#include <stdio.h>
 #include "vtype/vfloat_type.h"
 #include "logistic_regression.h"
 #include "ultra_array/ultra_array.h"
@@ -30,21 +31,20 @@ static vfloat_t __dRh_dw(u_array_t* X, u_array_t* y, size_t i, u_array_t* W)
     // X[:,i], 这里截取 X 的第 i 列。
     __indicators_scope_init(index, 2);
     void* inext = __indicators_scope_start_tail(index, 0, 0);
-    __indicators_scope_picked(index, i);
+    __indicators_scope_picked(inext, i);
 
-    u_array_t _Xi = UA_fission_indicator(X, index);
-
+    u_array_t _Xi = UA_fission_indicator(X, index);    
     // -y
     UA_mulitply_var(&_y1, -1.f);
     // -y * X[:,i]
     UA_mulitply_uar(&_y1, &_Xi);
-
     // X@W
-    UA_dot(_X1, W);
+    UA_dot(&_X1, W);
+    
     // -y
     UA_mulitply_var(&_y2, -1.f);
     // -y*(X@W)
-    UA_mulitply_uar(&_y2, _X1);
+    UA_mulitply_uar(&_y2, &_X1);
 
     // np.exp(-y*(X@W))
     UA_exp(&_y2);
@@ -61,15 +61,13 @@ static vfloat_t __dRh_dw(u_array_t* X, u_array_t* y, size_t i, u_array_t* W)
     // np.exp(-y*(X@W))
     UA_exp(&_y3);
     // 1 + np.exp(-y*(X@W))
-    UA_sum_uar(&_y3, 1);
+    UA_sum_var(&_y3, 1);
 
     // np.mean ( -y*X[:,i]*np.exp(-y*(X@W)) / (1 + np.exp(-y*(X@W))) )
     UA_div_uar(&_y1, &_y3);
 
-    UA_mean(&_y1, -1);
-
-
-    vfloat_t v = ((vfloat_t*)(UA_data_ptr(&_y1)))[0];
+    // 
+    vfloat_t v = UA_mean(&_y1, -1);
 
     UArray_(&_y1);
     UArray_(&_y2);
@@ -94,17 +92,22 @@ static vfloat_t __dRh_dw(u_array_t* X, u_array_t* y, size_t i, u_array_t* W)
  *  epochs 训练的总次数
  *  epsilon 训练退出的阀门
  */
-int logistic_regression_train(u_array_t* X, u_array_t* y, u_array_t* W, vfloat_t eta, vfloat_t epochs, vfloat_t epsilon)
+int logistic_regression_train(u_array_t* X, u_array_t* y, u_array_t* W, vfloat_t eta, int epochs, vfloat_t epsilon)
 {
+    
+    size_t Wn = UA_length(W);
+
     u_array_t drh_dw = UA_empty_like(W);
-    for (int i=0; i<epochs; ++i) {
+    int i = 0;
+    vfloat_t norm;
+    for (i=0; i<epochs; ++i) {
 
         for (size_t j=0; j<Wn; ++j) {
-            vfloat_t v = __dRh_dw(X, y, j, W);
-            UA_set(drh_dw, v, j);
+            vfloat_t value = __dRh_dw(X, y, j, W);
+            UA_set(&drh_dw, j, value);
         }
-
-        if (UArray_linalg_norm(drh_dw) < epsilon) break;
+        norm = UA_norm(&drh_dw);
+        if (norm < epsilon) break;
 
         UA_mulitply_var(&drh_dw, -1* (eta));
         
