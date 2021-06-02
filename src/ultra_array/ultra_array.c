@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-05-10 23:07:26
+ * @LastEditTime: 2021-06-03 01:09:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -709,6 +709,31 @@ u_array_t UArray_fission_with_indicators(u_array_t* a, ua_indicator_t* indicator
     }
     UArray_chunk_note_finalize(&chunk_note);
     return fission;
+}
+
+int UArray_fission_to_with_indicators(u_array_t* u1, u_array_t* u2, ua_indicator_t* indicators)
+{
+    ua_chunk_note_t chunk_note;
+    UArray_indicator_analysis(indicators, u1, &chunk_note);
+
+    size_t len_u2         = UA_length(u2);
+    size_t len_chunk_note = __axis_mulitply(chunk_note.shape, chunk_note.axis_n, 0);
+
+    int ret = -1;
+    if (len_u2 == len_chunk_note) {
+        ua_data_chunk_t* ptr = chunk_note.chunk_map;
+        char* data_ptr = UA_data_ptr(u2);
+        while (ptr != NULL){
+            
+            memcpy(data_ptr, ptr->chunk_addr, ptr->chunk_size);
+            data_ptr += ptr->chunk_size;
+            ptr = ptr->next;
+
+        }
+        ret = 0;
+    }
+    UArray_chunk_note_finalize(&chunk_note);
+    return ret;
 }
 
 u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)

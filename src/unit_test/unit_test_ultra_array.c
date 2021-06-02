@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-05-08 12:16:54
+ * @LastEditTime: 2021-06-03 01:03:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -418,21 +418,45 @@ static void test_fission(void)
 
 static void test_fission2(void) {
 
-    __indicators_scope_init(index, 3);
-    void* i_next = __indicators_scope_start_tail(index, 0, 0);
-    i_next = __indicators_scope_start_tail(i_next,0, 0);
-    __indicators_scope_picked(i_next, 1);
+    UA_scope_indicators(index, 3);
+    UA_set_scope_indicators_selected(index, 0, 0, 0);
+    UA_set_scope_indicators_selected(index, 1, 0, 0);
+    UA_set_scope_indicators_picked(index, 2, 1);
+
 
     u_array_t u1 = _UArray3d(2,3,4);
     UA_arange(&u1, 2*3*4);
 
-    //printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+    printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
 
     u_array_t u2 = UArray_fission_with_indicators(&u1, index);
-    //printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
+    printf_uarr(&u2, 0, UA_data_ptr(&u2), 0);
     
     UArray_(&u1);
     UArray_(&u2);
+}
+
+static void test_fission3(void) 
+{
+    UA_scope_indicators(index, 3);
+    UA_set_scope_indicators_selected(index, 0, 0, 0);
+    UA_set_scope_indicators_selected(index, 1, 0, 0);
+    UA_set_scope_indicators_picked(index, 2, 1);
+
+    u_array_t u1 = _UArray3d(2,3,4);
+    UA_arange(&u1, 2*3*4);
+
+    printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+
+    u_array_t u2 = _UArray1d(6);
+
+    UA_fission_to_indicator(&u1, &u2, index);
+
+    UA_display(&u2);
+
+    UArray_(&u1);
+    UArray_(&u2);
+    
 }
 
 static void test_assimilate(void) 
@@ -682,6 +706,11 @@ int do_ultra_array_test (void)
         return CU_get_error();
     }
     
+    if (NULL == CU_add_test(pSuite, "test ultra array fission3 ", test_fission3) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
     if (NULL == CU_add_test(pSuite, "test ultra array assimlate ", test_assimilate) ) {
         CU_cleanup_registry();
         return CU_get_error();

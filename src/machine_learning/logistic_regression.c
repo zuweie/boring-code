@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-04 15:29:30
- * @LastEditTime: 2021-05-10 12:32:41
+ * @LastEditTime: 2021-06-03 01:00:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/logistic_regression.c
@@ -29,9 +29,9 @@ static vfloat_t __dRh_dw(u_array_t* X, u_array_t* y, size_t i, u_array_t* W)
     u_array_t _X2  = UA_copy(X);
 
     // X[:,i], 这里截取 X 的第 i 列。
-    __indicators_scope_init(index, 2);
-    void* inext = __indicators_scope_start_tail(index, 0, 0);
-    __indicators_scope_picked(inext, i);
+    UA_scope_indicators(index, 2);
+    UA_set_scope_indicators_selected(index, 0, 0, 0);
+    UA_set_scope_indicators_picked(index, 1, i);
 
     u_array_t _Xi = UA_fission_indicator(X, index);    
     // -y

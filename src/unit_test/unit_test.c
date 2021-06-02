@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2021-05-10 08:41:51
+ * @LastEditTime: 2021-06-03 01:03:46
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -314,8 +314,8 @@ int main ()
     // do_fft_test();
     // do_dct_test();
     // do_asr_test();
-    // do_ultra_array_test();
-    do_macine_learning_test();
+     do_ultra_array_test();
+    // do_macine_learning_test();
     // do_matrix_test();
     // do_toutiao_test();
     /* run the test case */

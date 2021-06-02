@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-05-10 07:15:54
+ * @LastEditTime: 2021-06-03 01:09:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -62,6 +62,8 @@ u_array_t UArray_pad(u_array_t*, char[], ua_pad_mode_t, vfloat_t*);
 u_array_t UArray_empty_like(u_array_t*);
 u_array_t UArray_copy(u_array_t*);
 
+int UArray_fission_to_with_indicators(u_array_t*, u_array_t*, ua_indicator_t*);
+
 size_t UArray_xd_coord_to_1d_offset(u_array_t*, size_t*);
 void UArray_1d_offset_to_xd_coord(u_array_t*, size_t, size_t*);
 size_t UArray_axis_mulitply(u_array_t* a, int);
@@ -106,6 +108,7 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_data_copy(parray) UArray_data_copy(parray)
 #define UA_fission(parray, router) UArray_fission(parray, router)
 #define UA_fission_indicator(parray, indicator) UArray_fission_with_indicators(parray, indicator)
+#define UA_fission_to_indicator(parray1, parray2, indicator) UArray_fission_to_with_indicators(parray1, parray2, indicator)
 #define UA_assimilate(pa1, router, pa2) UArray_assimilate(pa1, router, pa2)
 #define UA_copy(parray) UArray_copy(parray)
 #define UA_log(parray) UArray_log(parray)
