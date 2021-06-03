@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-04 15:29:30
- * @LastEditTime: 2021-06-03 01:00:46
+ * @LastEditTime: 2021-06-03 09:36:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/logistic_regression.c
@@ -33,7 +33,7 @@ static vfloat_t __dRh_dw(u_array_t* X, u_array_t* y, size_t i, u_array_t* W)
     UA_set_scope_indicators_selected(index, 0, 0, 0);
     UA_set_scope_indicators_picked(index, 1, i);
 
-    u_array_t _Xi = UA_fission_indicator(X, index);    
+    u_array_t _Xi = UA_fission_indicators(X, index);    
     // -y
     UA_mulitply_var(&_y1, -1.f);
     // -y * X[:,i]

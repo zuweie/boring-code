@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:30
- * @LastEditTime: 2021-06-01 15:38:26
+ * @LastEditTime: 2021-06-03 10:16:29
  * @LastEditors: Please set LastEditors
  * @Description: 软间隔支持向量机的实现
  * @FilePath: /boring-code/src/machine_learning/svm.h
@@ -10,6 +10,7 @@
 #define _SUPPORT_VECTOR_MACHINES_H_
 
 #include "vtype/vfloat_type.h"
+#define TUA 1e-12
 typedef struct _u_array u_array_t;
 
 enum { C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR }; /* SVM type */

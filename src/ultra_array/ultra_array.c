@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-06-03 01:09:42
+ * @LastEditTime: 2021-06-03 09:43:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -711,7 +711,7 @@ u_array_t UArray_fission_with_indicators(u_array_t* a, ua_indicator_t* indicator
     return fission;
 }
 
-int UArray_fission_to_with_indicators(u_array_t* u1, u_array_t* u2, ua_indicator_t* indicators)
+int UArray_fission_to_uar_with_indicators(u_array_t* u1, u_array_t* u2, ua_indicator_t* indicators)
 {
     ua_chunk_note_t chunk_note;
     UArray_indicator_analysis(indicators, u1, &chunk_note);

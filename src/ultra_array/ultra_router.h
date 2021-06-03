@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-08 20:16:55
- * @LastEditTime: 2021-06-03 00:59:24
+ * @LastEditTime: 2021-06-03 09:37:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.h
@@ -71,24 +71,24 @@ void UArray_chunk_note_finalize(ua_chunk_note_t*);
         marco_indicators_arr[i].__axis = i;    \
     }
 
-#define UA_set_scope_indicators(marco_indicators_arr, marco_i, marco_picked, marco_start, marco_tail) \
+#define UA_set_scope_indicators(marco_indicators_arr, marco_axis, marco_picked, marco_start, marco_tail) \
     { \
-        marco_indicators_arr[marco_i].__picked = marco_picked; \
-        marco_indicators_arr[marco_i].__start  = marco_start;  \
-        marco_indicators_arr[marco_i].__tail   = marco_tail;   \
+        marco_indicators_arr[marco_axis].__picked = marco_picked; \
+        marco_indicators_arr[marco_axis].__start  = marco_start;  \
+        marco_indicators_arr[marco_axis].__tail   = marco_tail;   \
     }
 
-#define UA_set_scope_indicators_start(marco_indicators_arr, marco_i, marco_start) \
-    UA_set_scope_indicators(marco_indicators_arr, marco_i, -1, marco_start, 0)
+#define UA_set_scope_indicators_start(marco_indicators_arr, marco_axis, marco_start) \
+    UA_set_scope_indicators(marco_indicators_arr, marco_axis, -1, marco_start, 0)
 
-#define UA_set_scope_indicators_tail(marco_indicators_arr, marco_i, marco_tail) \
-    UA_set_scope_indicators(marco_indicators_arr, marco_i, -1, 0, marco_tail)
+#define UA_set_scope_indicators_tail(marco_indicators_arr, marcmarco_axiso_i, marco_tail) \
+    UA_set_scope_indicators(marco_indicators_arr, marco_axis, -1, 0, marco_tail)
 
-#define UA_set_scope_indicators_picked(marco_indicators_arr, marco_i, marco_picked) \
-    UA_set_scope_indicators(marco_indicators_arr, marco_i, marco_picked, 0, 0)
+#define UA_set_scope_indicators_picked(marco_indicators_arr, marco_axis, marco_picked) \
+    UA_set_scope_indicators(marco_indicators_arr, marco_axis, marco_picked, 0, 0)
     
-#define UA_set_scope_indicators_selected(marco_indicators_arr, marco_i, marco_start, marco_tail) \
-    UA_set_scope_indicators(marco_indicators_arr, marco_i, -1, marco_start, marco_tail)
+#define UA_set_scope_indicators_selected(marco_indicators_arr, marco_axis, marco_start, marco_tail) \
+    UA_set_scope_indicators(marco_indicators_arr, marco_axis, -1, marco_start, marco_tail)
 
 #endif
 
