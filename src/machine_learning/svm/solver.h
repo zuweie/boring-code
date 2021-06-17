@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-06-09 11:52:45
+ * @LastEditTime: 2021-06-16 17:35:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -23,7 +23,14 @@ typedef struct _solver {
     u_array_t* alpha;
     u_array_t* G;
     u_array_t* Y;
+    u_array_t* X;
     int* C;
+
+    struct kennel_calc_param {
+        double gammer; // 多项式
+        double coef0;  // 多项式
+        double degree; // 多项式的
+    } calc_param;
     
 } solver_t;
 

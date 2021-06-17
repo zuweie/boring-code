@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-06-03 13:58:42
+ * @LastEditTime: 2021-06-16 17:26:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -55,12 +55,6 @@
 
 static int fetch_Q_column(u_array_t* Q, u_array_t* Q_x, int i) 
 {
-    // 配置 Q[:,i]
-    UA_scope_indicators(index, 2);
-    UA_set_scope_indicators_selected(index, 0, 0, 0);
-    UA_set_scope_indicators_picked(index, 1, i);
-
-    int ret = UA_fission_to_indicator(Q, Q_x, index);
     return ret;
 }
 
@@ -100,8 +94,6 @@ int solve_generic(solver_t* slover, u_array_t* _alpha, u_array_t* _Y, u_array_t*
     int selected_i, selected_j;
     int iter = 0;
     
-    
-
     for (;;) {
 
         //TODO: 2 通过计算获取两个需要优化的 Bate，找不到或者循环次数大于最大的循环次数，则退出循环。

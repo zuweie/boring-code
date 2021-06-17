@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-06-10 07:07:10
+ * @LastEditTime: 2021-06-17 12:36:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -9,6 +9,7 @@
 #include <math.h>
 #include "solver.h"
 #include "ultra_array/ultra_array.h"
+#include "ultra_array/ultra_router.h"
 
 int Solver_constructor(solver_t* solver, size_t l, int (*select_working_set)(int, int), int (*calculate_rho)(vfloat_t, vfloat_t), int (*kernel_func)(vfloat_t, vfloat_t))
 {
@@ -206,18 +207,89 @@ int calc_rho_nu_sum(Solver_t* solver, double* rho, double* r)
     double lb1 = -DBL_MAX, lb2 = -DBL_MAX;
     double sum_yG1 = 0.f, sum_yG2 = 0.f;
     double r1, r2;
+    size_t len_alpha = UA_length(solver->alpha);
+    vfloat_t* G_ptr  = UA_data_ptr(solver->G);
+    vfloat_t* Y_ptr  = UA_data_ptr(solver->Y);
 
+    int i;
+    for (i=0; i<len_alpha; ++i) {
+
+        double G_i = G_ptr[i];
+        
+        if ( Y_ptr[i] > 0 ) {
+            
+            if ( Solver_is_lower_bound(solver, i) ) {
+                ub1 = MIN( ub1, G_i );
+            } else if ( Solver_is_upper_boundsolver, i) ) {
+                lb1 = MAX( lb1, G_i);
+            } else {
+                ++nr_free1;
+                sum_yG1 += G_i;
+            }
+
+        } else {
+
+            if ( Solver_is_lower_bound(solver, i) ) {
+
+                ub2 = MIN( ub2, G_i );
+
+            } else if ( Solver_is_upper_bound(solver, i) ) {
+                lb2 = MAX( lb2, G_i );
+            } else {
+                ++nr_free2;
+                sum_yG2 += G_i;
+            }
+
+        }
+
+    }
+
+    r1 = nr_free1 > 0 ? sum_yG1 / nr_free1 : ( ub1 + lb1 ) * 0.5f;
+    r2 = nr_free2 > 0 ? sum_yG2 / nr_free2 : ( ub2 + lb2 ) * 0.5f;
+
+    *rho = (r1 - r2) * 0.5f;
+    *r   = (r1 + r2) * 0.5f;
 
 }
 
+// 以下四种核函数的实现。
+
 // 核函数
-int kernel_calc_linear();
+double Kernel_calc_base_linear(Solver_t* solver, int i, int j, double _alpha, double _beta) 
+{
+    size_t len_x = UA_shape_axis(solver->X, 1);
+
+    vfloat_t (*X_row)[len_x] = UA_data_ptr(solver->X);
+
+    double dot = 0.f;
+    for (size_t k=0; k<len_x; ++k) {
+        dot += X_row[i][k] * X_row[j][k];
+    }
+
+    return _alpha * dot + _beta;
+}
+
+double kernel_calc_linear(Solver_t* solver, int i, int j)
+{
+    return Kernel_calc_base_linear(solver, i, j, 1, 0);
+}
 
 // 多项式核函数
-int kernel_calc_poly();
+double kernel_calc_poly(Solver_t* solver, int i, int j)
+{
+    double linear_dot = Kernel_calc_base_linear(solver, i, j, solver->calc_param.gammer, solver->calc_param.coef0);
+    return pow(linear_dot, solver->calc_param.degree);
+}
 
 // 计算 sigmoid 核函数
-int kernel_calc_sigmoid();
+double kernel_calc_sigmoid(Solver_t* solver, int i, int j)
+{
+    double ret = Kernel_calc_base_linear( solver, i, j, -2*solver->calc_param.gamma, -2*solver->calc_param.coef0 );
+    
+}
 
 // 计算 高斯 核函数
-int kernel_calc_rbf();
+int kernel_calc_rbf(Solver_t* solver, int i, int j)
+{
+    
+}
