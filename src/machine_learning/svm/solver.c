@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-06-17 12:36:34
+ * @LastEditTime: 2021-06-17 16:52:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -259,13 +259,12 @@ double Kernel_calc_base_linear(Solver_t* solver, int i, int j, double _alpha, do
 {
     size_t len_x = UA_shape_axis(solver->X, 1);
 
-    vfloat_t (*X_row)[len_x] = UA_data_ptr(solver->X);
+    vfloat_t (*X_r)[len_x] = UA_data_ptr(solver->X);
 
     double dot = 0.f;
     for (size_t k=0; k<len_x; ++k) {
-        dot += X_row[i][k] * X_row[j][k];
+        dot += X_r[i][k] * X_r[j][k];
     }
-
     return _alpha * dot + _beta;
 }
 
@@ -284,12 +283,89 @@ double kernel_calc_poly(Solver_t* solver, int i, int j)
 // 计算 sigmoid 核函数
 double kernel_calc_sigmoid(Solver_t* solver, int i, int j)
 {
-    double ret = Kernel_calc_base_linear( solver, i, j, -2*solver->calc_param.gamma, -2*solver->calc_param.coef0 );
-    
+    vfloat_t t = Kernel_calc_base_linear( solver, i, j, -2*solver->calc_param.gammer, -2*solver->calc_param.coef0 );
+    double e   = exp(-fabs(t));
+
+    return t > 0 ? ((1.f - e) / (1.f + e)) : ((e - 1.f) / (e + 1.f));
 }
 
 // 计算 高斯 核函数
 int kernel_calc_rbf(Solver_t* solver, int i, int j)
 {
+    size_t len_r = UA_shape_axis(solver->X, 1);
+    vfloat_t (*X_r)[len_r] = UA_data_ptr(solver->X);
+
+    double dis_q = 0.f;
+
+    for (size_t k=0; k<len_r; ++k) {
+        dis_q += (X_r[i][k] - X_r[j][k]) * (X_r[i][k] - X_r[j][k]);
+    }
+    return exp(dis_q * solver->calc_param.gammer);
+}
+
+int build_c_svc_Q (Solver_t* solver, u_array_t* Q) 
+{
     
+    size_t len_alpha = UA_length(solver->alpha);
+
+    *Q = _UArray2d(len_alpha, len_alpha);
+    
+    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
+
+    vfloat_t* Y_ptr = UA_data_ptr(solver->Y);
+
+    for (size_t i=0; i<len_alpha; ++i) {
+        for (size_t j=0; j<len_alpha; ++j) {
+
+            Q_r[i][j] = Y_ptr[i] * Y_ptr[j] * solver->kernel_func(solver, i, j);
+
+        }
+    }
+    return 0;
+}
+
+int build_nu_svc_Q (Solver_t* solver, u_array_t* Q) {
+    return build_c_svc_Q(solver, Q);
+}   
+
+int build_one_class_Q (Solver_t* solver, u_array_t* Q) {
+    size_t len_alpha = UA_length(solver->alpha);
+    *Q = _UArray2d(len_alpha, len_alpha);
+    
+    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
+
+    for (size_t i=0; i<len_alpha; ++i) {
+        for (size_t j=0; j<len_alpha; ++j) {
+            Q_r[i][j] = solver->kernel_func(solver, i, j);
+        }
+    }
+    return 0;
+}
+
+int build_e_svr_Q(Solver_t* solver, u_array_t* Q) {
+    size_t len_alpha = UA_length(solver->alpha);
+    *Q = _UArray2d(len_alpha, len_alpha);
+
+    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
+
+    float Z[len_alpha] = {-1.f};
+
+    for (int k = 0; K < (len_alpha / 2); k++) {
+        Z[k] = 1;
+    }
+
+    for (size_t i=0; i<len_alpha;  ++i) {
+        for (size_t j=0; j<len_alpha; ++j) {
+
+            Q_r[i][j] = Z[i] * Z[j] * solver->kernel_func(solver, i, j);
+
+        }
+    }
+
+    return 0;
+}
+
+int build_nu_svr_Q(Solver_t* solver, u_array_t* Q)
+{
+    return build_e_svr_Q(solver, Q);
 }

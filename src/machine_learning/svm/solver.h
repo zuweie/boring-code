@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-06-16 17:35:07
+ * @LastEditTime: 2021-06-17 15:26:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -20,6 +20,7 @@ typedef struct _solver {
     int (*select_working_set)(int* out_i, int* out_j, int*);
     int (*calc_rho)(vfloat_t, vfloat_t);
     int (*kernel_func)(vfloat_t*, vfloat_t*);
+    int (*build_Q)(struct _solver *, u_array_t*);
     u_array_t* alpha;
     u_array_t* G;
     u_array_t* Y;
