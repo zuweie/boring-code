@@ -1,14 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-06-22 13:52:03
+ * @LastEditTime: 2021-06-22 15:24:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
  */
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
-#include "slover.h"
 #include "support_vector_machines.h"
 
 // 他妈个逼，无从下手，否则码农生涯就此结束啦。 
@@ -18,15 +17,13 @@
 // Y 为标志量
 // M 为输出的 model
 
-static int fetch_Q_column(u_array_t* Q, u_array_t* Q_x, int i) 
-{
-    return ret;
-}
+
+
 
 /**
  * 
  */
-int solve_generic(solver_t* slover)
+int solve_generic(solver_t* slover, svm_model_t* model)
 {
     // 准备一堆变量
     size_t len_alpha = UA_length(&solver->alpha);
@@ -44,7 +41,7 @@ int solve_generic(solver_t* slover)
     vfloat_t (*Qc_ptr)[len_Qc] = UA_data_ptr(&solver->Q);
     
     //TODO: 1 这里计算 deta f(Bate) = Q dot Beta + P
-    vfloat_t* G_ptr = UA_data_ptr(&G);
+    vfloat_t* G_ptr = UA_data_ptr(&solver->G);
     
     UA_dot(&solver->G, &solver->alpha);
     UA_sum_uar(&solver->G, &solver->P);
@@ -59,11 +56,8 @@ int solve_generic(solver_t* slover)
         break;
 
         //TODO: 3 更新这两个 Bate。
-        // fetch_Q_column(_Q, Q_i, selected_i);
-        // fetec_Q_column(_Q, Q_j, selected_j);
-        
-        vfloat_t* Qi_ptr = Qc_ptr[select_i];
-        vfloat_t* Qj_ptr = Qc_ptr[select_j];
+        vfloat_t* Qi_ptr = Qc_ptr[selected_i];
+        vfloat_t* Qj_ptr = Qc_ptr[selected_j];
         
 
         C_i = C_ptr[selected_i];
@@ -158,4 +152,29 @@ int solve_generic(solver_t* slover)
 
     return 0;
     
+}
+
+// 开始计算
+
+int solve_c_svc( \
+        u_array_t* X, u_array_t* Y, \
+        SVM_type svm_type,  \
+        SVM_kernel svm_kernel, \
+        vfloat_t _C, vfloat_t _gammer, \ 
+        vfloat_t _coef, vfloat_t _degree, \
+        double eps, \
+        int max_iter)
+{
+    // 初始化所有的
+    solver_t solver;
+    svm_model_t model;
+    //1 初始化运行的空间
+    Solver_initialize(&solver, svm_type, svm_kernel, X, Y, _C, _gammer, _coef, _degree, eps, max_iter);
+
+    //2 初始化 csvc 的参数。
+    UA_ones(&solver->alpha, 0);
+    
+    
+    solve_generic(&solver, &model);
+    Solver_finalize(&solver);
 }

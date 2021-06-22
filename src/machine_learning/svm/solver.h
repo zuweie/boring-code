@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-06-22 13:27:39
+ * @LastEditTime: 2021-06-22 14:47:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -11,11 +11,11 @@
 #define _SVM_SOLVER_H_
 #include "vtype/vfloat_type.h"
 
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) MAX(y, x)
+#define SVM_MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define SVM_MIN(x, y) SVM_MAX(y, x)
 
 typedef enum { C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR } SVM_type; /* SVM type */
-typedef enum { LINEAR, POLY, BRF, SIGMOID, PRECOMPUTED } SVM_kernel; /* kernel function type */
+typedef enum { LINEAR, POLY, BRF, SIGMOID } SVM_kernel; /* kernel function type */
 
 typedef struct _u_array u_array_t;
 typedef struct _solver solver_t;
@@ -47,8 +47,17 @@ struct _solver {
     
 };
 
-int Solver_constructor(solver_t* solver, SVM_TYPE svm_type, KENERL_FUNC kenerl_func, u_array_t* _X, u_array_t* _Y, double _C, double _gammer, double _coef, double _degree);
-int Solver_desctructor(solver_t* solver);
+int Solver_initialize(     \
+        solver_t* solver,  \ 
+        SVM_type svm_type, \
+        SVM_kernel kerenl, \
+        u_array_t* _X, u_array_t* _Y,     \ 
+        vfloat_t _C, vfloat_t _gammer,    \
+        vfloat_t _coef, vfloat_t _degree, \
+        double eps,  \
+        int max_iter \
+);
+int Solver_finalize(solver_t* solver);
 
 // 第一类的svm Betai 与 Betaj 的选择器。
 int select_working_set(solver_t* solver);

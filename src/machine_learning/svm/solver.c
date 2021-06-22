@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-06-22 13:28:32
+ * @LastEditTime: 2021-06-22 15:10:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -12,17 +12,15 @@
 #include "solver.h"
 
 
-int Solver_initialize(
-    
-        solver_t* solver, 
-        SVM_type svm_type, 
-        SVM_kernel kerenl, 
-        u_array_t* _X, u_array_t* _Y, 
-        vfloat_t _C, vfloat_t _gammer, 
-        vfloat_t _coef, vfloat_t _degree,
-        double eps,
-        int max_iter
-
+int Solver_initialize( \
+        solver_t* solver, \ 
+        SVM_type svm_type, \
+        SVM_kernel kerenl, \
+        u_array_t* _X, u_array_t* _Y, \ 
+        vfloat_t _C, vfloat_t _gammer, \
+        vfloat_t _coef, vfloat_t _degree, \
+        double eps, \
+        int max_iter \
 )
 {
     // a big big initialize
@@ -139,8 +137,8 @@ int Solver_is_upper_bound(solver_t* solver, int i)
 // 第一类的svm Betai 与 Betaj 的选择器。
 int select_working_set(solver_t* solver, int* out_i; int* out_j)
 {
-    vfloat_t Y_ptr   = UA_data_ptr(&solver->Y);
-    vfloat_t G_ptr   = UA_data_ptr(&solver->G);
+    vfloat_t* Y_ptr   = UA_data_ptr(&solver->Y);
+    vfloat_t* G_ptr   = UA_data_ptr(&solver->G);
     size_t len_alpha = UA_length(&solver->alpha);
 
     double Gmax1  = -DBL_MAX;
@@ -242,7 +240,7 @@ int select_working_nu_svm(solver_t* solver, int* out_i, int* out_j)
         }
     }
 
-    if ( MAX(Gmax1 + Gmax2, Gmax3 + Gmax4) < solver->eps) {
+    if ( SVM_MAX(Gmax1 + Gmax2, Gmax3 + Gmax4) < solver->eps) {
         // 条件终止了，没有可以选择的 Beta_i 与 Beta_j
         return 1;
     }
@@ -266,9 +264,10 @@ int calc_rho(solver_t* solver, double* rho, double* r){
     double sum_yG = 0.f;
     
     int i, nr_free = 0;
-    vfloat_t* Y_ptr = UA_data_ptr(solver->Y);
-    vfloat_t* G_ptr = UA_data_ptr(solver->G);
-    size_t len_alpha = UA_length(solver->alpha);
+    vfloat_t* Y_ptr = UA_data_ptr(&solver->Y);
+    vfloat_t* G_ptr = UA_data_ptr(&solver->G);
+    size_t len_alpha = UA_length(&solver->alpha);
+
     for (i=0; i<len_alpha; ++i) {
 
         double yG = y[i] * G_ptr[i];
@@ -276,16 +275,16 @@ int calc_rho(solver_t* solver, double* rho, double* r){
         if ( Solver_is_lower_bound(solver, i) ) { // Beta_i == 0
 
             if ( Y_ptr[i] > 0 ) 
-                ub = MIN(ub, yG);
+                ub = SVM_MIN(ub, yG);
             else 
-                lb = MAX(lb, yG);
+                lb = SVM_MAX(lb, yG);
 
         } else if ( Solver_is_upper_bound(solver, i) ) { // Beta_i == C
 
             if ( Y_ptr <0 ) 
-                ub = MIN(ub, yG);
+                ub = SVM_MIN(ub, yG);
             else 
-                lb = MAX(lb, yG);
+                lb = SVM_MAX(lb, yG);
         } else {
             ++nr_free;
             sum_yG += yG;
@@ -316,9 +315,9 @@ int calc_rho_nu_sum(Solver_t* solver, double* rho, double* r)
         if ( Y_ptr[i] > 0 ) {
             
             if ( Solver_is_lower_bound(solver, i) ) {
-                ub1 = MIN( ub1, G_i );
+                ub1 = SVM_MIN( ub1, G_i );
             } else if ( Solver_is_upper_boundsolver, i) ) {
-                lb1 = MAX( lb1, G_i);
+                lb1 = SVM_MAX( lb1, G_i);
             } else {
                 ++nr_free1;
                 sum_yG1 += G_i;
@@ -328,10 +327,10 @@ int calc_rho_nu_sum(Solver_t* solver, double* rho, double* r)
 
             if ( Solver_is_lower_bound(solver, i) ) {
 
-                ub2 = MIN( ub2, G_i );
+                ub2 = SVM_MIN( ub2, G_i );
 
             } else if ( Solver_is_upper_bound(solver, i) ) {
-                lb2 = MAX( lb2, G_i );
+                lb2 = SVM_MAX( lb2, G_i );
             } else {
                 ++nr_free2;
                 sum_yG2 += G_i;
@@ -439,7 +438,7 @@ int build_e_svr_Q(Solver_t* solver, u_array_t* Q) {
 
     float Z[len_alpha] = {-1.f};
 
-    for (int k = 0; K < (len_alpha / 2); k++) {
+    for (int k = 0; k < (len_alpha / 2); k++) {
         Z[k] = 1;
     }
 
