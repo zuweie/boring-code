@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-06-16 17:26:18
+ * @LastEditTime: 2021-06-22 13:52:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -13,45 +13,10 @@
 
 // 他妈个逼，无从下手，否则码农生涯就此结束啦。 
 
-// int solve_c_svc()
-// {
-
-// }
-
-// int solve_nu_svc()
-// {
-
-// }
-
-// int solve_one_class()
-// {
-
-// }
-
-// int solve_e_svr()
-// {
-
-// }
-
-// int solve_nu_svr()
-// {
-
-// }
-
-// int select_working_set(int* out_i, int* out_j)
-// {
-
-// }
-
-// static void update_alpha_status(int alpha_status[], u_array_t* alpha, u_array_t* C) 
-// {
-//     size_t len_C = UA_length(C);
-//     vfloat_t* C_ptr = UA_data_ptr(C);
-//     vfloat_t* alpha_ptr = UA_data_ptr(alpha);
-//     for (size_t i=0; i<len_C; ++i) 
-//         alpha_status[i] = alpha_ptr[i] >= C_ptr[i] ? 1 : alpha_ptr[i] <=0? -1 : 0;
-//     return;
-// }
+// svc 的 svm 支持向量机的实现
+// X 为数据
+// Y 为标志量
+// M 为输出的 model
 
 static int fetch_Q_column(u_array_t* Q, u_array_t* Q_x, int i) 
 {
@@ -59,37 +24,30 @@ static int fetch_Q_column(u_array_t* Q, u_array_t* Q_x, int i)
 }
 
 /**
- * alpha 就是 beta
- * Q 就是 Q
- * P 是向量 P
  * 
  */
-int solve_generic(solver_t* slover, u_array_t* _alpha, u_array_t* _Y, u_array_t* _Q, u_array_t* _P, u_array_t* _C, int max_iter)
+int solve_generic(solver_t* slover)
 {
     // 准备一堆变量
-    size_t len_alpha = UA_shape_axis(_alpha, 0);
-    size_t len_Q_col = UA_shape_axis(_Q, 1);
+    size_t len_alpha = UA_length(&solver->alpha);
+    size_t len_Qc    = UA_shape_axis(&solver->Q, 1);
     
-    u_array_t Q_i = _UArray1d(len_Q_col);
-    u_array_t Q_j = _UArray1d(len_Q_col);
-
         // 一堆变脸个
     vfloat_t C_i, C_j;
     vfloat_t old_alpha_i, old_alpha_j, alpha_i, alpha_j;
     vfloat_t delta_alpha_i, delta_alpha_j;
 
-    vfloat_t* alpha_ptr = UA_data_ptr(_alpha);
-    vfloat_t* Y_ptr     = UA_data_ptr(_Y);
-    vfloat_t* C_ptr     = UA_data_ptr(_C);
-    vfloat_t* Qi_ptr    = UA_data_ptr(&Q_i);
-    vfloat_t* Qj_ptr    = UA_data_ptr(&Q_j);
+    vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
+    vfloat_t* Y_ptr     = UA_data_ptr(&solver->Y);
+    vfloat_t* C_ptr     = UA_data_ptr(&solver->C);
+
+    vfloat_t (*Qc_ptr)[len_Qc] = UA_data_ptr(&solver->Q);
     
     //TODO: 1 这里计算 deta f(Bate) = Q dot Beta + P
-    u_array_t G = UA_copy(_Q);
     vfloat_t* G_ptr = UA_data_ptr(&G);
     
-    UA_dot(G, _alpha);
-    UA_sum_uar(G, _P);
+    UA_dot(&solver->G, &solver->alpha);
+    UA_sum_uar(&solver->G, &solver->P);
     
     int selected_i, selected_j;
     int iter = 0;
@@ -97,12 +55,16 @@ int solve_generic(solver_t* slover, u_array_t* _alpha, u_array_t* _Y, u_array_t*
     for (;;) {
 
         //TODO: 2 通过计算获取两个需要优化的 Bate，找不到或者循环次数大于最大的循环次数，则退出循环。
-        if (slover->select_working_set(&selected_i, &selected_j) != 0 || iter++ > max_iter) 
+        if (slover->select_working_set(solver,&selected_i, &selected_j) != 0 || iter++ > solver->max_iter) 
         break;
 
         //TODO: 3 更新这两个 Bate。
-        fetch_Q_column(_Q, Q_i, selected_i);
-        fetec_Q_column(_Q, Q_j, selected_j);
+        // fetch_Q_column(_Q, Q_i, selected_i);
+        // fetec_Q_column(_Q, Q_j, selected_j);
+        
+        vfloat_t* Qi_ptr = Qc_ptr[select_i];
+        vfloat_t* Qj_ptr = Qc_ptr[select_j];
+        
 
         C_i = C_ptr[selected_i];
         C_j = C_ptr[selected_j];
@@ -135,7 +97,7 @@ int solve_generic(solver_t* slover, u_array_t* _alpha, u_array_t* _Y, u_array_t*
 
             } 
             
-            if (diff > C_i - C_j && alpha_i > Ci) { // 区域 I
+            if (diff > C_i - C_j && alpha_i > C_i) { // 区域 I
 
                 alpha_i = C_i;
                 alpha_j = C_i - diff;
@@ -185,16 +147,15 @@ int solve_generic(solver_t* slover, u_array_t* _alpha, u_array_t* _Y, u_array_t*
         delta_alpha_i = alpha_i - old_alpha_i;
         delta_alpha_j = alpha_j - old_alpha_j;
 
+        
         for (size_t k=0; k<len_alpha; ++k) {
             G_ptr[k] += Qi_ptr[k] * delta_alpha_i + Qj_ptr[k] * delta_alpha_j;
         }
     }
 
-    // 计算 rho ？
+    // TODO：计算 rho
+    // TODO: 计算 f(Beta)
 
-    UArray_(&G);
-    UArray_(&Q_i);
-    UArray_(&Q_j);
     return 0;
     
 }

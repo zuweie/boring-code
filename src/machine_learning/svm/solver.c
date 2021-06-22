@@ -1,30 +1,127 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-06-17 16:52:11
+ * @LastEditTime: 2021-06-22 13:28:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
  */
 #include <math.h>
-#include "solver.h"
 #include "ultra_array/ultra_array.h"
 #include "ultra_array/ultra_router.h"
+#include "solver.h"
 
-int Solver_constructor(solver_t* solver, size_t l, int (*select_working_set)(int, int), int (*calculate_rho)(vfloat_t, vfloat_t), int (*kernel_func)(vfloat_t, vfloat_t))
+
+int Solver_initialize(
+    
+        solver_t* solver, 
+        SVM_type svm_type, 
+        SVM_kernel kerenl, 
+        u_array_t* _X, u_array_t* _Y, 
+        vfloat_t _C, vfloat_t _gammer, 
+        vfloat_t _coef, vfloat_t _degree,
+        double eps,
+        int max_iter
+
+)
 {
-    solver->C = NULL;
-    solver->calculate_rho = calculate_rho;
-    solver->kernel_func = kernel_func;
-    solver->select_working_set = select_working_set;
-    return 0;
+    // a big big initialize
+    solver->X = _X;
+    solver->Y = _Y;
+    
+    // 初始化 select_working_set 与 calc_rho 函数指针。
+    if (svm_type == C_SVC || svm_type == EPSILON_SVR || svm_type == ONE_CLASS) {
+        // 这里是第一类
+        solver->select_working_set = &select_working_set;
+        solver->calc_rho = &calc_rho;
+    } else {
+        // 这里是第二类
+        solver->select_working_set = &select_working_nu_svm;
+        solver->calc_rho = &calc_rho;
+    }
+
+    // 初始化核函数参数
+    solver->kernel_param.gammer = _gammer;
+    solver->kernel_param.coef0  = _coef;
+    solver->kernel_param.degree = _degree;
+
+    // 初始化核函数
+    switch (kerenl)
+    {
+    case LINEAR:
+        /* code */
+        solver->kernel = &kernel_calc_linear;
+        break;
+    case POLY:
+        solver->kernel = &kernel_calc_poly;
+        break;
+    case BRF:
+        solver->kernel = &kernel_calc_brf;
+        break;
+    case SIGMOID:
+        solver->kernel = &kernel_calc_sigmoid;
+        break;
+    default:
+        solver->kernel = NULL:
+        break;
+    }
+    
+
+    switch (svm_type)
+    {
+    case C_SVC:
+        solver->build_Q = &build_c_svc_Q;
+        break;
+    case NU_SVC:
+        solver->build_Q = &build_nu_svc_Q;
+        break;
+    case ONE_CLASS:
+        solver->build_Q = &build_one_class_Q;
+        break;
+    case EPSILON_SVR:
+        solver->build_Q = &build_e_svr_Q;
+        break;
+    case NU_SVR:
+        solver->build_q = &build_nu_svr_Q;
+        break;
+    default:
+        solver->build_Q = NULL;
+        break;
+    }
+
+    // build the G, alpha, C. Q。 这些都需要回收内存的
+    size_t len_Y = UA_length(_Y);
+    
+    // 1 build alpha
+    solver->alpha = _UArray1d(len_y);
+    // TODO : init the alpha
+
+    // 2 build the Q
+    solver->Q = _UArray2d(len_Y, len_Y);
+
+    // 3 build the G
+    solver->G = UA_empty_like(&solver->Q);
+
+    // 4 build the C
+    solver->C = _UArray1d(len_Y);
+
+    // 5 build P
+    solver->P = _UArray1d(len_Y);
+    
+    // max_iter;
+    solver->max_iter = max_iter;
+
+    // eps
+    solver->eps = eps;
 }
 
-int Solver_desctructor(solver_t* solver)
+int Solver_finalize(solver_t* solver)
 {
-    if (solver->C) free(solver->C);
-    if (solver->alpha_status) (solver->alpha_status);
-    return 0;
+    UArray_(&solver->G);
+    UArray_(&solver->alpha);
+    UArray_(&solver->Q);
+    UArray_(&solver->C);
+    UArray_(&solver->P);
 }
 
 int Solver_is_lower_bound(solver_t* solver, int i) 
@@ -42,9 +139,9 @@ int Solver_is_upper_bound(solver_t* solver, int i)
 // 第一类的svm Betai 与 Betaj 的选择器。
 int select_working_set(solver_t* solver, int* out_i; int* out_j)
 {
-    vfloat_t Y_ptr   = UA_data_ptr(solver->Y);
-    vfloat_t G_ptr   = UA_data_ptr(solver->G);
-    size_t len_alpha = UA_length(solver->alpha);
+    vfloat_t Y_ptr   = UA_data_ptr(&solver->Y);
+    vfloat_t G_ptr   = UA_data_ptr(&solver->G);
+    size_t len_alpha = UA_length(&solver->alpha);
 
     double Gmax1  = -DBL_MAX;
     int Gmax1_idx = -1;
@@ -89,9 +186,9 @@ int select_working_set(solver_t* solver, int* out_i; int* out_j)
 // 第二类的svm Betai 与 Betaj 的选择器。
 int select_working_nu_svm(solver_t* solver, int* out_i, int* out_j)
 {
-    size_t len_alpha = UA_length(solver->alpha);
-    vfloat_t* G_ptr  = UA_data_ptr(solver->G);
-    vfloat_t* Y_ptr  = UA_data_ptr(solver->Y);
+    size_t len_alpha = UA_length(&solver->alpha);
+    vfloat_t* G_ptr  = UA_data_ptr(&solver->G);
+    vfloat_t* Y_ptr  = UA_data_ptr(&solver->Y);
     
     double Gmax1     = -DBL_MAX;
     double Gmax1_idx = -1;
@@ -290,7 +387,7 @@ double kernel_calc_sigmoid(Solver_t* solver, int i, int j)
 }
 
 // 计算 高斯 核函数
-int kernel_calc_rbf(Solver_t* solver, int i, int j)
+int kernel_calc_brf(Solver_t* solver, int i, int j)
 {
     size_t len_r = UA_shape_axis(solver->X, 1);
     vfloat_t (*X_r)[len_r] = UA_data_ptr(solver->X);
@@ -305,11 +402,7 @@ int kernel_calc_rbf(Solver_t* solver, int i, int j)
 
 int build_c_svc_Q (Solver_t* solver, u_array_t* Q) 
 {
-    
-    size_t len_alpha = UA_length(solver->alpha);
-
-    *Q = _UArray2d(len_alpha, len_alpha);
-    
+    size_t len_alpha = UA_length(solver->alpha);    
     vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
 
     vfloat_t* Y_ptr = UA_data_ptr(solver->Y);
@@ -330,8 +423,6 @@ int build_nu_svc_Q (Solver_t* solver, u_array_t* Q) {
 
 int build_one_class_Q (Solver_t* solver, u_array_t* Q) {
     size_t len_alpha = UA_length(solver->alpha);
-    *Q = _UArray2d(len_alpha, len_alpha);
-    
     vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
 
     for (size_t i=0; i<len_alpha; ++i) {
@@ -344,8 +435,6 @@ int build_one_class_Q (Solver_t* solver, u_array_t* Q) {
 
 int build_e_svr_Q(Solver_t* solver, u_array_t* Q) {
     size_t len_alpha = UA_length(solver->alpha);
-    *Q = _UArray2d(len_alpha, len_alpha);
-
     vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
 
     float Z[len_alpha] = {-1.f};
