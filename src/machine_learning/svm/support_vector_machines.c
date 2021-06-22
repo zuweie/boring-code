@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-06-22 15:24:48
+ * @LastEditTime: 2021-06-22 15:41:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -173,7 +173,7 @@ int solve_c_svc( \
 
     //2 初始化 csvc 的参数。
     UA_ones(&solver->alpha, 0);
-    
+    UA_ones(&solver->P, -1);
     
     solve_generic(&solver, &model);
     Solver_finalize(&solver);
