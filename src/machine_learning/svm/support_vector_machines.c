@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-06-22 15:41:25
+ * @LastEditTime: 2021-06-25 15:08:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -10,15 +10,27 @@
 #include "ultra_array/ultra_array.h"
 #include "support_vector_machines.h"
 
-// 他妈个逼，无从下手，否则码农生涯就此结束啦。 
-
 // svc 的 svm 支持向量机的实现
 // X 为数据
 // Y 为标志量
 // M 为输出的 model
 
+// 数据预处理：
+// 统计一下那个 _Y 中 class 的类别，以及各种类别所占有的比例。
+// 只用于 c_svc 与 nu_svc
+int Y_classify(u_array_t* _Y, Y_classification_t* clazz) 
+{
+    
+    size_t len_Y    = UA_length(_Y);
+    vfloat_t* Y_ptr = UA_data_ptr(_Y);
+    
+    clazz->y_classification = malloc(sizeof(int) * len_Y);
 
+    // 统计到底有多少个类别。
+    
 
+    return 0;
+}
 
 /**
  * 
@@ -52,7 +64,7 @@ int solve_generic(solver_t* slover, svm_model_t* model)
     for (;;) {
 
         //TODO: 2 通过计算获取两个需要优化的 Bate，找不到或者循环次数大于最大的循环次数，则退出循环。
-        if (slover->select_working_set(solver,&selected_i, &selected_j) != 0 || iter++ > solver->max_iter) 
+        if (slover->select_working_set(solver, &selected_i, &selected_j) != 0 || iter++ > solver->max_iter) 
         break;
 
         //TODO: 3 更新这两个 Bate。
@@ -154,8 +166,7 @@ int solve_generic(solver_t* slover, svm_model_t* model)
     
 }
 
-// 开始计算
-
+// 开始计算分类，SVC
 int solve_c_svc( \
         u_array_t* X, u_array_t* Y, \
         SVM_type svm_type,  \
@@ -165,16 +176,24 @@ int solve_c_svc( \
         double eps, \
         int max_iter)
 {
-    // 初始化所有的
-    solver_t solver;
-    svm_model_t model;
+    size_t len_Y = UA_length(Y);
+    int class_count = 0;
+
+
+
     //1 初始化运行的空间
     Solver_initialize(&solver, svm_type, svm_kernel, X, Y, _C, _gammer, _coef, _degree, eps, max_iter);
 
     //2 初始化 csvc 的参数。
     UA_ones(&solver->alpha, 0);
     UA_ones(&solver->P, -1);
-    
     solve_generic(&solver, &model);
     Solver_finalize(&solver);
+    
+}
+
+
+int Svm_train(u_array_t* X, u_array_t* Y, SVM_type type, SVM_kernel kernel, svm_model_t* model)
+{
+    
 }
