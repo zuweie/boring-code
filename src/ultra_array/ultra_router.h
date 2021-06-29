@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-08 20:16:55
- * @LastEditTime: 2021-06-03 09:37:06
+ * @LastEditTime: 2021-06-29 15:20:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.h
@@ -66,9 +66,15 @@ void UArray_chunk_note_finalize(ua_chunk_note_t*);
         for (i=0; i<(marco_n-1); ++i) { \
             marco_indicators_arr[i].next   = &marco_indicators_arr[i+1]; \
             marco_indicators_arr[i].__axis = i; \
+            marco_indicators_arr[i].__start = 0; \
+            marco_indicators_arr[i].__tail  = 0; \
+            marco_indicators_arr[i].__picked = -1;\
         } \
         marco_indicators_arr[i].next   = NULL; \
         marco_indicators_arr[i].__axis = i;    \
+        marco_indicators_arr[i].__start = 0; \
+        marco_indicators_arr[i].__tail  = 0; \
+        marco_indicators_arr[i].__picked = -1;\
     }
 
 #define UA_set_scope_indicators(marco_indicators_arr, marco_axis, marco_picked, marco_start, marco_tail) \

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-06-03 01:03:37
+ * @LastEditTime: 2021-06-29 15:22:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -450,7 +450,7 @@ static void test_fission3(void)
 
     u_array_t u2 = _UArray1d(6);
 
-    UA_fission_to_indicator(&u1, &u2, index);
+    UA_fission_to_uar_by_indicators(&u1, &u2, index);
 
     UA_display(&u2);
 

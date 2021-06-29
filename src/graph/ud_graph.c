@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2020-12-14 07:35:08
+ * @LastEditTime: 2021-06-29 15:43:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
@@ -57,22 +57,22 @@ UDGraph* UDGraph_create(int (*match_vertex)(Tv, Tv), int(*match_edge)(Tv, Tv),  
 
 int UDGraph_destroy(UDGraph* udgraph) 
 {
-    List_(udgraph->uedges, _free_uedge);
-    List_(udgraph->uvertexs, _free_uvertex);
+    List_(&udgraph->uedges, _free_uedge);
+    List_(&udgraph->uvertexs, _free_uvertex);
     free(udgraph);
 }
 
 int UDGraph_add_vertex(UDGraph* udgraph, Tv vertex_id) 
 {
     uvertex_t* vertex = _create_uvertex(udgraph, vertex_id);
-    CN_add(udgraph->uvertexs, p2t(vertex));
+    CN_add(&udgraph->uvertexs, p2t(vertex));
     return 0;
 }
 
 int UDGraph_add_edge(UDGraph* udgraph, Tv vertex_1, Tv vertex_2, float w) 
 {
-    It i_v1 = CN_find(udgraph->uvertexs, vertex_1);
-    It i_v2 = CN_find(udgraph->uvertexs, vertex_2);
+    It i_v1 = CN_find(&udgraph->uvertexs, vertex_1);
+    It i_v2 = CN_find(&udgraph->uvertexs, vertex_2);
 
     if (!It_is_tail(i_v1) && !It_is_tail(i_v2)) {
         
@@ -80,7 +80,7 @@ int UDGraph_add_edge(UDGraph* udgraph, Tv vertex_1, Tv vertex_2, float w)
         uvertex_t* v2 = It_getptr(i_v2);
         
         uedge_t* edge = _create_uedge(v1, v2, w);
-        CN_add(udgraph->uedges, p2t(edge));
+        CN_add(&udgraph->uedges, p2t(edge));
 
         return 0;
     }
@@ -90,9 +90,9 @@ int UDGraph_add_edge(UDGraph* udgraph, Tv vertex_1, Tv vertex_2, float w)
 int UDGraph_del_vertex(UDGraph* udgraph, Tv vertex_id, int (*match_edge)(Tv, Tv)) 
 {
     Tv rdata;
-    if (CN_rm_target(udgraph->uvertexs, vertex_id, &rdata) != -1) {
+    if (CN_rm_target(&udgraph->uvertexs, vertex_id, &rdata) != -1) {
         // 1 把所有有关的边都干掉
-        CN_eliminate(udgraph->uedges, vertex_id, match_edge, _free_uedge);
+        CN_eliminate(&udgraph->uedges, vertex_id, match_edge, _free_uedge);
         uvertex_t* vertex = t2p(rdata);
         free(vertex);
     }
@@ -103,7 +103,7 @@ int UDGraph_del_edge(UDGraph* udgraph, Tv v1, Tv v2)
 {
     Tv vertexs[2] = {v1, v2};
     Tv rdata;
-    if (CN_rm_target(udgraph->uedges, p2t(vertexs), &rdata) != -1) {
+    if (CN_rm_target(&udgraph->uedges, p2t(vertexs), &rdata) != -1) {
         uedge_t* pedge = t2p(rdata);
         free(pedge);
     }
@@ -113,7 +113,7 @@ int UDGraph_del_edge(UDGraph* udgraph, Tv v1, Tv v2)
 void UDGraph_indexing_vertex(UDGraph* graph) 
 {
     size_t i = 0;
-    for (It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); first = It_next(first)) {
+    for (It first = CN_first(&graph->uvertexs); !It_equal(first, CN_tail(&graph->uvertexs)); first = It_next(first)) {
         uvertex_t* vertext = It_getptr(first);
         vertext->index     = i++;
     }

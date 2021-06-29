@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2021-06-29 13:33:35
+ * @LastEditTime: 2021-06-29 15:31:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -146,7 +146,7 @@
         !It_equal(first, CN_tail(from_ptr));\
         first=It_next(first)) {\
         CN_add(to_ptr, It_dref(first));\
-    }\ 
+    } \ 
 } while(0)
 
 

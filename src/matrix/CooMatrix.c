@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2021-04-08 14:14:20
+ * @LastEditTime: 2021-06-29 15:46:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
@@ -26,7 +26,7 @@ vfloat_t get(imatrix_t* matrix_ptr, size_t x, size_t y)
 {
     CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
     Tv v;
-    if (Map_get2(cooMatrix->coo, x, y, v) ==0)
+    if (Map_get2(&cooMatrix->coo, x, y, v) ==0)
     {
         return t2f(v);
     }
@@ -38,7 +38,7 @@ static inline
 int set(imatrix_t* matrix_ptr, size_t x, size_t y, vfloat_t v) 
 {
     CooMatrix* cooMatrix = (CooMatrix*) matrix_ptr;
-    Map_set2(cooMatrix->coo, i2t(x), i2t(y), f2t(v));
+    Map_set2(&cooMatrix->coo, i2t(x), i2t(y), f2t(v));
     return 0;
 }
 
@@ -49,13 +49,13 @@ int trans(imatrix_t* matrix_ptr)
     CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
     Map new_coo = _Hashmap(COOMATRIX_Keyhasher);
     
-    for(It first = CN_first(cooMatrix->coo);!It_equal(first, CN_tail(cooMatrix->coo));first=It_next(first)) {
-        Entity* pentity = Map_get_entity(cooMatrix->coo, first);
-        Map_set2(new_coo, pentity->tv[1], pentity->tv[0], pentity->tv[2]);
+    for(It first = CN_first(&cooMatrix->coo);!It_equal(first, CN_tail(&cooMatrix->coo));first=It_next(first)) {
+        Entity* pentity = Map_get_entity(&cooMatrix->coo, first);
+        Map_set2(&new_coo, pentity->tv[1], pentity->tv[0], pentity->tv[2]);
     }
     
     // release the old coo
-    Hashmap_(cooMatrix->coo);
+    Hashmap_(&cooMatrix->coo);
     cooMatrix->coo = new_coo;
     size_t o_row = matrix_ptr->rows;
     matrix_ptr->rows = matrix_ptr->cols;
@@ -100,7 +100,7 @@ CooMatrix* CooMatrix_load(size_t rows, size_t cols, vfloat_t* data)
 
 int CooMatrix_destroy(CooMatrix* matrix) 
 {
-    Hashmap_(matrix->coo);
+    Hashmap_(&matrix->coo);
     free(matrix);
     return 0;
 }

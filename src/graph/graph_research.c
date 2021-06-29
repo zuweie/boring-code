@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2021-06-29 15:00:27
+ * @LastEditTime: 2021-06-29 15:36:12
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -34,7 +34,7 @@ static int _udgaph_edge_weight_sort_cmp(Tv v1, Tv v2)
 static int _free_list_in_group_list(Tv v) 
 {
     List* l = t2p(v);
-    List_(*l, NULL);
+    List_(l, NULL);
     free(l);
 }
 
@@ -97,17 +97,17 @@ int grp_bfs_exploring(Graph* graph, vertex_t* start)
     pbfs->pi = NULL;
 
     Queue queue = _Queue(NULL);
-    Queue_offer(queue, p2t(start));
+    Queue_offer(&queue, p2t(start));
     Tv rdata;
     
-    while(Queue_poll(queue, &rdata) != -1) {
+    while(Queue_poll(&queue, &rdata) != -1) {
 
         vertex_t* pu = t2p(rdata);
         bfs_explor_t* pubfs = (bfs_explor_t*) pu->exploring;
 
         // 遍历节点的邻居表。
-        for(It first = CN_first(pu->paths); 
-            !It_equal(first, CN_tail(pu->paths)); 
+        for(It first = CN_first(&pu->paths); 
+            !It_equal(first, CN_tail(&pu->paths)); 
             first=It_next(first)) {
 
             path_t* pv = It_getptr(first);
@@ -117,12 +117,12 @@ int grp_bfs_exploring(Graph* graph, vertex_t* start)
                 pvbfs->color = _grp_gray;
                 pvbfs->distance = pvbfs->distance + 1;
                 pvbfs->pi = pu;
-                Queue_offer(queue, p2t(pv->to));
+                Queue_offer(&queue, p2t(pv->to));
             }
         }
         pubfs->color = _grp_black;
     }
-    Queue_(queue,NULL);
+    Queue_(&queue,NULL);
     return 0;
 }
 
@@ -132,7 +132,7 @@ static int _dfs_visit(vertex_t* pu, int* time)
     pudfs->color = _grp_gray;
     pudfs->d_time = ++(*time);
     // 访问邻接表
-    for(It first=CN_first(pu->paths); !It_equal(first, CN_tail(pu->paths)); first=It_next(first)) {
+    for(It first=CN_first(&pu->paths); !It_equal(first, CN_tail(&pu->paths)); first=It_next(first)) {
         path_t* pv   = It_getptr(first);
         dfs_explor_t* pvdfs = (dfs_explor_t*)pv->to->exploring;
 
@@ -151,8 +151,8 @@ int grp_dfs_exploring(Graph* graph)
 {
     int time = -1;
     Graph_initialize_exploring(graph, _init_dfs_exploring);
-    for(It first=CN_first(graph->vertexes); 
-        !It_equal(first, CN_tail(graph->vertexes)); 
+    for(It first=CN_first(&graph->vertexes); 
+        !It_equal(first, CN_tail(&graph->vertexes)); 
         first=It_next(first)) {
 
         vertex_t*   pu = It_getptr(first);
@@ -180,7 +180,7 @@ int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr)
 // 再完成了 dfs 后启动的拓扑排序。
 int grp_topological_sort(Graph* graph)
 {
-    CN_sort(graph->vertexes, _topological_sort_cmp);
+    CN_sort(&graph->vertexes, _topological_sort_cmp);
 }
 
 // 计算有向图的强连通分支
@@ -234,28 +234,28 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List* list)
 {
     List group_list = _List(NULL);
     
-    for(It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); first = It_next(first)) {
+    for(It first = CN_first(&graph->uvertexs); !It_equal(first, CN_tail(&graph->uvertexs)); first = It_next(first)) {
 
         List* l = malloc(sizeof(List));
         *l = _List(NULL);//_Treeset(entity_insert_cmp);
 
         uvertex_t* vertex = It_getptr(first);
         // 为每个定点分配一个 list
-        CN_add(*l, p2t(vertex));
+        CN_add(l, p2t(vertex));
         
         // 存入一个 list 中
-        CN_add_tail(group_list, p2t(l));
+        CN_add_tail(&group_list, p2t(l));
 
         // mark 下自己节点所在的 group 的 iterator
-        *((It*)(vertex->exploring)) = CN_last(group_list);
+        *((It*)(vertex->exploring)) = CN_last(&group_list);
 
     }
     
         // 3 以变得 weigth 递增的方式来排序。
-    CN_sort(graph->uedges, _udgaph_edge_weight_sort_cmp);
+    CN_sort(&graph->uedges, _udgaph_edge_weight_sort_cmp);
 
     // 遍历每一条边。
-    for (It first = CN_first(graph->uedges); !It_equal(first, CN_tail(graph->uedges)); first = It_next(first)){
+    for (It first = CN_first(&graph->uedges); !It_equal(first, CN_tail(&graph->uedges)); first = It_next(first)){
         uedge_t* edge = It_getptr(first);
 
         List* epv_list = It_getptr((*((It*)(edge->epv->exploring))));
@@ -266,16 +266,16 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List* list)
             It epv_list_it = *((It*)(edge->epv->exploring));
             It epw_list_it = *((It*)(edge->epw->exploring));
             
-            for (It first = CN_first(*epw_list); !It_equal(first, CN_tail(*epw_list)); first = It_next(first)) {
+            for (It first = CN_first(epw_list); !It_equal(first, CN_tail(epw_list)); first = It_next(first)) {
                 //Tv v = Set_get_item(*epw_list, first);
                 uvertex_t* vertex = It_getptr(first);
                 // 把 epw list 都换成 epv 的 list;
                 *((It*)(vertex->exploring)) = epv_list_it;
             }
             // 把两个合并起来
-            CN_merge(*epv_list, *epw_list);
+            CN_merge(epv_list, epw_list);
             Tv rdata;
-            CN_remove(group_list, epw_list_it, &rdata);
+            CN_remove(&group_list, epw_list_it, &rdata);
             // 把这个列 set 干掉。
             //free(t2p(rdata));
             _free_list_in_group_list(rdata);
@@ -283,7 +283,7 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, List* list)
         }
     }
     
-    List_(group_list, _free_list_in_group_list);
+    List_(&group_list, _free_list_in_group_list);
     return 0;
 }
 
@@ -293,19 +293,19 @@ int grp_calculate_mst_prim(Graph* graph, vertex_t* start)
     MxQueue q = _MxQueue(prim_explor_key_cmp); 
     
     Graph_initialize_exploring(graph, _init_prim_exploring);
-    CN_duplicate(graph->vertexes, q);
+    CN_duplicate(&graph->vertexes, &q);
     
     prim_explor_t* explor = start->exploring;
     explor->key = 0.0f;
     Tv extracted_vertex;
     
-    while (MxQueue_extract(q, extracted_vertex) != -1) {
+    while (MxQueue_extract(&q, extracted_vertex) != -1) {
 
         vertex_t* u = t2p(extracted_vertex);
         prim_explor_t* explor = u->exploring;
         explor->in_queue = 0;
         // 遍历这个顶点想邻接的边。
-        for (It first = CN_first(u->paths); !It_equal(first, CN_tail(u->paths)); first = It_next(first)) {
+        for (It first = CN_first(&u->paths); !It_equal(first, CN_tail(&u->paths)); first = It_next(first)) {
             path_t* uv_path = It_getptr(first);
             vertex_t* v = uv_path->to;
             prim_explor_t* v_explor = v->exploring;
@@ -318,7 +318,7 @@ int grp_calculate_mst_prim(Graph* graph, vertex_t* start)
             }
         }
     }
-    MxQueue_(q,NULL);
+    MxQueue_(&q,NULL);
     return 0;
 }
 
@@ -340,19 +340,19 @@ int grp_calculate_bellman_ford(Graph* graph, vertex_t* start)
     s_explor->distance = 0.0f;
 
     // 进行 
-    for (int i=0; i<CN_size(graph->vertexes)-2; ++i) {
-        for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first=It_next(first)){
+    for (int i=0; i<CN_size(&graph->vertexes)-2; ++i) {
+        for (It first = CN_first(&graph->vertexes); !It_equal(first, CN_tail(&graph->vertexes)); first=It_next(first)){
             vertex_t* u = It_getptr(first);
-            for (It _f = CN_first(u->paths); !It_equal(_f, CN_tail(u->paths)); _f = It_next(_f)) {
+            for (It _f = CN_first(&u->paths); !It_equal(_f, CN_tail(&u->paths)); _f = It_next(_f)) {
                 path_t* path = It_getptr(_f);
                 grp_relex(u, path->to, path->weight);
             }
         }
     }
 
-    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first=It_next(first)) {
+    for (It first = CN_first(&graph->vertexes); !It_equal(first, CN_tail(&graph->vertexes)); first=It_next(first)) {
         vertex_t* u = It_getptr(first);
-        for (It _f = CN_first(u->paths); !It_equal(_f, CN_tail(u->paths)); _f = It_next(_f)) {
+        for (It _f = CN_first(&u->paths); !It_equal(_f, CN_tail(&u->paths)); _f = It_next(_f)) {
             path_t* path = It_getptr(_f);
             relax_explor_t* u_explor = u->exploring;
             relax_explor_t* v_explor = path->to->exploring;
@@ -365,24 +365,24 @@ int grp_calculate_bellman_ford(Graph* graph, vertex_t* start)
     return 1;
 }
 
-int grp_calculate_dijkstra(Graph* graph, vertex_t* start, List list) 
+int grp_calculate_dijkstra(Graph* graph, vertex_t* start, List* list) 
 {
     Graph_initialize_exploring(graph, _init_relax_exploring);
     ((relax_explor_t*)(start->exploring))->distance = 0;
     
     MxQueue q = _MxQueue(dijkstra_explor_distance_cmp);
-    CN_duplicate(graph->vertexes, q);
+    CN_duplicate(&graph->vertexes, &q);
     Tv extract;
-    while(MxQueue_extract(q, extract) != -1) {
+    while(MxQueue_extract(&q, extract) != -1) {
         
         vertex_t* extract_v = t2p(extract);
         CN_add(list, extract);
         vertex_t* u = t2p(extract);
-        for (It first = CN_first(u->paths); !It_equal(first, CN_tail(u->paths)); first = It_next(first)) {
+        for (It first = CN_first(&u->paths); !It_equal(first, CN_tail(&u->paths)); first = It_next(first)) {
             path_t* path = It_getptr(first);
             grp_relex(u, path->to, path->weight);
         }
     }
-    MxQueue_(q, NULL);
+    MxQueue_(&q, NULL);
     return 0;
 }
