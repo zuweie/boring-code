@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2020-12-09 10:11:56
+ * @LastEditTime: 2021-06-29 14:04:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -93,7 +93,7 @@ static void test_hashmap_set (void)
     for(int i=0; i<HASHMAP_SIZE; ++i) {
         key = getTSi(i);
         value = getTSs(i);
-        Map_set(hashmap, key, value);
+        Map_set(&hashmap, key, value);
     }
     
     // printf("\n\n");
@@ -146,21 +146,21 @@ static void test_hashmap_set (void)
 
     Tv rdata;
     for (int j=0; j<HASHMAP_SIZE; ++j) {
-        int ret = Map_get(hashmap, getTSi(j), rdata);
+        int ret = Map_get(&hashmap, getTSi(j), rdata);
         CU_ASSERT_TRUE(ret == 0);
         if (ret == 0) {
             CU_ASSERT_TRUE( CMP_STR(getTSs(j), rdata) == 0);
         }
     }
 
-    Map_set(hashmap, i2t(12), p2t("1023"));
-    Map_get(hashmap, i2t(12), rdata);
+    Map_set(&hashmap, i2t(12), p2t("1023"));
+    Map_get(&hashmap, i2t(12), rdata);
     CU_ASSERT_TRUE( CMP_STR(p2t("1023"), rdata) == 0);
 
-    Map_set(hashmap, i2t(12), p2t("1024"));
-    Map_get(hashmap, i2t(12), rdata);
+    Map_set(&hashmap, i2t(12), p2t("1024"));
+    Map_get(&hashmap, i2t(12), rdata);
     CU_ASSERT_TRUE( CMP_STR(p2t("1024"), rdata) == 0);
-    Hashmap_(hashmap);
+    Hashmap_(&hashmap);
     
 }
 
@@ -174,7 +174,7 @@ static void test_treemap_set (void)
     for(int i=0; i<HASHMAP_SIZE; ++i) {
         key = getTSi(i);
         value = getTSs(i);
-        Map_set(treemap, key, value);
+        Map_set(&treemap, key, value);
     }
     
     // printf("\n\n");
@@ -229,22 +229,22 @@ static void test_treemap_set (void)
     for (int j=0; j<HASHMAP_SIZE; ++j) {
 
         Tv key = getTSi(j);
-        int ret = Map_get(treemap, key, rdata);
+        int ret = Map_get(&treemap, key, rdata);
         CU_ASSERT_TRUE(ret == 0);
         if (ret == 0) {
             CU_ASSERT_TRUE( CMP_STR(getTSs(j), rdata) == 0);
         }
     }
 
-    Map_set(treemap, i2t(12), p2t("1023"));
-    Map_get(treemap, i2t(12), rdata);
+    Map_set(&treemap, i2t(12), p2t("1023"));
+    Map_get(&treemap, i2t(12), rdata);
     CU_ASSERT_TRUE( CMP_STR(p2t("1023"), rdata) == 0);
 
-    Map_set(treemap, i2t(12), p2t("1024"));
-    Map_get(treemap, i2t(12), rdata);
+    Map_set(&treemap, i2t(12), p2t("1024"));
+    Map_get(&treemap, i2t(12), rdata);
     CU_ASSERT_TRUE( CMP_STR(p2t("1024"), rdata) == 0);
 
-    Treemap_(treemap);
+    Treemap_(&treemap);
 }
 
 static void test_hashmap_get (void) 
@@ -255,15 +255,15 @@ static void test_hashmap_get (void)
     for(int i=0; i<HASHMAP_SIZE; ++i) {
         Tv key = getTSi(i);
         Tv value = getTSs(i);
-        Map_set(hashmap, key, value);
+        Map_set(&hashmap, key, value);
     }
     for (int i=0; i<HASHMAP_SIZE; ++i) {
-        CU_ASSERT(Map_has(hashmap, getTSi(i)));
+        CU_ASSERT(Map_has(&hashmap, getTSi(i)));
     }
 
-    CU_ASSERT_FALSE(Map_has(hashmap, getTSi(87)));
-    CU_ASSERT_FALSE(Map_has(hashmap, getTSi(82)));
-    Hashmap_(hashmap);
+    CU_ASSERT_FALSE(Map_has(&hashmap, getTSi(87)));
+    CU_ASSERT_FALSE(Map_has(&hashmap, getTSi(82)));
+    Hashmap_(&hashmap);
 }
 
 static void test_treemap_get (void) 
@@ -274,15 +274,15 @@ static void test_treemap_get (void)
     for(int i=0; i<HASHMAP_SIZE; ++i) {
         Tv key = getTSi(i);
         Tv value = getTSs(i);
-        Map_set(treemap, key, value);
+        Map_set(&treemap, key, value);
     }
     for (int i=0; i<HASHMAP_SIZE; ++i) {
-        CU_ASSERT(Map_has(treemap, getTSi(i)));
+        CU_ASSERT(Map_has(&treemap, getTSi(i)));
     }
 
-    CU_ASSERT_FALSE(Map_has(treemap, getTSi(87)));
-    CU_ASSERT_FALSE(Map_has(treemap, getTSi(82)));
-    Treemap_(treemap);
+    CU_ASSERT_FALSE(Map_has(&treemap, getTSi(87)));
+    CU_ASSERT_FALSE(Map_has(&treemap, getTSi(82)));
+    Treemap_(&treemap);
 }
 
 static void test_hashmap_del(void)
@@ -291,57 +291,57 @@ static void test_hashmap_del(void)
     Tv key, value;
     key   = i2t(1);
     value = p2t("1");
-    Map_set(hashmap, key, value);
+    Map_set(&hashmap, key, value);
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     key   = i2t(2);
     value = p2t("2");
-    Map_set(hashmap, key, value);
+    Map_set(&hashmap, key, value);
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     key   = i2t(3);
     value = p2t("3");
-    Map_set(hashmap, key, value);
+    Map_set(&hashmap, key, value);
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
     
     key   = i2t(11);
     value = p2t("11");
-    Map_set(hashmap, key, value);
+    Map_set(&hashmap, key, value);
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     key   = i2t(12);
     value = p2t("12");
-    Map_set(hashmap, key, value);
+    Map_set(&hashmap, key, value);
 
     key   = i2t(22);
     value = p2t("22");
-    Map_set(hashmap, key, value);
+    Map_set(&hashmap, key, value);
 
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
-    Map_del(hashmap, i2t(11), NULL);
-    Map_del(hashmap, i2t(22), NULL);
-    Map_del(hashmap, i2t(3), NULL);
+    Map_del(&hashmap, i2t(11), NULL);
+    Map_del(&hashmap, i2t(22), NULL);
+    Map_del(&hashmap, i2t(3), NULL);
     // printf("\n\n after del \n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     //CU_ASSERT(1);
-    CU_ASSERT_FALSE(Map_has(hashmap, i2t(11)));
-    CU_ASSERT_FALSE(Map_has(hashmap, i2t(22)));
-    CU_ASSERT_FALSE(Map_has(hashmap, i2t(3)));
+    CU_ASSERT_FALSE(Map_has(&hashmap, i2t(11)));
+    CU_ASSERT_FALSE(Map_has(&hashmap, i2t(22)));
+    CU_ASSERT_FALSE(Map_has(&hashmap, i2t(3)));
 
-    Hashmap_(hashmap);
+    Hashmap_(&hashmap);
 }
 
 static void test_treemap_del(void)
@@ -350,57 +350,57 @@ static void test_treemap_del(void)
     Tv key, value;
     key   = i2t(1);
     value = p2t("1");
-    Map_set(treemap, key, value);
+    Map_set(&treemap, key, value);
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     key   = i2t(2);
     value = p2t("2");
-    Map_set(treemap, key, value);
+    Map_set(&treemap, key, value);
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     key   = i2t(3);
     value = p2t("3");
-    Map_set(treemap, key, value);
+    Map_set(&treemap, key, value);
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
     
     key   = i2t(11);
     value = p2t("11");
-    Map_set(treemap, key, value);
+    Map_set(&treemap, key, value);
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     key   = i2t(12);
     value = p2t("12");
-    Map_set(treemap, key, value);
+    Map_set(&treemap, key, value);
 
     key   = i2t(22);
     value = p2t("22");
-    Map_set(treemap, key, value);
+    Map_set(&treemap, key, value);
 
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
-    Map_del(treemap, i2t(11), NULL);
-    Map_del(treemap, i2t(22), NULL);
-    Map_del(treemap, i2t(3), NULL);
+    Map_del(&treemap, i2t(11), NULL);
+    Map_del(&treemap, i2t(22), NULL);
+    Map_del(&treemap, i2t(3), NULL);
     // printf("\n\n after del \n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     //CU_ASSERT(1);
-    CU_ASSERT_FALSE(Map_has(treemap, i2t(11)));
-    CU_ASSERT_FALSE(Map_has(treemap, i2t(22)));
-    CU_ASSERT_FALSE(Map_has(treemap, i2t(3)));
+    CU_ASSERT_FALSE(Map_has(&treemap, i2t(11)));
+    CU_ASSERT_FALSE(Map_has(&treemap, i2t(22)));
+    CU_ASSERT_FALSE(Map_has(&treemap, i2t(3)));
 
-    Treemap_(treemap);
+    Treemap_(&treemap);
 }
 
 static void test_hashmap_set_n_get (void) 
@@ -414,43 +414,43 @@ static void test_hashmap_set_n_get (void)
         
         key = getTSi(i);
         value = getTSs(i);
-        Map_set(hashmap, key, value);
+        Map_set(&hashmap, key, value);
 
     }
     // 随机删到30个数据
     Tv rdata;
     for (int i=0; i<30; ++i) {
         Tv key = getTSi(rand()%50);
-        Map_del(hashmap, key, NULL);
+        Map_del(&hashmap, key, NULL);
     }
 
     for (int i=51; i<TEST_DATA_SIZE; ++i) {
         key = getTSi(i);
         value = getTSs(i);
-        Map_set(hashmap, key, value);
+        Map_set(&hashmap, key, value);
     }
 
     List list = _List(EQUL);
     //Container table = Hashmap_table(hashmap);
-    CN_duplicate(hashmap, list);
+    CN_duplicate(&hashmap, &list);
 
     // printf("\n\n");
-    CN_foreach(list, ENTITY_2_HASH_KEY);
+    CN_foreach(&list, ENTITY_2_HASH_KEY);
     // printf("\n\n indexs: ");
     // CN_foreach(list, PRINTF_TV_ON_INT);
     // printf("\n\n");
     // printf("size of index: %d\n", CN_size(list));
 
-    CN_wring(list, NULL);
+    CN_wring(&list, NULL);
     // printf("\n after wring :\n");
     // CN_foreach(list, PRINTF_TV_ON_INT);
 
-    CN_sort(list, CMP_INT);
+    CN_sort(&list, CMP_INT);
     
     // printf("\n after sort :\n");
     // CN_foreach(list, PRINTF_TV_ON_INT);
 
-    for(It first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
+    for(It first = CN_first(&list); !It_equal(first, CN_last(&list)); first=It_next(first)){
 
         It next = It_next(first);
         int v1 = It_getint(first);
@@ -459,71 +459,71 @@ static void test_hashmap_set_n_get (void)
         CU_ASSERT_FALSE( v1 == v2);
     }
 
-    List_(list, NULL);
-    Hashmap_(hashmap);
+    List_(&list, NULL);
+    Hashmap_(&hashmap);
 }
 
 static void test_treemap_first_last(void) 
 {
     Map treemap = _Treemap(entity_int_insert_cmp);
-    Map_set(treemap, 1, 1);
-    It first = CN_first(treemap);
+    Map_set(&treemap, 1, 1);
+    It first = CN_first(&treemap);
     Entity* entity = It_getptr(first);
     CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(1)) == 0 );
 
-    It last = CN_last(treemap);
+    It last = CN_last(&treemap);
     entity = It_getptr(last);
     CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(1)) == 0 );
 
     // 插入一个2
-    Map_set(treemap, 2, 2);
+    Map_set(&treemap, 2, 2);
 
-    first = CN_first(treemap);
+    first = CN_first(&treemap);
     entity = It_getptr(first);
     CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(1)) == 0);
 
-    last = CN_last(treemap);
+    last = CN_last(&treemap);
     entity = It_getptr(last);
     CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(2)) == 0);
     //PRINTF_TV_ON_INT(entity->tv[0]);
     
-    Map_del(treemap, 1, NULL);
-    first = CN_first(treemap);
+    Map_del(&treemap, 1, NULL);
+    first = CN_first(&treemap);
     entity = It_getptr(first);
     CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(2)) == 0);
 
 
-    last  = CN_last(treemap);
+    last  = CN_last(&treemap);
     entity = It_getptr(last);
     CU_ASSERT_TRUE( CMP_INT(entity->tv[0], i2t(2)) == 0);
-    Treemap_(treemap);
+    Treemap_(&treemap);
     
     Map treemap2 = _Treemap(entity_int_insert_cmp);
     List list    = _List(NULL);
     for (int i=0; i<100; ++i) {
-        Map_set(treemap2, getTSi(i), getTSi(i));
-        CN_add(list, getTSi(i));
+        Map_set(&treemap2, getTSi(i), getTSi(i));
+        CN_add(&list, getTSi(i));
     }
-    CN_sort(list, CMP_INT);
+    CN_sort(&list, CMP_INT);
     
-    Tv list_first = It_dref( CN_first(list) );
-    Tv list_last  = It_dref( CN_last(list) );
-    Tv list_sec   = It_dref( It_next(CN_first(list)) );
-    Tv list_rsec  = It_dref( It_prev(CN_last(list)) );
+    Tv list_first = It_dref( CN_first(&list) );
+    Tv list_last  = It_dref( CN_last(&list) );
+    Tv list_sec   = It_dref( It_next(CN_first(&list)) );
+    Tv list_rsec  = It_dref( It_prev(CN_last(&list)) );
 
-    It tree2_first = CN_first(treemap2);
+    It tree2_first = CN_first(&treemap2);
     Entity* first_entity = It_getptr(tree2_first);
-    It tree2_last  = CN_last(treemap2);
+    It tree2_last  = CN_last(&treemap2);
     Entity* last_entity = It_getptr(tree2_last);
     CU_ASSERT_TRUE(CMP_INT(first_entity->tv[0], list_first) == 0);
     CU_ASSERT_TRUE(CMP_INT(last_entity->tv[0], list_last) == 0);
 
-    Map_del(treemap2, getTSi(45), NULL);
-    Map_del(treemap2, getTSi(53), NULL);
+    Map_del(&treemap2, getTSi(45), NULL);
+    Map_del(&treemap2, getTSi(53), NULL);
 
-    tree2_first = CN_first(treemap2);
+    tree2_first = CN_first(&treemap2);
     first_entity = It_getptr(tree2_first);
-    tree2_last  = CN_last(treemap2);
+    tree2_last  = CN_last(&treemap2);
     last_entity = It_getptr(tree2_last);
 
     CU_ASSERT_TRUE(CMP_INT(first_entity->tv[0], list_first) == 0);
@@ -537,8 +537,8 @@ static void test_treemap_first_last(void)
     // }
     // printf("\n");
 
-    Map_del(treemap2, list_first, NULL);
-    Map_del(treemap2, list_last, NULL);
+    Map_del(&treemap2, list_first, NULL);
+    Map_del(&treemap2, list_last, NULL);
 
     // printf("\n");
     // for (It first = CN_first(treemap2); !It_equal(first, CN_tail(treemap2)); first = It_next(first)) 
@@ -548,9 +548,9 @@ static void test_treemap_first_last(void)
     // }
     // printf("\n");
 
-    tree2_first = CN_first(treemap2);
+    tree2_first = CN_first(&treemap2);
     first_entity = It_getptr(tree2_first);
-    tree2_last  = CN_last(treemap2);
+    tree2_last  = CN_last(&treemap2);
     last_entity = It_getptr(tree2_last);
 
     
@@ -560,8 +560,8 @@ static void test_treemap_first_last(void)
     CU_ASSERT_TRUE(CMP_INT(first_entity->tv[0], list_sec) == 0);
     CU_ASSERT_TRUE(CMP_INT(last_entity->tv[0], list_rsec) == 0);
 
-    Treemap_(treemap2);
-    List_(list, NULL);
+    Treemap_(&treemap2);
+    List_(&list, NULL);
 }
 
 static void test_entity(void)

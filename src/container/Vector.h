@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 07:09:37
- * @LastEditTime: 2020-10-26 13:20:07
+ * @LastEditTime: 2021-06-29 13:23:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/LinearArray.h
@@ -17,10 +17,10 @@ typedef Container Vector;
 #define _Vector(search_cmp) \
     ({                   \
         Vector vet;      \
-        CN_initialize(vet, vector, search_cmp, NULL, NULL); \
+        CN_initialize(&vet, vector, search_cmp, NULL, NULL); \
         vet; \
     })
 
-#define Vector_(vet, cleanup) CN_uninitialize(vet, vector, cleanup)
+#define Vector_(vet_ptr, cleanup) CN_uninitialize(vet_ptr, vector, cleanup)
 
 #endif

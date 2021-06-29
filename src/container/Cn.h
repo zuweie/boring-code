@@ -1,7 +1,7 @@
 /*
  * @Author: zuweie
  * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2020-12-10 20:02:51
+ * @LastEditTime: 2021-06-29 13:33:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.h
@@ -14,75 +14,75 @@
 #include "Tv.h"
 
 /* container function */
-#define cc(con)              (((Container*)(&(con)))->_container)
-#define c_search_cmp(con)    (((Container*)(&(con)))->_search_compare)
-#define c_conflict_fix(con)  (((Container*)(&(con)))->_conflict_fix)
-#define c_setup(con)         (((Container*)(&(con)))->_setup)
-#define c_extra_func(con)    (((Container*)(&(con)))->_extra_func)
+#define c_base(con_ptr)          (((Container*)(con_ptr))->_container)
+#define c_search_cmp(con_ptr)    (((Container*)(con_ptr))->_search_compare)
+#define c_conflict_fix(con_ptr)  (((Container*)(con_ptr))->_conflict_fix)
+#define c_setup(con_ptr)         (((Container*)(con_ptr))->_setup)
+#define c_extra_func(con_ptr)    (((Container*)(con_ptr))->_extra_func)
 
-#define CN_set_search_cmp(con, search_cmp)     (c_search_cmp(con)=search_cmp)
-#define CN_set_setup(con, setup)               (c_setup(con) = setup)
-#define CN_set_conflict_fix(con, conflict_fix) (c_conflict_fix(con)=conflict_fix)
-#define CN_set_extra_func(con, func)           (c_extra_func(con)=func)
+#define CN_set_search_cmp(con_ptr, search_cmp)     (c_search_cmp(con_ptr)=search_cmp)
+#define CN_set_setup(con_ptr, setup)               (c_setup(con_ptr) = setup)
+#define CN_set_conflict_fix(con_ptr, conflict_fix) (c_conflict_fix(con_ptr)=conflict_fix)
+#define CN_set_extra_func(con_ptr, func)           (c_extra_func(con_ptr)=func)
 
-#define CN_first(con) container_first(cc(con))
-#define CN_last(con) container_last(cc(con))
-#define CN_head(con) container_head(cc(con))
-#define CN_tail(con) container_tail(cc(con))
+#define CN_first(con_ptr) container_first(c_base(con_ptr))
+#define CN_last(con_ptr) container_last(c_base(con_ptr))
+#define CN_head(con_ptr) container_head(c_base(con_ptr))
+#define CN_tail(con_ptr) container_tail(c_base(con_ptr))
 
-#define CN_search(con,offset,find) container_search(cc(con), offset, find, c_search_cmp(con))
-#define CN_find(con,find) CN_search(con, CN_first(con), find)
+#define CN_search(con_ptr,offset,find) container_search(c_base(con_ptr), offset, find, c_search_cmp(con_ptr))
+#define CN_find(con_ptr,find) CN_search(con_ptr, CN_first(con_ptr), find)
 
 // 特殊的插入。
-#define CN_set(con, data) container_set(cc(con), data, c_setup(con),  c_conflict_fix(con))
+#define CN_set(con_ptr, data) container_set(c_base(con_ptr), data, c_setup(con_ptr),  c_conflict_fix(con_ptr))
 
-#define CN_insert(con, it, data) \
+#define CN_insert(con_ptr, it, data) \
     ({ \
         It __marco_it = it; \
-        container_insert(cc(con), __marco_it, data); \
+        container_insert(c_base(con_ptr), __marco_it, data); \
     })
 // 头部插入
-#define CN_add_first(con, data) CN_insert(con, CN_first(con), data)
+#define CN_add_first(con_ptr, data) CN_insert(con_ptr, CN_first(con_ptr), data)
 // 尾部插入
-#define CN_add_tail(con, data) CN_insert(con, CN_tail(con), data)
+#define CN_add_tail(con_ptr, data) CN_insert(con_ptr, CN_tail(con_ptr), data)
 
-#define CN_add(con, data) CN_add_tail(con, data)
+#define CN_add(con_ptr, data) CN_add_tail(con_ptr, data)
 
-#define CN_remove(con, it, prdata) \
+#define CN_remove(con_ptr, it, prdata) \
     ({ \
         It __marco_it = it; \
         int __marco_ret = -1; \
         if (It_valid(__marco_it)) { \
-            container_remove(cc(con), __marco_it, prdata); \
+            container_remove(c_base(con_ptr), __marco_it, prdata); \
             __marco_ret = 0; \
         } \
         __marco_ret; \
     })
 // 头部移除
-#define CN_rm_first(con, prdata) CN_remove(con, CN_first(con), prdata)
+#define CN_rm_first(con_ptr, prdata) CN_remove(con_ptr, CN_first(con_ptr), prdata)
 // 尾部移除
-#define CN_rm_last(con, prdata) CN_remove(con, CN_last(con), prdata)
+#define CN_rm_last(con_ptr, prdata) CN_remove(con_ptr, CN_last(con_ptr), prdata)
 
-#define CN_rm(con, prdata) CN_rm_last(con, prdata)
+#define CN_rm(con_ptr, prdata) CN_rm_last(con_ptr, prdata)
 // 移除特定目标
-#define CN_rm_target(con, find, pret)   \
+#define CN_rm_target(con_ptr, find, pret)   \
     ({                                 \
         int ret_code = -1;             \
-        It pos = CN_find(con, find);   \
+        It pos = CN_find(con_ptr, find);   \
         if (It_valid(pos)) {           \
-            ret_code = CN_remove(con, pos, pret); \
+            ret_code = CN_remove(con_ptr, pos, pret); \
         }                                        \
         ret_code;                                \
     })
 
-#define CN_eliminate(con, find, match, cleanup) do { \
-    It first = CN_first(con); \
+#define CN_eliminate(con_ptr, find, match, cleanup) do { \
+    It first = CN_first(con_ptr); \
     while ( !It_is_tail(first) ) { \
         if (match(It_dref(first), find) == 0) { \
             Tv __marco_rdata; \
             It __marco_rm_it = first; \
             first = It_prev(first); \
-            if (CN_remove(con, __marco_rm_it, &__marco_rdata) == 0 && cleanup) { \
+            if (CN_remove(con_ptr, __marco_rm_it, &__marco_rdata) == 0 && cleanup) { \
                 cleanup(__marco_rdata); \
             } \
         } \
@@ -91,86 +91,86 @@
 }while(0)
 
 //#define chas(con, find) container_has(cc(con), find, ccmp(con))
-#define CN_size(con) container_size(cc(con))
-#define CN_is_empty(con) (CN_size(con) == 0)
-#define CN_sort(con, sort_cmp) container_sort(cc(con), sort_cmp)
-#define CN_wring(con, cb) container_wring(cc(con), c_search_cmp(con), cb)
+#define CN_size(con_ptr) container_size(c_base(con_ptr))
+#define CN_is_empty(con_ptr) (CN_size(con_ptr) == 0)
+#define CN_sort(con_ptr, sort_cmp) container_sort(c_base(con_ptr), sort_cmp)
+#define CN_wring(con_ptr, cb) container_wring(c_base(con_ptr), c_search_cmp(con_ptr), cb)
 
-#define CN_unique(con, sort_cmp, cb) do { \
-    CN_sort(con, sort_cmp); \
-    CN_wring(con, cb);\
+#define CN_unique(con_ptr, sort_cmp, cb) do { \
+    CN_sort(con_ptr, sort_cmp); \
+    CN_wring(con_ptr, cb);\
 }while(0)
 
-#define CN_has(con, find)            \
+#define CN_has(con_ptr, find)            \
     ({                               \
-        It pos = CN_find(con, find); \
+        It pos = CN_find(con_ptr, find); \
         int ret = It_valid(pos);     \
         ret;                         \
     })
 
-#define CN_to_arr(con, arr) do {  \
+#define CN_to_arr(con_ptr, arr) do {  \
     int i = 0;                    \
-    for (It first = CN_first(con);      \
-        !It_equal(first, CN_tail(con)); \
+    for (It first = CN_first(con_ptr);      \
+        !It_equal(first, CN_tail(con_ptr)); \
         first = It_next(first) ) {      \
             arr[i++] = It_dref(first);  \
         } \
 }while(0)
 
-#define Arr_to_cn(arr, size, transfer, con) do { \
+#define Arr_to_cn(arr, size, transfer, con_ptr) do { \
     for (int i=0; i<size; ++i) {              \
         Tv v = transfer(arr[i]);              \
-        CN_add_tail(con, v);                  \
+        CN_add_tail(con_ptr, v);              \
     }                                         \
 }while(0)
 
-#define CN_Access(con, step) container_access(cc(con), step)
-#define CN_fetch(con, index, rdata) \
+#define CN_Access(con_ptr, step) container_access(c_base(con_ptr), step)
+#define CN_fetch(con_ptr, index, rdata) \
     ({ \
-        It it = CN_Access(con, index); \
+        It it = CN_Access(con_ptr, index); \
         rdata = It_dref(it); \
     })
 // 遍历容器，
-#define CN_travel(con, handle) do {                 \
-    for(It first = CN_first(con);                   \
-        !It_equal(first, CN_tail(con));             \
+#define CN_travel(con_ptr, handle) do {                 \
+    for(It first = CN_first(con_ptr);                   \
+        !It_equal(first, CN_tail(con_ptr));             \
         first = It_next(first) ) {                  \
             handle( It_dref(first) );               \
         }                                           \
 }while(0)
 
-#define CN_foreach(con, handle) CN_travel(con, handle)
+#define CN_foreach(con_ptr, handle) CN_travel(con_ptr, handle)
 
-#define CN_duplicate(from, to) do {\
-    for(It first = CN_first(from);\
-        !It_equal(first, CN_tail(from));\
+#define CN_duplicate(from_ptr, to_ptr) do {\
+    for(It first = CN_first(from_ptr);\
+        !It_equal(first, CN_tail(from_ptr));\
         first=It_next(first)) {\
-        CN_add(to, It_dref(first));\
+        CN_add(to_ptr, It_dref(first));\
     }\ 
 } while(0)
 
 
 // 两个容器合并。
-#define CN_merge(con1, con2) do { \
-    for(It __marco_first = CN_first(con2); !It_equal(__marco_first, CN_tail(con2)); __marco_first = It_next(__marco_first)) { \
-        CN_add(con1, It_dref(__marco_first)); \
+#define CN_merge(con1_ptr, con2_ptr) do { \
+    for(It __marco_first = CN_first(con2_ptr); !It_equal(__marco_first, CN_tail(con2_ptr)); __marco_first = It_next(__marco_first)) { \
+        CN_add(con1_ptr, It_dref(__marco_first)); \
     } \
 }while(0)
 
-#define CN_initialize(con, label, search_cmp, setup, conflict_fix, ... ) do {  \
-    CN_set_search_cmp(con, search_cmp);      \
-    CN_set_setup(con, setup);                \
-    CN_set_conflict_fix(con, conflict_fix);  \
-    cc(con) = container_create(label, __VA_ARGS__); \
+#define CN_initialize(con_ptr, label, search_cmp, setup, conflict_fix, ... ) do {  \
+    CN_set_search_cmp(con_ptr, search_cmp);      \
+    CN_set_setup(con_ptr, setup);                \
+    CN_set_conflict_fix(con_ptr, conflict_fix);  \
+    c_base(con_ptr) = container_create(label, __VA_ARGS__); \
 }while(0)
 
-#define CN_uninitialize(con, label, cleanup) do { \
+#define CN_uninitialize(con_ptr, label, cleanup) do { \
     Cleaner cleaner = (Cleaner) cleanup;          \
     if (cleaner) {                          \
-        CN_foreach(con, cleaner);            \
+        CN_foreach(con_ptr, cleaner);            \
     }                                       \
-    container_destroy(label, cc(con));      \
-    cc(con) = NULL;                         \
+    container_destroy(label, c_base(con_ptr));      \
+    c_base(con_ptr) = NULL;                         \
 }while(0)
 
 typedef int (*Cleaner)(Tv);

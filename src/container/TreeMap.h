@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-29 11:33:49
- * @LastEditTime: 2020-10-29 12:58:33
+ * @LastEditTime: 2021-06-29 14:01:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/TreeMap.h
@@ -15,12 +15,12 @@
 #define _Treemap(insert_cmp) \
     ({                       \
         Map tm;              \
-        Map_init(tm, rb_tree, Map_setup, Map_conflict_fix, insert_cmp);\
-        CN_set_extra_func(tm, Treemap_Expose_Entity); \
+        Map_init(&tm, rb_tree, Map_setup, Map_conflict_fix, insert_cmp);\
+        CN_set_extra_func(&tm, Treemap_Expose_Entity); \
         tm; \
     })
 
-#define Treemap_(tm) Map_uninit(tm, rb_tree, Treemap_cleanup_entity)
+#define Treemap_(tm_ptr) Map_uninit(tm_ptr, rb_tree, Treemap_cleanup_entity)
 
 static inline 
 int Treemap_cleanup_entity (Tv v) 

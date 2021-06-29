@@ -52,7 +52,7 @@ set (SOURCE
     src/machine_learning/logistic_regression.c
     src/machine_learning/svm/support_vector_machines.c
     src/machine_learning/svm/solver.c
-    src/machine_learning/svm/decision_model.c
+    src/machine_learning/svm/svm_model.c
 )
 
 ## 连接 cunit 库

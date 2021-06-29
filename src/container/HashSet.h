@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-30 08:05:18
- * @LastEditTime: 2020-12-04 08:32:42
+ * @LastEditTime: 2021-06-29 15:13:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/HashSet.h
@@ -23,12 +23,12 @@ typedef hash_node_t HashsetNode;
 #define _Hashset(key_hasher) \
     ({ \
         Set set; \
-        Set_init(set, hashmap, Set_setup, Set_conflict_fix, HASHSET_SLOT_SIZE, key_hasher, Set_entity_key_equl);\
-        CN_set_extra_func(set, Hashset_Expose_Entity);\
+        Set_init(&set, hashmap, Set_setup, Set_conflict_fix, HASHSET_SLOT_SIZE, key_hasher, Set_entity_key_equl);\
+        CN_set_extra_func(&set, Hashset_Expose_Entity);\
         set; \
     })
 
-#define Hashset_(set) Set_uninit(set, hashmap, Hashset_cleanup_entity)
+#define Hashset_(set_ptr) Set_uninit(set_ptr, hashmap, Hashset_cleanup_entity)
 #define Hashset_node_2_entity(pnode) \
     ({ \
         Entity* __p_marco_entity = t2p(((HashsetNode*)(pnode))->entity); \

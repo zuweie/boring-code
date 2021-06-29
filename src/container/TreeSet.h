@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-30 08:05:26
- * @LastEditTime: 2020-12-03 23:25:36
+ * @LastEditTime: 2021-06-29 15:11:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/TreeSet.h
@@ -17,12 +17,12 @@
 #define _Treeset(insert_cmp) \
     ({                       \
         Set set;              \
-        Set_init(set, rb_tree, Set_setup, Set_conflict_fix, insert_cmp);\
-        CN_set_extra_func(set, Treeset_Expose_Entity); \
+        Set_init(&set, rb_tree, Set_setup, Set_conflict_fix, insert_cmp);\
+        CN_set_extra_func(&set, Treeset_Expose_Entity); \
         set; \
     })
 
-#define Treeset_(set) Set_uninit(set, rb_tree, Treeset_cleanup_entity)
+#define Treeset_(set_ptr) Set_uninit(set_ptr, rb_tree, Treeset_cleanup_entity)
 
 static inline 
 int Treeset_cleanup_entity (Tv v) 

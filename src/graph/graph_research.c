@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2020-12-17 02:51:04
+ * @LastEditTime: 2021-06-29 15:00:27
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -164,7 +164,7 @@ int grp_dfs_exploring(Graph* graph)
     return 0;
 }
 
-int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List arr) 
+int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr) 
 {
     if (start == desc) {
         CN_add_tail(arr, p2t(start));
@@ -194,13 +194,13 @@ Graph* grp_calculate_strongly_connected_component_graph(Graph* graph)
 
 }
 
-int grp_calculate_component(Graph* graph, List list) 
+int grp_calculate_component(Graph* graph, List* list) 
 {
     // 把所有的定点排好
-    size_t arr_size = CN_size(graph->vertexes) * 2;
+    size_t arr_size = CN_size(&graph->vertexes) * 2;
     vertex_t* vertex_arr[arr_size];
 
-    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first = It_next(first)) {
+    for (It first = CN_first(&graph->vertexes); !It_equal(first, CN_tail(&graph->vertexes)); first = It_next(first)) {
         vertex_t* vertex = It_getptr(first);
         dfs_explor_t* dfs = vertex->exploring;
         vertex_arr[dfs->d_time] = vertex;
@@ -230,7 +230,7 @@ int grp_calculate_component(Graph* graph, List list)
     return 0;
 }
 
-int ugrp_calculate_mst_kruskal(UDGraph* graph, List list) 
+int ugrp_calculate_mst_kruskal(UDGraph* graph, List* list) 
 {
     List group_list = _List(NULL);
     

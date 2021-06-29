@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2020-11-11 10:44:24
+ * @LastEditTime: 2021-06-29 13:44:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -30,10 +30,10 @@ static void test_list_size(void)
 
     for (int i=0; i<LIST_SIZE; ++i) {
         Tv v = getTSi(i);
-        CN_add_tail(list, v);
+        CN_add_tail(&list, v);
     }
-    CU_ASSERT_TRUE(LIST_SIZE==CN_size(list));
-    List_(list, NULL);
+    CU_ASSERT_TRUE(LIST_SIZE==CN_size(&list));
+    List_(&list, NULL);
 }
 
 static void test_list_insert(void) 
@@ -43,16 +43,16 @@ static void test_list_insert(void)
 
     for (int i=0; i<LIST_SIZE; ++i) {
        Tv v = getTSf(i);
-       CN_add_tail(list, v);
+       CN_add_tail(&list, v);
     }
 
     Tv find = getTSf(5);
-    CU_ASSERT_TRUE(CN_has(list, find));
+    CU_ASSERT_TRUE(CN_has(&list, find));
 
     find = getTSf(11);
-    CU_ASSERT_FALSE(CN_has(list, find));
+    CU_ASSERT_FALSE(CN_has(&list, find));
    
-    List_(list, NULL);
+    List_(&list, NULL);
 }
 
 static void test_list_remove() 
@@ -62,27 +62,27 @@ static void test_list_remove()
     
     for (int i=0; i<LIST_SIZE; ++i) {
        Tv v = getTSf(i);
-       CN_add_tail(list, v);
+       CN_add_tail(&list, v);
     }
 
     Tv target = getTSf(5);
     Tv ret;
-    CU_ASSERT_TRUE(CN_rm_target(list, target, &ret) == 0);
+    CU_ASSERT_TRUE(CN_rm_target(&list, target, &ret) == 0);
     CU_ASSERT_TRUE(Tv_equl(target, ret)==0);
-    CU_ASSERT_FALSE(CN_has(list, target));
-    List_(list, NULL);
+    CU_ASSERT_FALSE(CN_has(&list, target));
+    List_(&list, NULL);
 
     List list2 = _List(CMP_STR);
     for (int i=0; i<LIST_SIZE; ++i) {
         Tv v = getTSs(i);
-        CN_add_tail(list2, v);
+        CN_add_tail(&list2, v);
     }
     target = getTSs(5);
     ret;
-    CU_ASSERT_TRUE(CN_rm_target(list2, target, &ret) == 0);
+    CU_ASSERT_TRUE(CN_rm_target(&list2, target, &ret) == 0);
     CU_ASSERT_TRUE(Tv_equl(target, ret)==0);
-    CU_ASSERT_FALSE(CN_has(list2, target));
-    List_(list2, NULL);
+    CU_ASSERT_FALSE(CN_has(&list2, target));
+    List_(&list2, NULL);
 }
 
 void test_list_sort()
@@ -91,17 +91,17 @@ void test_list_sort()
     const VECTOR_SIZE = 10;
     extern float test_data_float[TEST_DATA_SIZE];
     
-    Arr_to_cn(test_data_float, VECTOR_SIZE, f2t, list);
+    Arr_to_cn(test_data_float, VECTOR_SIZE, f2t, &list);
     // 从小到大的排序
-    CN_sort(list, CMP_FLT);
+    CN_sort(&list, CMP_FLT);
 
-    for(It first=CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
+    for(It first=CN_first(&list); !It_equal(first, CN_last(&list)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
         CU_ASSERT_TRUE(Tv_cmpf(v1, v2) < 0);
     }
     // 从大到小的排序
-    CN_sort(list, INCMP_FLT);
+    CN_sort(&list, INCMP_FLT);
     //printf(" desc sort \n\n");
     //CN_travel(list, PRINTF_IT_ON_FLOAT);
     // printf("\n\n");
@@ -110,7 +110,7 @@ void test_list_sort()
     //     Tv v2 = It_dref(It_next(first));
     //     CU_ASSERT_TRUE(Tv_cmpf(v1, v2) > 0);
     // }
-    List_(list, NULL);
+    List_(&list, NULL);
     
     // 测试 string 的排序。
     List list2 = _List(NULL);
@@ -122,10 +122,10 @@ void test_list_sort()
     //     printf("%s ", test_data_string[i]);
     // }
     // printf("\n\n");
-    Arr_to_cn(test_data_string, TEST_DATA_STR_SIZE, p2t, list2);
-    CN_sort(list2, CMP_STR);
+    Arr_to_cn(test_data_string, TEST_DATA_STR_SIZE, p2t, &list2);
+    CN_sort(&list2, CMP_STR);
     
-    for(It first=CN_first(list2); !It_equal(first, CN_last(list2)); first=It_next(first)){
+    for(It first=CN_first(&list2); !It_equal(first, CN_last(&list2)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
         CU_ASSERT_TRUE(CMP_STR(v1, v2) <= 0);
@@ -134,43 +134,43 @@ void test_list_sort()
     // CN_travel(list2, PRINTF_IT_ON_STRING);
     // printf("\n\n");
     
-    CN_sort(list2, INCMP_STR);
+    CN_sort(&list2, INCMP_STR);
     // printf("desc sort \n\n");
     // CN_travel(list2, PRINTF_IT_ON_STRING);
     // printf("\n\n");
-    for(It first=CN_first(list2); !It_equal(first, CN_last(list2)); first=It_next(first)){
+    for(It first=CN_first(&list2); !It_equal(first, CN_last(&list2)); first=It_next(first)){
         Tv v1 = It_dref(first);
         Tv v2 = It_dref(It_next(first));
         CU_ASSERT_TRUE(CMP_STR(v1, v2) >= 0);
     }
     
-    List_(list2, NULL);
+    List_(&list2, NULL);
 }
 
 static void test_list_unique(void) 
 {
     List list = _List(EQUL);
 
-    CN_add(list, i2t(11));
-    CN_add(list, i2t(11));
-    CN_add(list, i2t(22));
-    CN_add(list, i2t(32));
-    CN_add(list, i2t(44));
-    CN_add(list, i2t(55));
-    CN_add(list, i2t(55));
-    CN_add(list, i2t(11));
-    CN_add(list, i2t(11));
-    CN_add(list, i2t(55));
-    CN_add(list, i2t(44));
+    CN_add(&list, i2t(11));
+    CN_add(&list, i2t(11));
+    CN_add(&list, i2t(22));
+    CN_add(&list, i2t(32));
+    CN_add(&list, i2t(44));
+    CN_add(&list, i2t(55));
+    CN_add(&list, i2t(55));
+    CN_add(&list, i2t(11));
+    CN_add(&list, i2t(11));
+    CN_add(&list, i2t(55));
+    CN_add(&list, i2t(44));
     
     // printf ("\n\n before unique\n");
     // CN_foreach(list, PRINTF_IT_ON_INT);
-    CN_unique(list, CMP_INT, NULL);
+    CN_unique(&list, CMP_INT, NULL);
     // printf("\n\n after unique\n");
     // CN_foreach(list, PRINTF_IT_ON_INT);
     // printf("\n\n");
     
-    for(It first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
+    for(It first = CN_first(&list); !It_equal(first, CN_last(&list)); first=It_next(first)){
 
         It next = It_next(first);
         int v1 = It_getint(first);
@@ -179,33 +179,33 @@ static void test_list_unique(void)
         CU_ASSERT_FALSE( v1 == v2);
     }
 
-    List_(list, NULL);
+    List_(&list, NULL);
 }
 
 static void test_list_wring(void) 
 {
     List list = _List( EQUL );
 
-    CN_add(list, i2t(11));
-    CN_add(list, i2t(11));
-    CN_add(list, i2t(22));
-    CN_add(list, i2t(23));
-    CN_add(list, i2t(24));
-    CN_add(list, i2t(24));
-    CN_add(list, i2t(11));
-    CN_add(list, i2t(44));
-    CN_add(list, i2t(55));
-    CN_add(list, i2t(55));
-    CN_add(list, i2t(44));
+    CN_add(&list, i2t(11));
+    CN_add(&list, i2t(11));
+    CN_add(&list, i2t(22));
+    CN_add(&list, i2t(23));
+    CN_add(&list, i2t(24));
+    CN_add(&list, i2t(24));
+    CN_add(&list, i2t(11));
+    CN_add(&list, i2t(44));
+    CN_add(&list, i2t(55));
+    CN_add(&list, i2t(55));
+    CN_add(&list, i2t(44));
 
     // printf ("\n\n before wring\n");
     // CN_foreach(list, PRINTF_IT_ON_INT);
-    CN_wring(list, NULL);
+    CN_wring(&list, NULL);
     // printf ("\n\n after wring\n");
     // CN_foreach(list, PRINTF_IT_ON_INT);
     // printf ("\n\n");
     
-    for(It first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
+    for(It first = CN_first(&list); !It_equal(first, CN_last(&list)); first=It_next(first)){
 
         It next = It_next(first);
         int v1 = It_getint(first);
@@ -214,7 +214,7 @@ static void test_list_wring(void)
         CU_ASSERT_FALSE( v1 == v2);
     }
 
-    List_(list, NULL);
+    List_(&list, NULL);
 }
 
 static void test_list(void) 

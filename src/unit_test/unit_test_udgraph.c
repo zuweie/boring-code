@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-01 08:42:35
- * @LastEditTime: 2020-12-14 07:40:14
+ * @LastEditTime: 2021-06-29 14:59:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_udgraph.c
@@ -56,11 +56,11 @@ static void test_udgraph_mst_kruskal(void)
     CU_ASSERT_TRUE(UDGraph_add_edge(graph, i2t('h'), i2t('g'), 1) == 0);
     CU_ASSERT_TRUE(UDGraph_add_edge(graph, i2t('i'), i2t('h'), 7) == 0);
     
-    ugrp_calculate_mst_kruskal(graph, list);
+    ugrp_calculate_mst_kruskal(graph, &list);
     
     printf("\n");
     int i = 0;
-    for (It first = CN_first(list); !It_equal(first, CN_tail(list)); first = It_next(first), ++i) {
+    for (It first = CN_first(&list); !It_equal(first, CN_tail(&list)); first = It_next(first), ++i) {
 
         uedge_t* edge = It_getptr(first);
         printf("(%d), edge: %c --- %c  weight: %f", i, t2i(edge->epv->id), t2i(edge->epw->id), edge->weight);
@@ -70,7 +70,7 @@ static void test_udgraph_mst_kruskal(void)
     printf("\n");
     
     UDGraph_destroy(graph);
-    List_(list, NULL);
+    List_(&list, NULL);
 }
 
 

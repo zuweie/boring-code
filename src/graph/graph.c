@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2020-12-16 16:17:53
+ * @LastEditTime: 2021-06-29 14:08:10
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -92,13 +92,13 @@ Graph* Graph_create_reverse(Graph* graph)
 int Graph_destroy(Graph* graph) 
 {
     // 把顶点删了。
-    for (It first = CN_first(graph->vertexes); 
-        !It_equal(first, CN_tail(graph->vertexes)); 
+    for (It first = CN_first(&graph->vertexes); 
+        !It_equal(first, CN_tail(&graph->vertexes)); 
         first = It_next(first)) {
             vertex_t* pv = It_getptr(first);
             Graph_del_vertex(pv);
     }
-    List_(graph->vertexes, NULL);
+    List_(&graph->vertexes, NULL);
     graph->match_path   = NULL;
     graph->match_vertex = NULL;
     

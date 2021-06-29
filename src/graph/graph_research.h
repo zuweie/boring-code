@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2020-12-17 13:53:28
+ * @LastEditTime: 2021-06-29 15:00:41
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_SEARCH_H_
@@ -44,14 +44,14 @@ typedef struct _relax_explor {
 int grp_bfs_exploring(Graph* graph, vertex_t* start);
 int grp_dfs_exploring(Graph* graph);
 
-int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List arr);
+int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr);
 int grp_topological_sort(Graph* graph);
-int grp_calculate_component(Graph* graph, List list);
+int grp_calculate_component(Graph* graph, List* list);
 Graph* grp_calculate_strongly_connected_component_graph (Graph* graph);
 
-int ugrp_calculate_mst_kruskal(UDGraph*, List);
+int ugrp_calculate_mst_kruskal(UDGraph*, List*);
 int grp_calculate_mst_prim(Graph* graph, vertex_t* start);
 int grp_relex(vertex_t* u, vertex_t* v, float w);
 int grp_calculate_bellman_ford(Graph* graph, vertex_t* start);
-int grp_calculate_dijkstra(Graph* graph, vertex_t* start, List list);
+int grp_calculate_dijkstra(Graph* graph, vertex_t* start, List* list);
 #endif
