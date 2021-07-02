@@ -1,15 +1,17 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-06-25 15:28:21
+ * @LastEditTime: 2021-07-02 14:25:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
  */
+#include "container/List.h"
+
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
 #include "support_vector_machines.h"
-
+#include "svm_problem.h"
 // svc 的 svm 支持向量机的实现
 // X 为数据
 // Y 为标志量
@@ -18,19 +20,96 @@
 // 数据预处理：
 // 统计一下那个 _Y 中 class 的类别，以及各种类别所占有的比例。
 // 只用于 c_svc 与 nu_svc
-int Y_classify(u_array_t* _Y, Y_classification_t* clazz) 
+int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
 {
     
     size_t len_Y    = UA_length(_Y);
     vfloat_t* Y_ptr = UA_data_ptr(_Y);
     
-    clazz->y_classification = malloc(sizeof(int) * len_Y);
+    size_t len_Xc             = UA_shape_axis(_X, 1);
+    vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(_X);
 
-    // 统计到底有多少个类别。
+    List counting_list = _List(CMP_FLT);
+
+    for (size_t i=0; i<len_Y; ++i) {
+        vfloat_t y = Y_ptr[i];
+
+        It it = CN_find(&counting_list, f2t(y));
+        List* class_list = NULL;
+        if (!It_valid(it)) {
+            // 没找到这个 float 
+            class_list = malloc(sizeof(List));
+            *class_list = _List(NULL);
+            CN_add(class_list, i2t(i));
+            CN_add(&counting_list, p2t(class_list));
+        } else {
+            class_list = It_getptr(it);
+            CN_add(class_list, i2t(i));
+        }
+    }
+
+    // 组成配对。
+    int class_nr = CN_size(&counting_list);
+    if (class_nr > 2) {
+        // 三个以上的class
+        for(It firstA=CN_first(&counting_list); !It_equal(firstA, CN_last(&counting_list)); firstA=It_next(firstA)) {
+            for (It firstB=It_next(firstA); !It_equal(firstB, CN_tail(&counting_list)); firstB=It_next(firstB)) {
+                
+                Entity* entityA = It_getptr(firstA);
+                Entity* entityB = It_getptr[firstB);
+
+                svm_classify_problem_t* problem = malloc(sizeof(svm_classify_problem_t));
+                problem->tagA = t2f(entityA->tv[0];
+                problem->class_ls_A = t2p(entityA->tv[1]);
+
+                problem->tagB = t2f(entityB->tv[0]);
+                problem->class_ls_B = t2p(entityB->tv[1]);
+
+                CN_add(svm_problems, p2t(problem));
+
+            }
+        }
+
+    } else if ( class_nr == 2) {
+        // 两个 class
+        Entity* entityA = CN_first(&counting_list);
+        Entity* entityB = CN_last(&counting_list);
+
+        svm_classify_problem_t* problem = malloc(sizeof(svm_classify_problem_t));
+        problem->tagA = t2f(entityA->tv[0];
+        problem->class_ls_A = t2p(entityA->tv[1]);
+
+        problem->tagB = t2f(entityB->tv[0]);
+        problem->class_ls_B = t2p(entityB->tv[1]);
+
+        CN_add(svm_problems, p2t(problem));
+
+    } 
+    List_(&counting_list);
+    return class_nr;
+}
+
+int svm_classify_problem_finalize(List* problems, int class_nr)
+{
+    int problems_nr = CN_size(problems);
+    int i = problems_nr;
+    int j = class_nr;
     
+    for (It last=CN_last(problems); !It_equal(last, CN_head(problems)); last=It_prev(last)) {
 
+        svm_classify_problem_t* problem = It_getptr(last);
+        
+        if (i == ( problems - ((class_nr - j) * (class_nr - j - 1) / 2)) ){
+            // 只释放掉第一个，另外一个留到最后下一个 problem 来释放。
+            List_(problem->class_ls_A);
+            ++j;
+        }
+        free(problem);
+        ++i;
+    }
     return 0;
 }
+
 
 /**
  * 
@@ -197,3 +276,5 @@ int Svm_train(u_array_t* X, u_array_t* Y, SVM_type type, SVM_kernel kernel, svm_
 {
     
 }
+
+
