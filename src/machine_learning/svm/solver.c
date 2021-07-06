@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-06-22 15:10:15
+ * @LastEditTime: 2021-07-06 16:14:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -11,6 +11,7 @@
 #include "ultra_array/ultra_router.h"
 #include "solver.h"
 
+#if 0
 
 int Solver_initialize( \
         solver_t* solver, \ 
@@ -457,3 +458,5 @@ int build_nu_svr_Q(Solver_t* solver, u_array_t* Q)
 {
     return build_e_svr_Q(solver, Q);
 }
+
+#endif

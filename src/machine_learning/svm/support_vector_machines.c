@@ -1,13 +1,11 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-02 14:25:38
+ * @LastEditTime: 2021-07-06 16:11:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
  */
-#include "container/List.h"
-
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
 #include "support_vector_machines.h"
@@ -53,17 +51,21 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
     if (class_nr > 2) {
         // 三个以上的class
         for(It firstA=CN_first(&counting_list); !It_equal(firstA, CN_last(&counting_list)); firstA=It_next(firstA)) {
-            for (It firstB=It_next(firstA); !It_equal(firstB, CN_tail(&counting_list)); firstB=It_next(firstB)) {
+            for (It firstB=firstA; !It_equal(firstB, CN_tail(&counting_list)); firstB=It_next(firstB)) {
                 
-                Entity* entityA = It_getptr(firstA);
-                Entity* entityB = It_getptr[firstB);
+                List* _class_ls_A = It_getptr(firstA);
+                List* _class_ls_B = It_getptr(firstB);
+
+                int TagA_index = It_getint(CN_first(_class_ls_A));
+                int TagB_index = It_getint(CN_first(_class_ls_B));
 
                 svm_classify_problem_t* problem = malloc(sizeof(svm_classify_problem_t));
-                problem->tagA = t2f(entityA->tv[0];
-                problem->class_ls_A = t2p(entityA->tv[1]);
+                
+                problem->tagA = Y_ptr[TagA_index];
+                problem->class_ls_A = _class_ls_A;
 
-                problem->tagB = t2f(entityB->tv[0]);
-                problem->class_ls_B = t2p(entityB->tv[1]);
+                problem->tagB = Y_ptr[TagB_index];
+                problem->class_ls_B = _class_ls_B;
 
                 CN_add(svm_problems, p2t(problem));
 
@@ -72,20 +74,23 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
 
     } else if ( class_nr == 2) {
         // 两个 class
-        Entity* entityA = CN_first(&counting_list);
-        Entity* entityB = CN_last(&counting_list);
+        List* _class_ls_A = It_getptr(CN_first(&counting_list));
+        List* _class_ls_B = It_getptr(CN_last(&counting_list));
+
+        int TagA_index = It_getint(CN_first(_class_ls_A));
+        int TagB_index = It_getint(CN_first(_class_ls_B));
 
         svm_classify_problem_t* problem = malloc(sizeof(svm_classify_problem_t));
-        problem->tagA = t2f(entityA->tv[0];
-        problem->class_ls_A = t2p(entityA->tv[1]);
+        problem->tagA = Y_ptr[TagA_index];
+        problem->class_ls_A = _class_ls_A;
 
-        problem->tagB = t2f(entityB->tv[0]);
-        problem->class_ls_B = t2p(entityB->tv[1]);
+        problem->tagB = Y_ptr[TagA_index];
+        problem->class_ls_B = _class_ls_B;
 
         CN_add(svm_problems, p2t(problem));
 
     } 
-    List_(&counting_list);
+    List_(&counting_list, NULL);
     return class_nr;
 }
 
@@ -94,18 +99,18 @@ int svm_classify_problem_finalize(List* problems, int class_nr)
     int problems_nr = CN_size(problems);
     int i = problems_nr;
     int j = class_nr;
-    
+    // 这里有个问题，若果是两个怎么办，
+    // 
     for (It last=CN_last(problems); !It_equal(last, CN_head(problems)); last=It_prev(last)) {
 
         svm_classify_problem_t* problem = It_getptr(last);
-        
-        if (i == ( problems - ((class_nr - j) * (class_nr - j - 1) / 2)) ){
+        if ( i == ( problems - ((class_nr - j) * (class_nr - j - 1) / 2)) ){
             // 只释放掉第一个，另外一个留到最后下一个 problem 来释放。
-            List_(problem->class_ls_A);
+            List_(problem->class_ls_A, NULL);
             ++j;
         }
         free(problem);
-        ++i;
+        --i;
     }
     return 0;
 }
@@ -114,6 +119,7 @@ int svm_classify_problem_finalize(List* problems, int class_nr)
 /**
  * 
  */
+#if 0
 int solve_generic(solver_t* slover, svm_model_t* model)
 {
     // 准备一堆变量
@@ -278,3 +284,4 @@ int Svm_train(u_array_t* X, u_array_t* Y, SVM_type type, SVM_kernel kernel, svm_
 }
 
 
+#endif

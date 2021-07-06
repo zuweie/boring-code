@@ -1,15 +1,17 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-06-22 14:47:34
+ * @LastEditTime: 2021-07-06 17:11:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
  */
 
+
 #ifndef _SVM_SOLVER_H_
 #define _SVM_SOLVER_H_
 #include "vtype/vfloat_type.h"
+#include "ultra_array/ultra_array.h"
 
 #define SVM_MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define SVM_MIN(x, y) SVM_MAX(y, x)
@@ -17,7 +19,6 @@
 typedef enum { C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR } SVM_type; /* SVM type */
 typedef enum { LINEAR, POLY, BRF, SIGMOID } SVM_kernel; /* kernel function type */
 
-typedef struct _u_array u_array_t;
 typedef struct _solver solver_t;
 
 struct _solver {
