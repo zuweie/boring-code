@@ -1,12 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-07 13:54:15
+ * @LastEditTime: 2021-07-07 16:24:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
  */
-#include <stdio.h>
+#include <string.h>
 #include "container/LeList.h"
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
@@ -93,7 +93,7 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
     return class_nr;
 }
 
-int svm_classify_problem_finalize(List* problems, int class_nr)
+int svm_classify_problem_finalize(List* problems)
 {
     int problems_nr = CN_size(problems);
     int i = 0;
@@ -108,10 +108,8 @@ int svm_classify_problem_finalize(List* problems, int class_nr)
 
             if (i == 0) {
                 List_(problem->class_ls_B, NULL);
-                printf(" free %c list \n", (int)problem->tagB);
             }
             List_(problem->class_ls_A, NULL);
-            printf(" free %c list \n", (int)problem->tagA);
             j ++;
         }
         free(problem);
@@ -124,8 +122,7 @@ int svm_classify_problem_finalize(List* problems, int class_nr)
 /**
  * 
  */
-#if 0
-int solve_generic(solver_t* slover, svm_model_t* model)
+int svm_solve_generic(solver_t* slover, svm_model_t* model)
 {
     // 准备一堆变量
     size_t len_alpha = UA_length(&solver->alpha);
@@ -256,37 +253,86 @@ int solve_generic(solver_t* slover, svm_model_t* model)
     
 }
 
-// 开始计算分类，SVC
-int solve_c_svc( \
+// 开始计算分类 svm 中最简单的分类 C_SVC
+
+int svm_solve_c_svc( \
         u_array_t* X, u_array_t* Y, \
-        SVM_type svm_type,  \
         SVM_kernel svm_kernel, \
         vfloat_t _C, vfloat_t _gammer, \ 
         vfloat_t _coef, vfloat_t _degree, \
         double eps, \
         int max_iter)
 {
-    size_t len_Y = UA_length(Y);
-    int class_count = 0;
+
+    size_t len_Xc = UA_shape_axis(X, 1);
+    size_t len_Xr = UA_shape_axis(X, 0);
+    size_t len_Y  = UA_length(Y);
+    
+    vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(X);
+    vfloat_t *Y_ptr           = UA_data_ptr(Y);
+
+    // 这个用于临时罐装数据。
+    u_array_t _X = _UArray2d(len_Xr/2, len_Xc);
+    u_array_t _Y = _UArray1d(len_Y/2);
+    solver_t svm_solver;
+
+    List problems = _List(NULL);
+    svm_classify_problem(X, Y, &problems);
+
+    for (It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(&problems)) {
+
+        svm_classify_problem_t* problem = It_getptr(first);
+        
+        size_t len_class_A = CN_size(problem->class_ls_A);
+        size_t len_class_B = CN_size(problem->class_ls_B);
+
+        size_t total = len_class_A + len_class_B;
+        
+        size_t new_shape_x[2] = {total, len_Xc};
+        UA_reshape(&_X, new_shape_x, 2);
+
+        size_t new_shape_y[1] = {total};
+        UA_reshape(&_Y, new_shape_y, 1);
+        
+        vfloat_t (*_X_ptr)[len_Xc] = UA_data_ptr(&_X);
+        vfloat_t *_Y_ptr           = UA_data_ptr(&_Y);
+        
+        // 把数据罐装到 _X 与 _Y 中去。
+        int i=0, j=0;
+        for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
+            size_t index_a = It_getint(it_a);
+            memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
+            _Y_ptr[j++] = Y_ptr[index_a];
+        }
+
+        for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
+            size_t index_b = It_getint(it_b);
+            memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
+            _Y_ptr[j++] = Y_ptr[index_b];
+        }
+
+        svm_model_t* model = malloc(sizeof(svm_model_t));
+        
+        solver_initialize(&svm_solver, , svm_kernel, X, Y, _C, _gammer, _coef, _degree, eps, max_iter);
 
 
-
+        
+    }
     //1 初始化运行的空间
-    Solver_initialize(&solver, svm_type, svm_kernel, X, Y, _C, _gammer, _coef, _degree, eps, max_iter);
 
     //2 初始化 csvc 的参数。
     UA_ones(&solver->alpha, 0);
     UA_ones(&solver->P, -1);
+    
     solve_generic(&solver, &model);
     Solver_finalize(&solver);
     
-}
-
-
-int Svm_train(u_array_t* X, u_array_t* Y, SVM_type type, SVM_kernel kernel, svm_model_t* model)
-{
+    svm_classify_problem_finalize(&problems)
     
 }
 
 
-#endif
+int svm_train(u_array_t* X, u_array_t* Y, SVM_type type, SVM_kernel kernel, svm_model_t* model)
+{
+    
+}

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-06 17:11:03
+ * @LastEditTime: 2021-07-07 16:46:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -48,7 +48,7 @@ struct _solver {
     
 };
 
-int Solver_initialize(     \
+int solver_initialize(     \
         solver_t* solver,  \ 
         SVM_type svm_type, \
         SVM_kernel kerenl, \
@@ -58,7 +58,7 @@ int Solver_initialize(     \
         double eps,  \
         int max_iter \
 );
-int Solver_finalize(solver_t* solver);
+int solver_finalize(solver_t* solver);
 
 // 第一类的svm Betai 与 Betaj 的选择器。
 int select_working_set(solver_t* solver);
@@ -85,10 +85,10 @@ int kernel_calc_sigmoid();
 int kernel_calc_brf();
 
 // 生成 c_svc Q 矩阵 
-build_c_svc_Q(solver_t* solver, u_array_t* Q);
-build_nu_svc_Q(solver_t* solver, u_array_t* Q);
-build_one_class_Q(solver_t* solver, u_array_t* Q);
-build_e_svr_Q(solver_t* solver, u_array_t* Q);
-build_nu_svr_Q(solver_t* solver, u_array_t* Q);
+int build_c_svc_Q(solver_t* solver, u_array_t* Q);
+int build_nu_svc_Q(solver_t* solver, u_array_t* Q);
+int build_one_class_Q(solver_t* solver, u_array_t* Q);
+int build_e_svr_Q(solver_t* solver, u_array_t* Q);
+int build_nu_svr_Q(solver_t* solver, u_array_t* Q);
 
 #endif

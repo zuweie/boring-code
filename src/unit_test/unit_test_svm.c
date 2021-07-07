@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-07-07 13:51:12
+ * @LastEditTime: 2021-07-07 14:10:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -101,7 +101,7 @@ test_sample_classify_problems()
         printf("\n");
     }
 
-    svm_classify_problem_finalize(&problems, class_nr);
+    svm_classify_problem_finalize(&problems);
 
     UArray_(&X);
     UArray_(&Y);
