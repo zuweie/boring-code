@@ -1,15 +1,18 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-06 16:11:44
+ * @LastEditTime: 2021-07-07 13:54:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
  */
+#include <stdio.h>
+#include "container/LeList.h"
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
 #include "support_vector_machines.h"
 #include "svm_problem.h"
+
 // svc 的 svm 支持向量机的实现
 // X 为数据
 // Y 为标志量
@@ -27,21 +30,23 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
     size_t len_Xc             = UA_shape_axis(_X, 1);
     vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(_X);
 
-    List counting_list = _List(CMP_FLT);
+    List counting_list = _LeList(Entity_is_key_equal);
+
 
     for (size_t i=0; i<len_Y; ++i) {
         vfloat_t y = Y_ptr[i];
 
-        It it = CN_find(&counting_list, f2t(y));
+        It it = LeCN_find(&counting_list, f2t(y));
         List* class_list = NULL;
         if (!It_valid(it)) {
             // 没找到这个 float 
             class_list = malloc(sizeof(List));
             *class_list = _List(NULL);
             CN_add(class_list, i2t(i));
-            CN_add(&counting_list, p2t(class_list));
+            LeCN_add2(&counting_list, f2t(y), p2t(class_list));
         } else {
-            class_list = It_getptr(it);
+            Entity* ent = LeCN_get_entity(&counting_list, it);
+            List* class_list = t2p(ent->tv[1]);
             CN_add(class_list, i2t(i));
         }
     }
@@ -51,22 +56,18 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
     if (class_nr > 2) {
         // 三个以上的class
         for(It firstA=CN_first(&counting_list); !It_equal(firstA, CN_last(&counting_list)); firstA=It_next(firstA)) {
-            for (It firstB=firstA; !It_equal(firstB, CN_tail(&counting_list)); firstB=It_next(firstB)) {
+            for (It firstB=It_next(firstA); !It_equal(firstB, CN_tail(&counting_list)); firstB=It_next(firstB)) {
                 
-                List* _class_ls_A = It_getptr(firstA);
-                List* _class_ls_B = It_getptr(firstB);
-
-                int TagA_index = It_getint(CN_first(_class_ls_A));
-                int TagB_index = It_getint(CN_first(_class_ls_B));
+                Entity* entity_A = It_getptr(firstA);
+                Entity* entity_B = It_getptr(firstB);
 
                 svm_classify_problem_t* problem = malloc(sizeof(svm_classify_problem_t));
                 
-                problem->tagA = Y_ptr[TagA_index];
-                problem->class_ls_A = _class_ls_A;
+                problem->tagA = t2f(entity_A->tv[0]);
+                problem->class_ls_A = t2p(entity_A->tv[1]);
 
-                problem->tagB = Y_ptr[TagB_index];
-                problem->class_ls_B = _class_ls_B;
-
+                problem->tagB = t2f(entity_B->tv[0]);
+                problem->class_ls_B = t2p(entity_B->tv[1]);
                 CN_add(svm_problems, p2t(problem));
 
             }
@@ -74,43 +75,47 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
 
     } else if ( class_nr == 2) {
         // 两个 class
-        List* _class_ls_A = It_getptr(CN_first(&counting_list));
-        List* _class_ls_B = It_getptr(CN_last(&counting_list));
+        Entity* entity_A = It_getptr(CN_first(&counting_list));
+        Entity* entity_B = It_getptr(CN_last(&counting_list));
 
-        int TagA_index = It_getint(CN_first(_class_ls_A));
-        int TagB_index = It_getint(CN_first(_class_ls_B));
 
         svm_classify_problem_t* problem = malloc(sizeof(svm_classify_problem_t));
-        problem->tagA = Y_ptr[TagA_index];
-        problem->class_ls_A = _class_ls_A;
+        problem->tagA = t2f(entity_A->tv[0]);
+        problem->class_ls_A = t2p(entity_A->tv[1]);
 
-        problem->tagB = Y_ptr[TagA_index];
-        problem->class_ls_B = _class_ls_B;
+        problem->tagB = t2f(entity_B->tv[0]);
+        problem->class_ls_B = t2p(entity_B->tv[1]);
 
         CN_add(svm_problems, p2t(problem));
 
     } 
-    List_(&counting_list, NULL);
+    LeList_(&counting_list);
     return class_nr;
 }
 
 int svm_classify_problem_finalize(List* problems, int class_nr)
 {
     int problems_nr = CN_size(problems);
-    int i = problems_nr;
-    int j = class_nr;
+    int i = 0;
+    int j = 2;
     // 这里有个问题，若果是两个怎么办，
     // 
     for (It last=CN_last(problems); !It_equal(last, CN_head(problems)); last=It_prev(last)) {
 
         svm_classify_problem_t* problem = It_getptr(last);
-        if ( i == ( problems - ((class_nr - j) * (class_nr - j - 1) / 2)) ){
-            // 只释放掉第一个，另外一个留到最后下一个 problem 来释放。
+        int c_nr = j * (j -1) / 2;
+        if (i == c_nr-1) {
+
+            if (i == 0) {
+                List_(problem->class_ls_B, NULL);
+                printf(" free %c list \n", (int)problem->tagB);
+            }
             List_(problem->class_ls_A, NULL);
-            ++j;
+            printf(" free %c list \n", (int)problem->tagA);
+            j ++;
         }
         free(problem);
-        --i;
+        i++;
     }
     return 0;
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-07-06 17:11:47
+ * @LastEditTime: 2021-07-07 13:51:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -53,27 +53,55 @@ test_sample_classify_problems()
         {6.4f, 3.2f, 5.3f, 2.3f}, {6.5f, 3.0f, 5.5f, 1.8f}, {7.7f, 3.8f, 6.7f, 2.2f}, 
         {7.7f, 2.6f, 6.9f, 2.3f}, {6.0f, 2.2f, 5.0f, 1.5f} 
     };
-    vfloat_t Y_data[60][4] = {
+    // vfloat_t Y_data[60][4] = {
+    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
+    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S',
+    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
+    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
+    //     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+    //     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+    // };
+    
+    // vfloat_t Y_data[60][4] = {
+    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
+    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S',
+    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
+    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
+    //     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+    //     'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 
+    // };
+
+    vfloat_t Y_data[60]= {
         'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
         'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S',
+        'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
         'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
         'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
-        'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
-        'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+        'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
     };
-
     UA_load(&X, X_data);
     UA_load(&Y, Y_data);
 
     List problems = _List(NULL);
-    svm_classify_problem(&X, &Y, &problems);
+    int class_nr = svm_classify_problem(&X, &Y, &problems);
 
     for (It first=CN_first(&problems); !It_equal(first, CN_tail(&problems)); first = It_next(first)) {
         svm_classify_problem_t* problem = It_getptr(first);
-        printf(" %f, %f ", problem->tagA, problem->tagB);
+
+        printf(" %c, %c ", (int)problem->tagA, (int)problem->tagB);
+        printf("\n");
+
+        for (It a=CN_first(problem->class_ls_A); !It_equal(a, CN_tail(problem->class_ls_A)); a = It_next(a)) {
+            printf(" %d ", It_getint(a));
+        }
+        printf("\n");
+        for (It b=CN_first(problem->class_ls_B); !It_equal(b, CN_tail(problem->class_ls_B)); b = It_next(b) ){
+            printf(" %d ", It_getint(b));
+        }
+        printf("\n");
     }
 
-    //svm_classify_problem_finalize(&problems);
+    svm_classify_problem_finalize(&problems, class_nr);
 
     UArray_(&X);
     UArray_(&Y);
