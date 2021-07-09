@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-09 12:57:19
+ * @LastEditTime: 2021-07-09 15:27:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -19,8 +19,15 @@
 typedef enum { C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR } SVM_type; /* SVM type */
 typedef enum { LINEAR, POLY, BRF, SIGMOID } SVM_kernel; /* kernel function type */
 
-typedef struct _solver solver_t;
 
+
+typedef struct _kernel_param {
+    double gammer; // 多项式
+    double coef0;  // 多项式
+    double degree; // 多项式的
+} kernel_param_t;
+
+typedef struct _solver solver_t;
 struct _solver {
     
     int (*select_working_set)(int* out_i, int* out_j, int*);
@@ -41,13 +48,9 @@ struct _solver {
     int max_iter; // select working set 最大的尝试次数。
     double eps;   // select working set 精度要求。
 
-    struct kernel_param {
-        double gammer; // 多项式
-        double coef0;  // 多项式
-        double degree; // 多项式的
-    } kernel_param;
-    
+    kernel_param_t kernel_param;
 };
+
 
 int solver_initialize(     \
         solver_t* solver,  \ 

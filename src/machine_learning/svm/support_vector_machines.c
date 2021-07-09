@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-09 13:58:47
+ * @LastEditTime: 2021-07-09 15:59:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -328,8 +328,49 @@ int svm_solve_c_svc( \
 }
 
 svm_model_t* svm_create_c_svc_model(solver_t* solver) {
+
     svm_model_t* model = malloc(sizeof(svm_model_t));
     int sv_count = 0;
+
+    vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
+    vfloat_t* Y_ptr     = UA_data_ptr(solver->Y);
+    size_t len_Xc       = UA_shape_axis(solver->X, 1);
+    vfloat_t *(X_ptr)[len_Xc] = UA_data_ptr(solver->X);
+
+
+    size_t    len_alpha = UA_length(&solver->alpha);
+
+    for (int i=0; i<len_alpha; ++i) {
+        if (alpha_ptr[i] > 0) {
+            sv_count++;
+        }
+    }
+
+
+    model->_star_alpha       = _UArray1d(sv_count);
+    vfloat_t* star_alpha_ptr = UA_data_ptr(star_alpha);
+
+    model->_star_Y        = _UArray1d(sv_count);
+    vfloat_t* star_Y_ptr  = UA_data_ptr(star_Y);
+
+    model->_star_X                 = _UArray2d(sv_count, len_Xc);
+    vfloat_t (*star_X_ptr)[len_Xc] = UA_data_ptr(star_X);
+
+    for (int i=0, j=0; i<len_alpha; ++i) {
+
+        if (alpha_ptr[i] > 0) {
+            
+            star_alpha_ptr[j] = alpha_ptr[i];
+            star_Y_ptr[j]     = Y_ptr[i];
+            memcpy(start_X_ptr[j], X_ptr[i], sizeof(vfloat_t)*len_Xc);
+        }
+    }
     
     return model;
+}
+
+// 需要劳动成果来做测试的时候到了。
+float svm_c_svc_predict(List* classify_models, u_array_t* sample)
+{
+    
 }

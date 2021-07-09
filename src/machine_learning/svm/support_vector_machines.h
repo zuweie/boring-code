@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:30
- * @LastEditTime: 2021-07-09 11:22:41
+ * @LastEditTime: 2021-07-09 15:57:34
  * @LastEditors: Please set LastEditors
  * @Description: 软间隔支持向量机的实现
  * @FilePath: /boring-code/src/machine_learning/svm.h
@@ -25,19 +25,19 @@ int svm_solve_c_svc( \
         vfloat_t _coef, vfloat_t _degree, \
         double eps, \
         int max_iter, \
-        List* classfiy_models \
+        List* classify_models \
     );
 
 int svm_solve_nu_svc();
 int svm_solve_one_class();
 int svm_solve_e_svr();
 int svm_solve_nu_svr();
-
-float svm_predict(svm_model_t* model, u_array_t* sample);
- 
-// smo 终极算法。
 int svm_solve_generic(solver_t* solver);
 
+// svm 预测函数。
+float svm_c_svc_predict(List* classify_models, u_array_t* sample);
+ 
+// smo 终极算法。
 svm_model_t* svm_create_c_svc_model(solver_t* solver);
 
 int svm_classify_problem_finalize(List* problems);
