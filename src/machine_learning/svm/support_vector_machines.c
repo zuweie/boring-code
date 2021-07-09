@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-07 16:24:02
+ * @LastEditTime: 2021-07-09 13:58:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -122,7 +122,7 @@ int svm_classify_problem_finalize(List* problems)
 /**
  * 
  */
-int svm_solve_generic(solver_t* slover, svm_model_t* model)
+int svm_solve_generic(solver_t* solver)
 {
     // 准备一堆变量
     size_t len_alpha = UA_length(&solver->alpha);
@@ -134,7 +134,7 @@ int svm_solve_generic(solver_t* slover, svm_model_t* model)
     vfloat_t delta_alpha_i, delta_alpha_j;
 
     vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
-    vfloat_t* Y_ptr     = UA_data_ptr(&solver->Y);
+    vfloat_t* Y_ptr     = UA_data_ptr(solver->Y);
     vfloat_t* C_ptr     = UA_data_ptr(&solver->C);
 
     vfloat_t (*Qc_ptr)[len_Qc] = UA_data_ptr(&solver->Q);
@@ -151,7 +151,7 @@ int svm_solve_generic(solver_t* slover, svm_model_t* model)
     for (;;) {
 
         //TODO: 2 通过计算获取两个需要优化的 Bate，找不到或者循环次数大于最大的循环次数，则退出循环。
-        if (slover->select_working_set(solver, &selected_i, &selected_j) != 0 || iter++ > solver->max_iter) 
+        if (solver->select_working_set(solver, &selected_i, &selected_j) != 0 || iter++ > solver->max_iter) 
         break;
 
         //TODO: 3 更新这两个 Bate。
@@ -203,8 +203,8 @@ int svm_solve_generic(solver_t* slover, svm_model_t* model)
         } else {
             // 当 zi = zj
 
-            vfloat_t denom = Qi_ptr[selected_i] + Q_j[selected_j] - 2*Q_i[selected_i];
-            denom = denom <=0; TUA : denom;
+            vfloat_t denom = Qi_ptr[selected_i] + Qj_ptr[selected_j] - 2*Qi_ptr[selected_i];
+            denom = (denom <=0? TUA : denom);
 
             vfloat_t delta = (G_ptr[selected_i] - G_ptr[selected_j]) / denom;
 
@@ -245,23 +245,19 @@ int svm_solve_generic(solver_t* slover, svm_model_t* model)
             G_ptr[k] += Qi_ptr[k] * delta_alpha_i + Qj_ptr[k] * delta_alpha_j;
         }
     }
-
-    // TODO：计算 rho
-    // TODO: 计算 f(Beta)
-
     return 0;
     
 }
 
 // 开始计算分类 svm 中最简单的分类 C_SVC
-
 int svm_solve_c_svc( \
         u_array_t* X, u_array_t* Y, \
         SVM_kernel svm_kernel, \
         vfloat_t _C, vfloat_t _gammer, \ 
         vfloat_t _coef, vfloat_t _degree, \
         double eps, \
-        int max_iter)
+        int max_iter,\
+        List* classify_models)
 {
 
     size_t len_Xc = UA_shape_axis(X, 1);
@@ -274,12 +270,12 @@ int svm_solve_c_svc( \
     // 这个用于临时罐装数据。
     u_array_t _X = _UArray2d(len_Xr/2, len_Xc);
     u_array_t _Y = _UArray1d(len_Y/2);
-    solver_t svm_solver;
+    solver_t solver;
 
     List problems = _List(NULL);
     svm_classify_problem(X, Y, &problems);
 
-    for (It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(&problems)) {
+    for (It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(first)) {
 
         svm_classify_problem_t* problem = It_getptr(first);
         
@@ -298,41 +294,42 @@ int svm_solve_c_svc( \
         vfloat_t *_Y_ptr           = UA_data_ptr(&_Y);
         
         // 把数据罐装到 _X 与 _Y 中去。
+        // tabA 为 1, tabB 为 -1
         int i=0, j=0;
         for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
             size_t index_a = It_getint(it_a);
             memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
-            _Y_ptr[j++] = Y_ptr[index_a];
+            _Y_ptr[j++] = 1.f;
         }
 
         for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
             size_t index_b = It_getint(it_b);
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
-            _Y_ptr[j++] = Y_ptr[index_b];
+            _Y_ptr[j++] = -1.f;
         }
 
-        svm_model_t* model = malloc(sizeof(svm_model_t));
+        //svm_model_t* model = malloc(sizeof(svm_model_t));
         
-        solver_initialize(&svm_solver, , svm_kernel, X, Y, _C, _gammer, _coef, _degree, eps, max_iter);
+        solver_initialize(&solver, C_SVC, svm_kernel, &_X, &_Y, _C, _gammer, _coef, _degree, eps, max_iter);
+         //2 初始化 csvc 的参数。
+        UA_ones(&solver.alpha, 0);
+        UA_ones(&solver.P, -1);    
+        svm_solve_generic(&solver);
 
+        //TODO： 把有用的信息 solver 中，有用的信息 copy 到 svm model 中去。
+        svm_model_t* model = svm_create_c_svc_model(&solver);
 
+        // 获取劳动果实
+        CN_add(classify_models, p2t(model));
         
+        solver_finalize(&solver);
+        svm_classify_problem_finalize(&problems);
     }
-    //1 初始化运行的空间
-
-    //2 初始化 csvc 的参数。
-    UA_ones(&solver->alpha, 0);
-    UA_ones(&solver->P, -1);
-    
-    solve_generic(&solver, &model);
-    Solver_finalize(&solver);
-    
-    svm_classify_problem_finalize(&problems)
-    
 }
 
-
-int svm_train(u_array_t* X, u_array_t* Y, SVM_type type, SVM_kernel kernel, svm_model_t* model)
-{
+svm_model_t* svm_create_c_svc_model(solver_t* solver) {
+    svm_model_t* model = malloc(sizeof(svm_model_t));
+    int sv_count = 0;
     
+    return model;
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-07 16:46:34
+ * @LastEditTime: 2021-07-09 12:57:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -22,9 +22,10 @@ typedef enum { LINEAR, POLY, BRF, SIGMOID } SVM_kernel; /* kernel function type 
 typedef struct _solver solver_t;
 
 struct _solver {
+    
     int (*select_working_set)(int* out_i, int* out_j, int*);
     int (*calc_rho)(vfloat_t, vfloat_t);
-    double (*kernel)(vfloat_t*, vfloat_t*);
+    double (*kernel)(solver_t* solver, int i, int j);
     int (*build_Q)(solver_t *, u_array_t*);
 
 
@@ -38,9 +39,9 @@ struct _solver {
     u_array_t P;
     
     int max_iter; // select working set 最大的尝试次数。
-    double eps;
+    double eps;   // select working set 精度要求。
 
-    struct kennel_param {
+    struct kernel_param {
         double gammer; // 多项式
         double coef0;  // 多项式
         double degree; // 多项式的
@@ -60,29 +61,33 @@ int solver_initialize(     \
 );
 int solver_finalize(solver_t* solver);
 
+int solver_is_lower_bound(solver_t* solver, int i);
+int solver_is_upper_bound(solver_t* solver, int j);
+
 // 第一类的svm Betai 与 Betaj 的选择器。
-int select_working_set(solver_t* solver);
+int select_working_set(solver_t* solver, int* out_i, int* out_j);
 
 // 第二类的svm Betai 与 Betaj 的选择器。
-int select_working_nu_svm();
+int select_working_nu_svm(solver_t* solver, int* out_i, int* out_j);
 
 // 计算偏移量
-int calc_rho(vfloat_t*, vfloat_t*);
+int calc_rho(solver_t* solver, double* rho, double* r);
 
 // 计算偏移量
-int calc_rho_nu_sum(vfloat_t*, vfloat_t*);
+int calc_rho_nu_sum(solver_t* solver, double* rho, double* r);
 
+double kernel_calc_base_linear(solver_t* solver, int i, int j, double _alpha, double _beta);
 // 核函数
-int kernel_calc_linear();
+double kernel_calc_linear(solver_t* solver, int i, int j);
 
 // 多项式核函数
-int kernel_calc_poly();
+double kernel_calc_poly(solver_t* solver, int i, int j);
 
 // 计算 sigmoid 核函数
-int kernel_calc_sigmoid();
+double kernel_calc_sigmoid(solver_t* solver, int i, int j);
 
 // 计算 高斯 核函数
-int kernel_calc_brf();
+double kernel_calc_brf(solver_t* solver, int i, int j);
 
 // 生成 c_svc Q 矩阵 
 int build_c_svc_Q(solver_t* solver, u_array_t* Q);
