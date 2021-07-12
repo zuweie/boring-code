@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-09 15:27:25
+ * @LastEditTime: 2021-07-10 11:34:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -38,10 +38,10 @@ struct _solver {
 
     u_array_t* Y;
     u_array_t* X;
+    u_array_t* C;
 
     u_array_t alpha;
     u_array_t G; 
-    u_array_t C;
     u_array_t Q;
     u_array_t P;
     
@@ -56,12 +56,13 @@ int solver_initialize(     \
         solver_t* solver,  \ 
         SVM_type svm_type, \
         SVM_kernel kerenl, \
-        u_array_t* _X, u_array_t* _Y,     \ 
-        vfloat_t _C, vfloat_t _gammer,    \
-        vfloat_t _coef, vfloat_t _degree, \
+        double _gammer,  \
+        double _coef, \
+        double _degree, \
         double eps,  \
         int max_iter \
 );
+
 int solver_finalize(solver_t* solver);
 
 int solver_is_lower_bound(solver_t* solver, int i);

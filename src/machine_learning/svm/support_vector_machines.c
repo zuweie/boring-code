@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-09 15:59:08
+ * @LastEditTime: 2021-07-10 11:41:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -270,10 +270,15 @@ int svm_solve_c_svc( \
     // 这个用于临时罐装数据。
     u_array_t _X = _UArray2d(len_Xr/2, len_Xc);
     u_array_t _Y = _UArray1d(len_Y/2);
+    u_array_t _C = _UArray1d(len_Y/2);
     solver_t solver;
 
+    // 归类各种类比嗯
     List problems = _List(NULL);
     svm_classify_problem(X, Y, &problems);
+    
+    // 初始化 solver
+    solver_initialize(&solver, C_SVC, svm_kernel, &_X, &_Y, &_C, _gammer, _coef, _degree, eps, max_iter);
 
     for (It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(first)) {
 
@@ -293,6 +298,7 @@ int svm_solve_c_svc( \
         vfloat_t (*_X_ptr)[len_Xc] = UA_data_ptr(&_X);
         vfloat_t *_Y_ptr           = UA_data_ptr(&_Y);
         
+        // 更新 X Y C
         // 把数据罐装到 _X 与 _Y 中去。
         // tabA 为 1, tabB 为 -1
         int i=0, j=0;
@@ -307,10 +313,7 @@ int svm_solve_c_svc( \
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] = -1.f;
         }
-
-        //svm_model_t* model = malloc(sizeof(svm_model_t));
         
-        solver_initialize(&solver, C_SVC, svm_kernel, &_X, &_Y, _C, _gammer, _coef, _degree, eps, max_iter);
          //2 初始化 csvc 的参数。
         UA_ones(&solver.alpha, 0);
         UA_ones(&solver.P, -1);    
@@ -322,9 +325,18 @@ int svm_solve_c_svc( \
         // 获取劳动果实
         CN_add(classify_models, p2t(model));
         
-        solver_finalize(&solver);
-        svm_classify_problem_finalize(&problems);
     }
+
+    // 完了就释放内存。
+    // TODO : 释放 problems
+    svm_classify_problem_finalize(&problems);
+
+    // TODO : 这里释放 solver 的内容
+    solver_finalize(&solver);
+
+    // TODO : 这里释放 _X 与 _Y 的内存。
+    UArray_(&_X);
+    UArray_(&_Y);
 }
 
 svm_model_t* svm_create_c_svc_model(solver_t* solver) {
