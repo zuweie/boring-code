@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-06-29 15:22:37
+ * @LastEditTime: 2021-07-13 11:30:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -658,6 +658,21 @@ static void test_ua_operations(void)
     UArray_(&u2);
 }
 
+static void test_ua_pool_size(void) 
+{
+    u_array_t u1 = _UArray1d(3);
+    printf("ua pool size %d \n", UA_pool_size(&u1));
+    size_t new_shape[2] = {3, 4};
+    UA_reshape(&u1, new_shape, 2);
+    printf("ua pool size %d \n", UA_pool_size(&u1));
+    new_shape[0] = 1;
+    new_shape[1] = 22;
+    UA_reshape(&u1, new_shape, 2);
+    printf("ua pool size %d \n", UA_pool_size(&u1));
+    UArray_(&u1);
+
+}
+
 int do_ultra_array_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -756,4 +771,9 @@ int do_ultra_array_test (void)
         return CU_get_error();
     }
     //#endif
+
+    if (NULL == CU_add_test(pSuite, "test uarray pool size", test_ua_pool_size) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-07-10 12:27:10
+ * @LastEditTime: 2021-07-13 00:22:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -12,8 +12,6 @@
 #include "ultra_array/ultra_router.h"
 #include "solver.h"
 
-
-
 int solver_initialize( \
         solver_t* solver, \ 
         SVM_type svm_type, \
@@ -21,8 +19,9 @@ int solver_initialize( \
         u_array_t* _X, \
         u_array_t* _Y, \ 
         u_array_t* _C, \
-        vfloat_t _gammer, \
-        vfloat_t _coef, vfloat_t _degree, \
+        double _gammer, \
+        double _coef, \
+        double _degree, \
         double eps, \
         int max_iter \
 )
@@ -132,14 +131,14 @@ int solver_finalize(solver_t* solver)
 int solver_is_lower_bound(solver_t* solver, int i) 
 {
     vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
-    vfloat_t* C_ptr     = UA_data_ptr(&solver->C);
+    vfloat_t* C_ptr     = UA_data_ptr(solver->C);
     return alpha_ptr[i] <= C_ptr[i];
 }
 
 int solver_is_upper_bound(solver_t* solver, int i)
 {
     vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
-    vfloat_t* C_ptr     = UA_data_ptr(&solver->C);
+    vfloat_t* C_ptr     = UA_data_ptr(solver->C);
     return alpha_ptr[i] >= C_ptr[i];
 }
 

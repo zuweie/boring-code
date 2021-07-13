@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-07-10 12:29:39
+ * @LastEditTime: 2021-07-13 12:07:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -18,7 +18,6 @@
 u_array_t ua_unable = {
     .start = {NULL, NULL},
     .axis_n = -1,
-    .pool_size = 0
 };
 
 static size_t 
@@ -46,7 +45,8 @@ __recycle_memory(void* p)
 static void*
 __alloc_data(size_t data_n) 
 {
-    void* p = __alloc_memory(data_n*sizeof(vfloat_t));
+    // 多申请一个 size_t 用于存放当前申请的内存大小。 
+    void* p = __alloc_memory(sizeof(size_t) + data_n*sizeof(vfloat_t));
     return p;
 }
 
@@ -54,7 +54,7 @@ static void*
 __alloc_shape(size_t axis_n, size_t shape[])
 {
     if (axis_n > 0) {
-        void* p = __alloc_memory( axis_n * sizeof(size_t));
+        void* p = __alloc_memory( axis_n * sizeof(size_t) );
         memcpy(p, shape, axis_n * sizeof(size_t));
         return p;
     } 
@@ -175,29 +175,35 @@ ___transpose(vfloat_t* a, size_t shape_a[], vfloat_t* b, size_t shape_b[], int a
 static int 
 __update_pool(u_array_t* arr, size_t new_size)
 {
-    if (arr->pool_size < new_size) {
-        vfloat_t* new_chunk = (vfloat_t*) malloc (new_size);
-        memcpy(new_chunk, UA_data_ptr(arr), UA_size(arr));
-        __recycle_memory(UA_data_ptr(arr));
+    if (UA_pool_size(arr) < new_size) {
+
+        // 申请新的内存
+        void* new_chunk = __alloc_data(new_size);
+        // 这里有必要把旧的内容保留么？
+        memcpy( ((size_t*)(new_chunk) + 1), UA_data_ptr(arr), UA_size(arr));
+        __recycle_memory(arr->start[1]);
         arr->start[1] = new_chunk;
-        arr->pool_size = new_size;
+        UA_pool_size(arr) = new_size;
     }
     return 0;
 }
 
 static int
-__update_shape(u_array_t* arr, size_t shape[], int axis_n) 
+__update_shape(u_array_t* arr, size_t new_shape[], int new_axis_n) 
 {
-    size_t new_size = __axis_mulitply(shape, axis_n, 0) * sizeof(vfloat_t);
+    size_t new_size = __axis_mulitply(new_shape, new_axis_n, 0) * sizeof(vfloat_t);
     __update_pool(arr, new_size);
 
-    if (arr->axis_n != axis_n ) {
-        __recycle_memory(UA_shape(arr));
-        arr->start[0] = __alloc_shape(axis_n, shape);
-        arr->axis_n   = axis_n;
-    } else if (axis_n != 0){
-        memcpy(UA_shape(arr), shape, axis_n * sizeof(size_t));
+    if (arr->axis_n < new_axis_n ) {
+        // 如果旧的比新的小，则把旧的释放了
+        __recycle_memory(arr->start[0]);
+        // 换成新的
+        arr->start[0] = __alloc_shape(new_axis_n, new_shape);
+    } else if (new_axis_n != 0){
+        memcpy(UA_shape(arr), new_shape, new_axis_n * sizeof(size_t));
     }
+    // 更新当前的axis_n
+    arr->axis_n = new_axis_n;
     return 0;
 }
 
@@ -218,6 +224,7 @@ __operator_value(vfloat_t v1, vfloat_t v2, operater_t oper)
         return 0.f;
     }
 }
+
 u_array_t UArray_create_with_axes_dots(int axis_n, ...)
 {
     va_list valist;
@@ -236,7 +243,7 @@ u_array_t UArray_create_with_axes_array(int axis_n, size_t shape[])
         u_array_t n_array;
         n_array.axis_n = axis_n;
         __alloc_start(axis_n, shape, n_array.start);
-        n_array.pool_size = UA_size(&n_array);
+        UA_pool_size(&n_array) = UA_size(&n_array);
         return n_array;
     }
     return ua_unable;

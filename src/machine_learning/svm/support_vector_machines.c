@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-10 11:41:41
+ * @LastEditTime: 2021-07-13 00:17:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -135,7 +135,7 @@ int svm_solve_generic(solver_t* solver)
 
     vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
     vfloat_t* Y_ptr     = UA_data_ptr(solver->Y);
-    vfloat_t* C_ptr     = UA_data_ptr(&solver->C);
+    vfloat_t* C_ptr     = UA_data_ptr(solver->C);
 
     vfloat_t (*Qc_ptr)[len_Qc] = UA_data_ptr(&solver->Q);
     
@@ -270,7 +270,7 @@ int svm_solve_c_svc( \
     // 这个用于临时罐装数据。
     u_array_t _X = _UArray2d(len_Xr/2, len_Xc);
     u_array_t _Y = _UArray1d(len_Y/2);
-    u_array_t _C = _UArray1d(len_Y/2);
+    //u_array_t _C = _UArray1d(len_Y/2);
     solver_t solver;
 
     // 归类各种类比嗯
@@ -278,7 +278,7 @@ int svm_solve_c_svc( \
     svm_classify_problem(X, Y, &problems);
     
     // 初始化 solver
-    solver_initialize(&solver, C_SVC, svm_kernel, &_X, &_Y, &_C, _gammer, _coef, _degree, eps, max_iter);
+    //solver_initialize(&solver, C_SVC, svm_kernel, &_X, &_Y, &_C, _gammer, _coef, _degree, eps, max_iter);
 
     for (It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(first)) {
 
@@ -347,7 +347,7 @@ svm_model_t* svm_create_c_svc_model(solver_t* solver) {
     vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
     vfloat_t* Y_ptr     = UA_data_ptr(solver->Y);
     size_t len_Xc       = UA_shape_axis(solver->X, 1);
-    vfloat_t *(X_ptr)[len_Xc] = UA_data_ptr(solver->X);
+    vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(solver->X);
 
 
     size_t    len_alpha = UA_length(&solver->alpha);
@@ -360,13 +360,13 @@ svm_model_t* svm_create_c_svc_model(solver_t* solver) {
 
 
     model->_star_alpha       = _UArray1d(sv_count);
-    vfloat_t* star_alpha_ptr = UA_data_ptr(star_alpha);
+    vfloat_t* star_alpha_ptr = UA_data_ptr(&model->_star_alpha);
 
     model->_star_Y        = _UArray1d(sv_count);
-    vfloat_t* star_Y_ptr  = UA_data_ptr(star_Y);
+    vfloat_t* star_Y_ptr  = UA_data_ptr(&model->_star_Y);
 
     model->_star_X                 = _UArray2d(sv_count, len_Xc);
-    vfloat_t (*star_X_ptr)[len_Xc] = UA_data_ptr(star_X);
+    vfloat_t (*star_X_ptr)[len_Xc] = UA_data_ptr(&model->_star_X);
 
     for (int i=0, j=0; i<len_alpha; ++i) {
 
@@ -374,7 +374,7 @@ svm_model_t* svm_create_c_svc_model(solver_t* solver) {
             
             star_alpha_ptr[j] = alpha_ptr[i];
             star_Y_ptr[j]     = Y_ptr[i];
-            memcpy(start_X_ptr[j], X_ptr[i], sizeof(vfloat_t)*len_Xc);
+            memcpy(star_X_ptr[j], X_ptr[i], sizeof(vfloat_t)*len_Xc);
         }
     }
     

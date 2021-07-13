@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-07-10 12:29:14
+ * @LastEditTime: 2021-07-13 10:53:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -10,6 +10,7 @@
 #define _ULTRA_ARRAY_H_
 #include "ultra_padding.h"
 #include "vtype/vfloat_type.h"
+
 typedef enum _operator {ua_sum = 1 , ua_sub, ua_mulitply, ua_div} operater_t;
 
 typedef struct _ua_chunk_note ua_chunk_note_t;
@@ -17,10 +18,11 @@ typedef struct _ua_data_chunk ua_data_chunk_t;
 typedef struct _ua_indicator ua_indicator_t;
 typedef struct _u_array u_array_t;
 
+
 struct _u_array {
     char *start[2];
     int axis_n;
-    size_t pool_size;
+    //size_t pool_size;
 };
 
 extern u_array_t ua_unable;
@@ -124,8 +126,14 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 
 #define UA_shape(parray) ((size_t*)(parray)->start[0])
 #define UA_axisn(parray) ((parray)->axis_n)
+
+#define UA_pool_size(parray) (*((size_t*)((parray)->start[1])))
+
 #define UA_shape_axis(parray, axis_index) UA_shape(parray)[axis_index]
-#define UA_data_ptr(parray) ((char*)(parray)->start[1])
+
+//#define UA_data_ptr(parray) ( (char*) ((parray)->start[1]) )
+#define UA_data_ptr(parray) ((char*)(((size_t*)((parray)->start[1])) + 1))
+
 #define UA_length(parray) UArray_axis_mulitply(parray, 0)
 #define UA_size(parray) (UArray_axis_mulitply(parray, 0) * sizeof(vfloat_t))
 #define UA_reshape(parray, axes, axis_n) UArray_reshape(parray, axes, axis_n)
