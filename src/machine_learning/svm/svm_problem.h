@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-01 12:22:37
- * @LastEditTime: 2021-07-10 11:45:03
+ * @LastEditTime: 2021-07-14 11:09:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_probrom.h
@@ -16,8 +16,7 @@ typedef struct _svm_classify_problem {
     double tagB;
     List* class_ls_A;
     List* class_ls_B;
-
-    // 惩罚参数对于 A 类和 B 类的比重。
+    
     double c_weight_A;
     double c_weight_B;
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-13 00:17:33
+ * @LastEditTime: 2021-07-14 13:11:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -31,8 +31,6 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
     vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(_X);
 
     List counting_list = _LeList(Entity_is_key_equal);
-
-
     for (size_t i=0; i<len_Y; ++i) {
         vfloat_t y = Y_ptr[i];
 
@@ -65,15 +63,17 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
                 
                 problem->tagA = t2f(entity_A->tv[0]);
                 problem->class_ls_A = t2p(entity_A->tv[1]);
+                problem->c_weight_A = (double)CN_size(problem->class_ls_A) / (double)len_Y;
 
                 problem->tagB = t2f(entity_B->tv[0]);
                 problem->class_ls_B = t2p(entity_B->tv[1]);
-                CN_add(svm_problems, p2t(problem));
+                problem->c_weight_B = (double)CN_size(problem->class_ls_B) / (double)len_Y;
 
+                CN_add(svm_problems, p2t(problem));
             }
         }
 
-    } else if ( class_nr == 2) {
+    } else if ( class_nr == 2 ) {
         // 两个 class
         Entity* entity_A = It_getptr(CN_first(&counting_list));
         Entity* entity_B = It_getptr(CN_last(&counting_list));
@@ -253,7 +253,7 @@ int svm_solve_generic(solver_t* solver)
 int svm_solve_c_svc( \
         u_array_t* X, u_array_t* Y, \
         SVM_kernel svm_kernel, \
-        vfloat_t _C, vfloat_t _gammer, \ 
+        vfloat_t C, vfloat_t _gammer, \ 
         vfloat_t _coef, vfloat_t _degree, \
         double eps, \
         int max_iter,\
@@ -270,6 +270,7 @@ int svm_solve_c_svc( \
     // 这个用于临时罐装数据。
     u_array_t _X = _UArray2d(len_Xr/2, len_Xc);
     u_array_t _Y = _UArray1d(len_Y/2);
+    u_array_t _C = _UArray1d(len_Y/2);
     //u_array_t _C = _UArray1d(len_Y/2);
     solver_t solver;
 
@@ -278,7 +279,7 @@ int svm_solve_c_svc( \
     svm_classify_problem(X, Y, &problems);
     
     // 初始化 solver
-    //solver_initialize(&solver, C_SVC, svm_kernel, &_X, &_Y, &_C, _gammer, _coef, _degree, eps, max_iter);
+    solver_initialize(&solver, C_SVC, svm_kernel, _gammer, _coef, _degree, eps, max_iter);
 
     for (It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(first)) {
 
@@ -289,42 +290,53 @@ int svm_solve_c_svc( \
 
         size_t total = len_class_A + len_class_B;
         
-        size_t new_shape_x[2] = {total, len_Xc};
-        UA_reshape(&_X, new_shape_x, 2);
+        //size_t new_shape_x[2] = {total, len_Xc};
+        UA_reshape_dots(&_X, 2, total, len_Xc);
 
-        size_t new_shape_y[1] = {total};
-        UA_reshape(&_Y, new_shape_y, 1);
+        //size_t new_shape_y[1] = {total};
+        UA_reshape_dots(&_Y, 1, total};
+
+        UA_reshape_dots(&_C, 1, total);
         
         vfloat_t (*_X_ptr)[len_Xc] = UA_data_ptr(&_X);
         vfloat_t *_Y_ptr           = UA_data_ptr(&_Y);
+        vfloat_t *_C_ptr           = UA_data_ptr(&_C);
         
-        // 更新 X Y C
+        // 计算 X Y C
         // 把数据罐装到 _X 与 _Y 中去。
         // tabA 为 1, tabB 为 -1
-        int i=0, j=0;
+        int i=0, j=0, k=0;
         for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
             size_t index_a = It_getint(it_a);
             memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] = 1.f;
+            _C_ptr[k++] = problem->c_weight_A * C;
         }
 
         for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
             size_t index_b = It_getint(it_b);
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] = -1.f;
+            _C_ptr[k++] = problem->c_weight_B * C;
         }
+
+        // 设置 X Y C 到 solver 中
+        solver_set_calculating_dataset(solver, &_X, &_Y, &_C);
+
+        //2 初始化 csvc 的参数。
         
-         //2 初始化 csvc 的参数。
         UA_ones(&solver.alpha, 0);
-        UA_ones(&solver.P, -1);    
+        UA_ones(&solver.P, -1);   
+
+        // 调用 build Q 进行计算。
+
+        // 超级大循环获取 alpha 
         svm_solve_generic(&solver);
 
         //TODO： 把有用的信息 solver 中，有用的信息 copy 到 svm model 中去。
         svm_model_t* model = svm_create_c_svc_model(&solver);
-
         // 获取劳动果实
         CN_add(classify_models, p2t(model));
-        
     }
 
     // 完了就释放内存。

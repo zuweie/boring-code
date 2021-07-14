@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-07-13 10:53:05
+ * @LastEditTime: 2021-07-14 07:24:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -43,6 +43,7 @@ u_array_t* UArray_operations_uar(u_array_t*, u_array_t*, operater_t);
 u_array_t* UArray_transpose(u_array_t*, size_t[]);
 u_array_t* UArray_transform(u_array_t*);
 u_array_t* UArray_reshape(u_array_t*, size_t[], int);
+u_array_t* UArray_reshape_dots(u_array_t*, int, ...);
 u_array_t* UArray_arange(u_array_t*, int);
 u_array_t* UArray_arange_scope(u_array_t*, int, int);
 u_array_t* UArray_ones(u_array_t*, vfloat_t);
@@ -137,6 +138,8 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_length(parray) UArray_axis_mulitply(parray, 0)
 #define UA_size(parray) (UArray_axis_mulitply(parray, 0) * sizeof(vfloat_t))
 #define UA_reshape(parray, axes, axis_n) UArray_reshape(parray, axes, axis_n)
+#define UA_reshape_dots(parray, axis_n, ...) UArray_reshape_dots(parray, axis_n, __VA_ARGS__)
+
 #define UA_display(parray) UArray_display(parray)
 #define UA_where(parray, condition, replace) \
     ({ \

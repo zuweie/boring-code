@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-07-13 00:22:02
+ * @LastEditTime: 2021-07-14 11:05:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -16,9 +16,6 @@ int solver_initialize( \
         solver_t* solver, \ 
         SVM_type svm_type, \
         SVM_kernel kerenl, \
-        u_array_t* _X, \
-        u_array_t* _Y, \ 
-        u_array_t* _C, \
         double _gammer, \
         double _coef, \
         double _degree, \
@@ -26,9 +23,6 @@ int solver_initialize( \
         int max_iter \
 )
 {
-    // a big big initialize
-    solver->X = _X;
-    solver->Y = _Y;
     
     // 初始化 select_working_set 与 calc_rho 函数指针。
     if (svm_type == C_SVC || svm_type == EPSILON_SVR || svm_type == ONE_CLASS) {
@@ -90,24 +84,11 @@ int solver_initialize( \
         break;
     }
 
-    // // build the G, alpha, C. Q。 这些都需要回收内存的
-    // size_t len_Y = UA_length(_Y);
-    
-    // // 1 build alpha
-    // solver->alpha = _UArray1d(len_Y);
-    // // TODO : init the alpha
-
-    // // 2 build the Q
-    // solver->Q = _UArray2d(len_Y, len_Y);
-
-    // // 3 build the G
-    // solver->G = UA_empty_like(&solver->Q);
-
-    // // 4 build the C
-    // solver->C = _UArray1d(len_Y);
-
-    // // 5 build P
-    // solver->P = _UArray1d(len_Y);
+    // 初始化一些 uarray。
+    solver->alpha = _UArray1d(1);
+    solver->Q     = _UArray2d(1,1);
+    solver->G     = _UArray2d(1,1);
+    solver->P     = _UArray1d(1);
     
     // max_iter;
     solver->max_iter = max_iter;
@@ -115,9 +96,27 @@ int solver_initialize( \
     // eps
     solver->eps = eps;
 }
-int solver_update_calculate_set(solver_t* solver)
+int solver_set_calculating_dataset(solver_t* solver, u_array_t* _X, u_array_t* _Y, u_array_t* _C)
 {
     // 根据 X 与 Y 更新 alpha, Q, G, C, P 这几个 u_array_t 的内存。
+    // alpha
+
+    solver->X = _X;
+    solver->Y = _Y;
+    solver->C = _C;
+    
+    size_t len_Y = UA_length(solver->Y);
+    UA_reshape_dots(&solver->alpha, 1, len_Y);
+
+    // Q
+    UA_reshape_dots(&solver->Q, 2, len_Y, len_Y);
+
+    // G
+    UA_reshape_dots(&solver->G, 2, len_Y, len_Y);
+
+    // P
+    UA_reshape_dots(&solver->P, 1, len_Y);
+    
 }
 
 int solver_finalize(solver_t* solver)

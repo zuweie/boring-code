@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-13 00:20:54
+ * @LastEditTime: 2021-07-14 11:06:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -56,9 +56,6 @@ int solver_initialize(     \
         solver_t* solver,  \ 
         SVM_type svm_type, \
         SVM_kernel kerenl, \
-        u_array_t* _X, \
-        u_array_t* _Y, \ 
-        u_array_t* _C, \
         double _gammer,  \
         double _coef, \
         double _degree, \
@@ -67,6 +64,8 @@ int solver_initialize(     \
 );
 
 int solver_finalize(solver_t* solver);
+
+int solver_set_calculating_dataset(solver_t* solver, u_array_t* X, u_array_t* Y, u_array_t* _C);
 
 int solver_is_lower_bound(solver_t* solver, int i);
 int solver_is_upper_bound(solver_t* solver, int j);

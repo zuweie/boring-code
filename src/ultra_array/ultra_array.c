@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-07-13 12:07:29
+ * @LastEditTime: 2021-07-14 07:22:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -325,6 +325,20 @@ u_array_t* UArray_reshape(u_array_t* a, size_t axes[], int axis_n)
     return a;
 }
 
+u_array_t* UArray_reshape_dots(u_array_t* a, int new_axis_n, ...) 
+{
+    va_list valist;
+    va_start(valist, new_axis_n);
+
+    size_t new_shape[new_axis_n];
+    for (int i=0; i<new_axis_n; ++i) {
+        new_shape = va_arg(valist, size_t);
+    }
+
+    va_end(valist);
+    __update_shape(a, new_shape, new_axis_n);
+    return a;
+}
 
 u_array_t* UArray_collapse(u_array_t* arr, int axis, vfloat_t(*operator)(vfloat_t*, size_t))
 {
