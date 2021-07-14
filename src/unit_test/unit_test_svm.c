@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-07-07 14:10:31
+ * @LastEditTime: 2021-07-14 16:20:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -13,24 +13,7 @@
 #include "machine_learning/svm/support_vector_machines.h"
 #include "machine_learning/svm/svm_problem.h"
 
-static int  suite_success_init (void) 
-{
-    printf("\nSVM suite success init\n");
-}
-
-static int suite_success_clean (void) 
-{   
-    printf("\nSVM suite success clean\n");
-}
-
-static void 
-test_sample_classify_problems() 
-{
-    // svm 多分类的效果。
-    u_array_t X = _UArray2d(60, 4);
-    u_array_t Y = _UArray1d(60);
-
-    vfloat_t X_data[60][4] = {
+static vfloat_t X_data[60][4] = {
         {5.1f, 3.5f, 1.4f, 0.2f}, {4.9f, 3.0f, 1.4f, 0.2f}, {4.7f, 3.2f, 1.3f, 0.2f}, 
         {4.6f, 3.1f, 1.5f, 0.2f}, {5.0f, 3.6f, 1.4f, 0.2f}, {5.4f, 3.9f, 1.7f, 0.4f},
         {4.6f, 3.4f, 1.4f, 0.3f}, {5.0f, 3.4f, 1.5f, 0.2f}, {4.4f, 2.9f, 1.4f, 0.2f},
@@ -53,32 +36,33 @@ test_sample_classify_problems()
         {6.4f, 3.2f, 5.3f, 2.3f}, {6.5f, 3.0f, 5.5f, 1.8f}, {7.7f, 3.8f, 6.7f, 2.2f}, 
         {7.7f, 2.6f, 6.9f, 2.3f}, {6.0f, 2.2f, 5.0f, 1.5f} 
     };
-    // vfloat_t Y_data[60][4] = {
-    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
-    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S',
-    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
-    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
-    //     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
-    //     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
-    // };
-    
-    // vfloat_t Y_data[60][4] = {
-    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
-    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S',
-    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
-    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
-    //     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
-    //     'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 
-    // };
 
-    vfloat_t Y_data[60]= {
+static vfloat_t Y_data[60][4] = {
         'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
         'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S',
-        'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
         'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
         'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
-        'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
+        'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+        'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
     };
+
+static int  suite_success_init (void) 
+{
+    printf("\nSVM suite success init\n");
+}
+
+static int suite_success_clean (void) 
+{   
+    printf("\nSVM suite success clean\n");
+}
+
+static void 
+test_sample_classify_problems() 
+{
+    // svm 多分类的效果。
+    u_array_t X = _UArray2d(60, 4);
+    u_array_t Y = _UArray1d(60);
+
     UA_load(&X, X_data);
     UA_load(&Y, Y_data);
 
@@ -107,6 +91,27 @@ test_sample_classify_problems()
     UArray_(&Y);
 }
 
+static void test_c_svc_solve (void)
+{
+    u_array_t X = _UArray2d(60, 4);
+    u_array_t Y = _UArray1d(60);
+
+    UA_load(&X, X_data);
+    UA_load(&Y, Y_data);
+
+    List list = _List(NULL);
+    
+    svm_solve_c_svc(
+        &X, &Y, BRF, 10, 8.0f, 0.0f, 0.01, 100000, &list);
+    );
+
+    for (It first=CN_first(&list); !It_equal(first, CN_tail(&list)); first=It_next(first)) {
+
+        svm_model_t* model = It_getptr(first);
+        printf(" .. model info: ...");
+    }
+}
+
 int do_svm_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -117,6 +122,11 @@ int do_svm_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test svm sample classify", test_sample_classify_problems) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test svm c svc solver", test_c_svc_solve) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

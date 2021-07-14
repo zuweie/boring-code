@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-14 13:11:25
+ * @LastEditTime: 2021-07-14 15:58:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -253,8 +253,8 @@ int svm_solve_generic(solver_t* solver)
 int svm_solve_c_svc( \
         u_array_t* X, u_array_t* Y, \
         SVM_kernel svm_kernel, \
-        vfloat_t C, vfloat_t _gammer, \ 
-        vfloat_t _coef, vfloat_t _degree, \
+        double C, double _gammer, \ 
+        double _coef, double _degree, \
         double eps, \
         int max_iter,\
         List* classify_models)

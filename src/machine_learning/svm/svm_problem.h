@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-01 12:22:37
- * @LastEditTime: 2021-07-14 11:09:07
+ * @LastEditTime: 2021-07-14 15:47:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_probrom.h
@@ -17,6 +17,7 @@ typedef struct _svm_classify_problem {
     List* class_ls_A;
     List* class_ls_B;
     
+    // 保存
     double c_weight_A;
     double c_weight_B;
 

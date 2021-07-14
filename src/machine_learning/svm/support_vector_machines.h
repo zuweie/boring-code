@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:30
- * @LastEditTime: 2021-07-09 15:57:34
+ * @LastEditTime: 2021-07-14 15:57:35
  * @LastEditors: Please set LastEditors
  * @Description: 软间隔支持向量机的实现
  * @FilePath: /boring-code/src/machine_learning/svm.h
@@ -21,8 +21,8 @@ typedef struct _u_array u_array_t;
 int svm_solve_c_svc( \
         u_array_t* X, u_array_t* Y, \
         SVM_kernel SVM_kernel, \
-        vfloat_t _C, vfloat_t _gammer, \ 
-        vfloat_t _coef, vfloat_t _degree, \
+        double _C, double _gammer, \ 
+        double _coef, double _degree, \
         double eps, \
         int max_iter, \
         List* classify_models \
