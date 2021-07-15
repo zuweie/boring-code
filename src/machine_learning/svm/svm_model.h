@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-22 14:54:00
- * @LastEditTime: 2021-07-10 08:14:26
+ * @LastEditTime: 2021-07-15 11:46:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_model.h
@@ -18,13 +18,19 @@ typedef struct _svm_model {
 
     float tagA;
     float tagB;
+    
     SVM_type type;
     SVM_kernel kernel;
+
     double _star_rho;
+    double _star_r;
+
     u_array_t _star_alpha;
     u_array_t _star_Y;
     u_array_t _star_X;
-    
+
+    int sv_count;
 } svm_model_t;
 
+int svm_model_finalize(svm_model_t* model);
 #endif

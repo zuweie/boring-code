@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-07-14 16:20:51
+ * @LastEditTime: 2021-07-15 16:07:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -37,7 +37,7 @@ static vfloat_t X_data[60][4] = {
         {7.7f, 2.6f, 6.9f, 2.3f}, {6.0f, 2.2f, 5.0f, 1.5f} 
     };
 
-static vfloat_t Y_data[60][4] = {
+static vfloat_t Y_data[60]= {
         'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
         'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S',
         'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
@@ -101,15 +101,64 @@ static void test_c_svc_solve (void)
 
     List list = _List(NULL);
     
+
+    // int svm_solve_c_svc( \
+    //     u_array_t* X, u_array_t* Y, \
+    //     SVM_kernel svm_kernel, \
+    //     double C, double _gammer, \ 
+    //     double _coef, double _degree, \
+    //     double eps, \
+    //     int max_iter,\
+    //     List* classify_models)
+
     svm_solve_c_svc(
-        &X, &Y, BRF, 10, 8.0f, 0.0f, 0.01, 100000, &list);
+        &X, &Y, BRF, 10, 8.0f, 0.0f, 0.0f, 0.0001, 100000, &list
     );
 
     for (It first=CN_first(&list); !It_equal(first, CN_tail(&list)); first=It_next(first)) {
 
         svm_model_t* model = It_getptr(first);
-        printf(" .. model info: ...");
+        
+        size_t len_Alpha    = UA_length(&model->_star_alpha);
+        size_t len_Y        = UA_length(&model->_star_Y);
+        size_t len_Xr       = UA_shape_axis(&model->_star_X, 0);
+        
+        vfloat_t* Alpha_ptr = UA_data_ptr(&model->_star_alpha);
+        vfloat_t* Y_ptr     = UA_data_ptr(&model->_star_Y);
+        size_t len_Xc       = UA_shape_axis(&model->_star_X, 1);
+        vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(&model->_star_X);
+
+        printf(" \n\n ... model report ... \n");
+        printf(" support vectors : %d, \n", model->sv_count);
+        printf(" rho: %lf \n", model->_star_rho);
+        printf(" tagA: %lf \n", model->tagA);
+        printf(" tagB: %lf \n", model->tagB);
+
+        printf(" star alpha : \n");
+        for (int i=0; i<len_Alpha; ++i) {
+            printf(" alpha[%d]: %lf ", i, Alpha_ptr[i]);
+        }
+        printf("\n\n");
+
+        printf(" star Y :\n");
+        for (int j=0; j<len_Y; ++j) {
+            printf(" Y[%d]: %lf ", j, Y_ptr[j]);
+        }
+        printf("\n\n");
+        printf(" star X: \n");
+        for (int k=0; k<len_Xr; k++){
+            for (int l=0; l<len_Xc; l++) {
+                printf(" X[%d][%d]: %f ", k, l, X_ptr[k][l]);
+            }
+            printf("\n");
+        }
+
+        svm_model_finalize(model);
+        free(model);
     }
+
+    // free models
+    
 }
 
 int do_svm_test (void) 
@@ -121,10 +170,10 @@ int do_svm_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test svm sample classify", test_sample_classify_problems) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test svm sample classify", test_sample_classify_problems) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     if (NULL == CU_add_test(pSuite, "test svm c svc solver", test_c_svc_solve) ) {
         CU_cleanup_registry();

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-14 11:06:04
+ * @LastEditTime: 2021-07-15 15:43:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -14,7 +14,7 @@
 #include "ultra_array/ultra_array.h"
 
 #define SVM_MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define SVM_MIN(x, y) SVM_MAX(y, x)
+#define SVM_MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 typedef enum { C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR } SVM_type; /* SVM type */
 typedef enum { LINEAR, POLY, BRF, SIGMOID } SVM_kernel; /* kernel function type */
@@ -30,10 +30,10 @@ typedef struct _kernel_param {
 typedef struct _solver solver_t;
 struct _solver {
     
-    int (*select_working_set)(int* out_i, int* out_j, int*);
-    int (*calc_rho)(vfloat_t, vfloat_t);
+    int (*select_working_set)(solver_t* solver, int* out_i, int* out_j);
+    int (*calc_rho)(solver_t* solver, double*, double*);
     double (*kernel)(solver_t* solver, int i, int j);
-    int (*build_Q)(solver_t *, u_array_t*);
+    int (*build_Q)(solver_t* solver);
 
 
     u_array_t* Y;
@@ -47,7 +47,8 @@ struct _solver {
     
     int max_iter; // select working set 最大的尝试次数。
     double eps;   // select working set 精度要求。
-
+    double rho;
+    double r;
     kernel_param_t kernel_param;
 };
 
@@ -93,13 +94,13 @@ double kernel_calc_poly(solver_t* solver, int i, int j);
 double kernel_calc_sigmoid(solver_t* solver, int i, int j);
 
 // 计算 高斯 核函数
-double kernel_calc_brf(solver_t* solver, int i, int j);
+double kernel_calc_rbf(solver_t* solver, int i, int j);
 
 // 生成 c_svc Q 矩阵 
-int build_c_svc_Q(solver_t* solver, u_array_t* Q);
-int build_nu_svc_Q(solver_t* solver, u_array_t* Q);
-int build_one_class_Q(solver_t* solver, u_array_t* Q);
-int build_e_svr_Q(solver_t* solver, u_array_t* Q);
-int build_nu_svr_Q(solver_t* solver, u_array_t* Q);
+int build_c_svc_Q(solver_t* solver);
+int build_nu_svc_Q(solver_t* solver);
+int build_one_class_Q(solver_t* solver);
+int build_e_svr_Q(solver_t* solver);
+int build_nu_svr_Q(solver_t* solver);
 
 #endif

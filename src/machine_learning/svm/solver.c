@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-07-14 11:05:05
+ * @LastEditTime: 2021-07-15 15:42:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -51,7 +51,7 @@ int solver_initialize( \
         solver->kernel = &kernel_calc_poly;
         break;
     case BRF:
-        solver->kernel = &kernel_calc_brf;
+        solver->kernel = &kernel_calc_rbf;
         break;
     case SIGMOID:
         solver->kernel = &kernel_calc_sigmoid;
@@ -104,14 +104,14 @@ int solver_set_calculating_dataset(solver_t* solver, u_array_t* _X, u_array_t* _
     solver->X = _X;
     solver->Y = _Y;
     solver->C = _C;
-    
+
     size_t len_Y = UA_length(solver->Y);
     UA_reshape_dots(&solver->alpha, 1, len_Y);
 
     // Q
     UA_reshape_dots(&solver->Q, 2, len_Y, len_Y);
 
-    // G
+    // G 要复制 Q
     UA_reshape_dots(&solver->G, 2, len_Y, len_Y);
 
     // P
@@ -164,7 +164,7 @@ int select_working_set(solver_t* solver, int* out_i, int* out_j)
                 Gmax1 = t; // 更新最大值
                 Gmax1_idx = i;
             }
-            if ( ! solver_is_lower_bound(solver, i) && (t = -G_ptr[i]) > Gmax2) {
+            if ( ! solver_is_lower_bound(solver, i) && (t = G_ptr[i]) > Gmax2) {
 
                 Gmax2 = t; // 更新最大值
                 Gmax2_idx = i;
@@ -175,7 +175,7 @@ int select_working_set(solver_t* solver, int* out_i, int* out_j)
                 Gmax2 = t;
                 Gmax2_idx = i;
             }
-            if ( !solver_is_lower_bound(solver, i) && (t = -G_ptr[i]) > Gmax1 ) {
+            if ( !solver_is_lower_bound(solver, i) && (t = G_ptr[i]) > Gmax1 ) {
                 Gmax1 = t;
                 Gmax1_idx = i;
             }
@@ -183,7 +183,7 @@ int select_working_set(solver_t* solver, int* out_i, int* out_j)
     }
     
     *out_i = Gmax1_idx;
-    *out_j = Gmax1_idx;
+    *out_j = Gmax2_idx;
 
     return Gmax1 + Gmax2 < solver->eps;
 }
@@ -288,7 +288,7 @@ int calc_rho(solver_t* solver, double* rho, double* r){
 
         } else if ( solver_is_upper_bound(solver, i) ) { // Beta_i == C
 
-            if ( Y_ptr <0 ) 
+            if ( Y_ptr[i] < 0 ) 
                 ub = SVM_MIN(ub, yG);
             else 
                 lb = SVM_MAX(lb, yG);
@@ -395,23 +395,22 @@ double kernel_calc_sigmoid(solver_t* solver, int i, int j)
 }
 
 // 计算 高斯 核函数
-double kernel_calc_brf(solver_t* solver, int i, int j)
+double kernel_calc_rbf(solver_t* solver, int i, int j)
 {
-    size_t len_r = UA_shape_axis(solver->X, 1);
-    vfloat_t (*X_r)[len_r] = UA_data_ptr(solver->X);
+    size_t len_Xc = UA_shape_axis(solver->X, 1);
+    vfloat_t (*X_r)[len_Xc] = UA_data_ptr(solver->X);
 
     double dis_q = 0.f;
-
-    for (size_t k=0; k<len_r; ++k) {
+    for (size_t k=0; k<len_Xc; ++k) {
         dis_q += (X_r[i][k] - X_r[j][k]) * (X_r[i][k] - X_r[j][k]);
     }
-    return exp(dis_q * solver->kernel_param.gammer);
+    return exp(dis_q * -solver->kernel_param.gammer);
 }
 
-int build_c_svc_Q (solver_t* solver, u_array_t* Q) 
+int build_c_svc_Q (solver_t* solver) 
 {
     size_t len_alpha = UA_length(&solver->alpha);    
-    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
+    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(&solver->Q);
 
     vfloat_t* Y_ptr = UA_data_ptr(solver->Y);
 
@@ -425,13 +424,13 @@ int build_c_svc_Q (solver_t* solver, u_array_t* Q)
     return 0;
 }
 
-int build_nu_svc_Q (solver_t* solver, u_array_t* Q) {
-    return build_c_svc_Q(solver, Q);
+int build_nu_svc_Q (solver_t* solver) {
+    return build_c_svc_Q(solver);
 }   
 
-int build_one_class_Q (solver_t* solver, u_array_t* Q) {
+int build_one_class_Q (solver_t* solver) {
     size_t len_alpha = UA_length(&solver->alpha);
-    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
+    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(&solver->Q);
 
     for (size_t i=0; i<len_alpha; ++i) {
         for (size_t j=0; j<len_alpha; ++j) {
@@ -441,9 +440,9 @@ int build_one_class_Q (solver_t* solver, u_array_t* Q) {
     return 0;
 }
 
-int build_e_svr_Q(solver_t* solver, u_array_t* Q) {
+int build_e_svr_Q(solver_t* solver) {
     size_t len_alpha = UA_length(&solver->alpha);
-    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(Q);
+    vfloat_t (*Q_r)[len_alpha] = UA_data_ptr(&solver->Q);
 
     float Z[len_alpha];
 
@@ -466,7 +465,7 @@ int build_e_svr_Q(solver_t* solver, u_array_t* Q) {
     return 0;
 }
 
-int build_nu_svr_Q(solver_t* solver, u_array_t* Q)
+int build_nu_svr_Q(solver_t* solver)
 {
-    return build_e_svr_Q(solver, Q);
+    return build_e_svr_Q(solver);
 }

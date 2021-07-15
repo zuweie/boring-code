@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-14 15:58:08
+ * @LastEditTime: 2021-07-15 15:50:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -141,8 +141,13 @@ int svm_solve_generic(solver_t* solver)
     
     //TODO: 1 这里计算 deta f(Bate) = Q dot Beta + P
     vfloat_t* G_ptr = UA_data_ptr(&solver->G);
-    
+    // 先把 Q 复制给 G
+    UA_load(&solver->G, UA_data_ptr(&solver->Q));
+
+    // G dot alpha
     UA_dot(&solver->G, &solver->alpha);
+
+    // G sum P
     UA_sum_uar(&solver->G, &solver->P);
     
     int selected_i, selected_j;
@@ -201,7 +206,7 @@ int svm_solve_generic(solver_t* solver)
             }
 
         } else {
-            // 当 zi = zj
+            // 当 zi == zj
 
             vfloat_t denom = Qi_ptr[selected_i] + Qj_ptr[selected_j] - 2*Qi_ptr[selected_i];
             denom = (denom <=0? TUA : denom);
@@ -245,18 +250,21 @@ int svm_solve_generic(solver_t* solver)
             G_ptr[k] += Qi_ptr[k] * delta_alpha_i + Qj_ptr[k] * delta_alpha_j;
         }
     }
+
+    // 计算 b。将来用作 预测函数上
+    solver->calc_rho(solver, &solver->rho, &solver->r);
     return 0;
     
 }
 
 // 开始计算分类 svm 中最简单的分类 C_SVC
-int svm_solve_c_svc( \
-        u_array_t* X, u_array_t* Y, \
-        SVM_kernel svm_kernel, \
-        double C, double _gammer, \ 
-        double _coef, double _degree, \
-        double eps, \
-        int max_iter,\
+int svm_solve_c_svc( 
+        u_array_t* X, u_array_t* Y, 
+        SVM_kernel svm_kernel, 
+        double C, double _gammer, 
+        double _coef, double _degree, 
+        double eps, 
+        int max_iter,
         List* classify_models)
 {
 
@@ -281,7 +289,7 @@ int svm_solve_c_svc( \
     // 初始化 solver
     solver_initialize(&solver, C_SVC, svm_kernel, _gammer, _coef, _degree, eps, max_iter);
 
-    for (It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(first)) {
+    for ( It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(first) ) {
 
         svm_classify_problem_t* problem = It_getptr(first);
         
@@ -290,20 +298,17 @@ int svm_solve_c_svc( \
 
         size_t total = len_class_A + len_class_B;
         
-        //size_t new_shape_x[2] = {total, len_Xc};
+        // 调整 _X, _Y, _C 大小，准备装载数据。
         UA_reshape_dots(&_X, 2, total, len_Xc);
-
-        //size_t new_shape_y[1] = {total};
-        UA_reshape_dots(&_Y, 1, total};
-
+        UA_reshape_dots(&_Y, 1, total);
         UA_reshape_dots(&_C, 1, total);
         
         vfloat_t (*_X_ptr)[len_Xc] = UA_data_ptr(&_X);
         vfloat_t *_Y_ptr           = UA_data_ptr(&_Y);
         vfloat_t *_C_ptr           = UA_data_ptr(&_C);
         
-        // 计算 X Y C
-        // 把数据罐装到 _X 与 _Y 中去。
+        // 配置 X Y C
+        // 把数据罐装到 _X 与 _Y _C 中去。
         // tabA 为 1, tabB 为 -1
         int i=0, j=0, k=0;
         for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
@@ -320,21 +325,23 @@ int svm_solve_c_svc( \
             _C_ptr[k++] = problem->c_weight_B * C;
         }
 
-        // 设置 X Y C 到 solver 中
-        solver_set_calculating_dataset(solver, &_X, &_Y, &_C);
-
-        //2 初始化 csvc 的参数。
         
-        UA_ones(&solver.alpha, 0);
-        UA_ones(&solver.P, -1);   
+        // 设置 X Y C 到 solver 中
+        solver_set_calculating_dataset(&solver, &_X, &_Y, &_C);
 
-        // 调用 build Q 进行计算。
+        //2 初始化 solver 的 alpha, P, Q;
+        UA_ones(&solver.alpha, 0);
+        UA_ones(&solver.P, -1);
+        solver.build_Q(&solver);
 
         // 超级大循环获取 alpha 
         svm_solve_generic(&solver);
 
         //TODO： 把有用的信息 solver 中，有用的信息 copy 到 svm model 中去。
         svm_model_t* model = svm_create_c_svc_model(&solver);
+        model->tagA = problem->tagA;
+        model->tagB = problem->tagB;
+
         // 获取劳动果实
         CN_add(classify_models, p2t(model));
     }
@@ -351,7 +358,8 @@ int svm_solve_c_svc( \
     UArray_(&_Y);
 }
 
-svm_model_t* svm_create_c_svc_model(solver_t* solver) {
+svm_model_t* svm_create_c_svc_model(solver_t* solver) 
+{
 
     svm_model_t* model = malloc(sizeof(svm_model_t));
     int sv_count = 0;
@@ -365,7 +373,7 @@ svm_model_t* svm_create_c_svc_model(solver_t* solver) {
     size_t    len_alpha = UA_length(&solver->alpha);
 
     for (int i=0; i<len_alpha; ++i) {
-        if (alpha_ptr[i] > 0) {
+        if (alpha_ptr[i] > 0.f) {
             sv_count++;
         }
     }
@@ -382,14 +390,19 @@ svm_model_t* svm_create_c_svc_model(solver_t* solver) {
 
     for (int i=0, j=0; i<len_alpha; ++i) {
 
-        if (alpha_ptr[i] > 0) {
+        if (alpha_ptr[i] > 0.f) {
             
             star_alpha_ptr[j] = alpha_ptr[i];
             star_Y_ptr[j]     = Y_ptr[i];
             memcpy(star_X_ptr[j], X_ptr[i], sizeof(vfloat_t)*len_Xc);
+            j++;
         }
     }
     
+    model->_star_rho = solver->rho;
+    model->_star_r   = solver->r;
+    model->sv_count = sv_count;
+
     return model;
 }
 
