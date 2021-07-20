@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-15 15:50:36
+ * @LastEditTime: 2021-07-20 12:49:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -156,7 +156,7 @@ int svm_solve_generic(solver_t* solver)
     for (;;) {
 
         //TODO: 2 通过计算获取两个需要优化的 Bate，找不到或者循环次数大于最大的循环次数，则退出循环。
-        if (solver->select_working_set(solver, &selected_i, &selected_j) != 0 || iter++ > solver->max_iter) 
+        if (solver->select_working_set(solver, &selected_i, &selected_j) != 0 || iter++ > solver->max_iter ) 
         break;
 
         //TODO: 3 更新这两个 Bate。
@@ -402,12 +402,42 @@ svm_model_t* svm_create_c_svc_model(solver_t* solver)
     model->_star_rho = solver->rho;
     model->_star_r   = solver->r;
     model->sv_count = sv_count;
+    model->k_param = solver->kernel_param;
 
     return model;
 }
 
 // 需要劳动成果来做测试的时候到了。
-float svm_c_svc_predict(List* classify_models, u_array_t* sample)
+// 实现 svc 投票判断。
+double svm_c_svc_predict(List* classify_models, u_array_t* sample)
 {
+    // 1 确定类别的数量
+    // 2 为每个类别生成一个投票站
+    // 3 开始使用判断函数进行判断投票。
+
+    List vote = _LeList(Entity_is_key_equal);
+    int i = 0;
+    int j = 2;
+
+    double choose_one = -1.f;
+
+    for (It last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); last=It_prev(last)) {
+
+        svm_model_t * model = It_getptr(last);
+        
+        int c_nr = j * (j -1) / 2;
+        if (i == c_nr-1) {
+            if (i == 0) {
+                LeCN_add2(&vote, f2t(model->tagA), 0);
+            }
+            LeCN_add2(&vote, f2t(model->tagB), 0);
+            j ++;
+        }
+        i++;
+    }
+    // do the prediction 
+    for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); first=It_next(first)){
+        
+    }
     
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-07-15 15:42:02
+ * @LastEditTime: 2021-07-20 12:46:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -10,6 +10,7 @@
 #include <math.h>
 #include "ultra_array/ultra_array.h"
 #include "ultra_array/ultra_router.h"
+#include "svm_kernel_function.h"
 #include "solver.h"
 
 int solver_initialize( \
@@ -45,16 +46,16 @@ int solver_initialize( \
     {
     case LINEAR:
         /* code */
-        solver->kernel = &kernel_calc_linear;
+        solver->kernel = &calc_linear;
         break;
     case POLY:
-        solver->kernel = &kernel_calc_poly;
+        solver->kernel = &calc_poly;
         break;
     case BRF:
-        solver->kernel = &kernel_calc_rbf;
+        solver->kernel = &calc_rbf;
         break;
     case SIGMOID:
-        solver->kernel = &kernel_calc_sigmoid;
+        solver->kernel = &calc_sigmoid;
         break;
     default:
         solver->kernel = NULL;
@@ -358,53 +359,35 @@ int calc_rho_nu_sum(solver_t* solver, double* rho, double* r)
 }
 
 // 以下四种核函数的实现。
-
-// 核函数
-double kernel_calc_base_linear(solver_t* solver, int i, int j, double _alpha, double _beta) 
-{
-    size_t len_x = UA_shape_axis(solver->X, 1);
-
-    vfloat_t (*X_r)[len_x] = UA_data_ptr(solver->X);
-
-    double dot = 0.f;
-    for (size_t k=0; k<len_x; ++k) {
-        dot += X_r[i][k] * X_r[j][k];
-    }
-    return _alpha * dot + _beta;
-}
-
-double kernel_calc_linear(solver_t* solver, int i, int j)
-{
-    return kernel_calc_base_linear(solver, i, j, 1, 0);
+double calc_linear(solver_t* solver, int i, int j)
+{   
+    int len_Xc = UA_shape_axis(solver->X, 1);
+    vfloat_t (*X_r)[len_Xc] = UA_data_ptr(solver->X);
+    return kernel_function_calculate_liner(X_r[i], X_r[j], len_Xc, 1, 0);
 }
 
 // 多项式核函数
-double kernel_calc_poly(solver_t* solver, int i, int j)
+double calc_poly(solver_t* solver, int i, int j)
 {
-    double linear_dot = kernel_calc_base_linear(solver, i, j, solver->kernel_param.gammer, solver->kernel_param.coef0);
-    return pow(linear_dot, solver->kernel_param.degree);
+    int len_Xc = UA_shape_axis(solver->X, 1);
+    vfloat_t (*X_r)[len_Xc] = UA_data_ptr(solver->X);
+    return kernel_function_calculate_poly(X_r[i], Xr_[j], len_Xc, solver->kernel_param.degree);
 }
 
 // 计算 sigmoid 核函数
-double kernel_calc_sigmoid(solver_t* solver, int i, int j)
+double calc_sigmoid(solver_t* solver, int i, int j)
 {
-    vfloat_t t = kernel_calc_base_linear( solver, i, j, -2*solver->kernel_param.gammer, -2*solver->kernel_param.coef0 );
-    double e   = exp(-fabs(t));
-
-    return t > 0 ? ((1.f - e) / (1.f + e)) : ((e - 1.f) / (e + 1.f));
+    int len_Xc = UA_shape_axis(solver->X, 1);
+    vfloat_t (*X_r)[len_Xc] = UA_data_ptr(solver->X);
+    return kernel_function_calculate_sigmoid(X_r[i], X_r[j], len_Xc, solver->kernel_param.gammer, solver->kernel_param.coef0);
 }
 
 // 计算 高斯 核函数
-double kernel_calc_rbf(solver_t* solver, int i, int j)
+double calc_rbf(solver_t* solver, int i, int j)
 {
     size_t len_Xc = UA_shape_axis(solver->X, 1);
     vfloat_t (*X_r)[len_Xc] = UA_data_ptr(solver->X);
-
-    double dis_q = 0.f;
-    for (size_t k=0; k<len_Xc; ++k) {
-        dis_q += (X_r[i][k] - X_r[j][k]) * (X_r[i][k] - X_r[j][k]);
-    }
-    return exp(dis_q * -solver->kernel_param.gammer);
+    return kernel_function_calculate_rbf(X_r[i], X_r[j], len_Xc, solver->kernel_param.gammer);
 }
 
 int build_c_svc_Q (solver_t* solver) 

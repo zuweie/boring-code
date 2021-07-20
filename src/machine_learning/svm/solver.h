@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-15 15:43:17
+ * @LastEditTime: 2021-07-20 12:35:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -83,18 +83,17 @@ int calc_rho(solver_t* solver, double* rho, double* r);
 // 计算偏移量
 int calc_rho_nu_sum(solver_t* solver, double* rho, double* r);
 
-double kernel_calc_base_linear(solver_t* solver, int i, int j, double _alpha, double _beta);
 // 核函数
-double kernel_calc_linear(solver_t* solver, int i, int j);
+double calc_linear(solver_t* solver, int i, int j);
 
 // 多项式核函数
-double kernel_calc_poly(solver_t* solver, int i, int j);
+double calc_poly(solver_t* solver, int i, int j);
 
 // 计算 sigmoid 核函数
-double kernel_calc_sigmoid(solver_t* solver, int i, int j);
+double calc_sigmoid(solver_t* solver, int i, int j);
 
 // 计算 高斯 核函数
-double kernel_calc_rbf(solver_t* solver, int i, int j);
+double calc_rbf(solver_t* solver, int i, int j);
 
 // 生成 c_svc Q 矩阵 
 int build_c_svc_Q(solver_t* solver);

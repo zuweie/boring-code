@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-22 14:54:00
- * @LastEditTime: 2021-07-15 11:46:28
+ * @LastEditTime: 2021-07-20 12:49:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_model.h
@@ -30,6 +30,8 @@ typedef struct _svm_model {
     u_array_t _star_X;
 
     int sv_count;
+    kernel_param_t k_param;
+    
 } svm_model_t;
 
 int svm_model_finalize(svm_model_t* model);
