@@ -1,11 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-20 12:49:08
+ * @LastEditTime: 2021-07-21 16:26:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
  */
+#include <stdio.h>
 #include <string.h>
 #include "container/LeList.h"
 #include "ultra_array/ultra_router.h"
@@ -334,13 +335,78 @@ int svm_solve_c_svc(
         UA_ones(&solver.P, -1);
         solver.build_Q(&solver);
 
-        // 超级大循环获取 alpha 
+        // 计算拉格朗日因子：
         svm_solve_generic(&solver);
 
-        //TODO： 把有用的信息 solver 中，有用的信息 copy 到 svm model 中去。
-        svm_model_t* model = svm_create_c_svc_model(&solver);
+        /* TODO： 计算完毕，将把有用的信息 solver 中，有用的信息 copy 到 svm model 中去。 ********/
+        svm_model_t* model = malloc(sizeof(svm_model_t));
+        int sv_count = 0;
+        
+        vfloat_t* solver_alpha_ptr = UA_data_ptr(&solver.alpha);
+        vfloat_t* solver_Y_ptr     = UA_data_ptr(solver.Y);
+        size_t len_solver_Xc       = UA_shape_axis(solver.X, 1);
+        vfloat_t (*solver_X_ptr)[len_solver_Xc] = UA_data_ptr(solver.X);
+
+
+        size_t    len_solver_alpha = UA_length(&solver.alpha);
+
+        for (int i=0; i<len_solver_alpha; ++i) {
+            if (solver_alpha_ptr[i] > 0.f) {
+                sv_count++;
+            }
+        }
+
+
+        model->_star_alpha       = _UArray1d(sv_count);
+        vfloat_t* star_alpha_ptr = UA_data_ptr(&model->_star_alpha);
+
+        model->_star_Y        = _UArray1d(sv_count);
+        vfloat_t* star_Y_ptr  = UA_data_ptr(&model->_star_Y);
+
+        model->_star_X                 = _UArray2d(sv_count, len_Xc);
+        vfloat_t (*star_X_ptr)[len_Xc] = UA_data_ptr(&model->_star_X);
+
+        for (int i=0, j=0; i<len_solver_alpha; ++i) {
+
+            if (solver_alpha_ptr[i] > 0.f) {
+            
+                star_alpha_ptr[j] = solver_alpha_ptr[i];
+                star_Y_ptr[j]     = solver_Y_ptr[i];
+                memcpy(star_X_ptr[j], solver_X_ptr[i], sizeof(vfloat_t)*len_solver_Xc);
+                j++;
+            }
+        }
+    
+        model->_star_rho = solver.rho;
+        model->_star_r   = solver.r;
+        model->sv_count = sv_count;
+        model->k_param = solver.kernel_param;
+        
         model->tagA = problem->tagA;
         model->tagB = problem->tagB;
+        model->kernel = svm_kernel;
+        model->type   = C_SVC;
+
+        switch (svm_kernel)
+        {
+        case LINEAR:
+            /* code */
+            model->calculate_kernel = &svm_model_calculate_liner;
+            break;
+        case POLY:
+            model->calculate_kernel = &svm_model_calculate_poly;
+            break;
+        case SIGMOID:
+            model->calculate_kernel = &svm_model_calculate_sigmoid;
+            break;
+        case RBF:
+            model->calculate_kernel = &svm_model_calculate_rbf;
+            break;
+        default:
+            break;
+        }
+
+        /* 完成复制信息到计算 model中 */ 
 
         // 获取劳动果实
         CN_add(classify_models, p2t(model));
@@ -358,54 +424,6 @@ int svm_solve_c_svc(
     UArray_(&_Y);
 }
 
-svm_model_t* svm_create_c_svc_model(solver_t* solver) 
-{
-
-    svm_model_t* model = malloc(sizeof(svm_model_t));
-    int sv_count = 0;
-
-    vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
-    vfloat_t* Y_ptr     = UA_data_ptr(solver->Y);
-    size_t len_Xc       = UA_shape_axis(solver->X, 1);
-    vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(solver->X);
-
-
-    size_t    len_alpha = UA_length(&solver->alpha);
-
-    for (int i=0; i<len_alpha; ++i) {
-        if (alpha_ptr[i] > 0.f) {
-            sv_count++;
-        }
-    }
-
-
-    model->_star_alpha       = _UArray1d(sv_count);
-    vfloat_t* star_alpha_ptr = UA_data_ptr(&model->_star_alpha);
-
-    model->_star_Y        = _UArray1d(sv_count);
-    vfloat_t* star_Y_ptr  = UA_data_ptr(&model->_star_Y);
-
-    model->_star_X                 = _UArray2d(sv_count, len_Xc);
-    vfloat_t (*star_X_ptr)[len_Xc] = UA_data_ptr(&model->_star_X);
-
-    for (int i=0, j=0; i<len_alpha; ++i) {
-
-        if (alpha_ptr[i] > 0.f) {
-            
-            star_alpha_ptr[j] = alpha_ptr[i];
-            star_Y_ptr[j]     = Y_ptr[i];
-            memcpy(star_X_ptr[j], X_ptr[i], sizeof(vfloat_t)*len_Xc);
-            j++;
-        }
-    }
-    
-    model->_star_rho = solver->rho;
-    model->_star_r   = solver->r;
-    model->sv_count = sv_count;
-    model->k_param = solver->kernel_param;
-
-    return model;
-}
 
 // 需要劳动成果来做测试的时候到了。
 // 实现 svc 投票判断。
@@ -428,16 +446,78 @@ double svm_c_svc_predict(List* classify_models, u_array_t* sample)
         int c_nr = j * (j -1) / 2;
         if (i == c_nr-1) {
             if (i == 0) {
-                LeCN_add2(&vote, f2t(model->tagA), 0);
+                LeCN_add2(&vote, f2t(model->tagB), i2t(0));
             }
-            LeCN_add2(&vote, f2t(model->tagB), 0);
+            LeCN_add2(&vote, f2t(model->tagA), i2t(0));
             j ++;
         }
         i++;
     }
-    // do the prediction 
+    // // do the prediction 
     for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); first=It_next(first)){
-        
+        svm_model_t* model = It_getptr(first);
+        double tag = svm_c_svm_predict_one(model, sample);
+        printf(" calculate tag is %f \n", tag);
+        It it = LeCN_find(&vote, f2t(tag));
+        Entity* entity = LeCN_get_entity(&vote, it);
+        // 增加一票
+        int v_count = t2i(entity->tv[1]) + 1;
+        entity->tv[1] = i2t(v_count);
+    }
+
+    // // 选出票数最多的那个 tag 并返回。
+    printf("\n");
+    double winner_tag = -999.f;
+    int count_vote = -1;
+    for (It first=CN_first(&vote); !It_equal(first, CN_tail(&vote)); first=It_next(first)) {
+        Entity* entity = LeCN_get_entity(&vote, first);
+        printf(" entity tv0: %f, tv1: %d \n", t2f(entity->tv[0]), t2i(entity->tv[1]));
+        int v = t2i(entity->tv[1]);
+        if (count_vote < v) {
+            winner_tag = t2f(entity->tv[0]);
+        }
     }
     
+    LeList_(&vote);
+    return winner_tag;
+}
+
+double svm_c_svm_predict_one(svm_model_t* model, u_array_t* sample)
+{
+    double sum = -model->_star_rho;
+    // 计算核函数
+    u_array_t kernel_X = model->calculate_kernel(model, sample);
+
+    int len_start_alpha = UA_length(&model->_star_alpha);
+    int len_start_Y     = UA_length(&model->_star_Y);
+    int len_kernel_X    = UA_length(&kernel_X);
+    
+    vfloat_t* _start_alpha_ptr = UA_data_ptr(&model->_star_alpha);
+    vfloat_t* _start_Y_ptr     = UA_data_ptr(&model->_star_X);
+    vfloat_t* kernel_X_ptr     = UA_data_ptr(&kernel_X);
+    
+    for (int i=0; i<len_start_alpha; ++i) {
+        
+        sum += _start_alpha_ptr[i] * _start_Y_ptr[i] * kernel_X_ptr[i];
+
+    }
+    double tag = sum > 0 ? model->tagA : model->tagB;
+    UArray_(&kernel_X);
+    return tag;
+}
+
+int svm_models_finalize(List* models)
+{
+    for(It first=CN_first(models); !It_equal(first, CN_tail(models)); first=It_next(first)) {
+        svm_model_t* model = It_getptr(first);
+        svm_model_finalize(model);
+        free(model);
+    }
+    return 0;
+}
+
+int svm_models_export(List* models)
+{
+    /* TODO: 把模型 export 到文本文件中去，以备重复使用 */
+
 }

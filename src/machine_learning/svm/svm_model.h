@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-22 14:54:00
- * @LastEditTime: 2021-07-20 12:49:57
+ * @LastEditTime: 2021-07-21 15:13:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_model.h
@@ -11,7 +11,6 @@
 #define _SVM_MODEL_H_
 
 #include "solver.h"
-
 typedef struct _u_array u_array_t;
 
 typedef struct _svm_model {
@@ -21,7 +20,6 @@ typedef struct _svm_model {
     
     SVM_type type;
     SVM_kernel kernel;
-
     double _star_rho;
     double _star_r;
 
@@ -32,7 +30,15 @@ typedef struct _svm_model {
     int sv_count;
     kernel_param_t k_param;
     
+    u_array_t (*calculate_kernel)(struct _svm_model* model, u_array_t* sample);
 } svm_model_t;
 
+
 int svm_model_finalize(svm_model_t* model);
+
+u_array_t svm_model_calculate_liner(svm_model_t* model, u_array_t* sample);
+u_array_t svm_model_calculate_poly(svm_model_t* model, u_array_t* sample);
+u_array_t svm_model_calculate_sigmoid(svm_model_t* model, u_array_t* sample);
+u_array_t svm_model_calculate_rbf(svm_model_t* model, u_array_t* sample);
+
 #endif

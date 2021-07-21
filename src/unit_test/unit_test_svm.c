@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-07-15 16:07:57
+ * @LastEditTime: 2021-07-21 15:45:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -46,6 +46,9 @@ static vfloat_t Y_data[60]= {
         'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
     };
 
+static vfloat_t sample_data[4] = {
+    6.7, 3.1, 4.7, 1.5
+};
 static int  suite_success_init (void) 
 {
     printf("\nSVM suite success init\n");
@@ -85,7 +88,7 @@ test_sample_classify_problems()
         printf("\n");
     }
 
-    svm_classify_problem_finalize(&problems);
+    svm_classify_problems_finalize(&problems);
 
     UArray_(&X);
     UArray_(&Y);
@@ -95,10 +98,11 @@ static void test_c_svc_solve (void)
 {
     u_array_t X = _UArray2d(60, 4);
     u_array_t Y = _UArray1d(60);
+    u_array_t sample = _UArray1d(4);
 
     UA_load(&X, X_data);
     UA_load(&Y, Y_data);
-
+    UA_load(&sample, sample_data);
     List list = _List(NULL);
     
 
@@ -112,9 +116,15 @@ static void test_c_svc_solve (void)
     //     List* classify_models)
 
     svm_solve_c_svc(
-        &X, &Y, BRF, 10, 8.0f, 0.0f, 0.0f, 0.0001, 100000, &list
+        &X, &Y, RBF, 10, 8.0f, 0.0f, 0.0f, 0.0001, 100000, &list
     );
 
+    double r = svm_c_svc_predict(&list, &sample);
+    printf(" winner type is %c ", (char)r);
+
+    svm_models_finalize(&list);
+    
+     #if 0
     for (It first=CN_first(&list); !It_equal(first, CN_tail(&list)); first=It_next(first)) {
 
         svm_model_t* model = It_getptr(first);
@@ -156,9 +166,9 @@ static void test_c_svc_solve (void)
         svm_model_finalize(model);
         free(model);
     }
-
+    #endif
     // free models
-    
+    _List(&list);
 }
 
 int do_svm_test (void) 

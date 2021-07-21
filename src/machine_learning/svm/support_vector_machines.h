@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:30
- * @LastEditTime: 2021-07-20 12:58:38
+ * @LastEditTime: 2021-07-21 12:21:40
  * @LastEditors: Please set LastEditors
  * @Description: 软间隔支持向量机的实现
  * @FilePath: /boring-code/src/machine_learning/svm.h
@@ -38,11 +38,8 @@ int svm_solve_generic(solver_t* solver);
 double svm_c_svc_predict(List* classify_models, u_array_t* sample);
 double svm_c_svm_predict_one(svm_model_t* model, u_array_t* sample);
 
-// smo 终极算法。
-svm_model_t* svm_create_c_svc_model(solver_t* solver);
-
-int svm_classify_problem_finalize(List* problems);
+int svm_classify_problems_finalize(List* problems);
 int svm_classify_problem(u_array_t* X, u_array_t* Y, List* problems);
-
-
+int svm_models_finalize(List* models);
+int svm_models_export(List* models);
 #endif

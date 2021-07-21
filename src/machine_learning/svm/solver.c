@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-07-20 12:46:03
+ * @LastEditTime: 2021-07-21 14:28:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -13,14 +13,14 @@
 #include "svm_kernel_function.h"
 #include "solver.h"
 
-int solver_initialize( \
-        solver_t* solver, \ 
+int solver_initialize(     \
+        solver_t* solver,  \ 
         SVM_type svm_type, \
         SVM_kernel kerenl, \
         double _gammer, \
-        double _coef, \
+        double _coef,   \
         double _degree, \
-        double eps, \
+        double eps,  \
         int max_iter \
 )
 {
@@ -51,7 +51,7 @@ int solver_initialize( \
     case POLY:
         solver->kernel = &calc_poly;
         break;
-    case BRF:
+    case RBF:
         solver->kernel = &calc_rbf;
         break;
     case SIGMOID:
@@ -371,7 +371,7 @@ double calc_poly(solver_t* solver, int i, int j)
 {
     int len_Xc = UA_shape_axis(solver->X, 1);
     vfloat_t (*X_r)[len_Xc] = UA_data_ptr(solver->X);
-    return kernel_function_calculate_poly(X_r[i], Xr_[j], len_Xc, solver->kernel_param.degree);
+    return kernel_function_calculate_poly(X_r[i], X_r[j], len_Xc, solver->kernel_param.degree);
 }
 
 // 计算 sigmoid 核函数

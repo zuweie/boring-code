@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-20 11:48:31
- * @LastEditTime: 2021-07-20 12:31:59
+ * @LastEditTime: 2021-07-21 15:13:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_kernal_function.c
@@ -20,13 +20,13 @@ double kernel_function_calculate_liner(vfloat_t* v1, vfloat_t* v2, int size_v, d
 
 double kernel_function_calculate_poly(vfloat_t* v1, vfloat_t* v2, int size_v, double _degree)
 {
-    double linear_dot = kernel_calculate_liner(v1, v2, size_v, 1, 0);
+    double linear_dot = kernel_function_calculate_liner(v1, v2, size_v, 1, 0);
     return pow(linear_dot, _degree);
 }
 
-double kernelf_function_calculate_sigmoid(vfloat_t* v1, vfloat_t* v2, int size_v, double _gammer, double _coef)
+double kernel_function_calculate_sigmoid(vfloat_t* v1, vfloat_t* v2, int size_v, double _gammer, double _coef)
 {
-    double t = kernel_calculate_liner(v1, v2, size_v, -2*_gammer, -2*_coef );
+    double t = kernel_function_calculate_liner(v1, v2, size_v, -2*_gammer, -2*_coef );
     double e   = exp(-fabs(t));
 
     return t > 0 ? ((1.f - e) / (1.f + e)) : ((e - 1.f) / (e + 1.f));

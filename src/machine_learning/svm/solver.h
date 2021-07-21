@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-20 12:35:29
+ * @LastEditTime: 2021-07-21 11:43:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -17,7 +17,7 @@
 #define SVM_MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 typedef enum { C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR } SVM_type; /* SVM type */
-typedef enum { LINEAR, POLY, BRF, SIGMOID } SVM_kernel; /* kernel function type */
+typedef enum { LINEAR, POLY, RBF, SIGMOID } SVM_kernel; /* kernel function type */
 
 
 
