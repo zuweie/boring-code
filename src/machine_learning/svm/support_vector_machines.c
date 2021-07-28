@@ -1,11 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-21 16:26:26
+ * @LastEditTime: 2021-07-28 23:57:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
  */
+#include <float.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include "container/LeList.h"
@@ -151,6 +153,10 @@ int svm_solve_generic(solver_t* solver)
     // G sum P
     UA_sum_uar(&solver->G, &solver->P);
     
+    // Debug
+    //printf("\n G is \n");
+    //UA_display(&solver->G);
+    
     int selected_i, selected_j;
     int iter = 0;
     
@@ -159,6 +165,8 @@ int svm_solve_generic(solver_t* solver)
         //TODO: 2 通过计算获取两个需要优化的 Bate，找不到或者循环次数大于最大的循环次数，则退出循环。
         if (solver->select_working_set(solver, &selected_i, &selected_j) != 0 || iter++ > solver->max_iter ) 
         break;
+        
+        printf(" select i: %d, j: %d, iter: %d \n", selected_i, selected_j, iter);
 
         //TODO: 3 更新这两个 Bate。
         vfloat_t* Qi_ptr = Qc_ptr[selected_i];
@@ -174,11 +182,9 @@ int svm_solve_generic(solver_t* solver)
         
         if (Y_ptr[selected_i] != Y_ptr[selected_j]) { // 当 zi <> zj 
 
-            vfloat_t denom = Qi_ptr[selected_i] * Qj_ptr[selected_j] + 2 * Qi_ptr[selected_j];
-            denom = denom <=0 ? TUA : denom;
-
-            vfloat_t delta = (-G_ptr[selected_i] - G_ptr[selected_j]) / denom;
-            vfloat_t diff = alpha_i - alpha_j;
+            double denom = Qi_ptr[selected_i] + Qj_ptr[selected_j] + 2 * Qi_ptr[selected_j];
+            double delta = (-G_ptr[selected_i] - G_ptr[selected_j]) / SVM_MAX(fabs(denom), FLT_EPSILON);
+            double diff = alpha_i - alpha_j;
             // 更新 alpha 值
             alpha_i += delta;
             alpha_j += delta;
@@ -209,11 +215,8 @@ int svm_solve_generic(solver_t* solver)
         } else {
             // 当 zi == zj
 
-            vfloat_t denom = Qi_ptr[selected_i] + Qj_ptr[selected_j] - 2*Qi_ptr[selected_i];
-            denom = (denom <=0? TUA : denom);
-
-            vfloat_t delta = (G_ptr[selected_i] - G_ptr[selected_j]) / denom;
-
+            double denom = Qi_ptr[selected_i] + Qj_ptr[selected_j] - 2*Qi_ptr[selected_j];
+            double delta = (G_ptr[selected_i] - G_ptr[selected_j]) / SVM_MAX(fabs(denom), FLT_EPSILON);
             double sum = alpha_i + alpha_j;
 
             alpha_i -= delta;
@@ -246,10 +249,16 @@ int svm_solve_generic(solver_t* solver)
         delta_alpha_i = alpha_i - old_alpha_i;
         delta_alpha_j = alpha_j - old_alpha_j;
 
-        
+        // Debug
+        printf("\n update G:\n");
         for (size_t k=0; k<len_alpha; ++k) {
+            printf("Qi_%d_ptr[%d]: %f, delta_alpha_i: %f, Qj_%d_ptr[%d]: %f, delta_alpha_j: %f ",selected_i, k, Qi_ptr[k], delta_alpha_i, selected_j, k,  Qj_ptr[k], delta_alpha_j);
             G_ptr[k] += Qi_ptr[k] * delta_alpha_i + Qj_ptr[k] * delta_alpha_j;
+            // 
+            printf("   G[%d]: %lf \n ", k, G_ptr[k]);
         }
+        // Debug
+        printf("\n\n\n");
     }
 
     // 计算 b。将来用作 预测函数上
@@ -290,6 +299,8 @@ int svm_solve_c_svc(
     // 初始化 solver
     solver_initialize(&solver, C_SVC, svm_kernel, _gammer, _coef, _degree, eps, max_iter);
 
+    size_t problem_size = CN_size(&problems);
+
     for ( It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(first) ) {
 
         svm_classify_problem_t* problem = It_getptr(first);
@@ -312,29 +323,46 @@ int svm_solve_c_svc(
         // 把数据罐装到 _X 与 _Y _C 中去。
         // tabA 为 1, tabB 为 -1
         int i=0, j=0, k=0;
-        for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
-            size_t index_a = It_getint(it_a);
-            memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
-            _Y_ptr[j++] = 1.f;
-            _C_ptr[k++] = problem->c_weight_A * C;
-        }
 
         for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
             size_t index_b = It_getint(it_b);
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
-            _Y_ptr[j++] = -1.f;
-            _C_ptr[k++] = problem->c_weight_B * C;
+            _Y_ptr[j++] =  1.f;
+            //_C_ptr[k++] = problem->c_weight_B * C;
+            _C_ptr[k++] = C;
         }
 
+        for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
+            size_t index_a = It_getint(it_a);
+            memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
+            _Y_ptr[j++] = -1.f;
+            //_C_ptr[k++] = problem->c_weight_A * C;
+            _C_ptr[k++] = C;
+        }
         
+
+
+
         // 设置 X Y C 到 solver 中
         solver_set_calculating_dataset(&solver, &_X, &_Y, &_C);
 
         //2 初始化 solver 的 alpha, P, Q;
         UA_ones(&solver.alpha, 0);
         UA_ones(&solver.P, -1);
+        
         solver.build_Q(&solver);
-
+        // // Debug :
+        // printf("\n tagA is %lf, %c, tagB is %lf, %c", problem->tagA, (int)problem->tagA, problem->tagB, (int)problem->tagB);
+        //  // Debug:
+        // printf("\n X data : \n");
+        // UA_display(&_X);
+        // // Debug
+        // printf("\n Q aixs0: %d, axis1: %d", UA_shape_axis(&solver.Q, 0), UA_shape_axis(&solver.Q, 1));
+        // printf("\n Q : \n");
+        // UA_display(&solver.Q);
+        // printf("\n end Q \n");
+        // end debug
+        
         // 计算拉格朗日因子：
         svm_solve_generic(&solver);
 
@@ -351,6 +379,7 @@ int svm_solve_c_svc(
         size_t    len_solver_alpha = UA_length(&solver.alpha);
 
         for (int i=0; i<len_solver_alpha; ++i) {
+            // Debug;
             if (solver_alpha_ptr[i] > 0.f) {
                 sv_count++;
             }
@@ -368,6 +397,7 @@ int svm_solve_c_svc(
 
         for (int i=0, j=0; i<len_solver_alpha; ++i) {
 
+            // Debug
             if (solver_alpha_ptr[i] > 0.f) {
             
                 star_alpha_ptr[j] = solver_alpha_ptr[i];
@@ -437,7 +467,6 @@ double svm_c_svc_predict(List* classify_models, u_array_t* sample)
     int i = 0;
     int j = 2;
 
-    double choose_one = -1.f;
 
     for (It last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); last=It_prev(last)) {
 
@@ -454,10 +483,15 @@ double svm_c_svc_predict(List* classify_models, u_array_t* sample)
         i++;
     }
     // // do the prediction 
+    // Debug: 
+    // printf("\n");
     for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); first=It_next(first)){
         svm_model_t* model = It_getptr(first);
+        // Debug:
+        // printf(" model->tagA is %f, model->tagB is %f \n", model->tagA, model->tagB);
         double tag = svm_c_svm_predict_one(model, sample);
-        printf(" calculate tag is %f \n", tag);
+        // Debug:
+        // printf(" calculate tag is %f \n", tag);
         It it = LeCN_find(&vote, f2t(tag));
         Entity* entity = LeCN_get_entity(&vote, it);
         // 增加一票
@@ -466,12 +500,14 @@ double svm_c_svc_predict(List* classify_models, u_array_t* sample)
     }
 
     // // 选出票数最多的那个 tag 并返回。
-    printf("\n");
+    // Debug:
+    // printf("\n");
     double winner_tag = -999.f;
     int count_vote = -1;
     for (It first=CN_first(&vote); !It_equal(first, CN_tail(&vote)); first=It_next(first)) {
         Entity* entity = LeCN_get_entity(&vote, first);
-        printf(" entity tv0: %f, tv1: %d \n", t2f(entity->tv[0]), t2i(entity->tv[1]));
+        // Debug:
+        // printf(" entity tv0: %f, tag: %c, tv1: %d \n", t2f(entity->tv[0]), (char)t2f(entity->tv[0]), t2i(entity->tv[1]));
         int v = t2i(entity->tv[1]);
         if (count_vote < v) {
             winner_tag = t2f(entity->tv[0]);
@@ -484,7 +520,7 @@ double svm_c_svc_predict(List* classify_models, u_array_t* sample)
 
 double svm_c_svm_predict_one(svm_model_t* model, u_array_t* sample)
 {
-    double sum = -model->_star_rho;
+    double sum = model->_star_rho;
     // 计算核函数
     u_array_t kernel_X = model->calculate_kernel(model, sample);
 

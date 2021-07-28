@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-22 14:54:10
- * @LastEditTime: 2021-07-21 16:16:19
+ * @LastEditTime: 2021-07-26 11:52:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_model.c
@@ -74,5 +74,7 @@ u_array_t svm_model_calculate_rbf(svm_model_t* model, u_array_t* sample)
     for (int i=0; i<len_Xr; ++i) {
         cal_result_ptr[i] = kernel_function_calculate_rbf(X_ptr[i], sample_ptr, len_Xc, model->k_param.gammer);
     }
+    // Debug:
+    // UA_display(&calculate_result);
     return calculate_result;
 }

@@ -1,11 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-07-20 11:48:31
- * @LastEditTime: 2021-07-21 15:13:49
+ * @LastEditTime: 2021-07-26 11:48:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_kernal_function.c
  */
+#include <stdio.h>
 #include <math.h>
 #include "svm_kernel_function.h"
 
@@ -38,5 +39,10 @@ double kernel_function_calculate_rbf(vfloat_t* v1, vfloat_t* v2, int size_v, dou
     for (int i=0; i<size_v; ++i) {
         dis_q += (v1[i] - v2[i]) * (v1[i] - v2[i]);
     }
-    return exp(dis_q * -_garmmer);
+    // Debug: 
+    // printf("_garmmer is %lf \n", _garmmer);
+    // printf(" dis_q %lf \n ", dis_q);
+    double ret =  exp(dis_q * -1 * _garmmer);
+    // printf(" ret is %lf \n ", ret);
+    return ret;
 }

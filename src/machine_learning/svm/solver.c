@@ -1,11 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-07-21 14:28:46
+ * @LastEditTime: 2021-07-28 23:48:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
  */
+#include <stdio.h>
 #include <float.h>
 #include <math.h>
 #include "ultra_array/ultra_array.h"
@@ -132,7 +133,8 @@ int solver_is_lower_bound(solver_t* solver, int i)
 {
     vfloat_t* alpha_ptr = UA_data_ptr(&solver->alpha);
     vfloat_t* C_ptr     = UA_data_ptr(solver->C);
-    return alpha_ptr[i] <= C_ptr[i];
+
+    return alpha_ptr[i] <= 0;
 }
 
 int solver_is_upper_bound(solver_t* solver, int i)
@@ -185,7 +187,8 @@ int select_working_set(solver_t* solver, int* out_i, int* out_j)
     
     *out_i = Gmax1_idx;
     *out_j = Gmax2_idx;
-
+    // Debug 
+    printf("(Gmax1:%lf) + (Gmax2:%lf) = %lf \n", Gmax1, Gmax2, Gmax1 + Gmax2);
     return Gmax1 + Gmax2 < solver->eps;
 }
 
