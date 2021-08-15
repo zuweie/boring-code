@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2021-07-15 13:19:15
+ * @LastEditTime: 2021-07-30 12:54:28
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -49,7 +49,7 @@ int main ()
     // do_macine_learning_test();
     // do_matrix_test();
     // do_toutiao_test();
-     do_svm_test();
+    do_svm_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);

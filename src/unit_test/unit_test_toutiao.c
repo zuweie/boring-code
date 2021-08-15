@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-15 09:14:00
- * @LastEditTime: 2021-05-10 08:17:19
+ * @LastEditTime: 2021-07-29 15:00:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dct.c
@@ -10,6 +10,11 @@
 #include <stdarg.h>
 #include <CUnit/Basic.h>
 #include "test_data.h"
+
+typedef struct {
+    char i;
+    int j;
+} ty_t;
 
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
@@ -92,22 +97,31 @@ static void test_toutiao_test(void)
     printf(" *c 的值: %d \n", *c);
 }
 
-static void dots_params(char flag, ...)
+static void dots_params(int nflag, ...)
 {
+    printf("\n test dot params:\n");
     va_list valist;
-    va_start(valist, flag);
+    va_start(valist, nflag);
     char i = va_arg(valist, char);
     int  j = va_arg(valist, int);
     size_t  k = va_arg(valist, size_t);
     float l = va_arg(valist, double);
     double m = va_arg(valist, double);
+    ty_t   o = va_arg(valist, ty_t);
+    printf("i %c \n", i);
+    printf("j %d \n", j);
+    printf("k %d \n", k);
+    printf("l %lf \n", l);
+    printf("m %lf\n", m);
+    printf("ty.i: %d, ty.j: %d", o.i, o.j);
     va_end(valist);
 
 }
 
 static void test_dots_params(void)
-{
-    dots_params('c', 'd', 1, 3, 4.2, 3.5);
+{   
+    ty_t t = {.i = 1, .j = 2};
+    dots_params('c', 'd', 1, 3, 4.2, 3.5, t);
 }
 
 int do_toutiao_test (void) 
@@ -143,8 +157,8 @@ int do_toutiao_test (void)
     //     return CU_get_error();
     // }
 
-    // if (NULL == CU_add_test(pSuite, "test dots_params", test_dots_params) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test dots_params", test_dots_params) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }

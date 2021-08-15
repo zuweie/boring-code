@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-07-28 23:57:44
+ * @LastEditTime: 2021-07-30 13:31:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -324,24 +324,22 @@ int svm_solve_c_svc(
         // tabA 为 1, tabB 为 -1
         int i=0, j=0, k=0;
 
-        for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
-            size_t index_b = It_getint(it_b);
-            memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
-            _Y_ptr[j++] =  1.f;
-            //_C_ptr[k++] = problem->c_weight_B * C;
-            _C_ptr[k++] = C;
-        }
 
         for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
             size_t index_a = It_getint(it_a);
             memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
-            _Y_ptr[j++] = -1.f;
+            _Y_ptr[j++] = 1.f;
             //_C_ptr[k++] = problem->c_weight_A * C;
             _C_ptr[k++] = C;
         }
         
-
-
+        for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
+            size_t index_b = It_getint(it_b);
+            memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
+            _Y_ptr[j++] =  -1.f;
+            //_C_ptr[k++] = problem->c_weight_B * C;
+            _C_ptr[k++] = C;
+        }
 
         // 设置 X Y C 到 solver 中
         solver_set_calculating_dataset(&solver, &_X, &_Y, &_C);

@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2020-12-10 23:08:13
+ * @LastEditTime: 2021-08-11 12:28:54
  * @LastEditors: Please set LastEditors
  */
 #ifndef _ITERATOR_H_
@@ -12,7 +12,7 @@
 #include "__type_value.h"
 
 #define iterator_reference(iter) ((iter).reference)
-#define iterator_set_reference(iter, refer) (((iter).reference=(refer))?(iter):(iter))
+#define iterator_set_reference(iter, refer)  ({(iter).reference = (ref); iter;})
 #define iterator_container(iter) ((iter).container)
 #define iterator_dereference(iter) (*((type_value_t*)iterator_reference(iter)))
 

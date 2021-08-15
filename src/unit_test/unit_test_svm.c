@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-07-28 22:07:35
+ * @LastEditTime: 2021-07-29 00:18:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -112,7 +112,7 @@ static vfloat_t Y_data[y_data_row]= {
     };
 
 static vfloat_t sample_data[4] = {
-    6.7, 3.1, 4.7, 1.5
+    6.7f, 3.1f, 4.7f, 1.5f
 };
 static int  suite_success_init (void) 
 {
