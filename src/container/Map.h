@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:35:27
- * @LastEditTime: 2021-06-29 13:47:18
+ * @LastEditTime: 2021-10-08 16:29:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Hashmap.h
@@ -30,7 +30,6 @@ typedef Entity* (*Expose_Entity)(Tv);
 #define Map_has(con_ptr, key) Map_hasx(con_ptr, 1, key)
 #define Map_has2(con_ptr, key1, key2) Map_hasx(con_ptr, 2, key1, key2)
 #define Map_has3(con_ptr, key1, key2, key3) Map_hasx(con_ptr, 3, key1, key2, key3)
- //CN_has(con, key)
 
 #define Map_setx(con_ptr, x, y, ...) do {          \
     Tv __marco_tv[x];                                   \
