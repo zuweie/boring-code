@@ -2,11 +2,11 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-15 15:04:23
+ * @LastEditTime: 2021-10-15 15:11:49
  * @LastEditors: Please set LastEditors
  */
-#ifndef _CONTAINER_H_
-#define _CONTAINER_H_
+#ifndef __CONTAINER_H__
+#define __CONTAINER_H__
 
 #include <stddef.h>
 
@@ -19,10 +19,13 @@ typedef struct _iterator iterator_t;
 #define container_create(container_label, ...) container_label##_create(__VA_ARGS__)
 #define container_destroy(conatainer_label, ...) conatainer_label##_destroy(__VA_ARGS__)
 
-// 容器位置
+// 容器的 first
 #define container_first(container_ptr) (((container_t*)(container_ptr))->first((container_t*)(container_ptr)))
+// 容器的 last
 #define container_last(container_ptr) (((container_t*)(container_ptr))->last((container_t*)(container_ptr)))
+// 容器的 head
 #define container_head(container_ptr) ({iterator_t first=container_first(container_ptr); iterator_move(&first, -1); first;})
+// 容器的 tail
 #define container_tail(container_ptr) ({iterator_t last=container_last(container_ptr); iterator_move(&last, 1); last})
 
 // 容器搜索

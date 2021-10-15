@@ -2,81 +2,70 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2020-11-09 14:41:27
+ * @LastEditTime: 2021-10-15 16:01:19
  * @LastEditors: Please set LastEditors
  */
 
 #include <stdlib.h>
-#include "__list.h"
-#include "__type_value.h"
+#include "container_of.h"
+#include "type_value/__type_value.h"
 #include "__iterator.h"
 #include "__container.h"
 #include "mem_pool/__mem_pool.h"
 #include "base/operate/__sort.h"
 #include "base/operate/__wring.h"
+#include "__list.h"
+
 /** iter function **/
 //static iterator_t _get_iter (void* refer, void* list);
 
-static iterator_t _move(iterator_t it, int step)
+static int _list_move(iterator_t* it, int step)
 {
-    list_node_t* pnode = iterator_reference(it);
+    list_node_t* pnode = container_of(it->refer, list_node_t, w);
    
     for(int next = step; next; next = step > 0? --step:++step) {
         if (next > 0) pnode = pnode->next;
         else if (next < 0) pnode = pnode->prev;
     }
-    return iterator_set_reference(it, pnode);
+    it->refer = node->w;
+    return 0;
 }
-
-
-// static iterator_t _get_iter(void *refer, void* list) 
-// {
-//     return __iterator(refer, list, _move);
-// }
-/** iter function **/
-
-/** container function **/
 
 static iterator_t _list_first (container_t* plist)
 {
-    return __iterator(list_first(plist), plist, _move);
+    return __iterator(list_first(plist)->w, plist);
 }
 
 static iterator_t _list_last (container_t* plist)
 {
-    return __iterator(list_last(plist), plist, _move);
+    return __iterator(list_last(plist)->w, plist);
 }
 
-static iterator_t _list_search (container_t* container, iterator_t offset, type_value_t find, int(compare)(type_value_t data1, type_value_t data2))
+static iterator_t _list_search (container_t* container, iterator_t offset, type_value_t* find, int(compare)(type_value_t* t1, type_value_t* t2))
 {
-    iterator_t first = offset;
-    iterator_t tail  = container_tail(container);
-    for(;!iterator_equal(first, tail); first = iterator_next(first)) {
-        if (compare(iterator_dereference(first), find) == 0) {
-            return first;
-        }
+    for(iterator_t first = offset;
+        !iterator_equal(first, container_tail(container)); 
+        iterator_next(first)) {
+        
+            if (compare(iterator_reference(first), find) == 0) return first;
     }
     // 返回边界的指针
     return first;
 }
-static int _list_set(container_t* container, type_value_t data, int(*setup)(type_value_t*, type_value_t), int(*confilct_fix)(type_value_t*, type_value_t))
-{
-    return -1;
-}
 
-static int _list_insert(container_t* container, iterator_t pos, type_value_t data)
+static int _list_insert(container_t* container, iterator_t pos, type_value_t* data)
 {
 
-    list_node_t *pnode = iterator_reference(pos);
-    list_node_t *pnew = allocate(container_mem_pool(container), sizeof(list_node_t));
-    // 赋值 和 插入
+    list_node_t *insert = iterator_reference(pos);
+    list_node_t *pnew = allocate(container->mem_pool, sizeof(list_node_t)+container->type_def.T_size);
+    // 赋值
+    container->type_def.T_adapter.bit_cpy(pnew->w, data);
+    // 插入
+    pnew->prev = insert->prev;
+    pnew->next = insert;
 
-    pnew->data = data;
-    pnew->prev = pnode->prev;
-    pnew->next = pnode;
-
-    pnode->prev->next = pnew;
-    pnode->prev = pnew;
+    insert->prev->next = pnew;
+    insert->prev = pnew;
 
     list_t *plist = container;
     plist->_size++;
@@ -86,34 +75,16 @@ static int _list_insert(container_t* container, iterator_t pos, type_value_t dat
 static int _list_remove(container_t* container, iterator_t pos, void* rdata)
 {
     // 删除
-    // 边界的东西不能移除
-    // if (!iterator_is_boundary(pos)){
-
-    //     list_t* list = container;
-    //     list_node_t* pnode = iterator_reference(pos);
+    list_node_t* remove = container_of(iterator_reference(pos), list_node_t, w);
         
-    //     pnode->prev->next = pnode->next;
-    //     pnode->next->prev = pnode->prev;
-
-    //     // 将要删除的值返回出去。
-    //     if (rdata) *((type_value_t*)rdata) = iterator_dereference(pos);
-    //     // 回收
-    //     deallocate(container_mem_pool(container), pnode);
-    //     list->_size--;
-    //     return 0; 
-    // }
-
-    list_t* list = container;
-    list_node_t* pnode = iterator_reference(pos);
-        
-    pnode->prev->next = pnode->next;
-    pnode->next->prev = pnode->prev;
+    remove->prev->next = remove->next;
+    remove->next->prev = remove->prev;
 
     // 将要删除的值返回出去。
-    if (rdata) *((type_value_t*)rdata) = iterator_dereference(pos);
+    if (rdata) container->type_def.ty_adapter.bit_cpy(rdata, remove->w);
     // 回收
-    deallocate(container_mem_pool(container), pnode);
-    list->_size--;
+    deallocate(container_mem_pool(container), remove);
+    ((list_t*)container)->_size--;
     return 0;
 }
 

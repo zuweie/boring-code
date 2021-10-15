@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2021-10-15 12:44:21
+ * @LastEditTime: 2021-10-15 15:55:28
  * @LastEditors: Please set LastEditors
  */
 #ifndef __ITERATOR_H__
@@ -13,9 +13,7 @@
 #include "type_value\__type_value.h"
 
 #define iterator_reference(iter) ((iter).reference)
-#define iterator_set_reference(iter, refer)  ({(iter).reference = (ref); iter;})
 #define iterator_container(iter) ((iter).container)
-#define iterator_dereference(iter, tyep) (*((type*)iterator_reference(iter)))
 
 #define iterator_exchange(itert1, itert2) \
 ({ \
@@ -23,10 +21,10 @@
     type_value_t* t1 = iter1.refer;    \
     type_value_t* t2 = iter2.refer;    \
     T_def* _def     = &cn->type_def;   \
-    type_value_t tmp[_def->T_size];    \
-    _def->T_adapter.bit_cpy(tmp, t1);  \
-    _def->T_adapter.bit_cpy(t1, t2);   \
-    _def->T_adapter.bit_cpy(t2, tmp);  \
+    type_value_t tmp[_def->ty_size];    \
+    _def->ty_adapter.bit_cpy(tmp, t1);  \
+    _def->ty_adapter.bit_cpy(t1, t2);   \
+    _def->ty_adapter.bit_cpy(t2, tmp);  \
 })
 
 #define iterator_move(piter, step) ((piter)->container.move(piter, step))
@@ -54,7 +52,4 @@ struct _iterator {
         }; \
         it; \
     })
-    
-iterator_t __null_iterator;
-
 #endif

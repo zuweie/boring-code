@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:09:36
- * @LastEditTime: 2021-10-08 16:22:46
+ * @LastEditTime: 2021-10-15 16:00:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_value_def.c
@@ -54,14 +54,14 @@ int T_def_reg(int T_size, int (*cmp)(T*, T*), int(*hasher)(T*, int), int (*read_
 
     for (int i=1; i<MAX_T_DEF_SLOT_SIZE; ++i) {
         T_def* _def= T_def_get(i);
-        if (_def->T_id == 0) {
-            _def->T_id = i;
-            _def->T_size = T_size;
-            _def->T_cmp = cmp;
-            _def->T_hasher = hasher;
-            _def->T_adapter.read_vargs = read_vargs;
-            _def->T_adapter.write_vargs = write_args;
-            _def->T_adapter.bit_cpy = bit_cpy;
+        if (_def->ty_id == 0) {
+            _def->ty_id = i;
+            _def->ty_size = T_size;
+            _def->ty_cmp = cmp;
+            _def->ty_hasher = hasher;
+            _def->ty_adapter.read_vargs = read_vargs;
+            _def->ty_adapter.write_vargs = write_args;
+            _def->ty_adapter.bit_cpy = bit_cpy;
         }
         return i;
     }
