@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2021-10-15 15:55:28
+ * @LastEditTime: 2021-10-18 17:23:37
  * @LastEditors: Please set LastEditors
  */
 #ifndef __ITERATOR_H__
@@ -14,17 +14,21 @@
 
 #define iterator_reference(iter) ((iter).reference)
 #define iterator_container(iter) ((iter).container)
+#define iterator_assign(iter1, iter2) \
+({ \
+    container_t* cn = iter1.container; \
+    T_def* _def = &cn->type_def;       \
+    _def->ty_adapter.bit_cpy(iter1.refer, iter2.refer);\
+})
 
 #define iterator_exchange(itert1, itert2) \
 ({ \
     container_t* cn = iter1.container; \
-    type_value_t* t1 = iter1.refer;    \
-    type_value_t* t2 = iter2.refer;    \
     T_def* _def     = &cn->type_def;   \
-    type_value_t tmp[_def->ty_size];    \
-    _def->ty_adapter.bit_cpy(tmp, t1);  \
-    _def->ty_adapter.bit_cpy(t1, t2);   \
-    _def->ty_adapter.bit_cpy(t2, tmp);  \
+    type_value_t tmp[_def->ty_size];   \
+    _def->ty_adapter.bit_cpy(tmp, iter1.refer);         \
+    _def->ty_adapter.bit_cpy(iter1.refer, iter2.refer); \
+    _def->ty_adapter.bit_cpy(iter2.refer, tmp);         \
 })
 
 #define iterator_move(piter, step) ((piter)->container.move(piter, step))
@@ -41,7 +45,7 @@
 typedef struct _iterator iterator_t;
 struct _iterator {
     container_t* container;
-    void* refer;
+    type_value_t* refer;
 };
 
 #define __iterator(__refer, __container) \

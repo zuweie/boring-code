@@ -2,13 +2,14 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:40
- * @LastEditTime: 2021-10-15 15:20:15
+ * @LastEditTime: 2021-10-18 15:59:47
  * @LastEditors: Please set LastEditors
  */
 
-#ifndef _LIST_H_
-#define _LIST_H_
+#ifndef __LIST_H__
+#define __LIST_H__
 #include "type_value/__type_value.h"
+#include "type_value/__type_value_def.h"
 #include "__container.h"
 
 #define list_head(list) (&(((list_t*)list)->_sentinel))
@@ -33,6 +34,6 @@ typedef struct _list
     
 } list_t;
 
-container_t* list_create();
+container_t* list_create(T_def* _def);
 int list_destroy(container_t*);
 #endif
