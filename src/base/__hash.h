@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:27
- * @LastEditTime: 2021-10-19 16:31:53
+ * @LastEditTime: 2021-10-19 16:54:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.h
@@ -18,8 +18,7 @@
 typedef struct _hash_node
 {
     int slot_index;
-    void* list_node_ptr;
-    type_value_t w[1];
+    type_value_t w[0];
 } hash_node_t;
 
 typedef struct _hash

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-10-19 16:38:57
+ * @LastEditTime: 2021-10-19 16:54:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -139,8 +139,8 @@ static int __hash_remove(container_t* container, iterator_t pos, void* rdata)
 
 static size_t _hash_size(container_t* container) 
 {
-    hashmap_t* hashmap = (hashmap_t*) container;
-    return container_size(hashmap->_hash_table);
+    hashmap_t* hash = (hash_t*) container;
+    return container_size(hash->_hash_table);
 }
 
 container_t* hash_create(T_def* __ty_def, int slot_size, int (*setup)(type_value_t*, type_value_t*), int (*conflict_fix)(type_value_t*, type_value_t*)) 
@@ -150,8 +150,14 @@ container_t* hash_create(T_def* __ty_def, int slot_size, int (*setup)(type_value
     hash->_slot_size = slot_size;
 
     // create a pointer list
-    T_def* _def = T_def_get(ptr_t);
-    hash->_hash_table = container_create(list, _def);
+    T_def def;
+    def.ty_adapter = {NULL, NULL, NULL};
+    def.ty_cmp = NULL;
+    def.ty_hasher = NULL;
+    def.ty_id = 0;
+    def.ty_size = __ty_def->ty_size + sizeof(hash_node_t);
+    
+    hash->_hash_table = container_create(list, &def);
     iterator_t hash_table_tail = container_tail(hash->_hash_table);
 
     for(int i=0; i<hash->_slot_size; ++i) {
