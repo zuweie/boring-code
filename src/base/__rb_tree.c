@@ -2,16 +2,16 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-10-19 10:42:13
+ * @LastEditTime: 2021-10-19 13:48:51
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
 #include "__rb_tree.h"
 #include "mem_pool/__mem_pool.h"
-
+#include "container_of.h"
 /** tree function **/
 
- static void __init_rb_tree (rb_tree_t* prb, int (*insert_compare)(type_value_t, type_value_t)) 
+ static void __init_rb_tree (rb_tree_t* prb, unsigned char multi, int (*setup)(type_value_t* target, type_value_t* data), int (conflict_fix)(type_value_t* target, type_value_t* data)) 
  {
     
     /** 初始化 _null 边界节点 **/
@@ -26,7 +26,9 @@
     prb->_root = _null(prb);
     prb->_first = _null(prb);
     prb->_last  = _null(prb);
-    prb->_insert_compare = insert_compare;
+    prb->multi = multi;
+    prb->setup = setup;
+    prb->conflict_fix = conflict_fix;
  }
 
 // 找到该节点往下最小的那个节点
@@ -140,19 +142,18 @@ static int __tree_right_rotate(rb_tree_t* prb, rb_tree_node_t* px)
     return 0;
 }
 
-static rb_tree_node_t* __rb_tree_search(rb_tree_t* prb, rb_tree_node_t* pnode, type_value_t find, int(*compare)(type_value_t, type_value_t))
+static rb_tree_node_t* __rb_tree_do_search(rb_tree_t* prb, rb_tree_node_t* pnode, type_value_t* find)
 {
     if (pnode != _null(prb)) {
-        //int result = compare(pnode->node, find);
-        int result = prb->_insert_compare(pnode->node, find);
+        int result = prb->container.type_def.ty_cmp(pnode->w, find);
         if (result == 0) {
             return pnode;
         }else if (result == 1) {
             // pnode->node > find, search it on pnode left side
-            return __rb_tree_search(prb, pnode->left, find, compare);
+            return __rb_tree_do_search(prb, pnode->left, find);
         }else{
             // pnode->node < find, search it on pnode right side
-            return __rb_tree_search(prb, pnode->right, find, compare); 
+            return __rb_tree_do_search(prb, pnode->right, find); 
         }
     }
     // 这里找不到就返回边界指针 _null(prb)
@@ -249,15 +250,16 @@ static int __rb_tree_insert_fixup (rb_tree_t* prb, rb_tree_node_t* pz)
     return 0;
 }
 
-static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t, int (*setup)(type_value_t*, type_value_t)) {
-    rb_tree_node_t* pnode = allocate(container_mem_pool(prb), sizeof (rb_tree_node_t));
+static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t* t) {
+    rb_tree_node_t* pnode = allocate(prb->container.mem_pool, sizeof (rb_tree_node_t) + prb->container.type_def.ty_size);
     pnode->parent = _null(prb);
     pnode->left   = _null(prb);
     pnode->right  = _null(prb);
-    if (setup) {
-        setup(&pnode->node, t);
+    if (prb->setup) {
+        prb->setup(pnode->w, t);
     } else {
-        pnode->node = t;
+        //pnode->node = t;
+        prb->container.type_def.ty_adapter.bit_cpy(pnode->w, t);
     }
     return pnode;
 }
@@ -265,31 +267,37 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t, in
 static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t) 
 {
 	rb_tree_node_t* py = _null(prb);
-	rb_tree_node_t* px = prb->_root;
+	rb_tree_node_t* px = prb->_root; 
+    
     /* alloc */
     // 找位置
     while(px != _null(prb)) {
         py = px;
-        if (prb->_insert_compare(t, px->node) == -1){
+        if (prb->container.type_def.ty_cmp(t, px->w) == -1){
+            // 小于的情况
         	px = px->left;
-        }else if (prb->_insert_compare(t, px->node) == 1 ){
-        	px = px->right;
-        }else{
-            // 把旧的进行更新。
-            if (conflict_fix) {
-                conflict_fix(&px->node, t);
-            }else {
-                px->node = t;
+        }else {
+            
+            if (prb->multi || prb->container.type_def.ty_cmp(t, px->w) == 1) {
+                // 大于或者允许多健值的情况
+                px = px->right;
+            } else {
+                // 把旧值进行跟新
+                if (prb->conflict_fix) {
+                    prb->conflict_fix(px->w, t);
+                } else {
+                    prb->container.type_def.ty_adapter.bit_cpy(px->w, t);
+                }
+                return 1;
             }
-            return 1;
         }
     }
-    rb_tree_node_t* pz = __rb_tree_create_node(prb, t, setup);
+    rb_tree_node_t* pz = __rb_tree_create_node(prb, t);
     pz->parent = py;
     // 挂叶子
     if (py == _null(prb)){
     	prb->_root = pz;
-    }else if (prb->_insert_compare(pz->node, py->node) == -1){
+    }else if (prb->container.type_def.ty_cmp(pz->w, py->w) == -1){
     	py->left = pz;
     }else{
         py->right = pz;
@@ -478,9 +486,9 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
         }
 
         // 返回值。
-        if (rdata) *((type_value_t*)rdata) = py->node;
-        
-        deallocate(container_mem_pool(prb), py);
+        //if (rdata) *((type_value_t*)rdata) = py->node;
+        if (rdata) prb->container.type_def.ty_adapter.bit_cpy(rdata, py->w);
+        deallocate(prb->container, py);
         prb->_size--;
         //return rdata;
         return 0;
@@ -495,23 +503,19 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
 //static iterator_t _get_iter(void* refer, void* tree);
 
-static iterator_t __rb_move(iterator_t it, int step) 
+static int __rb_tree_move(iterator_t* it, int step) 
 {
-    rb_tree_node_t* pnode = iterator_reference(it);
-    rb_tree_t* tree       = iterator_container(it);
+    rb_tree_node_t* pnode = container_of(it->refer, rb_tree_node_t, w);
+    rb_tree_t* tree       = it->container;
+    
     for (int next = step; next; next = step>0?--step:++step){
         /* code */
         if (next>0) pnode = __tree_successor(tree, pnode);
         else if (next<0) pnode = __tree_predecessor(tree, pnode);
     }
-    return iterator_set_reference(it, pnode);
+    it->reference = pnode->w;
+    return 0;
 }
-// static iterator_t _get_iter(void* refer, void* tree) 
-// {
-//     return __iterator(refer, tree, _move);
-// }
-/** iterator function **/
-
 
 /** container function **/
 // 中序 遍历 
@@ -521,7 +525,7 @@ static iterator_t __rb_tree_first(container_t* container)
     /* 用计算的方式来获取第一个随着节点的增加变得慢 */
     //rb_tree_node_t* pnode = __tree_minimum(tree, tree->_root);
     rb_tree_node_t* pnode = tree->_first;
-    return __iterator(pnode, container,_move);
+    return __iterator(pnode->w, container);
 }
 
 static iterator_t __rb_tree_last(container_t* container) 
@@ -530,18 +534,25 @@ static iterator_t __rb_tree_last(container_t* container)
     /* 用计算方式来获取最后一个节点，随着节点的数量增多变慢 */
     //rb_tree_node_t* pnode = __tree_maximun(tree, tree->_root);
     rb_tree_node_t* pnode = tree->_last;
-    return __iterator(pnode, container, _move);
+    return __iterator(pnode->w, container);
 }
 
 static iterator_t __rb_tree_search(container_t* container, iterator_t offset, type_value_t* find, int (*compare)(type_value_t, type_value_t)) 
 {
     rb_tree_t* tree = container;
-    rb_tree_node_t* p = __rb_tree_search(tree, tree->_root, find, NULL);
-    return __iterator(p, container, _move);
+    rb_tree_node_t* p;
+    if (iterator_is_null(offset)) {
+        p = __rb_tree_do_search(tree, tree->_root, find);
+    } else {
+        // 从 offset 的位置开始搜索。
+        rb_tree_node_t* node = container_of(offset.reference, rb_tree_node_t, w);
+        p = __rb_tree_do_search(tree, node, find);
+    }
+    return __iterator(p->w, container);
 }
 
 
-static size_t _rb_tree_size(container_t* container)
+static size_t __rb_tree_size(container_t* container)
 {
     return ((rb_tree_t*)container)->_size;
 }
@@ -553,18 +564,17 @@ container_t* rb_tree_create(T_def* _def, unsigned char multi, int(*setup)(type_v
     pool_t* _mem_pool = alloc_create(0);
     initialize_container(
         tree, 
-        _rb_tree_first, 
-        _rb_tree_last, 
-        _rb_tree_search,
-        _rb_tree_set,
-        _rb_tree_insert, 
-        _rb_tree_remove, 
-        _rb_tree_sort, 
-        _rb_tree_wring,
-        _rb_tree_size, 
+        __rb_tree_first, 
+        __rb_tree_last, 
+        __rb_tree_move,
+        __rb_tree_search,
+        __rb_tree_insert, 
+        __rb_tree_remove, 
+        __rb_tree_size,
+        *__def
         _mem_pool
     );
-    __init_rb_tree(tree, insert_compare);
+    __init_rb_tree(tree, multi, setup, conflict_fix);
     return tree;
 }
 int rb_tree_destroy(container_t* tree) {

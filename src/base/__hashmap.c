@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2020-10-26 15:44:24
+ * @LastEditTime: 2021-10-19 14:24:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -128,15 +128,7 @@ static int _hashmap_remove(container_t* container, iterator_t pos, void* rdata)
     return -1;
 }
 
-static int _hashmap_sort (container_t* container, int(*compare)(type_value_t, type_value_t)) 
-{
-    return -1;
-}
 
-static int _hashmap_wring (container_t* container, int(*compare)(type_value_t, type_value_t), int (*callback)(void*))
-{
-    return -1;
-}
 
 static size_t _hashmap_size(container_t* container) 
 {
@@ -144,12 +136,12 @@ static size_t _hashmap_size(container_t* container)
     return container_size(hashmap->_hash_table);
 }
 
-container_t* hashmap_create(size_t slot_size, int (*key_hasher)(type_value_t, size_t), int (*key_compare) (type_value_t, type_value_t)) 
+container_t* hashmap_create(T_def* __ty_def, int slot_size, ) 
 {
     hashmap_t* hashmap = (hashmap_t*) malloc (sizeof(hashmap_t) + sizeof(iterator_t)*slot_size);
     pool_t* _mem_pool = alloc_create(0);
-    hashmap->key_hasher = key_hasher;
-    hashmap->key_compare = key_compare;
+    // hashmap->key_hasher = key_hasher;
+    // hashmap->key_compare = key_compare;
     hashmap->_slot_size = slot_size;
     hashmap->_hash_table = container_create(list);
 
@@ -163,7 +155,6 @@ container_t* hashmap_create(size_t slot_size, int (*key_hasher)(type_value_t, si
         _hashmap_first,
         _hashmap_last, 
         _hashmap_search, 
-        _hashmap_set,
         _hashmap_insert, 
         _hashmap_remove, 
         _hashmap_sort,

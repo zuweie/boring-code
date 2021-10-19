@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2021-10-19 10:09:48
+ * @LastEditTime: 2021-10-19 13:36:48
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -19,7 +19,7 @@
 
 static int __vector_move (iterator_t* it, int step) 
 {
-    it->refer = it->refer +  (step * it->container->type_def.ty_size);
+    it->reference =  it->reference +  (step * it->container->type_def.ty_size);
     return 0;
 }
 /** iterator function **/

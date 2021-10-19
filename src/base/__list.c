@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-10-19 10:09:20
+ * @LastEditTime: 2021-10-19 13:36:35
  * @LastEditors: Please set LastEditors
  */
 
@@ -38,7 +38,7 @@ static int __list_move(iterator_t* it, int step)
         if (next > 0) pnode = pnode->next;
         else if (next < 0) pnode = pnode->prev;
     }
-    it->refer = node->w;
+    it->reference = node->w;
     return 0;
 }
 
@@ -118,7 +118,7 @@ container_t* list_create(T_def* __ty_def) {
         __list_insert, 
         __list_remove, 
         __list_size, 
-        *__ty_def,
+        *__def,
         __mem_pool
     );
 

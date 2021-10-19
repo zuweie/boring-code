@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:28:17
- * @LastEditTime: 2021-10-18 16:37:58
+ * @LastEditTime: 2021-10-19 13:37:30
  * @LastEditors: Please set LastEditors
  */
 #ifndef __VECTOR_H__
@@ -23,6 +23,6 @@ typedef struct _vector
    
 } vector_t;
 
-container_t* vector_create(T_def* _def);
+container_t* vector_create(T_def* __ty_def);
 int vector_destroy(container_t*);
 #endif
