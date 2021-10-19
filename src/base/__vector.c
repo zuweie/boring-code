@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2021-10-18 17:44:33
+ * @LastEditTime: 2021-10-19 10:09:48
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -88,7 +88,7 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
     iterator_next(last_next);
 
     // 挪位
-    for (; !iterator_equal(last, it_prev); last_next = last, iterator_prev(last)){
+    for (; !iterator_equal(last, it_prev); iterator_prev(last_next), iterator_prev(last)){
         iterator_assign(last_next, last);
     }
     // 插入
@@ -112,15 +112,15 @@ static int __vector_remove (container_t* container, iterator_t it, void* rdata)
     return 0;
 }
 
-static int __vector_sort(container_t* container, int(*compare)(type_value_t*, type_value_t*)) 
-{
-    return heap_sort(container, compare);
-}
+// static int __vector_sort(container_t* container, int(*compare)(type_value_t*, type_value_t*)) 
+// {
+//     return heap_sort(container, compare);
+// }
 
-static int __vector_wring(container_t* container, int(*compare)(type_value_t*, type_value_t*), int(*callback)(void*)) 
-{
-    return wring(container, compare, callback);
-}
+// static int __vector_wring(container_t* container, int(*compare)(type_value_t*, type_value_t*), int(*callback)(void*)) 
+// {
+//     return wring(container, compare, callback);
+// }
 
 static size_t __vector_size (container_t* container) 
 {
@@ -139,8 +139,6 @@ container_t* vector_create(T_def* __ty_def) {
         __vector_search,
         __vector_insert, 
         __vector_remove, 
-        __vector_sort, 
-        __vector_wring,
         __vector_size,
         *__ty_def, 
         __mem_pool

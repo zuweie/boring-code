@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-18 15:46:54
+ * @LastEditTime: 2021-10-19 10:08:58
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -52,7 +52,7 @@ typedef struct _iterator iterator_t;
 #define container_size(container_ptr) \
     (((container_t*)(container_ptr))->size((container_t*)container_ptr))
 
-#define initialize_container(container_ptr, __first, __last, __move, __search, __insert, __remove, __sort, __wring, __size, __type_def, __mem_pool) \
+#define initialize_container(container_ptr, __first, __last, __move, __search, __insert, __remove, __size, __type_def, __mem_pool) \
 ({ \
     ((container_t*)(container_ptr))->first  = (__first);                                        \
     ((container_t*)(container_ptr))->last   = (__last);                                         \
@@ -60,8 +60,6 @@ typedef struct _iterator iterator_t;
     ((container_t*)(container_ptr))->search = (__search);                                       \
     ((container_t*)(container_ptr))->insert = (__insert);                                       \
     ((container_t*)(container_ptr))->remove = (__remove);                                       \
-    ((container_t*)(container_ptr))->sort   = (__sort);                                         \
-    ((container_t*)(container_ptr))->wring  = (__wring);                                        \
     ((container_t*)(container_ptr))->size   = (__size);                                         \
     ((container_t*)(container_ptr))->type_def = (__type_def)                                    \
     ((container_t*)(container_ptr))->mem_pool = (__mem_pool);                                   \
@@ -76,8 +74,6 @@ struct _container {
     iterator_t (*search) (container_t* container_ptr, iterator_t offset, type_value_t* find, int (*compare)(type_value_t*, type_value_t*));
     int (*insert) (container_t* container_ptr, iterator_t iter, type_value_t* data); 
     int (*remove) (container_t* container_ptr, iterator_t iter, void* rdata);
-    int (*sort) (container_t* container_ptr, int(*compare)(type_value_t*, type_value_t*));
-    int (*wring) (container_t* container_ptr, int(*compare)(type_value_t*, type_value_t*), int(*clean)(void*));
     int (*size) (container_t* container_ptr);
     T_def type_def;
     pool_t* mem_pool;

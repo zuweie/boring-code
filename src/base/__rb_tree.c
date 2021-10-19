@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-02-05 18:21:28
+ * @LastEditTime: 2021-10-19 10:42:13
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -262,7 +262,7 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t t, in
     return pnode;
 }
 
-static int __rb_tree_insert (rb_tree_t* prb, type_value_t t, int(*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t)) 
+static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t) 
 {
 	rb_tree_node_t* py = _null(prb);
 	rb_tree_node_t* px = prb->_root;
@@ -495,7 +495,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
 //static iterator_t _get_iter(void* refer, void* tree);
 
-static iterator_t _move(iterator_t it, int step) 
+static iterator_t __rb_move(iterator_t it, int step) 
 {
     rb_tree_node_t* pnode = iterator_reference(it);
     rb_tree_t* tree       = iterator_container(it);
@@ -515,7 +515,7 @@ static iterator_t _move(iterator_t it, int step)
 
 /** container function **/
 // 中序 遍历 
-static iterator_t _rb_tree_first(container_t* container) 
+static iterator_t __rb_tree_first(container_t* container) 
 {
     rb_tree_t* tree = container;
     /* 用计算的方式来获取第一个随着节点的增加变得慢 */
@@ -524,7 +524,7 @@ static iterator_t _rb_tree_first(container_t* container)
     return __iterator(pnode, container,_move);
 }
 
-static iterator_t _rb_tree_last(container_t* container) 
+static iterator_t __rb_tree_last(container_t* container) 
 {
     rb_tree_t* tree = container;
     /* 用计算方式来获取最后一个节点，随着节点的数量增多变慢 */
@@ -533,44 +533,22 @@ static iterator_t _rb_tree_last(container_t* container)
     return __iterator(pnode, container, _move);
 }
 
-static iterator_t _rb_tree_search(container_t* container, iterator_t offset, type_value_t find, int (*compare)(type_value_t, type_value_t)) 
+static iterator_t __rb_tree_search(container_t* container, iterator_t offset, type_value_t* find, int (*compare)(type_value_t, type_value_t)) 
 {
     rb_tree_t* tree = container;
     rb_tree_node_t* p = __rb_tree_search(tree, tree->_root, find, NULL);
     return __iterator(p, container, _move);
 }
 
-static int _rb_tree_set(container_t* container, type_value_t data, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t))
-{
-    return __rb_tree_insert(container, data, setup, conflict_fix);
-}
-
-static int _rb_tree_insert(container_t* container, iterator_t pos, type_value_t data)
-{
-    return -1;
-}
-
-static int _rb_tree_remove(container_t* container, iterator_t pos, void* rdata)
-{
-    return __rb_tree_remove(container, iterator_reference(pos), rdata);
-}
 
 static size_t _rb_tree_size(container_t* container)
 {
     return ((rb_tree_t*)container)->_size;
 }
-static int _rb_tree_sort(container_t* container, int(*compare)(type_value_t, type_value_t)) 
-{
-    // rb 树不能排序。
-    return -1;
-}
-static int _rb_tree_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int (*callback)(void*))
-{
-    // rb 树不能wring
-    return -1;
-}
 
-container_t* rb_tree_create(int(*insert_compare)(type_value_t, type_value_t)) {
+
+container_t* rb_tree_create(T_def* _def, unsigned char multi, int(*setup)(type_value_t*, type_value_t*), int (*conflict_fix)(type_value_t*, type_value_t*));
+{
     container_t* tree = (rb_tree_t*) malloc( sizeof(rb_tree_t) );
     pool_t* _mem_pool = alloc_create(0);
     initialize_container(

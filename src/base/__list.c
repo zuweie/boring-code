@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-10-18 16:13:10
+ * @LastEditTime: 2021-10-19 10:09:20
  * @LastEditors: Please set LastEditors
  */
 
@@ -94,15 +94,15 @@ static size_t __list_size(container_t* container)
     return ((list_t*)container)->_size;
 }
 
-static int __list_sort(container_t* container, int(*compare)(type_value_t, type_value_t))
-{
-    return quick_sort(container_first(container), container_last(container), compare);
-}
+// static int __list_sort(container_t* container, int(*compare)(type_value_t, type_value_t))
+// {
+//     return quick_sort(container_first(container), container_last(container), compare);
+// }
 
-static int __list_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(void*))
-{
-    return wring(container, compare, callback);
-}
+// static int __list_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(void*))
+// {
+//     return wring(container, compare, callback);
+// }
 
 container_t* list_create(T_def* __ty_def) {
     
@@ -117,8 +117,6 @@ container_t* list_create(T_def* __ty_def) {
         __list_search,
         __list_insert, 
         __list_remove, 
-        __list_sort, 
-        __list_wring, 
         __list_size, 
         *__ty_def,
         __mem_pool
