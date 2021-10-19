@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-19 10:08:58
+ * @LastEditTime: 2021-10-19 16:07:06
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -40,13 +40,13 @@ typedef struct _iterator iterator_t;
 #define container_remove(container_ptr, iter, rdata) \
     (((container_t*)(container_ptr))->remove(((container_t*)(container_ptr)), iter, rdata))
 
-// 容器排序
-#define container_sort(container_ptr, compare) \
-    ((container_t*)(container_ptr))->sort((container_t*)(container_ptr), compare)
+// // 容器排序
+// #define container_sort(container_ptr, compare) \
+//     ((container_t*)(container_ptr))->sort((container_t*)(container_ptr), compare)
 
-// 容器挤水
-#define container_wring(container_ptr, compare, clean) \
-    (((container_t*)(container_ptr))->wring(((container_t*)(container_ptr)), compare, clean))
+// // 容器挤水
+// #define container_wring(container_ptr, compare, clean) \
+//     (((container_t*)(container_ptr))->wring(((container_t*)(container_ptr)), compare, clean))
 
 // 容器大小
 #define container_size(container_ptr) \
@@ -61,7 +61,7 @@ typedef struct _iterator iterator_t;
     ((container_t*)(container_ptr))->insert = (__insert);                                       \
     ((container_t*)(container_ptr))->remove = (__remove);                                       \
     ((container_t*)(container_ptr))->size   = (__size);                                         \
-    ((container_t*)(container_ptr))->type_def = (__type_def)                                    \
+    ((container_t*)(container_ptr))->type_def = (__type_def);                                   \
     ((container_t*)(container_ptr))->mem_pool = (__mem_pool);                                   \
 })
 

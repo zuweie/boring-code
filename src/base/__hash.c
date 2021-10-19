@@ -1,38 +1,40 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-10-19 14:24:33
+ * @LastEditTime: 2021-10-19 16:38:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
  */
-#include "__hashmap.h"
+#include "__hash.h"
+#include "type_value/__built_in_type.h"
 #include "mem_pool/__mem_pool.h"
 
-static hash_node_t* __create_hash_node (container_t* container, type_value_t en, int (*setup)(type_value_t*, type_value_t)) 
+static hash_node_t* __create_hash_node (container_t* container, type_value_t* en) 
 {
-    hashmap_t* hashmap = (hashmap_t*) container;
-    hash_node_t* node = allocate(container_mem_pool(container), sizeof(hash_node_t));
-    node->slot_index = hashmap->key_hasher(en, hashmap->_slot_size);
-    if (setup) {
-        setup(&node->entity, en);
+    hash_t* hash = (hashmap_t*) container;
+    hash_node_t* node = allocate(container->mem_pool, sizeof(hash_node_t) + container->type_def.ty_size);
+    node->slot_index = container->type_def.ty_hasher(en, hash->_slot_size); 
+    
+    if (hash->setup) {
+        hash->setup(node->w, en);
     }else{
-        node->entity = en;
+        container->type_def.ty_adapter.bit_cpy(node->w, en);
     }
     return node;
 }
-static iterator_t __get_iterator_by_key(container_t* container, type_value_t key) 
+static iterator_t __get_iterator_by_key(container_t* container, type_value_t* key) 
 {
-    hashmap_t* hashmap = (hashmap_t*) container;
-    int hash_index = hashmap->key_hasher(key, hashmap->_slot_size);
-    return hashmap->_slot[hash_index];
+    hash_t* hash = (hash_t*) container;
+    int hash_index = container->type_def.ty_hasher(key, hash->_slot_size); 
+    return hash->_slot[hash_index];
 }
 
-static iterator_t __search_in_table(container_t* container, iterator_t pos, type_value_t find) 
+static iterator_t __search_in_table(container_t* container, iterator_t pos, type_value_t* find) 
 {
-    hashmap_t* hashmap = (hashmap_t*) container;
-    int hash_index = hashmap->key_hasher(find, hashmap->_slot_size);
-    iterator_t table_tail = container_tail(hashmap->_hash_table);
+    hash_t* hash = (hashmap_t*) container;
+    int hash_index = container->type_def.ty_hasher(find, hash->_slot_size); 
+    iterator_t table_tail = container_tail(hash->_hash_table);
     
     for(;!iterator_equal(pos, table_tail);pos=iterator_next(pos)) {
         
@@ -46,26 +48,31 @@ static iterator_t __search_in_table(container_t* container, iterator_t pos, type
     return pos;
 }
 
-static iterator_t _hashmap_first(container_t* container)
+static iterator_t __hash_first(container_t* container)
 {
-    hashmap_t* hashmap = (hashmap_t*) container;
-    return container_first(hashmap->_hash_table);
+    hash_t* hash = (hash_t*) container;
+    iterator_t first = container_first(hash->_hash_table);
+    return __iterator(((hash_node_t*)(first.reference))->w, hash->_hash_table)//container_first(hashmap->_hash_table);
 }
 
-static iterator_t _hashmap_last(container_t* container)
+static iterator_t __hash_last(container_t* container)
 {
     hashmap_t* hashmap = (hashmap_t*) container;
-    return container_last(hashmap->_hash_table);
+    iterator_t last = container_last(hash->_hash_table);
+    return __iterator((hash_node_t*)(last.reference)->w, hash->_hash_table);
 }
-
-static iterator_t _hashmap_search (container_t* container, iterator_t offset, type_value_t find, int(compare)(type_value_t, type_value_t))
+static int __hash_move(iterator_t* iter, int step) 
+{
+    
+}
+static iterator_t __hash_search (container_t* container, iterator_t offset, type_value_t* find, int(compare)(type_value_t, type_value_t))
 {
     iterator_t slot_it = __get_iterator_by_key(container, find);
     iterator_t iter    = iterator_is_tail(slot_it) ? slot_it : __search_in_table(container, slot_it, find);
     return iter;    
 }
 
-static int _hashmap_set(container_t* container, type_value_t en, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t))
+static int __hash_set(container_t* container, type_value_t en, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t))
 {
     int ret = -1;
     hashmap_t* hashmap  = (hashmap_t*) container;
@@ -92,11 +99,11 @@ static int _hashmap_set(container_t* container, type_value_t en, int (*setup)(ty
     return ret;
 }
 
-static int _hashmap_insert(container_t* container, iterator_t pos, type_value_t en) 
+static int __hash_insert(container_t* container, iterator_t pos, type_value_t en) 
 {
     return -1;
 }
-static int _hashmap_remove(container_t* container, iterator_t pos, void* rdata)
+static int __hash_remove(container_t* container, iterator_t pos, void* rdata)
 {
     if (!iterator_is_tail(pos)) {
         hashmap_t*   hashmap   = (hashmap_t*)container;
@@ -130,37 +137,38 @@ static int _hashmap_remove(container_t* container, iterator_t pos, void* rdata)
 
 
 
-static size_t _hashmap_size(container_t* container) 
+static size_t _hash_size(container_t* container) 
 {
     hashmap_t* hashmap = (hashmap_t*) container;
     return container_size(hashmap->_hash_table);
 }
 
-container_t* hashmap_create(T_def* __ty_def, int slot_size, ) 
+container_t* hash_create(T_def* __ty_def, int slot_size, int (*setup)(type_value_t*, type_value_t*), int (*conflict_fix)(type_value_t*, type_value_t*)) 
 {
-    hashmap_t* hashmap = (hashmap_t*) malloc (sizeof(hashmap_t) + sizeof(iterator_t)*slot_size);
-    pool_t* _mem_pool = alloc_create(0);
-    // hashmap->key_hasher = key_hasher;
-    // hashmap->key_compare = key_compare;
-    hashmap->_slot_size = slot_size;
-    hashmap->_hash_table = container_create(list);
+    hash_t* hash = (hash_t*) malloc (sizeof(hash_t) + sizeof(iterator_t)*slot_size);
+    pool_t* __mem_pool = alloc_create(0);
+    hash->_slot_size = slot_size;
 
-    iterator_t hash_table_tail = container_tail(hashmap->_hash_table);
-    for(int i=0; i<hashmap->_slot_size; ++i) {
-        hashmap->_slot[i] = hash_table_tail;
+    // create a pointer list
+    T_def* _def = T_def_get(ptr_t);
+    hash->_hash_table = container_create(list, _def);
+    iterator_t hash_table_tail = container_tail(hash->_hash_table);
+
+    for(int i=0; i<hash->_slot_size; ++i) {
+        hash->_slot[i] = hash_table_tail;
     }
     
     initialize_container(
-        hashmap, 
-        _hashmap_first,
-        _hashmap_last, 
-        _hashmap_search, 
-        _hashmap_insert, 
-        _hashmap_remove, 
-        _hashmap_sort,
-        _hashmap_wring, 
-        _hashmap_size, 
-        _mem_pool
+        hash, 
+        __hash_first,
+        __hash_last,
+        __hash_move, 
+        __hash_search, 
+        __hash_insert, 
+        __hash_remove, 
+        __hash_size,
+        *__ty_def, 
+        __mem_pool
     );
     return hashmap;
 }
