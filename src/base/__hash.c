@@ -1,13 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-10-19 16:54:51
+ * @LastEditTime: 2021-10-20 17:08:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
  */
 #include "__hash.h"
 #include "type_value/__built_in_type.h"
+#include "container_of.h"
 #include "mem_pool/__mem_pool.h"
 
 static hash_node_t* __create_hash_node (container_t* container, type_value_t* en) 
@@ -23,86 +24,93 @@ static hash_node_t* __create_hash_node (container_t* container, type_value_t* en
     }
     return node;
 }
-static iterator_t __get_iterator_by_key(container_t* container, type_value_t* key) 
+static hash_inner_list_node_t* __get_inner_list_node_by_key(hash_t* hash, type_value_t* key) 
 {
-    hash_t* hash = (hash_t*) container;
     int hash_index = container->type_def.ty_hasher(key, hash->_slot_size); 
     return hash->_slot[hash_index];
 }
 
-static iterator_t __search_in_table(container_t* container, iterator_t pos, type_value_t* find) 
+static hash_inner_list_node_t* __search_in_inner_list(hash_t* hash, hash_inner_list_node_t* from, type_value_t* find) 
 {
-    hash_t* hash = (hashmap_t*) container;
     int hash_index = container->type_def.ty_hasher(find, hash->_slot_size); 
-    iterator_t table_tail = container_tail(hash->_hash_table);
+    hash_inner_list_node_t* tail  = hash_table_tail(hash);
     
-    for(;!iterator_equal(pos, table_tail);pos=iterator_next(pos)) {
-        
-        hash_node_t* node = vtype_pointer(iterator_dereference(pos));
-        if (hashmap->key_compare(node->entity, find) == 0) {
-            return pos;
-        }else if (node->slot_index != hash_index) {
-            return table_tail;
+    for(;from != tail;from = from->next) {        
+        if (hash->container.type_def.ty_cmp(from->w, find)== 0) {
+            return from;
+        }else if (first->slot_index != hash_index) {
+            return tail;
         }
     }    
-    return pos;
+    return from;
 }
 
 static iterator_t __hash_first(container_t* container)
 {
     hash_t* hash = (hash_t*) container;
-    iterator_t first = container_first(hash->_hash_table);
-    return __iterator(((hash_node_t*)(first.reference))->w, hash->_hash_table)//container_first(hashmap->_hash_table);
+    return __iterator(hash_table_head(hash)->next->w, container);
 }
 
 static iterator_t __hash_last(container_t* container)
 {
-    hashmap_t* hashmap = (hashmap_t*) container;
-    iterator_t last = container_last(hash->_hash_table);
-    return __iterator((hash_node_t*)(last.reference)->w, hash->_hash_table);
+    hash_t* hash = (hash_t*) container;
+    return __iterator(hash_table_tail(hash)->prev->w, container);
 }
 static int __hash_move(iterator_t* iter, int step) 
 {
-    
+    hash_t* hash = iter->container;
+    hash_inner_list_node_t* node = container_of(iter->reference, hash_inner_list_node_t, w)
+    for (int next = step ; next; next = step > 0? next - 1: next + 1) {
+        if (step > 0) node = node->next;
+        else if (step < 0) node = node->prev;
+    }
+    iter->reference = node->w;
 }
 static iterator_t __hash_search (container_t* container, iterator_t offset, type_value_t* find, int(compare)(type_value_t, type_value_t))
 {
-    iterator_t slot_it = __get_iterator_by_key(container, find);
-    iterator_t iter    = iterator_is_tail(slot_it) ? slot_it : __search_in_table(container, slot_it, find);
-    return iter;    
+    hash_t* hash = (hash_t*)container;
+    hash_inner_list_node_t* slot_from   = __get_inner_list_node_by_key(container, find);
+    hash_inner_list_node_t* target = (solt_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, find);
+    return __iterator(target->w, container);    
 }
 
-static int __hash_set(container_t* container, type_value_t en, int (*setup)(type_value_t*, type_value_t), int (*conflict_fix)(type_value_t*, type_value_t))
+// 这个是超级有难度的。
+static int __hash_insert(container_t* container, iterator_t pos, type_value_t* en)
 {
     int ret = -1;
-    hashmap_t* hashmap  = (hashmap_t*) container;
+    hash_t* hash  = (hash_t*) container;
 
-    iterator_t slot_it  = __get_iterator_by_key(container, en);
-    iterator_t table_it = iterator_is_tail(slot_it)? slot_it : __search_in_table(container, slot_it, en);
-    if (iterator_is_tail(slot_it) || iterator_is_tail(table_it)) {
+    hash_inner_list_node_t* slot_from  = __get_inner_list_node_by_key(hash, en);
+    hash_inner_list_node_t* target     = (slot_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, en);
+    if (target == hash_table_tail(hash)) {
         // 插入新元素
-        hash_node_t* pnode = __create_hash_node(container, en, setup);
-        ret = container_insert(hashmap->_hash_table, slot_it, pointer_vtype(pnode));
+        //hash_node_t* pnode = __create_hash_node(container, en, setup);
+        int new_node_size = sizeof(hash_node_t) + hash->container.type_def.ty_size;
+        type_value_t new_node[new_node_size];
+        
+        ret = container_insert(hashmap->_hash_table, slot_it, pnew);
         hashmap->_slot[pnode->slot_index] = iterator_prev(slot_it);
     } else {
+        // 找到元素，跟新它
         // 更新元素的 value
-        hash_node_t* pnode  = vtype_pointer(iterator_dereference(table_it));
-        if (conflict_fix) {
+        //hash_node_t* pnode  = vtype_pointer(iterator_dereference(table_it));
+        hash_node_t* pnode = table_it.reference;
+        if (hash->conflict_fix) {
             // 如果有冲突解决函数，则调用冲突解决函数
-            conflict_fix(&pnode->entity, en);
+            hash->conflict_fix(pnode->w, en);
         } else {
             // 没有则直接把旧的 entity 换成新的 en;
-            pnode->entity = en;
+            hash->container.type_def.ty_adapter.bit_cpy(pnode->w, en);
         }
         ret = 1;
     }
     return ret;
 }
 
-static int __hash_insert(container_t* container, iterator_t pos, type_value_t en) 
-{
-    return -1;
-}
+// static int __hash_insert(container_t* container, iterator_t pos, type_value_t en) 
+// {
+//     return -1;
+// }
 static int __hash_remove(container_t* container, iterator_t pos, void* rdata)
 {
     if (!iterator_is_tail(pos)) {
@@ -145,23 +153,16 @@ static size_t _hash_size(container_t* container)
 
 container_t* hash_create(T_def* __ty_def, int slot_size, int (*setup)(type_value_t*, type_value_t*), int (*conflict_fix)(type_value_t*, type_value_t*)) 
 {
-    hash_t* hash = (hash_t*) malloc (sizeof(hash_t) + sizeof(iterator_t)*slot_size);
+    hash_t* hash = (hash_t*) malloc (sizeof(hash_t) + sizeof(hash_inner_list_node_t*)*slot_size);
     pool_t* __mem_pool = alloc_create(0);
     hash->_slot_size = slot_size;
 
-    // create a pointer list
-    T_def def;
-    def.ty_adapter = {NULL, NULL, NULL};
-    def.ty_cmp = NULL;
-    def.ty_hasher = NULL;
-    def.ty_id = 0;
-    def.ty_size = __ty_def->ty_size + sizeof(hash_node_t);
-    
-    hash->_hash_table = container_create(list, &def);
-    iterator_t hash_table_tail = container_tail(hash->_hash_table);
+    // init the inner double direct linklist.
+    hash->_hash_table._sentinel.prev = &(hash->_hash_table._sentinel);
+    hash->_hash_table._sentinel.next = &(hash->_hash_table._sentinel);
 
     for(int i=0; i<hash->_slot_size; ++i) {
-        hash->_slot[i] = hash_table_tail;
+        hash->_slot[i] = hash_table_tail(hash);
     }
     
     initialize_container(

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:40
- * @LastEditTime: 2021-10-19 13:36:26
+ * @LastEditTime: 2021-10-20 15:55:17
  * @LastEditors: Please set LastEditors
  */
 
@@ -34,6 +34,6 @@ typedef struct _list
     
 } list_t;
 
-container_t* list_create(T_def* __ty_def);
+container_t* list_create(T_def* __type_def);
 int list_destroy(container_t*);
 #endif

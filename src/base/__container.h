@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-19 16:07:06
+ * @LastEditTime: 2021-10-20 15:55:52
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -61,7 +61,7 @@ typedef struct _iterator iterator_t;
     ((container_t*)(container_ptr))->insert = (__insert);                                       \
     ((container_t*)(container_ptr))->remove = (__remove);                                       \
     ((container_t*)(container_ptr))->size   = (__size);                                         \
-    ((container_t*)(container_ptr))->type_def = (__type_def);                                   \
+    ((container_t*)(container_ptr))->type_def = (__type_def);                               \
     ((container_t*)(container_ptr))->mem_pool = (__mem_pool);                                   \
 })
 

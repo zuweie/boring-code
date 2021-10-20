@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-10-19 13:36:35
+ * @LastEditTime: 2021-10-20 16:16:30
  * @LastEditors: Please set LastEditors
  */
 
@@ -34,9 +34,13 @@ static int __list_move(iterator_t* it, int step)
 {
     list_node_t* pnode = container_of(it->refer, list_node_t, w);
    
-    for(int next = step; next; next = step > 0? --step:++step) {
-        if (next > 0) pnode = pnode->next;
-        else if (next < 0) pnode = pnode->prev;
+    // for(int next = step; next; next = step > 0? --step:++step) {
+    //     if (next > 0) pnode = pnode->next;
+    //     else if (next < 0) pnode = pnode->prev;
+    // }
+    for (int next = step; next; next = step > 0? next - 1: next + 1) {
+        if (step > 0) pnode = pnode->next;
+        else if (step < 0) pnode = pnode->prev;
     }
     it->reference = node->w;
     return 0;
@@ -54,7 +58,7 @@ static iterator_t __list_search (container_t* container, iterator_t offset, type
     return first;
 }
 
-static int __list_insert(container_t* container, iterator_t pos, type_value_t* data)
+static void* __list_insert(container_t* container, iterator_t pos, type_value_t* data)
 {
 
     list_node_t* insert = container_of(iterator_reference(pos), list_node_t, w);
@@ -104,7 +108,7 @@ static size_t __list_size(container_t* container)
 //     return wring(container, compare, callback);
 // }
 
-container_t* list_create(T_def* __ty_def) {
+container_t* list_create(int __cell_width) {
     
     list_t* list = (list_t*) malloc( sizeof(list_t));
     pool_t* __mem_pool = alloc_create(0);
@@ -118,7 +122,7 @@ container_t* list_create(T_def* __ty_def) {
         __list_insert, 
         __list_remove, 
         __list_size, 
-        *__def,
+        __cell_width,
         __mem_pool
     );
 
