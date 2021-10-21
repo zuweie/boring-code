@@ -1,34 +1,26 @@
 /*
  * @Author: your name
- * @Date: 2020-10-23 13:08:02
- * @LastEditTime: 2020-12-11 14:09:24
+ * @Date: 2021-10-21 15:16:31
+ * @LastEditTime: 2021-10-21 16:27:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
  */
-#ifndef _ENTITY_H_
-#define _ENTITY_H_
-#include <stdlib.h>
-#include "Tv.h"
+#ifndef __ENTITY_H__
+#define __ENTITY_H__
+#include "ty.h"
 
+#define MAX_ENT_FIELD_NUM 32
 
-typedef struct _entity {
-    size_t value_index;
-    size_t number;
-    Tv* tv;
-} Entity;
-        
-Entity* Entity_temp(Entity*, int num, int value_index, Tv t[],  ...);
-Entity* Entity_heap(int num, int value_index, ...);
+typedef struct __entity_template {
+    int field_num;
+    int value_idx;
+    int* field_types;
+} entity_template_t;
 
-void Entity_cypto_entity(Entity* from, Entity* to);
-
-// 这个需要手动释放内存。
-Entity* Entity_malloc_copy_entity(Entity*);
-
-int Entity_copy_Value(Entity*, Entity*);
-int Entity_is_value_equal(Entity* e1, Entity* e2);
-int Entity_is_key_equal(Entity* e1, Entity* e2);
-
+typedef struct __entity {
+    entity_template_t* tpl;
+    T** block;
+} entity_t;
 
 #endif

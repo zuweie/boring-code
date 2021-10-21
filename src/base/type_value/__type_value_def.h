@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:08:54
- * @LastEditTime: 2021-10-21 15:07:49
+ * @LastEditTime: 2021-10-21 15:29:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_def.h
@@ -28,7 +28,14 @@ typedef struct {
     T_adapter ty_adapter;
 } T_def;
 
-int T_def_reg(int T_size, int(*)(type_value_t*, type_value_t*), int (*)(type_value_t*, type_value_t*), void(*)(va_list, type_value_t*), void(*)(va_list, type_value_t*), void(*)(type_value_t*, type_value_t*));
+int T_def_reg( 
+    int T_size, 
+    int(*)(type_value_t*, type_value_t*), 
+    int(*)(type_value_t*, type_value_t*), 
+    void(*)(va_list, type_value_t*), 
+    void(*)(va_list, type_value_t*), 
+    void(*)(type_value_t*, type_value_t*)
+);
 int T_def_unreg(int T_id);
 int T_def_is_reg(int T_id);
 T_def* T_def_get(int T_id);
