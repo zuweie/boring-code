@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:09:36
- * @LastEditTime: 2021-10-18 15:56:50
+ * @LastEditTime: 2021-10-21 15:07:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_value_def.c
@@ -49,7 +49,7 @@ static T_def _T_DEFS[MAX_T_DEF_SLOT_SIZE] =
     {0, 0, NULL, NULL, {NULL, NULL, NULL}},
 }
 
-int T_def_reg(int T_size, int (*cmp)(T*, T*), int(*hasher)(T*, int), int (*read_vargs)(va_list, T*), int (*write_args)(va_list, T*), int(*bit_cpy)(T*, T*))
+int T_def_reg(int T_size, int (*cmp)(type_value_t*, type_value_t*), int(*hasher)(type_value_t*, int), int (*read_vargs)(va_list, type_value_t*), int (*write_args)(va_list, type_value_t*), int(*bit_cpy)(type_value_t*, type_value_t*))
 {
     for (int i=1; i<MAX_T_DEF_SLOT_SIZE; ++i) {
         T_def* _def= T_def_get(i);

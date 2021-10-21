@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 12:13:47
- * @LastEditTime: 2020-12-15 09:03:36
+ * @LastEditTime: 2021-10-21 11:41:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/operate/__head_sort.h
  */
 
-#ifndef _HEAP_SORT_H_
-#define _HEAP_SORT_H_
+#ifndef __HEAP_SORT_H__
+#define __HEAP_SORT_H__
 
 #define heap_parent(k) ((k-1)>>1)
 #define heap_left(k)   ((k<<1)+1)

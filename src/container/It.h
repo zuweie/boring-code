@@ -1,38 +1,14 @@
 /*
  * @Author: your name
- * @Date: 2020-09-22 15:01:45
- * @LastEditTime: 2021-08-11 14:48:56
+ * @Date: 2021-10-21 13:39:44
+ * @LastEditTime: 2021-10-21 14:51:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: /boring-code/src/container/it.h
+ * @FilePath: /boring-code/src/container/It.h
  */
-#ifndef _IT_H_
-#define _IT_H_
+#ifndef __IT_H__
+#define __IT_H__
 #include "base/__iterator.h"
-#include "Tv.h"
+
 typedef iterator_t It;
-/* iterator_t interface */
-#define It_ref(iter) iterator_reference(iter)
-#define It_dref(iter) iterator_dereference(iter)
-#define It_move(it) iterator_move(iter, step)
-#define It_next(iter) iterator_next(iter)
-#define It_prev(iter) iterator_prev(iter)
-#define It_equal(iter1, iter2) iterator_equal(iter1, iter2)
-#define It_assign(from, to) iterator_assign(from, to)
-#define It_exchange(iter1, iter2) iterator_exchange(iter1, iter2)
-
-#define It_getchar(it) t2i(It_dref(it))
-#define It_getint(it) t2i(It_dref(it))
-#define It_getfloat(it) t2f(It_dref(it))
-#define It_getdouble(it) t2f(It_dref(it))
-#define It_getptr(it) t2p(It_dref(it))
-#define It_getstr(it) t2p(It_dref(it))
-
-#define It_valid(it)                  \
-    ({                                \
-        int ret = iterator_valid(it); \
-        ret;                          \
-    })
-#define It_is_tail(it) iterator_is_tail(it)
-#define It_is_head(it) iterator_is_head(it)
 #endif
