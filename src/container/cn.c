@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-22 13:28:43
+ * @LastEditTime: 2021-10-22 13:36:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -137,11 +137,21 @@ CN CN_create(unsigned long build_code, ...)
             if (cmp_func) _def->ty_cmp = cmp_func;
             eng_ptr = container_create(list, _def);
         } else if (build_code & TREE_SET) {
-            err = err_unsupported_eng;
-            goto BUILD_FAIL;
+            unsigned char multi = build_code & multi_key;
+            if (build_code & use_entity) {
+                _def = T_def_get(ptr_t);
+            } else {
+                _def = T_def_get((int)type_info);
+            }
+            eng = container_create(rb_tree, multi, setup_func, conflict_fix_func);
         } else if (build_code & HASH_SET) {
-            err = err_unsupported_eng;
-            goto BUILD_FAIL;
+            unsigned char multi = build_code & multi_key;
+            if (build_code & use_entity) {
+                _def = T_def_get(ptr_t);
+            } else {
+                _def = T_def_get((int)type_info);
+            }
+            eng = container_create(hash, multi, setup_func, conficlt_fix_func);
         }
         
         cn_ptr->build_code = build_code;
@@ -163,4 +173,7 @@ CN CN_create(unsigned long build_code, ...)
         return cn;
     }
 }
-CN CN_finalize(CN cn, int(*cleanup)(T*));
+CN CN_finalize(CN cn, int(*cleanup)(T*))
+{
+    
+}

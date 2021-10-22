@@ -2,14 +2,14 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2020-12-16 15:45:48
+ * @LastEditTime: 2021-10-22 16:36:42
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_H_
 #define _GRAPH_H_
 
-#include "container/Tv.h"
-#include "container/List.h"
+#include "container/ty.h"
+#include "container/cn.h"
 #include "matrix/CooMatrix.h"
 
 typedef struct _vertex 

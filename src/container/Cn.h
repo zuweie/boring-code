@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-22 11:54:25
+ * @LastEditTime: 2021-10-22 16:23:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -31,17 +31,17 @@ enum {
 
 enum {
     // combine container
-    TREE_MAP = tree_set | use_entity,
-    HASH_MAP = hash_set | use_entity,
-    MULTI_TREE_SET = tree_set | multi_key,
-    MULTI_TREE_MAP = tree_set | use_entity | multi_key,
-    MULTI_HASH_SET = hash_set | multi_key,
-    MULTI_HASH_MAP = hash_set | use_entity | multi_key,
+    TREE_MAP = TREE_SET | use_entity,
+    HASH_MAP = HASH_SET | use_entity,
+    MULTI_TREE_SET = TREE_SET | multi_key,
+    MULTI_TREE_MAP = TREE_SET | use_entity | multi_key,
+    MULTI_HASH_SET = HASH_SET | multi_key,
+    MULTI_HASH_MAP = HASH_SET | use_entity | multi_key,
 };
 
 // error code
 enum {
-    err_ok = 0;
+    err_ok = 0,
     err_no_found = -1,
     err_empty = -2,
     err_out_of_capcity = -10,
@@ -59,7 +59,7 @@ struct __cn {
     unsigned long build_code;
     void* type_info;
     unsigned char is_forward;
-}
+};
 
 CN CN_create(unsigned long build_code, ...);
 CN CN_finalize(CN cn, int(*cleanup)(T*));

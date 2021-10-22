@@ -2,15 +2,15 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2021-10-19 11:36:19
+ * @LastEditTime: 2021-10-22 16:21:59
  * @LastEditors: Please set LastEditors
  */
 #ifndef __ITERATOR_H__
 #define __ITERATOR_H__
 
 #include "__container.h"
-#include "type_value\__type_value_def.h"
-#include "type_value\__type_value.h"
+#include "type_value/__type_value_def.h"
+#include "type_value/__type_value.h"
 
 #define iterator_assign(iter1, iter2) \
 ({ \
@@ -39,7 +39,9 @@
 #define iterator_valid(iter) !iterator_is_boundary(iter)
 #define iterator_is_null(iter) ((iter).container == NULL)
 
+typedef struct _container container_t;
 typedef struct _iterator iterator_t;
+
 struct _iterator {
     container_t* container;
     type_value_t* reference;

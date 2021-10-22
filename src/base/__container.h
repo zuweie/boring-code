@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-20 15:55:52
+ * @LastEditTime: 2021-10-22 16:22:25
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -14,7 +14,6 @@
 #include "type_value/__type_value_def.h"
 #include "__iterator.h"
 #include "mem_pool/__mem_pool.h"
-typedef struct _iterator iterator_t;
 
 #define container_create(container_label, ...) container_label##_create(__VA_ARGS__)
 #define container_destroy(conatainer_label, ...) conatainer_label##_destroy(__VA_ARGS__)
@@ -65,6 +64,7 @@ typedef struct _iterator iterator_t;
     ((container_t*)(container_ptr))->mem_pool = (__mem_pool);                                   \
 })
 
+typedef struct _iterator iterator_t;
 typedef struct _container container_t;
 
 struct _container {
