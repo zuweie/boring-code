@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-10-20 16:16:30
+ * @LastEditTime: 2021-10-22 13:20:17
  * @LastEditors: Please set LastEditors
  */
 
@@ -108,7 +108,7 @@ static size_t __list_size(container_t* container)
 //     return wring(container, compare, callback);
 // }
 
-container_t* list_create(int __cell_width) {
+container_t* list_create(T_def* __type_def) {
     
     list_t* list = (list_t*) malloc( sizeof(list_t));
     pool_t* __mem_pool = alloc_create(0);
@@ -122,7 +122,7 @@ container_t* list_create(int __cell_width) {
         __list_insert, 
         __list_remove, 
         __list_size, 
-        __cell_width,
+        *__type_def,
         __mem_pool
     );
 

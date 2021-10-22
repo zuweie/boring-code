@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:11
- * @LastEditTime: 2021-10-08 15:50:25
+ * @LastEditTime: 2021-10-22 13:24:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.h
@@ -43,70 +43,70 @@ enum {
     ptr_t
 };
 
-int cmp_char(T* t1, T* t2);
-int cmp_uchar(T* t1, T* t2);
-int cmp_short(T* t1, T* t2);
-int cmp_ushort(T* t1, T* t2);
-int cmp_int(T* t1, T* t2);
-int cmp_uint(T* t1, T* t2);
-int cmp_long(T* t1, T* t2);
-int cmp_ulong(T* t1, T* t2);
-int cmp_flv(T* t1, T* t2);
-int cmp_dbl(T* t1, T* t2);
-int cmp_str(T* t1, T* t2);
-int cmp_ptr(T* t1, T* t2);
+int cmp_char(type_value_t* t1, type_value_t* t2);
+int cmp_uchar(type_value_t* t1, type_value_t* t2);
+int cmp_short(type_value_t* t1, type_value_t* t2);
+int cmp_ushort(type_value_t* t1, type_value_t* t2);
+int cmp_int(type_value_t* t1, type_value_t* t2);
+int cmp_uint(type_value_t* t1, type_value_t* t2);
+int cmp_long(type_value_t* t1, type_value_t* t2);
+int cmp_ulong(type_value_t* t1, type_value_t* t2);
+int cmp_flv(type_value_t* t1, type_value_t* t2);
+int cmp_dbl(type_value_t* t1, type_value_t* t2);
+int cmp_str(type_value_t* t1, type_value_t* t2);
+int cmp_ptr(type_value_t* t1, type_value_t* t2);
 
-int hash_char(T*, int);
-int hash_uchar(T*, int);
-int hash_short(T*, int);
-int hash_ushort(T*, int);
-int hash_int(T*, int);
-int hash_uint(T*, int);
-int hash_long(T*, int);
-int hash_ulong(T*, int);
-int hash_float(T*, int);
-int hash_double(T*, int);
-int hash_str(T*, int);
-int hash_ptr(T*, int);
+int hash_char(type_value_t*, int);
+int hash_uchar(type_value_t*, int);
+int hash_short(type_value_t*, int);
+int hash_ushort(type_value_t*, int);
+int hash_int(type_value_t*, int);
+int hash_uint(type_value_t*, int);
+int hash_long(type_value_t*, int);
+int hash_ulong(type_value_t*, int);
+int hash_float(type_value_t*, int);
+int hash_double(type_value_t*, int);
+int hash_str(type_value_t*, int);
+int hash_ptr(type_value_t*, int);
 
-void read_vargs_char(va_list, T*);
-void read_vargs_uchar(va_list, T*);
-void read_vargs_short(va_list, T*);
-void read_vargs_ushort(va_list, T*);
-void read_vargs_int(va_list, T*);
-void read_vargs_uint(va_list, T*);
-void read_vargs_long(va_list, T*);
-void read_vargs_ulong(va_list, T*);
-void read_vargs_float(va_list, T*);
-void read_vargs_double(va_list, T*);
-void read_vargs_str(va_list, T*);
-void read_vargs_ptr(va_list, T*);
+void read_vargs_char(va_list, type_value_t*);
+void read_vargs_uchar(va_list, type_value_t*);
+void read_vargs_short(va_list, type_value_t*);
+void read_vargs_ushort(va_list, type_value_t*);
+void read_vargs_int(va_list, type_value_t*);
+void read_vargs_uint(va_list, type_value_t*);
+void read_vargs_long(va_list, type_value_t*);
+void read_vargs_ulong(va_list, type_value_t*);
+void read_vargs_float(va_list, type_value_t*);
+void read_vargs_double(va_list, type_value_t*);
+void read_vargs_str(va_list, type_value_t*);
+void read_vargs_ptr(va_list, type_value_t*);
 
-void write_vargs_char(va_list, T*);
-void write_vargs_uchar(va_list, T*);
-void write_vargs_short(va_list, T*);
-void write_vargs_ushort(va_list, T*);
-void write_vargs_int(va_list, T*);
-void write_vargs_uint(va_list, T*);
-void write_vargs_long(va_list, T*);
-void write_vargs_ulong(va_list, T*);
-void write_vargs_float(va_list, T*);
-void write_vargs_double(va_list, T*);
-void write_vargs_str(va_list, T*);
-void write_vargs_ptr(va_list, T*);
+void write_vargs_char(va_list, type_value_t*);
+void write_vargs_uchar(va_list, type_value_t*);
+void write_vargs_short(va_list, type_value_t*);
+void write_vargs_ushort(va_list, type_value_t*);
+void write_vargs_int(va_list, type_value_t*);
+void write_vargs_uint(va_list, type_value_t*);
+void write_vargs_long(va_list, type_value_t*);
+void write_vargs_ulong(va_list, type_value_t*);
+void write_vargs_float(va_list, type_value_t*);
+void write_vargs_double(va_list, type_value_t*);
+void write_vargs_str(va_list, type_value_t*);
+void write_vargs_ptr(va_list, type_value_t*);
 
-void bit_cpy_char(T*, T*);
-void bit_cpy_uchar(T*, T*);
-void bit_cpy_short(T*, T*);
-void bit_cpy_ushort(T*, T*);
-void bit_cpy_int(T*, T*);
-void bit_cpy_uint(T*, T*);
-void bit_cpy_long(T*, T*);
-void bit_cpy_ulong(T*, T*);
-void bit_cpy_float(T*, T*);
-void bit_cpy_double(T*, T*);
-void bit_cpy_str(T*, T*);
-void bit_cpy_ptr(T*, T*);
+void bit_cpy_char(type_value_t*, type_value_t*);
+void bit_cpy_uchar(type_value_t*, type_value_t*);
+void bit_cpy_short(type_value_t*, type_value_t*);
+void bit_cpy_ushort(type_value_t*, type_value_t*);
+void bit_cpy_int(type_value_t*, type_value_t*);
+void bit_cpy_uint(type_value_t*, type_value_t*);
+void bit_cpy_long(type_value_t*, type_value_t*);
+void bit_cpy_ulong(type_value_t*, type_value_t*);
+void bit_cpy_float(type_value_t*, type_value_t*);
+void bit_cpy_double(type_value_t*, type_value_t*);
+void bit_cpy_str(type_value_t*, type_value_t*);
+void bit_cpy_ptr(type_value_t*, type_value_t*);
 
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-21 16:27:27
+ * @LastEditTime: 2021-10-22 11:54:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -16,10 +16,10 @@
 
 enum {
     // base container type 
-    vector = (unsigned long) 1 << 27,
-    list   = (unsigned long) 1 << 26,
-    tree_set = (unsigned long) 1 << 25,
-    hash_set = (unsigned long) 1 << 24,
+    VECTOR = (unsigned long) 1 << 27,
+    LIST   = (unsigned long) 1 << 26,
+    TREE_SET = (unsigned long) 1 << 25,
+    HASH_SET = (unsigned long) 1 << 24,
 
     // build options
     multi_key = (unsigned long) 1 << 15,
@@ -31,12 +31,12 @@ enum {
 
 enum {
     // combine container
-    tree_map = tree_set | use_entity,
-    hash_map = hash_set | use_entity,
-    multi_tree_set = tree_set | multi_key,
-    multi_tree_map = tree_set | use_entity | multi_key,
-    mulit_hash_set = hash_set | multi_key,
-    multi_hash_map = hash_set | use_entity | multi_key,
+    TREE_MAP = tree_set | use_entity,
+    HASH_MAP = hash_set | use_entity,
+    MULTI_TREE_SET = tree_set | multi_key,
+    MULTI_TREE_MAP = tree_set | use_entity | multi_key,
+    MULTI_HASH_SET = hash_set | multi_key,
+    MULTI_HASH_MAP = hash_set | use_entity | multi_key,
 };
 
 // error code
@@ -46,15 +46,16 @@ enum {
     err_empty = -2,
     err_out_of_capcity = -10,
     err_unsupported_type = -11,
-    err_unsupported_container = -12,
-    err_out_of_max_entity_field = -13,
+    err_unsupported_eng = -12,
+    err_out_of_max_ent_field = -13,
+    err_invalid_ent_keys_number = -14,
 };
 
 typedef int CN;
 typedef struct __cn cn_t;
 
 struct __cn {
-    container_t* container;
+    container_t* eng;
     unsigned long build_code;
     void* type_info;
     unsigned char is_forward;
