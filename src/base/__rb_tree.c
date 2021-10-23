@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-10-20 13:17:39
+ * @LastEditTime: 2021-10-23 18:16:23
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -488,7 +488,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
         // 返回值。
         //if (rdata) *((type_value_t*)rdata) = py->node;
         if (rdata) prb->container.type_def.ty_adapter.bit_cpy(rdata, py->w);
-        deallocate(prb->container, py);
+        deallocate(prb->container.mem_pool, py);
         prb->_size--;
         //return rdata;
         return 0;
@@ -505,7 +505,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
 static int __rb_tree_move(iterator_t* it, int step) 
 {
-    rb_tree_node_t* pnode = container_of(it->refer, rb_tree_node_t, w);
+    rb_tree_node_t* pnode = container_of(it->reference, rb_tree_node_t, w);
     rb_tree_t* tree       = it->container;
     
     for (int next = step; next; next = step>0?--step:++step){
@@ -583,11 +583,11 @@ int rb_tree_destroy(container_t* tree) {
     return 0;
 }
 iterator_t rb_tree_root(rb_tree_t* tree) {
-    return __iterator(tree->_root, tree, _move);
+    return __iterator(tree->_root->w, tree);
 }
 
 iterator_t rb_tree_null(rb_tree_t* tree) 
 {
-    return __iterator(_null(tree), tree, _move);
+    return __iterator(_null(tree)->w, tree);
 } 
 /** container function **/

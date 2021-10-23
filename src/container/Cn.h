@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-22 16:23:12
+ * @LastEditTime: 2021-10-23 22:46:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -13,6 +13,15 @@
 #include "ty.h"
 
 #define CAPACITY_NUMBER 1024
+
+independent
+
+#define CN_DEFINE_LOCAL_INDEPENDENT_ENTITY(cn, ent_name, accessor) \
+    entity_template_t* marco_##ent_name##_tpl = CN_type_info(cn); \
+    int marco_##ent_name##_local_entity_body_size = entity_tpl_cal_independent_entity_body_size(marco_##ent_name##_tpl, accessor); \
+    T marco_##ent_name##_ent_body[marco_##ent_name##_local_entity_body_size]; \
+    entity_format_independent_entity_body(marco_##ent_name##_ent_body, marco_##ent_name##_tpl, accessor); \
+    entity_t* ent_name = marco_##ent_name##_ent_body
 
 enum {
     // base container type 
@@ -49,6 +58,7 @@ enum {
     err_unsupported_eng = -12,
     err_out_of_max_ent_field = -13,
     err_invalid_ent_keys_number = -14,
+    err_unsupported_method = -15;
 };
 
 typedef int CN;
@@ -79,4 +89,6 @@ int CN_del(CN, ...);
 int CN_set(CN, ...);
 int CN_get(CN, ...);
 
+void* CN_type_info(CN);
+T_def* CN_type_def(CN);
 #endif

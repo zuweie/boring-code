@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2021-10-23 09:57:59
+ * @LastEditTime: 2021-10-23 20:04:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -70,19 +70,16 @@ int conflict_fix_entity(T*, T*);
 int setup_entity(T*, T*);
 
 entity_t* entity_create(entity_template_t* etpl);
+entity_t* entity_cpy(entity_t* src);
 void entity_format_data_block(entity_t*, unsigned long);
-void entity_format_real_entity_body(T*, entity_template_t*, unsigned long);
-int entity_tpl_cal_real_entity_body_size(entity_template_t*, unsigned long);
+void entity_format_independent_entity_body(T*, entity_template_t*, unsigned long);
+int entity_tpl_cal_independent_entity_body_size(entity_template_t*, unsigned long);
 void entity_cpy_block(entity_t*, entity_t*, unsigned long);
-int entity_set(entity_t*, unsigned long, ...);
-int entity_get(entity_t*, unsigned long, ...);
+
 int entity_read_from_vargs(entity_t*, unsigned long, va_list);
 int entity_write_to_vargs(entity_t*, unsigned long, va_list);
 
-int entity_set_keys(entity_t*, ...);
-int entity_set_values(entity_t*, ...);
-int entity_get_keys(entity_t*, ...);
-int entity_get_value(entity_t*, ...);
+
 
 int entity_release(entity_t*);
 #endif

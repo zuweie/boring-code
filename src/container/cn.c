@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-22 16:55:26
+ * @LastEditTime: 2021-10-23 22:48:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "base/__container.h"
+#include "base/__iterator.h"
 #include "base/type_value/__type_value_def.h"
 #include "entity.h"
 #include "cn.h"
@@ -175,5 +176,57 @@ CN CN_create(unsigned long build_code, ...)
 }
 CN CN_finalize(CN cn, int(*cleanup)(T*))
 {
-    
+    // TODO : release the container;
+}
+
+void* CN_type_info(CN cn) 
+{
+    return CN_(cn)->type_info;
+}
+
+T_def* CN_type_def(CN cn) 
+{
+    if (! (CN_(cn)->build_code & use_entity)) {
+        return T_get_def( (int)(CN_(cn)->type_info));
+    } else {
+        return NULL;
+    }
+}
+
+int CN_del(CN cn, ...)
+{
+    if (CN_(cn)->build_code & TREE_SET || CN_(cn)->build_code & HASH_SET) {
+        va_list valist;
+        va_start(valist, cn);
+        int err = err_ok;
+        if (CN_(cn)->build_code & use_entity) {
+            // 这里是一个map
+            CN_DEFINE_LOCAL_INDEPENDENT_ENTITY(cn, keys, ef_keys);
+            entity_read_from_vargs(keys, ef_keys, valist);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), keys, NULL);
+            if (!iterator_is_tail(it)) {
+                entity_t* rm;
+                container_remove(CN_(cn)->eng, it, &rm);
+                entity_release(rm);
+            } else {
+                err = err_no_found;
+            }
+            
+        } else {
+            // 这里就是一个 set 
+        }
+        va_end(valist);
+        return err;
+    } else {
+        err = err_unsupported_method;
+    }
+    return err;
+}
+int CN_set(CN cn, ...)
+{
+
+}
+T* CN_get(CN cn, ...)
+{
+
 }
