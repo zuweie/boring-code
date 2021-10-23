@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-22 13:36:39
+ * @LastEditTime: 2021-10-22 16:55:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -114,7 +114,7 @@ CN CN_create(unsigned long build_code, ...)
         }
 
         if ((build_code & TREE_SET || build_code & HASH_SET) && ( build_code & use_entity) {
-            conflict_fix_func = (void*)&conflict_entity;
+            conflict_fix_func = (void*)&conflict_fix_entity;
             setup_func        = (void*)&setup_entity;
         }
         
