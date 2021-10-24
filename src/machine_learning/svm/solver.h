@@ -1,15 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-07-26 11:37:09
+ * @LastEditTime: 2021-10-24 09:40:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
  */
 
 
-#ifndef _SVM_SOLVER_H_
-#define _SVM_SOLVER_H_
+#ifndef __SVM_SOLVER_H__
+#define __SVM_SOLVER_H__
 #include "vtype/vfloat_type.h"
 #include "ultra_array/ultra_array.h"
 

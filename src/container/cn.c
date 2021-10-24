@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-24 09:14:48
+ * @LastEditTime: 2021-10-24 09:38:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -35,11 +35,12 @@ CN CN_create(unsigned long build_code, ...)
     va_list valist;
     var_start(valist, build_code);
 
+    cn_t* cn_ptr                = NULL;
+    entity_template_t* etpl_ptr = NULL;
+
     if (cn) {
         void* type_info      = NULL;
-        entity_template_t* etpl_ptr = NULL;
         container_t* eng_ptr = NULL;
-        cn_t* cn_ptr         = NULL;
 
         void* cmp_func = NULL;
         void* hash_func = NULL;
@@ -53,7 +54,7 @@ CN CN_create(unsigned long build_code, ...)
                 // 使用自定义的复合体
                 int filed_num = va_arg(valist, int);
                 if (filed_num > MAX_ENT_FIELD_NUM) {
-                    err = err_out_of_max_entity_field;
+                    err = err_out_of_max_ent_field;
                     goto BUILD_FAIL;
                 }
 

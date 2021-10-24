@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-06-22 14:54:00
- * @LastEditTime: 2021-07-21 15:13:31
+ * @LastEditTime: 2021-10-24 09:41:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_model.h
  */
 
-#ifndef _SVM_MODEL_H_
-#define _SVM_MODEL_H_
+#ifndef __SVM_MODEL_H__
+#define __SVM_MODEL_H__
 
 #include "solver.h"
 typedef struct _u_array u_array_t;
