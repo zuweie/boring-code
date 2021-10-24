@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:48
- * @LastEditTime: 2021-10-24 09:21:52
+ * @LastEditTime: 2021-10-24 15:54:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.h
@@ -11,7 +11,13 @@
 
 #include "imatrix.h"
 #include "container/cn.h"
-
+#if __LONG_FLOAT__
+#define vf_t db_t
+#define ef_vft(pe, i) ef_double(pe, i)
+#else
+#define vf_t fl_t
+#define ef_vft(pe, i) ef_float(pe, i)
+#endif
 typedef struct _coo_matrix {
     imatrix_t matrix;
     CN coo;

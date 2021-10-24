@@ -1,43 +1,41 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2021-10-24 09:43:25
+ * @LastEditTime: 2021-10-24 15:55:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
  */
 #include "imatrix.h"
-#include "CooMatrix.h"
+#include "container/entity.h"
 #include "container/cn.h"
+#include "base/type_value/__built_in_type.h"
+#include "CooMatrix.h"
 static inline 
-int COOMATRIX_Keyhasher(Tv v, size_t slot_t) 
+int COOMATRIX_Keyhasher(T* v, size_t slot_t) 
 {
-   Entity* entity = t2p(v);
-   size_t row = t2i(entity->tv[0]);
-   size_t col = t2i(entity->tv[1]);
+   entity_t* entity = v;
+   unsigned int row = ef_uint(entity, 0);
+   unsigned int col = ef_uint(entity, 1);
    size_t sum = row + col;
    sum = sum * (sum+1)/2 + row;
    return sum % slot_t;
 }
 
 static inline 
-vfloat_t get(imatrix_t* matrix_ptr, size_t x, size_t y) 
+vfloat_t get(imatrix_t* matrix_ptr, unsigned int x, unsigned int y) 
 {
     CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
-    Tv v;
-    if (Map_get2(&cooMatrix->coo, x, y, v) ==0)
-    {
-        return t2f(v);
-    }
-    return 0.0f;
-    
+
+    vfloat_t* v = CN_get(cooMatrix->coo, x, y);
+    return v ? *v : 0.f;
 }
 
 static inline 
-int set(imatrix_t* matrix_ptr, size_t x, size_t y, vfloat_t v) 
+int set(imatrix_t* matrix_ptr, unsigned int x, unsigned int y, vfloat_t v) 
 {
     CooMatrix* cooMatrix = (CooMatrix*) matrix_ptr;
-    Map_set2(&cooMatrix->coo, i2t(x), i2t(y), f2t(v));
+    CN_set(cooMatrix->coo, x, y, v);
     return 0;
 }
 
@@ -46,15 +44,13 @@ static
 int trans(imatrix_t* matrix_ptr) 
 {
     CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
-    Map new_coo = _Hashmap(COOMATRIX_Keyhasher);
-    
-    for(It first = CN_first(&cooMatrix->coo);!It_equal(first, CN_tail(&cooMatrix->coo));first=It_next(first)) {
-        Entity* pentity = Map_get_entity(&cooMatrix->coo, first);
-        Map_set2(&new_coo, pentity->tv[1], pentity->tv[0], pentity->tv[2]);
+    CN new_coo = CN_create(HASH_MAP|customized_entity, 3, 2, uint_t, uint_t, vf_t);
+    for(It first = CN_first(cooMatrix->coo);!It_equal(first, CN_tail(cooMatrix->coo)); It_next(first)) {
+        entity_t* ent = It_ptr(first);
+        CN_set(new_coo, ef_uint(ent, 1), ef_uint(ent, 0), ef_vft(ent, 2));
     }
     
-    // release the old coo
-    Hashmap_(&cooMatrix->coo);
+    CN_finalize(cooMatrix->coo, NULL);
     cooMatrix->coo = new_coo;
     size_t o_row = matrix_ptr->rows;
     matrix_ptr->rows = matrix_ptr->cols;
@@ -77,7 +73,7 @@ void get_col(imatrix_t* matrix_ptr, size_t col_index, vfloat_t data[])
 CooMatrix* CooMatrix_create(size_t rows, size_t cols) 
 {
     CooMatrix* matrix = malloc(sizeof(CooMatrix));
-    matrix->coo     = CN_create(HASH_MAP|);//_Hashmap(COOMATRIX_Keyhasher);
+    matrix->coo = CN_create(HASH_MAP|customized_entity|customized_hasher, 3, 2,  uint_t, uint_t, vf_t, &COOMATRIX_Keyhasher);
     initialize_matrix(matrix, get, set, trans, get_row, get_col, rows, cols);
     return matrix;
 }
@@ -99,7 +95,8 @@ CooMatrix* CooMatrix_load(size_t rows, size_t cols, vfloat_t* data)
 
 int CooMatrix_destroy(CooMatrix* matrix) 
 {
-    Hashmap_(&matrix->coo);
+    //Hashmap_(&matrix->coo);
+    CN_finalize(matrix->coo, NULL);
     free(matrix);
     return 0;
 }

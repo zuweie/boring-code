@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2021-10-22 16:21:59
+ * @LastEditTime: 2021-10-24 15:17:24
  * @LastEditors: Please set LastEditors
  */
 #ifndef __ITERATOR_H__
@@ -27,7 +27,7 @@
     _def->ty_adapter.bit_cpy(iter2.reference, tmp);         \
 })
 
-#define iterator_move(piter, step) ((piter)->container.move(piter, step))
+#define iterator_move(piter, step) ((piter)->container->move(piter, step))
 #define iterator_next(iter) iterator_move(&iter, 1)
 #define iterator_prev(iter) iterator_move(&iter, -1)
 

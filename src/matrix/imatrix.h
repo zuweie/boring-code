@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-20 11:04:24
- * @LastEditTime: 2021-10-24 09:23:56
+ * @LastEditTime: 2021-10-24 10:54:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/__matrix.h
@@ -14,11 +14,11 @@
 
 typedef struct _imatrix imatrix_t;
 struct _imatrix {
-    vfloat_t (*get)(imatrix_t*, size_t row, size_t col);
-    int   (*set)(imatrix_t*, size_t row, size_t col, vfloat_t);
+    vfloat_t (*get)(imatrix_t*, unsigned int row, unsigned int col);
+    int   (*set)(imatrix_t*, unsigned int row, unsigned int col, vfloat_t);
     int   (*trans)(imatrix_t*);
-    void  (*get_row)(imatrix_t*, size_t row_index, vfloat_t data[]);
-    void  (*get_col)(imatrix_t*, size_t col_index, vfloat_t data[]);
+    void  (*get_row)(imatrix_t*, unsigned int row_index, vfloat_t data[]);
+    void  (*get_col)(imatrix_t*, unsigned int col_index, vfloat_t data[]);
     imatrix_t*  (*product)(imatrix_t*, imatrix_t*, imatrix_t*);
     size_t cols;
     size_t rows;

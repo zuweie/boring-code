@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2021-10-23 23:02:19
+ * @LastEditTime: 2021-10-24 15:54:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -52,6 +52,21 @@
 #define ef_self ((unsigned long)1<<32)
 #define ef_keys ((unsigned long)1<<33)
 #define ef_values ((unsigned long)1<<34)
+
+#define ef_pT(pe, i) ((pe)->block[i])
+#define ef_char(pe, i) T_char(ef_pT(pe, i))
+#define ef_uchar(pe, i) T_uchar(ef_pT(pe, i))
+#define ef_short(pe, i) T_short(ef_pT(pe, i))
+#define ef_ushort(pe ,i) T_ushort(ef_pT(pe, i))
+#define ef_int(pe, i) T_int(ef_pT(pe, i))
+#define ef_uint(pe, i) T_uint(ef_pT(pe, i))
+#define ef_long(pe, i) T_long(ef_pT(pe, i))
+#define ef_ulong(pe, i) T_ulong(ef_pT(pe, i))
+#define ef_float(pe, i) T_float(ef_pT(pe, i))
+#define ef_double(pe, i) T_double(ef_pT(pe, i))
+#define ef_ptr(pe, i) T_prt(ef_pT(pe, i))
+#define ef_str(pe, i) T_str(ef_pT(pe, i))
+
 
 typedef struct __entity_template {
     int field_num;

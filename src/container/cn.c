@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-24 09:38:13
+ * @LastEditTime: 2021-10-24 12:13:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -12,6 +12,7 @@
 #include "base/__iterator.h"
 #include "base/type_value/__type_value_def.h"
 #include "entity.h"
+#include "it.h"
 #include "cn.h"
 
 #define CN_(i) ((cn_t*)__CONTAINERS[i])
@@ -24,6 +25,28 @@ static int __get_empty_slot ()
         if ( CN_(i) == NULL) return i;
     }
     return 0;
+}
+
+It CN_head(CN cn)
+{
+    iterator_t head = container_head(CN_(cn)->eng);
+    return It(head, cn);
+}
+It CN_tail(CN cn)
+{
+    iterator_t tail = container_tail(CN_(cn)->eng);
+    return It(tail, cn);
+}
+It CN_first(CN cn)
+{
+    iterator_t first = container_first(CN_(cn)->eng);
+    return It(first, cn);
+}
+
+It CN_last(CN cn)
+{
+    iterator_t last = container_last(CN_(cn)->eng);
+    return It(last, cn);
 }
 
 CN CN_create(unsigned long build_code, ...)

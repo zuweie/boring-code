@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2021-10-24 09:42:04
+ * @LastEditTime: 2021-10-24 15:07:11
  * @LastEditors: Please set LastEditors
  */
 #ifndef _GRAPH_H_
@@ -15,7 +15,7 @@
 typedef struct _vertex 
 {
     /* vertex id */
-    Tv vertex_id;
+    unsigned long vertex_id;
     /* bfs 与 dfs 算法的临时信息 */
     void* exploring;
     /* 定点索引 */

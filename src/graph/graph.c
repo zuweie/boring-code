@@ -2,11 +2,10 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2021-06-29 15:41:41
+ * @LastEditTime: 2021-10-24 15:16:04
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
-#include "container/HashMap.h"
 #include "graph.h"
 // static int _vertex_id_hasher (Tv v1, size_t slot_size) 
 // {
@@ -29,13 +28,13 @@
 
 // }
 
-static vertex_t* _create_vertex(Graph* graph, Tv vertex) 
+static vertex_t* __create_vertex(Graph* graph, unsigned long vertex) 
 {
     // 生成一个顶点
     vertex_t* v =(vertex_t*) malloc (sizeof (vertex_t) + graph->exploring_size);
     v->vertex_id = vertex;
     // 这个找
-    v->paths = _List(graph->match_path); 
+    v->paths = CN_create//_List(graph->match_path); 
       
     if (graph->exploring_size){
         v->exploring = &v[1];
