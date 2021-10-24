@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-03-22 15:04:11
- * @LastEditTime: 2021-04-09 09:30:31
+ * @LastEditTime: 2021-10-24 09:20:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/linear_regression.h
  */
 
-#ifndef _LINEAR_REGRESSION_H_
-#define _LINEAR_REGRESSION_H_
+#ifndef __LINEAR_REGRESSION_H__
+#define __LINEAR_REGRESSION_H__
 
 #include <stdlib.h>
 #include "vtype/vfloat_type.h"

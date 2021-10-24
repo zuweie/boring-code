@@ -2,11 +2,11 @@
  * @Description: 一个简单的内存池模型
  * @Author: zuweie
  * @Date: 2019-09-03 17:13:11
- * @LastEditTime: 2021-08-14 08:02:44
+ * @LastEditTime: 2021-10-24 09:24:19
  * @LastEditors: Please set LastEditors
  */
-#ifndef _MEM_POOL_H_
-#define _MEM_POOL_H_
+#ifndef __MEM_POOL_H__
+#define __MEM_POOL_H__
 
 #include <stdlib.h>
 

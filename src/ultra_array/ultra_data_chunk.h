@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-02-14 19:23:54
- * @LastEditTime: 2021-02-26 16:17:08
+ * @LastEditTime: 2021-10-24 09:24:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_data_chunk.h
  */
-#ifndef _ULTRA_DATA_CHUNK_H_
-#define _ULTRA_DATA_CHUNK_H_
+#ifndef __ULTRA_DATA_CHUNK_H__
+#define __ULTRA_DATA_CHUNK_H__
 
 #include <stdlib.h>
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:26
- * @LastEditTime: 2021-10-23 20:03:03
+ * @LastEditTime: 2021-10-23 23:01:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -207,12 +207,12 @@ int entity_get(entity_t* ent, unsigned long accessor, ...)
 
 }
 
-int entity_read_from_vargs(entity_t* ent, unsigned long accessor, va_list valist)
+int entity_read_from_vargs(entity_t* ent,  va_list valist, unsigned long accessor)
 {
 
 }
 
-int entity_write_to_vargs(entity_t* ent, unsigned long accessor, va_list valist)
+int entity_write_to_vargs(entity_t* ent,  va_list valist, unsigned long accessor)
 {
 
 }

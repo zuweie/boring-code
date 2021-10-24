@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-01-21 11:28:28
- * @LastEditTime: 2021-04-09 09:30:18
+ * @LastEditTime: 2021-10-24 09:18:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/mfcc/signal_process.h
  */
-#ifndef _SIGNAL_PROCESS_H_
-#define _SIGNAL_PROCESS_H_
+#ifndef __SIGNAL_PROCESS_H__
+#define __SIGNAL_PROCESS_H__
 #include "ultra_array/ultra_array.h"
 #include "vtype/vfloat_type.h"
 #define calculate_fft_n(fl) \

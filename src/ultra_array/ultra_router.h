@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-02-08 20:16:55
- * @LastEditTime: 2021-06-29 15:20:52
+ * @LastEditTime: 2021-10-24 09:25:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.h
  */
-#ifndef _ULTRA_ROUTER_
-#define _ULTRA_ROUTER_
+#ifndef __ULTRA_ROUTER_H__
+#define __ULTRA_ROUTER_H__
 #include <stdlib.h>
 typedef struct _u_array u_array_t;
 typedef struct _ua_indicator ua_indicator_t;

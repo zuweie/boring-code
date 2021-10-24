@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-01-14 08:46:38
- * @LastEditTime: 2021-04-09 09:26:49
+ * @LastEditTime: 2021-10-24 09:20:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/cosine_Transform/cosine_transform.h
  */
 
-#ifndef _COSINE_TRANSFORM_H_
-#define _COSINE_TRANSFORM_H_
+#ifndef __COSINE_TRANSFORM_H__
+#define __COSINE_TRANSFORM_H__
 #include "vtype/vfloat_type.h"
 
 typedef enum{dct_none = 0, dct_ortho =1} dct_norm_t;

@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:48
- * @LastEditTime: 2021-10-22 16:48:30
+ * @LastEditTime: 2021-10-24 09:21:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.h
  */
-#ifndef _COO_MATRIX_H_
-#define _COO_MATRIX_H_
+#ifndef __COO_MATRIX_H__
+#define __COO_MATRIX_H__
 
 #include "imatrix.h"
 #include "container/cn.h"

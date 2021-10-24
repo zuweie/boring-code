@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-23 22:48:49
+ * @LastEditTime: 2021-10-24 09:14:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -195,15 +195,14 @@ T_def* CN_type_def(CN cn)
 
 int CN_del(CN cn, ...)
 {
+    int err = err_ok;
     if (CN_(cn)->build_code & TREE_SET || CN_(cn)->build_code & HASH_SET) {
         va_list valist;
         va_start(valist, cn);
-        int err = err_ok;
         if (CN_(cn)->build_code & use_entity) {
             // 这里是一个map
-            CN_DEFINE_LOCAL_INDEPENDENT_ENTITY(cn, keys, ef_keys);
-            entity_read_from_vargs(keys, ef_keys, valist);
-            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), keys, NULL);
+            CN_READ_ENTITY_VARGS(cn, rm_keys, valist, ef_keys);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), rm_keys, NULL);
             if (!iterator_is_tail(it)) {
                 entity_t* rm;
                 container_remove(CN_(cn)->eng, it, &rm);
@@ -213,7 +212,13 @@ int CN_del(CN cn, ...)
             }
             
         } else {
-            // 这里就是一个 set 
+            CN_READ_SINGLE_VALUE_VARGS(cn, rm, valist);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), rm, NULL);
+            if (!iterator_is_tail(it)) {
+                container_remove(CN_(cn)->eng, it, NULL);
+            } else {
+                err = err_no_found;
+            }
         }
         va_end(valist);
         return err;
@@ -224,9 +229,51 @@ int CN_del(CN cn, ...)
 }
 int CN_set(CN cn, ...)
 {
+    int err = err_ok;
+    if (CN_(cn)->build_code & TREE_SET || CN_(cn)->build_code & HASH_SET ) {
+        va_list valist;
+        va_start(valist, cn);
 
+        if (CN_(cn)->build_code & use_entity) {
+            CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all);
+            container_insert(CN_(cn)->eng, __null_iterator(), ent);
+        }  else {
+            CN_READ_SINGLE_VALUE_VARGS(cn, tvalue, valist);
+            container_insert(CN_(cn)->eng, __null_iterator(), tvalue);
+        }
+        va_end(valist);
+    } else {
+        err = err_unsupported_method;
+    }
+
+    return err;
 }
 T* CN_get(CN cn, ...)
 {
+    int err = err_ok;
+    T* ret = NULL;
+    if (CN_(cn)->build_code & TREE_SET || CN_(cn)->build_code && HASH_SET) 
+    {
+        va_list valist;
+        va_start(valist, cn);
 
+        if (CN_(cn)->build_code & use_entity) {
+            CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), ent, NULL);
+            if (!iterator_is_tail(it)) {
+                entity_t* ent = it.reference;
+                return &ent->block[ent->tpl->value_idx];
+            }
+            
+        } else {
+            CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), tv, NULL);
+            if (!iterator_is_tail(it)) {
+                return it.reference;
+            }
+        }
+
+        va_end(valist);
+    } 
+    return NULL;
 }

@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-04-04 15:30:46
- * @LastEditTime: 2021-05-10 11:08:03
+ * @LastEditTime: 2021-10-24 09:21:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/logistic_regression.h
  */
 
-#ifndef _LOGISTIC_REGRESSION_H_
-#define _LOGISTIC_REGRESSION_H_
+#ifndef __LOGISTIC_REGRESSION_H__
+#define __LOGISTIC_REGRESSION_H__
 #include "vtype/vfloat_type.h"
 
 typedef struct _u_array u_array_t;

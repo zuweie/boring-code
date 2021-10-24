@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-07-14 07:24:28
+ * @LastEditTime: 2021-10-24 09:24:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
  */
-#ifndef _ULTRA_ARRAY_H_
-#define _ULTRA_ARRAY_H_
+#ifndef __ULTRA_ARRAY_H__
+#define __ULTRA_ARRAY_H__
 #include "ultra_padding.h"
 #include "vtype/vfloat_type.h"
 

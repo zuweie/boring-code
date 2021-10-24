@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-02-25 15:52:40
- * @LastEditTime: 2021-04-09 09:28:00
+ * @LastEditTime: 2021-10-24 09:25:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_padding.h
  */
 
-#ifndef _ULTRA_PADDING_H_
-#define _ULTRA_PADDING_H_
+#ifndef __ULTRA_PADDING_H__
+#define __ULTRA_PADDING_H__
 #include <stdlib.h>
 #include "vtype/vfloat_type.h"
 typedef struct _u_array u_array_t;

@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-01-24 21:32:45
- * @LastEditTime: 2021-04-09 09:29:30
+ * @LastEditTime: 2021-10-24 09:19:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/simple_wav.h
  */
-#ifndef _SIMPLE_WAV_H_
-#define _SIMPLE_WAV_H_
+#ifndef __SIMPLE_WAV_H__
+#define __SIMPLE_WAV_H__
 
 #include <stdint.h>
 #include "vtype/vfloat_type.h"

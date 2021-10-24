@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2020-12-07 08:50:00
- * @LastEditTime: 2021-06-29 15:31:04
+ * @LastEditTime: 2021-10-24 09:19:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MxQueue.h
  */
 
-#ifndef _MX_QUEUE_H_
-#define _MX_QUEUE_H_
+#ifndef __MX_QUEUE_H__
+#define __MX_QUEUE_H__
 #include <stdio.h>
 #include "Cn.h"
 #include "base/__vector.h"

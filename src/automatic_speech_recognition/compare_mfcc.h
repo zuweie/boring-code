@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-03-09 15:46:55
- * @LastEditTime: 2021-03-11 13:15:32
+ * @LastEditTime: 2021-10-24 09:18:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/automatic_speech_recognition/compare_mfcc.h
  */
-#ifndef _COMPARE_MFCC_H_
-#define _COMPARE_MFCC_H_
+#ifndef __COMPARE_MFCC_H__
+#define __COMPARE_MFCC_H__
 
 typedef struct _u_array u_array_t;
 

@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-04-14 14:20:36
+ * @LastEditTime: 2021-10-24 09:22:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
  */
-#ifndef _MATRIX_H_
-#define _MATRIX_H_
+#ifndef __MATRIX_H__
+#define __MATRIX_H__
 #include <stdlib.h>
 #include "vtype/vfloat_type.h"
 

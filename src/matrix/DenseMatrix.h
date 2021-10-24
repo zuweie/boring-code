@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2020-10-23 13:29:43
- * @LastEditTime: 2021-04-08 14:24:00
+ * @LastEditTime: 2021-10-24 09:22:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/DenseMatrix.h
  */
-#ifndef _DENSE_MATRIX_H_
-#define _DENSE_MATRIX_H_
+#ifndef __DENSE_MATRIX_H__
+#define __DENSE_MATRIX_H__
 #include "imatrix.h"
 
 typedef struct _dense_matrix {
