@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2021-10-24 22:51:21
+ * @LastEditTime: 2021-10-24 23:58:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -88,7 +88,7 @@ entity_t* entity_cpy(entity_t* src);
 void entity_format_data_block(entity_t*, unsigned long);
 void entity_format_independent_entity_body(T*, entity_template_t*, unsigned long);
 int entity_tpl_cal_independent_entity_body_size(entity_template_t*, unsigned long);
-void entity_cpy_block(entity_t*, entity_t*, unsigned long);
+void entity_cpy_block_data(entity_t*, entity_t*, unsigned long);
 
 int entity_read_from_vargs(entity_t*,  va_list, unsigned long);
 int entity_write_to_vargs(entity_t*, va_list, unsigned long);

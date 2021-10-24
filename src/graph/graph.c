@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2021-10-24 21:36:37
+ * @LastEditTime: 2021-10-25 00:11:23
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -120,13 +120,14 @@ int Graph_add_path(vertex_t* from, vertex_t* to, float weight)
 }
 
 int Graph_del_vertex(vertex_t* vertex)
-{   
-    
+{
+    path_t* path;
     // free the edge of the vertex
-    while (CN_rm_last(&vertex->paths, &rnode) != -1){
-        free(t2p(rnode));
+    while (CN_remove(vertex->paths, &path) == err_ok){
+        free(path);
     }
-    List_(&vertex->paths, NULL);
+    //List_(&vertex->paths, NULL);
+    CN_finalize(vertex->paths, NULL);
     free(vertex);
     return 0;
 }

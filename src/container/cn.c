@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-24 22:39:18
+ * @LastEditTime: 2021-10-25 00:08:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -239,10 +239,10 @@ int CN_remove(CN cn, T* rdata)
         if (CN_(cn)->build_code & use_entity) {
             entity_t* ent;
             container_remove(CN_(cn)->eng, container_tail(CN_(cn)->eng), &ent);
-            if (rdata) entity_cpy_block
+            if (rdata) entity_cpy_block_data(rdata, ent, ef_all);
             entity_release(ent);
         } else {
-
+            container_remove(CN_(cn)->eng, container_tail(CN_(cn)->eng), rdata);
         }
     } else {
         err = err_empty;

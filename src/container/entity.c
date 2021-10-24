@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:26
- * @LastEditTime: 2021-10-24 22:51:20
+ * @LastEditTime: 2021-10-25 00:08:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -15,9 +15,21 @@
 // 单纯计算 block 中 data 的 size 的大小。
 static int __entity_tpl_cal_block_data_size(entity_template_t* etpl, unsigned long accessor)
 { 
-    int cal_field_num = (accessor & ef_keys) ? etpl->value_idx : etpl->field_num;
+    //int cal_field_num = (accessor & ef_keys) ? etpl->value_idx : (accessor & ef_values) ? (etpl->field_num  - etpl->value_idx) : etpl->field_num;
+    int cal_field_num;
+    int cal_field_start;
+    if (accessor & ef_keys) {
+        cal_field_num = etpl->value_idx;
+        cal_field_start = 0;
+    } else if (accessor & ef_values) {
+        cal_field_num = etpl->field_num - etpl->value_idx;
+        cal_field_start = etpl->value_idx;
+    } else {
+        cal_field_num = etpl->field_num;
+        cal_field_start = 0;
+    }
     int data_block_size = 0;
-    for (int i=0; i<cal_field_num; ++i) { 
+    for (int i = cal_field_start; i<cal_field_num; ++i) { 
         T_def *_def = T_def_get(etpl->field_types[i]); 
         data_block_size += ROUND_UP_4(_def->ty_size); 
     } 
@@ -27,7 +39,7 @@ static int __entity_tpl_cal_block_data_size(entity_template_t* etpl, unsigned lo
 // 计算整个 block 的 size 的大小。
 static int __entity_tpl_cal_block_size(entity_template_t* etpl, unsigned long accessor) 
 { 
-    int cal_field_num = (accessor & ef_keys) ? etpl->value_idx : etpl->field_num;
+    int cal_field_num = (accessor & ef_keys) ? etpl->value_idx : (accessor & ef_values) ? etpl->field_num - etpl->value_idx : etpl->field_num;
     int block_size = sizeof(T*) * cal_field_num;
     block_size += __entity_tpl_cal_block_data_size(etpl, accessor);
     return block_size; 
@@ -113,11 +125,7 @@ int conflict_fix_entity(T* t1, T* t2)
 {
     entity_t* dest = t1;
     entity_t* src  = t2;
-    T_def* _def;
-    for (int i=dest->tpl->value_idx; i<dest->tpl->field_num; ++i) {
-        _def = T_def_get(dest->tpl->field_types[i]);
-        _def->ty_adapter.bit_cpy(dest->block[i], src->block[i]);
-    }
+    entity_cpy_block_data(t1, t2, ef_values);
 }
 
 int setup_entity(T* t1, T* t2)
@@ -148,15 +156,14 @@ entity_t* entity_create(entity_template_t* etpl)
 entity_t* entity_cpy(entity_t* src)
 {
     entity_t* cpy = entity_create(src->tpl);
-    int data_block_size = __entity_tpl_cal_block_data_size(src->tpl, ef_all);
-    memcpy(cpy->block[0], src->block[0], data_block_size);
+    entity_cpy_block_data(cpy, src, ef_all);
     return cpy;
 }
-void entity_cpy_block(entity_t* dest, entity_t* src, unsigned long accessor) 
+void entity_cpy_block_data(entity_t* dest, entity_t* src, unsigned long accessor) 
 {
     int data_block_size = __entity_tpl_cal_block_data_size(dest->tpl, accessor);
-    int block_start_cpy = accessor & ef_keys ? 0 : 
-    memcpy(dest->block[0], src->block[0], data_block_size);
+    int block_cpy_idx = (accessor & ef_keys) ? 0 : (accessor & ef_values) ? dest->tpl->value_idx : 0;
+    memcpy(dest->block[block_cpy_idx], src->block[block_cpy_idx], data_block_size);
 }
 
 void entity_format_data_block(entity_t* ent, unsigned long accessor)
@@ -244,5 +251,6 @@ int entity_get_value(entity_t* ent, ...)
 
 int entity_release(entity_t* ent)
 {
-
+    free(ent);
+    return 0;
 }
