@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2021-10-24 15:16:04
+ * @LastEditTime: 2021-10-24 21:36:37
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -34,8 +34,7 @@ static vertex_t* __create_vertex(Graph* graph, unsigned long vertex)
     vertex_t* v =(vertex_t*) malloc (sizeof (vertex_t) + graph->exploring_size);
     v->vertex_id = vertex;
     // 这个找
-    v->paths = CN_create//_List(graph->match_path); 
-      
+    v->paths = CN_create(LIST|customized_compare, ptr_t, graph->match_path);
     if (graph->exploring_size){
         v->exploring = &v[1];
     } else {
@@ -44,7 +43,7 @@ static vertex_t* __create_vertex(Graph* graph, unsigned long vertex)
     return v;
 }
 
-static path_t* _create_path(vertex_t* to, float weight) 
+static path_t* __create_path(vertex_t* to, float weight) 
 {
     // 生成邻接表的节点
     path_t* node = (path_t*) malloc (sizeof(path_t)); 
@@ -53,11 +52,11 @@ static path_t* _create_path(vertex_t* to, float weight)
     return node;
 }
 
-Graph* Graph_create(int(*match_vertex)(Tv, Tv), int(*match_path)(Tv, Tv), size_t exploring_size) 
+Graph* Graph_create(int(*match_vertex)(T*, T*), int(*match_path)(T*, T*), size_t exploring_size) 
 {
     // 初始化图
     Graph* graph = (Graph*) malloc (sizeof(Graph));
-    graph->vertexes = _List(match_vertex);
+    graph->vertexes = CN_create(LIST|customized_compare, ptr_t, match_vertex);
     graph->match_path   = match_path;
     graph->match_vertex = match_vertex;
     graph->exploring_size = exploring_size;
@@ -74,7 +73,7 @@ Graph* Graph_create_reverse(Graph* graph)
     new_graph->exploring_size = graph->exploring_size;
     
     // 注入复制定点
-    for (It first = CN_first(&graph->vertexes); !It_equal(first, CN_tail(&graph->vertexes)); first = It_next(first)){
+    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)){
         vertex_t* v = It_getptr(first);
         Graph_add_vertex(new_graph, v->vertex_id);
     }
@@ -93,11 +92,12 @@ int Graph_destroy(Graph* graph)
     // 把顶点删了。
     for (It first = CN_first(&graph->vertexes); 
         !It_equal(first, CN_tail(&graph->vertexes)); 
-        first = It_next(first)) {
-            vertex_t* pv = It_getptr(first);
+        It_next(first)) {
+            vertex_t* pv = It_ptr(first);
             Graph_del_vertex(pv);
     }
-    List_(&graph->vertexes, NULL);
+    //List_(&graph->vertexes, NULL);
+    CN_finalize(graph->vertexes, NULL);
     graph->match_path   = NULL;
     graph->match_vertex = NULL;
     
@@ -105,22 +105,23 @@ int Graph_destroy(Graph* graph)
     return 0;
 }
 
-int Graph_add_vertex(Graph* graph, Tv vertex) 
+int Graph_add_vertex(Graph* graph, unsigned long vertex) 
 {
-    vertex_t* v = _create_vertex(graph, vertex);
-    return CN_add_tail(&graph->vertexes, p2t(v));
+    vertex_t* v = __create_vertex(graph, vertex);
+    //return //CN_add_tail(&graph->vertexes, p2t(v));
+    return CN_add(graph->vertexes, v);
 }
 
 int Graph_add_path(vertex_t* from, vertex_t* to, float weight)
 {
     // 首先得找一下 开始点 到 终结点 是不是在图中。
-    path_t *p = _create_path(to, weight);
-    return CN_add_tail(&from->paths, p2t(p));
+    path_t *p = __create_path(to, weight);
+    return CN_add(from->paths, p);
 }
 
 int Graph_del_vertex(vertex_t* vertex)
-{
-    Tv rnode;
+{   
+    
     // free the edge of the vertex
     while (CN_rm_last(&vertex->paths, &rnode) != -1){
         free(t2p(rnode));

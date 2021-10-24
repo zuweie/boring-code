@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-24 12:13:39
+ * @LastEditTime: 2021-10-24 22:39:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -216,7 +216,41 @@ T_def* CN_type_def(CN cn)
         return NULL;
     }
 }
+// sequence function
+int CN_add(CN cn, ...) 
+{
+    int err = err_ok;
+    va_list valist;
+    va_start(valist, cn);
+    if (CN_(cn)->build_code & use_entity) {
+        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all);
+        container_insert(CN_(cn)->eng, container_tail(CN_(cn)->eng), ent);
+    } else {
+        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
+        container_insert(CN_(cn)->eng, container_tail(CN_(cn)->eng), tv);
+    }
+    va_end(valist);
+    return err;
+}
+int CN_remove(CN cn, T* rdata)
+{
+    int err = err_ok;
+    if (CN_size(cn) != 0) {
+        if (CN_(cn)->build_code & use_entity) {
+            entity_t* ent;
+            container_remove(CN_(cn)->eng, container_tail(CN_(cn)->eng), &ent);
+            if (rdata) entity_cpy_block
+            entity_release(ent);
+        } else {
 
+        }
+    } else {
+        err = err_empty;
+    }
+    return err;
+}
+
+// mapping function
 int CN_del(CN cn, ...)
 {
     int err = err_ok;

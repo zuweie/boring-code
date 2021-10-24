@@ -1,13 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-24 09:27:27
+ * @LastEditTime: 2021-10-24 22:07:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
  */
 #ifndef __CN_H__
 #define __CN_H__
+#include "base/type_value/__built_in_type.h"
 #include "base/__container.h"
 #include "it.h"
 #include "ty.h"
@@ -89,7 +90,7 @@ It CN_last(CN cn);
 int CN_reverse(CN cn);
 
 int CN_add(CN, ...);
-int CN_remove(CN, It, T*);
+int CN_remove(CN, T* rdata);
 It CN_find(CN, T*, int (*cmp)(T*, T*));
 
 int CN_del(CN, ...);

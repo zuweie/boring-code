@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-22 16:22:25
+ * @LastEditTime: 2021-10-24 19:19:33
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -25,7 +25,7 @@
 // 容器的 head
 #define container_head(container_ptr) ({iterator_t first=container_first(container_ptr); iterator_move(&first, -1); first;})
 // 容器的 tail
-#define container_tail(container_ptr) ({iterator_t last=container_last(container_ptr); iterator_move(&last, 1); last})
+#define container_tail(container_ptr) ({iterator_t last=container_last(container_ptr); iterator_move(&last, 1); last;})
 
 // 容器搜索
 #define container_search(container_ptr, offset, find, compare) \
