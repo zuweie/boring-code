@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-24 22:07:25
+ * @LastEditTime: 2021-10-25 15:13:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -66,7 +66,8 @@ enum {
     err_unsupported_eng = -12,
     err_out_of_max_ent_field = -13,
     err_invalid_ent_keys_number = -14,
-    err_unsupported_method = -15
+    err_unsupported_method = -15,
+    err_invalid_pos = -16
 };
 
 typedef int CN;
@@ -90,7 +91,8 @@ It CN_last(CN cn);
 int CN_reverse(CN cn);
 
 int CN_add(CN, ...);
-int CN_remove(CN, T* rdata);
+int CN_remove(CN, T*);
+int CN_remove_at(CN, It, T*);
 It CN_find(CN, T*, int (*cmp)(T*, T*));
 
 int CN_del(CN, ...);

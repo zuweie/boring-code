@@ -1,20 +1,20 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:16
- * @LastEditTime: 2020-12-14 07:34:09
+ * @LastEditTime: 2021-10-25 15:50:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.h
  */
-#ifndef _UD_GRAPH_H_
-#define _UD_GRAPH_H_
+#ifndef __UD_GRAPH_H__
+#define __UD_GRAPH_H__
 
-#include "container/Tv.h"
-#include "container/List.h"
+#include "container/ty.h"
+#include "container/cn.h"
 
 typedef struct uvertex {
 
-    Tv id;
+    unsigned long id;
     void* exploring;
     size_t index;
 } uvertex_t;
@@ -27,19 +27,19 @@ typedef struct _uedge {
 
 typedef struct _udgraph {
 
-    List uvertexs;
-    List uedges;
-    size_t exploring_size;
+    CN uvertexs;
+    CN uedges;
+    int exploring_size;
 } UDGraph;
 
-UDGraph* UDGraph_create(int (*)(Tv, Tv), int(*)(Tv, Tv), size_t);
+UDGraph* UDGraph_create(int (*)(T*, T*), int(*)(T*, T*), size_t);
 int UDGraph_destroy(UDGraph*);
 
-int UDGraph_add_vertex(UDGraph*, Tv);
-int UDGraph_add_edge(UDGraph*, Tv, Tv, float);
+int UDGraph_add_vertex(UDGraph*, unsigned long);
+int UDGraph_add_edge(UDGraph*, unsigned long, unsigned long,  float);
 
-int UDGraph_del_vertex(UDGraph*, Tv, int(*)(Tv, Tv));
-int UDGraph_del_edge(UDGraph*, Tv, Tv);
+int UDGraph_del_vertex(UDGraph*, unsigned long);
+int UDGraph_del_edge(UDGraph*, unsigned long, unsigned long);
 
 void UDGraph_indexing_vertex(UDGraph*);
 #endif

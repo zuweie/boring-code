@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-25 00:08:54
+ * @LastEditTime: 2021-10-25 15:13:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -27,6 +27,48 @@ static int __get_empty_slot ()
     return 0;
 }
 
+static int __cn_remove_at(CN cn, It it, T* rdata) 
+{
+    int err = err_ok;
+    if (CN_size(cn) != 0) {
+        if (It_is_tail(it)) 
+            return err_invalid_pos;
+        if (CN_(cn)->build_code & use_entity) {
+            entity_t* ent;
+            container_remove(CN_(cn)->eng, it._iter, &ent);
+            if (rdata) entity_cpy_block_data(rdata, ent, ef_all);
+            entity_release(ent);
+        } else {
+            container_remove(CN_(cn)->eng, it._iter, rdata);
+        }
+    } else {
+        err = err_empty;
+    }
+    return err;
+}
+static int __cn_add_at(CN cn, It it, va_list valist)
+{
+    if (It_is_head(it)) 
+        return err_invalid_pos;
+
+    int err = err_ok;
+
+    if (CN_(cn)->build_code & use_entity) {
+        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all);
+        container_insert(CN_(cn)->eng, it._iter, ent);
+    } else {
+        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
+        container_insert(CN_(cn)->eng, it._iter, tv);
+    }
+    return err;
+}
+static It __cn_find_at(CN cn, It at, T* find, int (*cmp)(T*, T*)) 
+{
+    iterator_t it = container_search(CN_(cn)->eng, at._iter, find, cmp);
+    return It(it, cn);
+}
+
+// public function :
 It CN_head(CN cn)
 {
     iterator_t head = container_head(CN_(cn)->eng);
@@ -219,37 +261,30 @@ T_def* CN_type_def(CN cn)
 // sequence function
 int CN_add(CN cn, ...) 
 {
-    int err = err_ok;
     va_list valist;
     va_start(valist, cn);
-    if (CN_(cn)->build_code & use_entity) {
-        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all);
-        container_insert(CN_(cn)->eng, container_tail(CN_(cn)->eng), ent);
-    } else {
-        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
-        container_insert(CN_(cn)->eng, container_tail(CN_(cn)->eng), tv);
-    }
+    int err = __cn_add_at(cn, CN_tail(cn), valist);
     va_end(valist);
     return err;
 }
 int CN_remove(CN cn, T* rdata)
 {
-    int err = err_ok;
-    if (CN_size(cn) != 0) {
-        if (CN_(cn)->build_code & use_entity) {
-            entity_t* ent;
-            container_remove(CN_(cn)->eng, container_tail(CN_(cn)->eng), &ent);
-            if (rdata) entity_cpy_block_data(rdata, ent, ef_all);
-            entity_release(ent);
-        } else {
-            container_remove(CN_(cn)->eng, container_tail(CN_(cn)->eng), rdata);
-        }
-    } else {
-        err = err_empty;
-    }
-    return err;
+    return __cn_remove_at(cn, CN_last(cn), rdata);
 }
 
+int CN_remove_at(CN cn, It it, T* rdata) 
+{
+    return __cn_remove_at(cn, it, rdata);
+}
+
+It CN_find(CN cn, T* find, int (*cmp)(T*, T*)) 
+{
+    return __cn_find_at(cn, CN_first(cn), find, cmp);
+}
+It CN_find_at(CN cn, It pos, T* find, int(*cmp)(T*, T*)) 
+{
+    return __cn_find_at(cn, pos, find, cmp);
+}
 // mapping function
 int CN_del(CN cn, ...)
 {
@@ -260,7 +295,7 @@ int CN_del(CN cn, ...)
         if (CN_(cn)->build_code & use_entity) {
             // 这里是一个map
             CN_READ_ENTITY_VARGS(cn, rm_keys, valist, ef_keys);
-            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), rm_keys, NULL);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator, rm_keys, NULL);
             if (!iterator_is_tail(it)) {
                 entity_t* rm;
                 container_remove(CN_(cn)->eng, it, &rm);
@@ -271,7 +306,7 @@ int CN_del(CN cn, ...)
             
         } else {
             CN_READ_SINGLE_VALUE_VARGS(cn, rm, valist);
-            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), rm, NULL);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator, rm, NULL);
             if (!iterator_is_tail(it)) {
                 container_remove(CN_(cn)->eng, it, NULL);
             } else {
@@ -294,10 +329,10 @@ int CN_set(CN cn, ...)
 
         if (CN_(cn)->build_code & use_entity) {
             CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all);
-            container_insert(CN_(cn)->eng, __null_iterator(), ent);
+            container_insert(CN_(cn)->eng, __null_iterator, ent);
         }  else {
             CN_READ_SINGLE_VALUE_VARGS(cn, tvalue, valist);
-            container_insert(CN_(cn)->eng, __null_iterator(), tvalue);
+            container_insert(CN_(cn)->eng, __null_iterator, tvalue);
         }
         va_end(valist);
     } else {
@@ -317,7 +352,7 @@ T* CN_get(CN cn, ...)
 
         if (CN_(cn)->build_code & use_entity) {
             CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys);
-            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), ent, NULL);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator, ent, NULL);
             if (!iterator_is_tail(it)) {
                 entity_t* ent = it.reference;
                 return &ent->block[ent->tpl->value_idx];
@@ -325,7 +360,7 @@ T* CN_get(CN cn, ...)
             
         } else {
             CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
-            iterator_t it = container_search(CN_(cn)->eng, __null_iterator(), tv, NULL);
+            iterator_t it = container_search(CN_(cn)->eng, __null_iterator, tv, NULL);
             if (!iterator_is_tail(it)) {
                 return it.reference;
             }

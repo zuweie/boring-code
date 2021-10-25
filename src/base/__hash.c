@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-10-21 11:36:35
+ * @LastEditTime: 2021-10-25 14:45:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -13,19 +13,19 @@
 
 static hash_inner_list_node_t* __get_slot_node_by_key(hash_t* hash, type_value_t* key) 
 {
-    int hash_index = container->type_def.ty_hasher(key, hash->_slot_size); 
+    int hash_index = hash->container.type_def.ty_hasher(key, hash->_slot_size); 
     return hash->_slot[hash_index];
 }
 
 static hash_inner_list_node_t* __search_in_inner_list(hash_t* hash, hash_inner_list_node_t* from, type_value_t* find) 
 {
-    int hash_index = container->type_def.ty_hasher(find, hash->_slot_size); 
+    int hash_index = hash->container.type_def.ty_hasher(find, hash->_slot_size); 
     hash_inner_list_node_t* tail  = hash_table_tail(hash);
     
     for(;from != tail;from = from->next) {        
         if (hash->container.type_def.ty_cmp(from->w, find)== 0) {
             return from;
-        }else if (first->slot_index != hash_index) {
+        }else if (from->slot_index != hash_index) {
             return tail;
         }
     }    
@@ -47,7 +47,7 @@ static int __hash_move(iterator_t* iter, int step)
 {
     hash_t* hash = iter->container;
     hash_inner_list_node_t* node = container_of(iter->reference, hash_inner_list_node_t, w)
-    for (int next = step ; next; next = step > 0? next - 1: next + 1) {
+    for (int next = step ; next; next = step > 0? next - 1 : next + 1) {
         if (step > 0) node = node->next;
         else if (step < 0) node = node->prev;
     }
@@ -61,7 +61,7 @@ static iterator_t __hash_search (container_t* container, iterator_t offset, type
     
     if (iterator_is_null(offset)) {
         hash_inner_list_node_t* slot_from = __get_slot_node_by_key(container, find);
-        target = (solt_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, find);
+        target = (slot_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, find);
     } else {
         hash_inner_list_node_t* from = container_of(offset.reference, hash_inner_list_node_t, w);
         target =  __search_in_inner_list(container, from, find);

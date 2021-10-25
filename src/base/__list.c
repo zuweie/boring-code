@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-10-22 13:20:17
+ * @LastEditTime: 2021-10-25 10:24:51
  * @LastEditors: Please set LastEditors
  */
 
@@ -52,7 +52,10 @@ static iterator_t __list_search (container_t* container, iterator_t offset, type
     iterator_t tail  = container_tail(container);
 
     for(;!iterator_equal(first, tail); iterator_next(first)) {
-        if (compare(iterator_reference(first), find) == 0) return first;
+        if ( (compare && compare(iterator_reference(first), find) == 0) 
+            || container->type_def.ty_cmp(iterator_reference(first), find) == 0) {
+            return first;
+        } 
     }
     // 返回边界的指针
     return first;

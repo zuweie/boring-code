@@ -2,11 +2,11 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2021-06-29 15:00:41
+ * @LastEditTime: 2021-10-25 12:50:28
  * @LastEditors: Please set LastEditors
  */
-#ifndef _GRAPH_SEARCH_H_
-#define _GRAPH_SEARCH_H_
+#ifndef __GRAPH_SEARCH_H__
+#define __GRAPH_SEARCH_H__
 #include "graph.h"
 #include "ud_graph.h"
 #include "container/List.h"
