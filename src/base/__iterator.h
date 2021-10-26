@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2021-10-25 14:34:25
+ * @LastEditTime: 2021-10-26 13:01:24
  * @LastEditors: Please set LastEditors
  */
 #ifndef __ITERATOR_H__
@@ -14,22 +14,23 @@
 
 #define iterator_assign(iter1, iter2) \
 ({ \
-    iter1.container->type_def.ty_adapter.bit_cpy(iter1.refer, iter2.refer);\
-})
+    iterator_t t1 = (iter1); \
+    iterator_t t2 = (iter2); \
+    int ty_size = t1.container->type_def.ty_size; \
+    type_value_cpy(t1.reference, t2.reference, ty_size); \
+}) 
 
-#define iterator_exchange(itert1, itert2) \
+#define iterator_exchange(iter1, iter2) \
 ({ \
-    container_t* cn = iter1.container; \
-    T_def* _def     = &cn->type_def;   \
-    type_value_t tmp[_def->ty_size];   \
-    _def->ty_adapter.bit_cpy(tmp, iter1.reference);         \
-    _def->ty_adapter.bit_cpy(iter1.refer, iter2.reference); \
-    _def->ty_adapter.bit_cpy(iter2.reference, tmp);         \
+    iterator_t t1 = (iter1); \
+    iterator_t t2 = (iter2); \
+    int ty_size = t1.container->type_def.ty_size; \
+    type_value_swap(t1.reference, t2.reference, ty_size); \
 })
 
 #define iterator_move(piter, step) ((piter)->container->move(piter, step))
-#define iterator_next(iter) iterator_move(&iter, 1)
-#define iterator_prev(iter) iterator_move(&iter, -1)
+#define iterator_next(iter) ({iterator_move(&iter, 1); iter;})
+#define iterator_prev(iter) ({iterator_move(&iter, -1); iter;})
 
 #define iterator_equal(iter1, iter2) ((iter1).reference == (iter2).reference)
 

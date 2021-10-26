@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2021-10-25 10:27:00
+ * @LastEditTime: 2021-10-26 13:22:05
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -94,7 +94,8 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
         iterator_assign(last_next, last);
     }
     // 插入
-    container->type_def.ty_adapter.bit_cpy(it.refer, data);
+    //container->type_def.ty_adapter.bit_cpy(it.refer, data);
+    type_value_cpy(it.reference, data);
     vec->_size++;
     return 0;
 }
@@ -102,7 +103,8 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
 static int __vector_remove (container_t* container, iterator_t it, void* rdata) 
 {
     vector_t *vec = container;
-    if (rdata) container->type_def.ty_adapter.bit_cpy(rdata, it.refer);
+    //if (rdata) container->type_def.ty_adapter.bit_cpy(rdata, it.refer);
+    if (rdata)
     iterator_t it_next = it;
     iterator_next(it_next);      
     // 擦除

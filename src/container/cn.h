@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-25 23:53:56
+ * @LastEditTime: 2021-10-26 15:53:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -56,6 +56,7 @@ enum {
     MULTI_HASH_MAP = HASH_SET | use_entity | multi_key,
 };
 
+
 // error code
 enum {
     err_ok = 0,
@@ -89,6 +90,11 @@ It CN_first(CN cn);
 It CN_last(CN cn);
   
 int CN_reverse(CN cn);
+int CN_mx_extract(CN, T*, int (*cmp)(T*, T*));
+int CN_sort(CN, int (*cmp)(T*, T*));
+int CN_size(CN);
+int CN_has(CN, ...);
+int CN_to_unique(CN);
 
 int CN_add(CN, ...);
 int CN_add_at(CN, It, ...);
@@ -105,5 +111,6 @@ T* CN_get(CN, ...);
 
 void* CN_type_info(CN);
 T_def* CN_type_def(CN);
+
 
 #endif

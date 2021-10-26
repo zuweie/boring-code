@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-26 00:05:27
+ * @LastEditTime: 2021-10-26 15:53:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -11,13 +11,19 @@
 #include "base/__container.h"
 #include "base/__iterator.h"
 #include "base/type_value/__type_value_def.h"
+#include "base/operate/__heap_sort.h"
+#include "base/operate/__quick_sort.h"
+#include "base/operate/__wring.h"
 #include "entity.h"
 #include "it.h"
 #include "cn.h"
 
 #define CN_(i) ((cn_t*)__CONTAINERS[i])
 #define SET_(i, ptr) (__CONTAINERS[i] = ptr)
+// private data
 static char* __CONTAINERS[CAPACITY_NUMBER] = {NULL};
+
+// private function
 
 static int __get_empty_slot ()
 {
@@ -80,25 +86,26 @@ static It __cn_find_at(CN cn, It at, va_list valist)
 // public function :
 It CN_head(CN cn)
 {
-    iterator_t head = container_head(CN_(cn)->eng);
+    iterator_t head = CN_(cn)->is_forward ? container_head(CN_(cn)->eng) : container_tail(CN_(cn)->eng);
     return It(head, cn);
 }
 It CN_tail(CN cn)
 {
-    iterator_t tail = container_tail(CN_(cn)->eng);
+    iterator_t tail = CN_(cn)->is_forward ? container_tail(CN_(cn)->eng) : container_head(CN_(cn)->eng);
     return It(tail, cn);
 }
 It CN_first(CN cn)
 {
-    iterator_t first = container_first(CN_(cn)->eng);
+    iterator_t first = CN_(cn)->is_forward ? container_first(CN_(cn)->eng) : container_last(CN_(cn)->eng);
     return It(first, cn);
 }
 
 It CN_last(CN cn)
 {
-    iterator_t last = container_last(CN_(cn)->eng);
+    iterator_t last = CN_(cn)->is_forward ? container_last(CN_(cn)->eng) : container_first(CN_(cn)->eng);
     return It(last, cn);
 }
+
 
 CN CN_create(unsigned long build_code, ...)
 {
@@ -302,6 +309,71 @@ It CN_find_at(CN cn, It pos, ...)
     It it = __cn_find_at(cn, pos, valist);
     va_end(valist);
     return it;
+}
+
+int CN_reverse(CN cn)
+{
+    CN_(cn)->is_forward = ! CN_(cn)->is_forward;
+    return CN_(cn)->is_forward;
+}
+
+// 抽最大 或者 最小, 如果 cmp 为空，则使用默认的 cmp。
+int CN_mx_extract(CN cn, T* rdata, int (*cmp)(T*, T*))
+{
+    int err = err_ok; 
+    if (CN_size(cn) > 0) { 
+        cmp = cmp ? cmp : CN_(cn)->eng->type_def.ty_cmp;
+        heap_build_max_heap(CN_(cn)->eng, cmp); 
+        It first = CN_first(cn);
+        It last  = CN_last(cn);
+        It_exchange(first, last); 
+        err = CN_remove_at(cn, CN_last(cn), rdata); 
+    } else { 
+        err = err_empty; 
+    } 
+    return err;
+}
+
+int CN_sort(CN cn, int (*cmp)(T*, T*))
+{
+    int err = err_ok;
+    cmp = cmp ? CN_(cn)->eng->type_def.ty_cmp;
+    if (CN_(cn)->build_code & LIST){
+        quick_sort(container_first(CN_(cn)->eng), container_last(CN_(cn)->eng), cmp);
+    } else if (CN_(cn)->build_code & VECTOR) {
+        heap_sort(CN_(cn)->eng, cmp);
+    } else {
+        err = err_unsupported_method;
+    }
+    return err
+}
+
+int CN_size(CN cn) 
+{
+    return container_size(CN_(cn)->eng);
+}
+
+int CN_has(CN cn, ...)
+{
+    va_list valist;
+    va_start(valist, cn);
+    It it = __cn_find_at(cn, CN_first(cn), valist);
+    va_end(valist);
+    return !It_is_tail(it);
+}
+
+int CN_to_unique(CN cn)
+{
+    int err;
+    int (*cmp)(T*, T*) = 0 ? 0 : CN_(cn)->eng->type_def.cmp;
+    err = CN_sort(cn, cmp);
+    if (err == err_ok) {
+        if (CN_(cn)->build_code & use_entity)
+            wring(CN_(cn)->eng, cmp, entity_release);
+        else 
+            wring(CN_(cn)->eng, cmp, NULL);
+    }
+    return err;
 }
 
 // mapping function

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-10-23 18:16:23
+ * @LastEditTime: 2021-10-26 12:40:08
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -259,7 +259,8 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t* t) {
         prb->setup(pnode->w, t);
     } else {
         //pnode->node = t;
-        prb->container.type_def.ty_adapter.bit_cpy(pnode->w, t);
+        //prb->container.type_def.ty_adapter.bit_cpy(pnode->w, t);
+        type_value_cpy(pnode->w, t, prb->container.type_def.ty_size);
     }
     return pnode;
 }
@@ -286,7 +287,8 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
                 if (prb->conflict_fix) {
                     prb->conflict_fix(px->w, t);
                 } else {
-                    prb->container.type_def.ty_adapter.bit_cpy(px->w, t);
+                    type_value_cpy(px->w, t, prb->container.type_def.ty_size);
+                    //prb->container.type_def.ty_adapter.bit_cpy(px->w, t);
                 }
                 return 1;
             }
@@ -476,9 +478,10 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
         // 交换两个的值
         if (py != pz){
-            type_value_t data = pz->node;
-            pz->node = py->node;
-            py->node = data;
+            // type_value_t data = pz->node;
+            // pz->node = py->node;
+            // py->node = data;
+            type_value_swap(py->w, pz->w, prb->container.type_def.ty_size);
         }
 
         if (py->color == _rb_black){
@@ -487,7 +490,8 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
         // 返回值。
         //if (rdata) *((type_value_t*)rdata) = py->node;
-        if (rdata) prb->container.type_def.ty_adapter.bit_cpy(rdata, py->w);
+        //if (rdata) prb->container.type_def.ty_adapter.bit_cpy(rdata, py->w);
+        type_value_cpy(rdata, py->w, prb->container.type_def.ty_size);
         deallocate(prb->container.mem_pool, py);
         prb->_size--;
         //return rdata;

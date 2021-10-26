@@ -4,7 +4,6 @@ project(boring-code-testcase)
 
 set (SOURCE
     src/unit_test/unit_test.c
-    src/unit_test/unit_test_tv.c
     src/unit_test/unit_test_vector.c
     src/unit_test/unit_test_list.c
     src/unit_test/unit_test_hashmap.c

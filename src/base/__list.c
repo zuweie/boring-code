@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-10-25 10:24:51
+ * @LastEditTime: 2021-10-26 12:34:49
  * @LastEditors: Please set LastEditors
  */
 
@@ -67,7 +67,8 @@ static void* __list_insert(container_t* container, iterator_t pos, type_value_t*
     list_node_t* insert = container_of(iterator_reference(pos), list_node_t, w);
     list_node_t* pnew   = allocate(container->mem_pool, sizeof(list_node_t) + container->type_def.T_size);
     // 赋值
-    container->type_def.T_adapter.bit_cpy(pnew->w, data);
+    //container->type_def.T_adapter.bit_cpy(pnew->w, data);
+    type_value_cpy(pnew->w, data, container->type_def.ty_size);
     // 插入
     pnew->prev = insert->prev;
     pnew->next = insert;
@@ -89,7 +90,8 @@ static int __list_remove(container_t* container, iterator_t pos, void* rdata)
     remove->next->prev = remove->prev;
 
     // 将要删除的值返回出去。
-    if (rdata) container->type_def.ty_adapter.bit_cpy(rdata, remove->w);
+    //if (rdata) container->type_def.ty_adapter.bit_cpy(rdata, remove->w);
+    if (rdata) type_value_cpy(rdata, remove->w, container->ty, container->type_def.ty_size);
     // 回收
     deallocate(container_mem_pool(container), remove);
     ((list_t*)container)->_size--;

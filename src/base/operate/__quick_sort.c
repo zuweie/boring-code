@@ -2,33 +2,30 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-24 23:53:53
- * @LastEditTime: 2020-10-18 09:52:31
+ * @LastEditTime: 2021-10-26 13:08:54
  * @LastEditors: Please set LastEditors
  */
 
 #include "base/__iterator.h"
-#include "__sort.h"
+#include "__quick_sort.h"
 
-static iterator_t _partition (iterator_t p, iterator_t r, int(*compare)(type_value_t, type_value_t))
+static iterator_t __partition (iterator_t p, iterator_t r, int(*compare)(type_value_t*, type_value_t*))
 {
-    type_value_t x = iterator_dereference(r);
+    //type_value_t x = iterator_dereference(r);
     iterator_t i = iterator_prev(p);
 
-    for(;!iterator_equal(p,r);p=iterator_next(p)) {
-        if (compare(iterator_dereference(p),x) != 1) {
-            // p <= x
-            i = iterator_next(i);
-            iterator_exchange(i, p);
-        }
+    for(;!iterator_equal(p,r);iterator_next(p)) {
+        if (compare(p.reference, r.reference) != 1)
+            iterator_exchange(iterator_next(i), p);
     }
     iterator_exchange(iterator_next(i), r);
     return iterator_next(i);
 }
 
-int quick_sort(iterator_t p, iterator_t r, int(*compare)(type_value_t, type_value_t))
+int quick_sort(iterator_t p, iterator_t r, int(*compare)(type_value_t*, type_value_t*))
 {
     if (!iterator_equal(p, r)) {
-        iterator_t q = _partition(p, r, compare);
+        iterator_t q = __partition(p, r, compare);
         
         if (!iterator_equal(p,q)) 
             quick_sort(p, iterator_prev(q), compare);

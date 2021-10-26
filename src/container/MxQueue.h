@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-07 08:50:00
- * @LastEditTime: 2021-10-24 09:19:45
+ * @LastEditTime: 2021-10-26 09:41:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MxQueue.h
@@ -14,32 +14,17 @@
 #include "base/__vector.h"
 #include "base/operate/__heap_sort.h"
 
-typedef Container MxQueue;
+typedef CN MxQueue;
 
 
-#define _MxQueue(sort_cmp) \
+#define MxQueue_create(T, sort_cmp) \
     ({ \
-        MxQueue queue; \
-        CN_initialize(&queue, vector, NULL, NULL, NULL); \
-        CN_set_extra_func(&queue, sort_cmp); \
+        MxQueue queue = CN_create(VECTOR|customized_compare, T, sort_cmp); \
         queue; \
     })
 
-#define MxQueue_(queue_ptr, cleanup) CN_uninitialize(queue_ptr, vector, cleanup)
+#define MxQueue_finalize(q, cleanup) CN_finalize(q, cleanup)
 
-#define MxQueue_extract(queue_ptr, __marco_rdata) \
-    ({  \
-        int ret = -1; \
-        if (CN_size(queue_ptr) > 0) { \
-            heap_build_max_heap(c_base(queue_ptr), c_extra_func(queue_ptr)); \
-            It first = CN_first(queue_ptr); \
-            It last  = CN_last(queue_ptr); \
-            It_exchange(first, last); \
-            ret = CN_rm_last(queue_ptr, &__marco_rdata); \
-        } else { \
-            ret = -1; \
-        } \
-        ret; \
-    })
+#define MxQueue_extract(q, rdata, cmp) CN_mx_extract(q, rdata, cmp)
 
 #endif

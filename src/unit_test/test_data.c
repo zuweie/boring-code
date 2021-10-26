@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:34:16
- * @LastEditTime: 2021-04-08 14:37:25
+ * @LastEditTime: 2021-10-26 10:02:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.c
@@ -134,6 +134,7 @@ char* test_data_string[] = {
         "kKk"
 };
 const int TEST_DATA_STR_SIZE = sizeof(test_data_string) / sizeof(char*);
+
 void init_test_data_int(void)
 {
     for(int i=0; i<TEST_DATA_SIZE; ++i) {
@@ -145,36 +146,26 @@ void init_test_data_float(void)
     for (int i=0; i<TEST_DATA_SIZE; ++i) {
         int r1 = rand();
         int r2 = rand();
-        test_data_float[i] = r2 ? (float) r1 / (float) r2 : 0.f;
+        test_data_float[i] = r2 ? (vfloat_t) r1 / (vfloat_t) r2 : 0.f;
     }
 }
+
 void init_test_data(void) 
 {
     init_test_data_int();
     init_test_data_float();
 }
-Tv getTSi(int i) 
-{
-    return i2t(test_data_int[i]);
-}
-int geti(int i) {
+
+int tsd_get_int(int i) {
     return test_data_int[i];
 }
 
-Tv getTSf(int i)
+vfloat_t tsd_get_float(int i)
 {
-    return f2t(test_data_float[i]);
-}
-vfloat_t getf(int i) {
     return test_data_float[i];
 }
 
-Tv getTSs(int i) 
-{
-    return p2t(test_data_string[i]);
-}
-
-char* getstr(int i) 
+char* tsd_get_str(int i) 
 {
     return test_data_string[i];
 }

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 19:09:21
- * @LastEditTime: 2021-10-24 09:18:00
+ * @LastEditTime: 2021-10-26 09:24:38
  * @LastEditors: Please set LastEditors
  */
 #ifndef __QUEUE_H__
@@ -11,21 +11,20 @@
 #include "cn.h"
 #include "base/__list.h"
 
-typedef Container Queue;
+typedef CN Queue;
 
-#define _Queue(search_cmp) \
-    ({                     \
-        Queue q;           \
-        CN_initialize(&q, list, search_cmp, NULL, NULL); \
-        q;                 \
+#define Queue_create(T)        \
+    ({                            \
+        Queue q = CN_create(LIST,T); \
+        q;                        \
     })
     
-#define Queue_(queue_ptr, cleanup) CN_uninitialize(queue_ptr, list, cleanup)
+#define Queue_finalize(q, cleanup) CN_finalize(q, cleanup)
 
 // 尾部插入
-#define Queue_offer(queue_ptr, tv) CN_add_tail(queue_ptr, tv)
+#define Queue_offer(q, ...) CN_add_at(q, CN_tail(q), __VA_ARGS__)
 
 // 头部输出
-#define Queue_poll(queue_ptr, rdata) CN_rm_first(queue_ptr, rdata)
+#define Queue_poll(q, rdata) CN_rm_first(q, CN_first(q), rdata)
 
 #endif

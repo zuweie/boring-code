@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-24 19:19:33
+ * @LastEditTime: 2021-10-26 13:09:42
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -26,7 +26,8 @@
 #define container_head(container_ptr) ({iterator_t first=container_first(container_ptr); iterator_move(&first, -1); first;})
 // 容器的 tail
 #define container_tail(container_ptr) ({iterator_t last=container_last(container_ptr); iterator_move(&last, 1); last;})
-
+// 容器的
+#define container_access(container_ptr, step) ({iterator_t first=container_first(container_ptr); iterator_move(&first, step); first;})
 // 容器搜索
 #define container_search(container_ptr, offset, find, compare) \
     (((container_t*)(container_ptr))->search(((container_t*)(container_ptr)), offset, find, compare))
@@ -60,7 +61,7 @@
     ((container_t*)(container_ptr))->insert = (__insert);                                       \
     ((container_t*)(container_ptr))->remove = (__remove);                                       \
     ((container_t*)(container_ptr))->size   = (__size);                                         \
-    ((container_t*)(container_ptr))->type_def = (__type_def);                               \
+    ((container_t*)(container_ptr))->type_def = (__type_def);                                   \
     ((container_t*)(container_ptr))->mem_pool = (__mem_pool);                                   \
 })
 

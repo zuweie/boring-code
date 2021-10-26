@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-10-25 14:45:06
+ * @LastEditTime: 2021-10-26 12:45:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -47,7 +47,7 @@ static int __hash_move(iterator_t* iter, int step)
 {
     hash_t* hash = iter->container;
     hash_inner_list_node_t* node = container_of(iter->reference, hash_inner_list_node_t, w)
-    for (int next = step ; next; next = step > 0? next - 1 : next + 1) {
+    for (int next = step ; next; next = (step > 0 ? next - 1 : next + 1)) {
         if (step > 0) node = node->next;
         else if (step < 0) node = node->prev;
     }
@@ -78,18 +78,19 @@ static int __hash_insert(container_t* container, iterator_t pos, type_value_t* e
     hash_inner_list_node_t* slot_from  = __get_slot_node_by_key(hash, en);
     hash_inner_list_node_t* target     = (slot_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, en);
 
-    if (slot_from == hash_table_tail(hash) || target == hash_table_tail(hash) || hash->multi) {
+    if (slot_from == hash_table_tail(hash) || target == hash_table_tail(hash) || hash->_multi) {
         // 插入新元素
 
         hash_inner_list_node_t* insert = hash->_multi ? target : slot_from;
         // 申请内存。
         hash_inner_list_node_t* inner_list_node = allocate(container->mem_pool, sizeof(hash_inner_list_node_t) + container->type_def.ty_size);
         // 初始化。
-        inner_list_node->slot_index = container->type_def.ty_hasher(key, hash->_slot_size);
+        inner_list_node->slot_index = container->type_def.ty_hasher(en, hash->_slot_size);
         if (hash->setup) {
             hash->setup(inner_list_node->w, en);
         } else {
-            container->type_def.ty_adapter.bit_cpy(inner_list_node->w, en);
+            //container->type_def.ty_adapter.bit_cpy(inner_list_node->w, en);
+            type_value_cpy(inner_list_node->w, en, container->type_def.ty_size);
         }
         // 插入。
         inner_list_node->prev = insert->prev;
@@ -109,7 +110,8 @@ static int __hash_insert(container_t* container, iterator_t pos, type_value_t* e
             // 如果有冲突解决函数，则调用冲突解决函数
             hash->conflict_fix(target->w, en);
         } else {
-            hash->container.type_def.ty_adapter.bit_cpy(target->w, en);
+            //hash->container.type_def.ty_adapter.bit_cpy(target->w, en);
+            type_value_cpy(target->w, en, container->type_def.ty_size);
         }
         ret = 1;
     }
@@ -135,7 +137,7 @@ static int __hash_remove(container_t* container, iterator_t pos, void* rdata)
     remove->prev->next = remove->next;
     remove->next->prev = remove->prev;
 
-    if (rdata) container->type_def.ty_adapter.bit_cpy(remove->w, rdata);
+    if (rdata) type_value_cpy(remove->w, rdata, container->type_def.ty_size);
     deallocate(container->mem_pool, remove);
 
     return 0;
