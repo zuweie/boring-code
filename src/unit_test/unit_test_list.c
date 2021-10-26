@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-10-26 15:56:58
+ * @LastEditTime: 2021-10-26 17:10:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -66,10 +66,9 @@ static void test_list_remove()
     float target = tsd_get_float(5);
     float ret;
     It remove = CN_find(list, target);
-    T_def* float_def = T_def_get(fl_t);
 
-    CU_ASSERT_TRUE(CN_remove_at(list, remove, &ret) == 0);
-    CU_ASSERT_TRUE(float_def->ty_cmp(&target, &ret)==0);
+    CU_ASSERT_TRUE(CN_remove_at(list, remove, &ret) == err_ok);
+    CU_ASSERT_DOUBLE_EQUAL(target, ret, 0.0001);
     CU_ASSERT_FALSE(CN_has(list, target));
     CN_finalize(list, NULL);
 // ------------------------------------------------------
@@ -90,7 +89,7 @@ void test_list_sort()
     for(It first=CN_first(list); !It_equal(first, CN_last(list)); It_next(first)){
         It next = first;
         It_next(next);
-        CU_ASSERT_TRUE(flt_def->ty_cmp(It_refer(first), It_refer(next)));
+        CU_ASSERT_TRUE(flt_def->ty_cmp(It_refer(first), It_refer(next)) <= 0);
     }
 }
 

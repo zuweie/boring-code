@@ -1,21 +1,21 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2021-06-29 14:04:15
+ * @LastEditTime: 2021-10-26 17:22:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
  */
 #include <stdio.h>
 #include <CUnit/Basic.h>
-#include "container/Entity.h"
-#include "container/Cn.h"
+#include "container/entity.h"
+#include "container/cn.h"
 #include "unit_test/unit_test.h"
 #include "unit_test/test_data.h"
-#include "unit_test/cmp_component.h"
-#include "container/List.h"
-#include "container/HashMap.h"
-#include "container/TreeMap.h"
+// #include "unit_test/cmp_component.h"
+// #include "container/List.h"
+// #include "container/HashMap.h"
+// #include "container/TreeMap.h"
 
 #define PRINTF_ENTITY(e, keyx, key_trans, valuex, value_trans) \
     ({                                                         \
@@ -82,206 +82,70 @@ static int suite_success_clean (void)
     printf("\nHashmap suite success clean\n");
 }
 
-static void test_hashmap_set (void) 
+static void test_hashmap (void) 
 {
     const int HASHMAP_SIZE = 100;
-    Map hashmap = _Hashmap(entity_int_keyhasher);
+    //CN hashmap = _Hashmap(entity_int_keyhasher);
+    CN hashmap = CN_create(HASH_MAP, int_t, str_t);
 
-    Tv key, value;
+    int key;
+    char* value;
 
     // Container hashtab;
     for(int i=0; i<HASHMAP_SIZE; ++i) {
-        key = getTSi(i);
-        value = getTSs(i);
-        Map_set(&hashmap, key, value);
+        key = tsd_get_int(i);
+        value = tsd_get_str(i);
+        CN_set(hashmap, key, value);
     }
-    
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-    
-    // key   = i2t(1);
-    // value = p2t("1");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_travel(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
 
-    // key   = i2t(2);
-    // value = p2t("2");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    // key   = i2t(3);
-    // value = p2t("3");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    // key   = i2t(11);
-    // value = p2t("11");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    // key   = i2t(12);
-    // value = p2t("12");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    // key = i2t(12);
-    // value = p2t("1222");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    //CU_ASSERT_FALSE(Map_has(hashmap, getTSi(3)));
-
-    Tv rdata;
+    //Tv rdata;
     for (int j=0; j<HASHMAP_SIZE; ++j) {
-        int ret = Map_get(&hashmap, getTSi(j), rdata);
-        CU_ASSERT_TRUE(ret == 0);
-        if (ret == 0) {
-            CU_ASSERT_TRUE( CMP_STR(getTSs(j), rdata) == 0);
-        }
+        char* ret = CN_get(hashmap, tsd_get_int(j));
+        CU_ASSERT_TRUE(ret != NULL);
+        CU_ASSERT_STRING_EQUAL(ret, tsd_get_str(j));
     }
 
-    Map_set(&hashmap, i2t(12), p2t("1023"));
-    Map_get(&hashmap, i2t(12), rdata);
-    CU_ASSERT_TRUE( CMP_STR(p2t("1023"), rdata) == 0);
+    CN_set(hashmap, 12, "1023");
+    char* rdata = CN_get(hashmap, 12);
+    CU_ASSERT_STRING_EQUAL(rdata, "1023");
 
-    Map_set(&hashmap, i2t(12), p2t("1024"));
-    Map_get(&hashmap, i2t(12), rdata);
-    CU_ASSERT_TRUE( CMP_STR(p2t("1024"), rdata) == 0);
-    Hashmap_(&hashmap);
+    CN_set(hashmap, 12, "1024");
+    rdata = CN_get(hashmap, 12);
+    CU_ASSERT_STRING_EQUAL(rdata, "1024");
+    CN_finalize(hashmap, NULL);
     
 }
 
 static void test_treemap_set (void) 
 {
     const int HASHMAP_SIZE = 100;
-    Map treemap = _Treemap(entity_int_insert_cmp);
-    Tv key, value;
+    CN treemap = CN_create(TREE_MAP, int_t, str_t);
+    int key;
+    char* value;
 
     // Container hashtab;
     for(int i=0; i<HASHMAP_SIZE; ++i) {
-        key = getTSi(i);
-        value = getTSs(i);
-        Map_set(&treemap, key, value);
+        key = tsd_get_int(i);
+        value = tsd_get_str(i);
+        CN_set(treemap, key, value);
     }
-    
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-    
-    // key   = i2t(1);
-    // value = p2t("1");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_travel(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
 
-    // key   = i2t(2);
-    // value = p2t("2");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    // key   = i2t(3);
-    // value = p2t("3");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    // key   = i2t(11);
-    // value = p2t("11");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    // key   = i2t(12);
-    // value = p2t("12");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    // key = i2t(12);
-    // value = p2t("1222");
-    // Map_set(hashmap, key, value);
-    // printf("\n\n");
-    // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
-
-    //CU_ASSERT_FALSE(Map_has(hashmap, getTSi(3)));
-
-    Tv rdata;
+    char* rdata;
     for (int j=0; j<HASHMAP_SIZE; ++j) {
 
-        Tv key = getTSi(j);
-        int ret = Map_get(&treemap, key, rdata);
-        CU_ASSERT_TRUE(ret == 0);
-        if (ret == 0) {
-            CU_ASSERT_TRUE( CMP_STR(getTSs(j), rdata) == 0);
-        }
+        rdata = CN_get(treemap, tsd_get_int(j));
+        CU_ASSERT_TRUE(rdata != 0);
+        CU_ASSERT_STRING_EQUAL(rdata, tsd_get_str(j));
     }
 
-    Map_set(&treemap, i2t(12), p2t("1023"));
-    Map_get(&treemap, i2t(12), rdata);
-    CU_ASSERT_TRUE( CMP_STR(p2t("1023"), rdata) == 0);
+    CN_set(treemap, 12, "1023");
+    rdata = CN_get(treemap, 12);
+    CU_ASSERT_STRING_EQUAL(rdata, "1023");
 
-    Map_set(&treemap, i2t(12), p2t("1024"));
-    Map_get(&treemap, i2t(12), rdata);
-    CU_ASSERT_TRUE( CMP_STR(p2t("1024"), rdata) == 0);
+    CN_set(treemap, 12, "1024");
+    rdata = get(treemap, 12);
+    CU_ASSERT_STRING_EQUAL(rdata, "1024");
 
-    Treemap_(&treemap);
-}
-
-static void test_hashmap_get (void) 
-{
-    const int HASHMAP_SIZE = 20;
-    Map hashmap = _Hashmap(entity_int_keyhasher);
-    Tv key, value;
-    for(int i=0; i<HASHMAP_SIZE; ++i) {
-        Tv key = getTSi(i);
-        Tv value = getTSs(i);
-        Map_set(&hashmap, key, value);
-    }
-    for (int i=0; i<HASHMAP_SIZE; ++i) {
-        CU_ASSERT(Map_has(&hashmap, getTSi(i)));
-    }
-
-    CU_ASSERT_FALSE(Map_has(&hashmap, getTSi(87)));
-    CU_ASSERT_FALSE(Map_has(&hashmap, getTSi(82)));
-    Hashmap_(&hashmap);
-}
-
-static void test_treemap_get (void) 
-{
-    const int HASHMAP_SIZE = 20;
-    Map treemap = _Treemap(entity_int_insert_cmp);
-    Tv key, value;
-    for(int i=0; i<HASHMAP_SIZE; ++i) {
-        Tv key = getTSi(i);
-        Tv value = getTSs(i);
-        Map_set(&treemap, key, value);
-    }
-    for (int i=0; i<HASHMAP_SIZE; ++i) {
-        CU_ASSERT(Map_has(&treemap, getTSi(i)));
-    }
-
-    CU_ASSERT_FALSE(Map_has(&treemap, getTSi(87)));
-    CU_ASSERT_FALSE(Map_has(&treemap, getTSi(82)));
     Treemap_(&treemap);
 }
 
