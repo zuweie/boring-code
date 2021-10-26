@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-25 15:13:26
+ * @LastEditTime: 2021-10-25 23:53:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -91,9 +91,13 @@ It CN_last(CN cn);
 int CN_reverse(CN cn);
 
 int CN_add(CN, ...);
+int CN_add_at(CN, It, ...);
+
 int CN_remove(CN, T*);
 int CN_remove_at(CN, It, T*);
-It CN_find(CN, T*, int (*cmp)(T*, T*));
+
+It CN_find(CN, ...);
+It CN_find_at(CN, It, ...);
 
 int CN_del(CN, ...);
 int CN_set(CN, ...);
@@ -101,4 +105,5 @@ T* CN_get(CN, ...);
 
 void* CN_type_info(CN);
 T_def* CN_type_def(CN);
+
 #endif

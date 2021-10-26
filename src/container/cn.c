@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-25 15:13:22
+ * @LastEditTime: 2021-10-26 00:05:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -27,44 +27,53 @@ static int __get_empty_slot ()
     return 0;
 }
 
-static int __cn_remove_at(CN cn, It it, T* rdata) 
+static int __cn_remove_at(CN cn, It at, T* rdata) 
 {
     int err = err_ok;
     if (CN_size(cn) != 0) {
-        if (It_is_tail(it)) 
+
+        if (It_is_tail(at)) 
             return err_invalid_pos;
+
         if (CN_(cn)->build_code & use_entity) {
             entity_t* ent;
-            container_remove(CN_(cn)->eng, it._iter, &ent);
+            container_remove(CN_(cn)->eng, at._iter, &ent);
             if (rdata) entity_cpy_block_data(rdata, ent, ef_all);
             entity_release(ent);
         } else {
-            container_remove(CN_(cn)->eng, it._iter, rdata);
+            container_remove(CN_(cn)->eng, at._iter, rdata);
         }
     } else {
         err = err_empty;
     }
     return err;
 }
-static int __cn_add_at(CN cn, It it, va_list valist)
+static int __cn_add_at(CN cn, It at, va_list valist)
 {
-    if (It_is_head(it)) 
+    if (It_is_head(at)) 
         return err_invalid_pos;
 
     int err = err_ok;
 
     if (CN_(cn)->build_code & use_entity) {
         CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all);
-        container_insert(CN_(cn)->eng, it._iter, ent);
+        container_insert(CN_(cn)->eng, at._iter, ent);
     } else {
         CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
-        container_insert(CN_(cn)->eng, it._iter, tv);
+        container_insert(CN_(cn)->eng, at._iter, tv);
     }
     return err;
 }
-static It __cn_find_at(CN cn, It at, T* find, int (*cmp)(T*, T*)) 
-{
-    iterator_t it = container_search(CN_(cn)->eng, at._iter, find, cmp);
+static It __cn_find_at(CN cn, It at, va_list valist) 
+{   
+    iterator_t it;
+    if (CN_(cn)->build_code & use_entity) {
+        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys);
+        it = container_search(CN_(cn)->eng, at._iter, ent, NULL);
+    } else {
+        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
+        it = container_search(CN_(cn), at._iter, tv, NULL);
+    }
     return It(it, cn);
 }
 
@@ -277,14 +286,24 @@ int CN_remove_at(CN cn, It it, T* rdata)
     return __cn_remove_at(cn, it, rdata);
 }
 
-It CN_find(CN cn, T* find, int (*cmp)(T*, T*)) 
+It CN_find(CN cn, ...) 
 {
-    return __cn_find_at(cn, CN_first(cn), find, cmp);
+    va_list valist;
+    va_start(valist, cn);
+    It it = __cn_find_at(cn, CN_first(cn), valist);
+    va_end(valist);
+    return it;
 }
-It CN_find_at(CN cn, It pos, T* find, int(*cmp)(T*, T*)) 
+
+It CN_find_at(CN cn, It pos, ...) 
 {
-    return __cn_find_at(cn, pos, find, cmp);
+    va_list valist;
+    va_start(valist, pos);
+    It it = __cn_find_at(cn, pos, valist);
+    va_end(valist);
+    return it;
 }
+
 // mapping function
 int CN_del(CN cn, ...)
 {

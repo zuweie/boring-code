@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2021-10-25 15:59:17
+ * @LastEditTime: 2021-10-26 08:37:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
@@ -91,10 +91,6 @@ int UDGraph_del_vertex(UDGraph* udgraph, unsigned long vertex_id)
     uvertex_t* del_vertex;
     if (err_ok == CN_remove_at(udgraph->uvertexs, it, &del_vertex)) {
         // 1 把所有有关的边都干掉
-        // CN_eliminate(udgraph->uedges, vertex_id, match_edge, _free_uedge);
-        // for (It first=CN_first(udgraph->uedges), !)
-        // uvertex_t* vertex = t2p(rdata);
-        // free(vertex);
         for (It first=CN_first(udgraph->uedges); !It_equal(first, CN_tail(udgraph->uedges));) {
             uedge_t* edge = It_ptr(first);
             if (edge->epv == del_vertex->id || edge->epw == del_vertex->id) {
@@ -110,13 +106,17 @@ int UDGraph_del_vertex(UDGraph* udgraph, unsigned long vertex_id)
     return 0;
 }
 
-int UDGraph_del_edge(UDGraph* udgraph, Tv v1, Tv v2)
+int UDGraph_del_edge(UDGraph* udgraph, unsigned long v1, unsigned long v2)
 {
-    Tv vertexs[2] = {v1, v2};
-    Tv rdata;
-    if (CN_rm_target(&udgraph->uedges, p2t(vertexs), &rdata) != -1) {
-        uedge_t* pedge = t2p(rdata);
-        free(pedge);
+ 
+    for (It first=CN_first(udgraph->uedges); !It_equal(first, CN_tail(udgraph->uedges)); It_next(first)) {
+        uedge_t* pedge = It_ptr(first);
+        if ((pedge->epv->id == v1 && pedge->epw->id == v2) 
+        || (pedge->epv->id == v2) && (pedge->epw->id == v1)) {
+            CN_remove_at(udgraph->uedges, first, NULL);
+            free(pedge);
+            break;
+        }
     }
     return 0;
 }
@@ -124,7 +124,7 @@ int UDGraph_del_edge(UDGraph* udgraph, Tv v1, Tv v2)
 void UDGraph_indexing_vertex(UDGraph* graph) 
 {
     size_t i = 0;
-    for (It first = CN_first(&graph->uvertexs); !It_equal(first, CN_tail(&graph->uvertexs)); first = It_next(first)) {
+    for (It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); It_next(first)) {
         uvertex_t* vertext = It_getptr(first);
         vertext->index     = i++;
     }
