@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2021-10-24 23:58:51
+ * @LastEditTime: 2021-10-27 09:39:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -65,6 +65,7 @@
 #define ef_double(pe, i) T_double(ef_pT(pe, i))
 #define ef_ptr(pe, i) T_prt(ef_pT(pe, i))
 #define ef_str(pe, i) T_str(ef_pT(pe, i))
+#define ef_x(pe, i, type) T_type(ef_pT(pe, i), type)
 
 
 typedef struct __entity_template {
