@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2021-10-25 12:50:38
+ * @LastEditTime: 2021-10-27 11:27:52
  * @LastEditors: Please set LastEditors
  */
 #ifndef __GRAPH_H__
@@ -38,10 +38,10 @@ typedef struct _graph
     int (*match_path)(T* node, T* find);
     int (*match_vertex)(T* node, T* find);
     int (*init_exploring)(void* exploring);
-    size_t exploring_size;
+    int exploring_size;
 } Graph;
 
-Graph* Graph_create(int(*)(T*, T*), int(*)(T*, T*), size_t);
+Graph* Graph_create(int);
 Graph* Graph_create_reverse(Graph* graph);
 int Graph_destroy(Graph* graph);
 int Graph_add_vertex(Graph* graph, unsigned long vertex);

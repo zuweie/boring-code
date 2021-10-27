@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:49
- * @LastEditTime: 2021-10-21 15:07:46
+ * @LastEditTime: 2021-10-27 13:34:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.c
@@ -13,26 +13,26 @@
 
 int cmp_char(type_value_t* t1, type_value_t* t2)
 {
-    char v1 = T_(t1, char);
-    char v2 = T_(t2, char);
+    char v1 = type_value_(char, t1);
+    char v2 = type_value_(char, t2);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
 int cmp_uchar(type_value_t* t1, type_value_t* t2)
 {
-    unsigned char v1 = T_(t1, unsigned char);
-    unsigned char v2 = T_(t2, unsigned char);
+    unsigned char v1 = type_value_(unsigned char, t1);
+    unsigned char v2 = type_value_(unsigned char, t2);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
 int cmp_short(type_value_t* t1, type_value_t* t2)
 {
-    short v1 = T_(t1, short);
-    short v2 = T_(t2, short);
+    short v1 = type_value_(short, t1);
+    short v2 = type_value_(short, t2);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
 int cmp_ushort(type_value_t* t1, type_value_t* t2)
 {
-    unsigned short v1 = T_(t1, unsigned short);
-    unsigned short v2 = T_(t2, unsigned short);
+    unsigned short v1 = type_value_(unsigned short, t1);
+    unsigned short v2 = type_value_(unsigned short, t2);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 
 }
@@ -190,7 +190,7 @@ void read_vargs_float(va_list valist, type_value_t* pt)
 {
     //READ_VARGS(valist, double, pt);
     double v = va_arg(valist, double);
-    (*(floatype_value_t*)pt) = (float) v;
+    (*(float*)pt) = (float) v;
 }
 void read_vargs_double(va_list valist, type_value_t* pt)
 {

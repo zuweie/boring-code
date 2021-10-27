@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2021-10-27 10:09:27
+ * @LastEditTime: 2021-10-27 10:19:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -100,18 +100,18 @@ static void test_hashmap (void)
 
     //Tv rdata;
     for (int j=0; j<HASHMAP_SIZE; ++j) {
-        char* ret = CN_get(hashmap, tsd_get_int(j));
+        char** ret = CN_get(hashmap, tsd_get_int(j));
         CU_ASSERT_TRUE(ret != NULL);
-        CU_ASSERT_STRING_EQUAL(ret, tsd_get_str(j));
+        CU_ASSERT_STRING_EQUAL(*ret, tsd_get_str(j));
     }
 
     CN_set(hashmap, 12, "1023");
-    char* rdata = CN_get(hashmap, 12);
-    CU_ASSERT_STRING_EQUAL(rdata, "1023");
+    char** rdata = CN_get(hashmap, 12);
+    CU_ASSERT_STRING_EQUAL(*rdata, "1023");
 
     CN_set(hashmap, 12, "1024");
     rdata = CN_get(hashmap, 12);
-    CU_ASSERT_STRING_EQUAL(rdata, "1024");
+    CU_ASSERT_STRING_EQUAL(*rdata, "1024");
     CN_finalize(hashmap, NULL);
     
 }
@@ -130,23 +130,23 @@ static void test_treemap_set (void)
         CN_set(treemap, key, value);
     }
 
-    char* rdata;
+    char** rdata;
     for (int j=0; j<HASHMAP_SIZE; ++j) {
 
         rdata = CN_get(treemap, tsd_get_int(j));
-        CU_ASSERT_TRUE(rdata != 0);
-        CU_ASSERT_STRING_EQUAL(rdata, tsd_get_str(j));
+        CU_ASSERT_TRUE(*rdata != 0);
+        CU_ASSERT_STRING_EQUAL(*rdata, tsd_get_str(j));
     }
 
     CN_set(treemap, 12, "1023");
     rdata = CN_get(treemap, 12);
-    CU_ASSERT_STRING_EQUAL(rdata, "1023");
+    CU_ASSERT_STRING_EQUAL(*rdata, "1023");
 
     CN_set(treemap, 12, "1024");
-    rdata = get(treemap, 12);
-    CU_ASSERT_STRING_EQUAL(rdata, "1024");
+    rdata = CN_get(treemap, 12);
+    CU_ASSERT_STRING_EQUAL(*rdata, "1024");
 
-    Treemap_(&treemap);
+    CN_finalize(treemap, NULL);
 }
 
 static void test_hashmap_del(void)
@@ -205,28 +205,28 @@ static void test_treemap_del(void)
 {
     CN treemap = CN_create(TREE_MAP, int_t, str_t);
 
-    cN_set(treemap, 1, "1");
+    CN_set(treemap, 1, "1");
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
-    CN_set(&treemap, 2, "2");
+    CN_set(treemap, 2, "2");
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
-    CN_set(&treemap, 3, "3");
+    CN_set(treemap, 3, "3");
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
     
-    CN_set(&treemap, 11, "11");
+    CN_set(treemap, 11, "11");
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
-    CN_set(&treemap, 12, "12");
+    CN_set(treemap, 12, "12");
 
-    CN_set(&treemap, 22, "22");
+    CN_set(treemap, 22, "22");
 
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);

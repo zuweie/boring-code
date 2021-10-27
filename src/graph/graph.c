@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2021-10-25 15:54:29
+ * @LastEditTime: 2021-10-27 11:30:54
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -11,18 +11,22 @@
 
 static int __match_vertex(T* t1, T* t2) 
 {
-    
+    vertex_t* pver1  = T_ptr(t1);
+    unsigned long id = T_ulong(t2);
+    return pver1->vertex_id == id;
 }
 
 static int __match_path(T* t1, T* t2)
 {
-    
+    path_t* path = T_ptr(t1);
+    unsigned long id = T_ulong(t2);
+    return path->to->vertex_id == id;
 }
-static vertex_t* __create_vertex(Graph* graph, unsigned long vertex) 
+static vertex_t* __create_vertex(Graph* graph, unsigned long vertex_id) 
 {
     // 生成一个顶点
     vertex_t* v =(vertex_t*) malloc (sizeof (vertex_t) + graph->exploring_size);
-    v->vertex_id = vertex;
+    v->vertex_id = vertex_id;
     // 这个找
     v->paths = CN_create(LIST|customized_compare, ptr_t, graph->match_path);
     if (graph->exploring_size){
@@ -42,13 +46,13 @@ static path_t* __create_path(vertex_t* to, float weight)
     return node;
 }
 
-Graph* Graph_create(int(*match_vertex)(T*, T*), int(*match_path)(T*, T*), size_t exploring_size) 
+Graph* Graph_create(int exploring_size) 
 {
     // 初始化图
     Graph* graph = (Graph*) malloc (sizeof(Graph));
-    graph->vertexes = CN_create(LIST|customized_compare, ptr_t, match_vertex);
-    graph->match_path   = match_path;
-    graph->match_vertex = match_vertex;
+    graph->vertexes = CN_create(LIST|customized_compare, ptr_t, __match_vertex);
+    graph->match_path   = &__match_path;
+    graph->match_vertex = &__match_vertex;
     graph->exploring_size = exploring_size;
     return graph;
 } 
@@ -56,7 +60,7 @@ Graph* Graph_create(int(*match_vertex)(T*, T*), int(*match_path)(T*, T*), size_t
 Graph* Graph_create_reverse(Graph* graph) 
 {
     Graph* new_graph        = (Graph*) malloc (sizeof(Graph));
-    new_graph->vertexes     = _List(graph->match_vertex);
+    new_graph->vertexes     = CN_create(LIST|customized_compare, ptr_t, graph->match_vertex);
     new_graph->match_path   = graph->match_path;
     new_graph->match_vertex = graph->match_vertex;
     new_graph->init_exploring = graph->init_exploring;
@@ -64,7 +68,7 @@ Graph* Graph_create_reverse(Graph* graph)
     
     // 注入复制定点
     for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)){
-        vertex_t* v = It_getptr(first);
+        vertex_t* v = It_ptr(first);
         Graph_add_vertex(new_graph, v->vertex_id);
     }
     
@@ -133,7 +137,7 @@ int Graph_del_path(vertex_t* from, vertex_t* to)
 
 vertex_t* Graph_get_vertex(Graph* graph,  unsigned long vertex_id) 
 {
-    It i = CN_find(&graph->vertexes, &vertex_id, NULL);
+    It i = CN_find(graph->vertexes, &vertex_id);
     return It_valid(i) ? It_getptr(i) : NULL;
 }
 

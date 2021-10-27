@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2021-06-29 14:58:22
+ * @LastEditTime: 2021-10-27 11:23:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -10,23 +10,23 @@
 #include <stddef.h>
 #include <CUnit/Basic.h>
 #include "graph/graph_research.h"
-#include "container/List.h"
+//#include "container/List.h"
 #include "unit_test.h"
 #include "test_data.h"
-#include "cmp_component.h"
+//#include "cmp_component.h"
 
-#define Graph_inspect(graph, printer, exploring_printer) do{ \
+#define Graph_inspect(graph, vertex_printer, exploring_printer) do{ \
     printf(" \n\n********* inspection of Graph *****************\n\n"); \
-    for (It i = CN_first( &((graph)->vertexes) ); !It_equal(i, CN_tail( &((graph)->vertexes) ) ); i = It_next(i)) { \
-        vertex_t* pv = It_getptr(i); \
+    for (It i = CN_first( ((graph)->vertexes) ); !It_equal(i, CN_tail( ((graph)->vertexes) ) ); It_next(i)) { \
+        vertex_t* pv = It_ptr(i); \
         printf("vertex: "); \
-        printer(pv->vertex_id); \
+        vertex_printer(pv->vertex_id); \
         exploring_printer(pv->exploring); \
         printf("------> "); \
-        for (It j = CN_first( &pv->paths); !It_equal(j, CN_tail(&pv->paths)); j = It_next(j)) { \
-            path_t* pnode = It_getptr(j); \
+        for (It j = CN_first( pv->paths); !It_equal(j, CN_tail(pv->paths)); It_next(j)) { \
+            path_t* pnode = It_ptr(j); \
             printf("{ ");\
-            printer(pnode->to->vertex_id); \
+            vertex_printer(pnode->to->vertex_id); \
             exploring_printer(pnode->to->exploring); \
             printf(" w:%f ", pnode->weight); \
             printf(" }"); \
@@ -85,6 +85,44 @@ static int  suite_success_init (void)
 static int suite_success_clean (void) 
 {   
     printf("\nGraph research suite success clean\n");
+}
+
+static int
+graph_match_vertex(T* v1, T* v2) 
+{
+    vertex_t* pv = T_ptr(v1);
+    unsigned long 
+    return 
+}
+
+static int
+graph_match_path(Tv v1, Tv v2) 
+{
+    path_t* path = t2p(v1);
+    return Tv_equl(path->to->vertex_id, v2);
+}
+
+
+static int 
+udgraph_match_vertex(Tv v1, Tv v2) 
+{
+    uvertex_t* pv = t2p(v1);
+    return Tv_equl(pv->id, v2);
+}
+
+static int
+udgraph_match_edge_2p(Tv v1, Tv v2)
+{
+    uedge_t* pedge = t2p(v1);
+    Tv* vertexs = t2p(v2);
+    return (Tv_equl(pedge->epv->id, vertexs[0]) | Tv_equl(pedge->epw->id, vertexs[1])) ? (Tv_equl(pedge->epw->id, vertexs[0]) | Tv_equl(pedge->epv->id, vertexs[1])) : 0;
+}
+
+static int
+udgraph_match_edge_1p(Tv v1, Tv v2) 
+{
+    uedge_t* pedge = t2p(v1);
+    return Tv_equl(pedge->epv->id, v2)? Tv_equl(pedge->epw->id, v2) : 0;
 }
 
 static void test_graph_vertex_edge (void)

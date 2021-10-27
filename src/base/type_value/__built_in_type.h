@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:11
- * @LastEditTime: 2021-10-22 13:24:57
+ * @LastEditTime: 2021-10-27 12:48:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.h
@@ -69,44 +69,44 @@ int hash_double(type_value_t*, int);
 int hash_str(type_value_t*, int);
 int hash_ptr(type_value_t*, int);
 
-void read_vargs_char(va_list, type_value_t*);
-void read_vargs_uchar(va_list, type_value_t*);
-void read_vargs_short(va_list, type_value_t*);
-void read_vargs_ushort(va_list, type_value_t*);
-void read_vargs_int(va_list, type_value_t*);
-void read_vargs_uint(va_list, type_value_t*);
-void read_vargs_long(va_list, type_value_t*);
-void read_vargs_ulong(va_list, type_value_t*);
-void read_vargs_float(va_list, type_value_t*);
-void read_vargs_double(va_list, type_value_t*);
-void read_vargs_str(va_list, type_value_t*);
-void read_vargs_ptr(va_list, type_value_t*);
+void insert_vargs_char(va_list, type_value_t*);
+void insert_vargs_uchar(va_list, type_value_t*);
+void insert_vargs_short(va_list, type_value_t*);
+void insert_vargs_ushort(va_list, type_value_t*);
+void insert_vargs_int(va_list, type_value_t*);
+void insert_vargs_uint(va_list, type_value_t*);
+void insert_vargs_long(va_list, type_value_t*);
+void insert_vargs_ulong(va_list, type_value_t*);
+void insert_vargs_float(va_list, type_value_t*);
+void insert_vargs_double(va_list, type_value_t*);
+void insert_vargs_str(va_list, type_value_t*);
+void insert_vargs_ptr(va_list, type_value_t*);
 
-void write_vargs_char(va_list, type_value_t*);
-void write_vargs_uchar(va_list, type_value_t*);
-void write_vargs_short(va_list, type_value_t*);
-void write_vargs_ushort(va_list, type_value_t*);
-void write_vargs_int(va_list, type_value_t*);
-void write_vargs_uint(va_list, type_value_t*);
-void write_vargs_long(va_list, type_value_t*);
-void write_vargs_ulong(va_list, type_value_t*);
-void write_vargs_float(va_list, type_value_t*);
-void write_vargs_double(va_list, type_value_t*);
-void write_vargs_str(va_list, type_value_t*);
-void write_vargs_ptr(va_list, type_value_t*);
+// void write_vargs_char(va_list, type_value_t*);
+// void write_vargs_uchar(va_list, type_value_t*);
+// void write_vargs_short(va_list, type_value_t*);
+// void write_vargs_ushort(va_list, type_value_t*);
+// void write_vargs_int(va_list, type_value_t*);
+// void write_vargs_uint(va_list, type_value_t*);
+// void write_vargs_long(va_list, type_value_t*);
+// void write_vargs_ulong(va_list, type_value_t*);
+// void write_vargs_float(va_list, type_value_t*);
+// void write_vargs_double(va_list, type_value_t*);
+// void write_vargs_str(va_list, type_value_t*);
+// void write_vargs_ptr(va_list, type_value_t*);
 
-void bit_cpy_char(type_value_t*, type_value_t*);
-void bit_cpy_uchar(type_value_t*, type_value_t*);
-void bit_cpy_short(type_value_t*, type_value_t*);
-void bit_cpy_ushort(type_value_t*, type_value_t*);
-void bit_cpy_int(type_value_t*, type_value_t*);
-void bit_cpy_uint(type_value_t*, type_value_t*);
-void bit_cpy_long(type_value_t*, type_value_t*);
-void bit_cpy_ulong(type_value_t*, type_value_t*);
-void bit_cpy_float(type_value_t*, type_value_t*);
-void bit_cpy_double(type_value_t*, type_value_t*);
-void bit_cpy_str(type_value_t*, type_value_t*);
-void bit_cpy_ptr(type_value_t*, type_value_t*);
+// void bit_cpy_char(type_value_t*, type_value_t*);
+// void bit_cpy_uchar(type_value_t*, type_value_t*);
+// void bit_cpy_short(type_value_t*, type_value_t*);
+// void bit_cpy_ushort(type_value_t*, type_value_t*);
+// void bit_cpy_int(type_value_t*, type_value_t*);
+// void bit_cpy_uint(type_value_t*, type_value_t*);
+// void bit_cpy_long(type_value_t*, type_value_t*);
+// void bit_cpy_ulong(type_value_t*, type_value_t*);
+// void bit_cpy_float(type_value_t*, type_value_t*);
+// void bit_cpy_double(type_value_t*, type_value_t*);
+// void bit_cpy_str(type_value_t*, type_value_t*);
+// void bit_cpy_ptr(type_value_t*, type_value_t*);
 
 
 #endif
