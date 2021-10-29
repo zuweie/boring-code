@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:09:36
- * @LastEditTime: 2021-10-29 16:49:41
+ * @LastEditTime: 2021-10-29 17:32:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_value_def.c
@@ -10,7 +10,7 @@
 #include "__built_in_type_adapters.h"
 #include "__type_value_def.h"
 
-static T_adapter _T_ADAPTERS[MAX_T_DEF_SLOT_SIZE][4] = 
+static T_adapter __T_ADAPTERS_TAB[MAX_T_DEF_SLOT_SIZE][4] = 
 {
     {0,0,0,0},
     {&cmp_char, &hash_char, &setup_char, &vargs_char},
@@ -31,7 +31,7 @@ static T_adapter _T_ADAPTERS[MAX_T_DEF_SLOT_SIZE][4] =
     {0,0,0,0},
 };
 
-static T_def _T_DEFS[MAX_T_DEF_SLOT_SIZE] = 
+static T_def __T_DEFS_BASE[MAX_T_DEF_SLOT_SIZE] = 
 {
     // 0
     {0, 0},
@@ -56,19 +56,24 @@ static T_def _T_DEFS[MAX_T_DEF_SLOT_SIZE] =
 };
 
 
-int T_def_reg(int T_size, 
+int T_def_reg(
+    int T_size, 
     int (*cmp)(type_value_t*, type_value_t*, int), 
-    int(*hasher)(type_value_t*, int, int), 
+    int (*hasher)(type_value_t*, int, int), 
     int (*setup)(type_value_t*, type_value_t*), 
-    int(*vargs_read)(va_list, type_value_t*, int)
+    int (*vargs_reader)(va_list, type_value_t*, int)
 )
 {
     for (int i=1; i<MAX_T_DEF_SLOT_SIZE; ++i) {
-        T_def* _def= T_def_get(i);
+        T_def* _def = &__T_DEFS_BASE[i];
         if (_def->ty_id == 0) {
             _def->ty_id = i;
             _def->ty_size = T_size;
         }
+        __T_ADAPTERS_TAB[i][adapter_cmp] = cmp;
+        __T_ADAPTERS_TAB[i][adapter_hash] = hasher;
+        __T_ADAPTERS_TAB[i][adapter_setup] = setup;
+        __T_ADAPTERS_TAB[i][adapter_vargs] = vargs_reader;
         return i;
     }
     return -1;
@@ -76,15 +81,15 @@ int T_def_reg(int T_size,
 
 int T_def_unreg(int T_id) 
 {
-    _T_DEFS[T_id].T_id = 0;
+    __T_DEFS_BASE[T_id].ty_id = 0;
 }
 
 int T_def_is_reg(int T_id) 
 {
-    return (T_id < 1 || T_id > MAX_T_DEF_SLOT_SIZE)? 0 : _T_DEFS[T_id].T_id > 0;
+    return (T_id < 1 || T_id > MAX_T_DEF_SLOT_SIZE)? 0 : __T_DEFS_BASE[T_id].ty_id > 0;
 }
 
-T_def* T_def_get(int T_id)
+T_def* T_def_get_base(int T_id)
 {
-    return &_T_DEFS[T_id];
+    return &__T_DEFS_BASE[T_id];
 }
