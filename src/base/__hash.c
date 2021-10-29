@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-10-26 12:45:22
+ * @LastEditTime: 2021-10-28 11:41:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -46,8 +46,8 @@ static iterator_t __hash_last(container_t* container)
 static int __hash_move(iterator_t* iter, int step) 
 {
     hash_t* hash = iter->container;
-    hash_inner_list_node_t* node = container_of(iter->reference, hash_inner_list_node_t, w)
-    for (int next = step ; next; next = (step > 0 ? next - 1 : next + 1)) {
+    hash_inner_list_node_t* node = container_of(iter->reference, hash_inner_list_node_t, w);
+    for (int next = step ; next; step > 0 ? next-- : next++) {
         if (step > 0) node = node->next;
         else if (step < 0) node = node->prev;
     }
@@ -147,8 +147,7 @@ static int __hash_remove(container_t* container, iterator_t pos, void* rdata)
 
 static size_t _hash_size(container_t* container) 
 {
-    hashmap_t* hash = (hash_t*) container;
-    return container_size(hash->_hash_table);
+    return container_size(container);
 }
 
 container_t* hash_create(T_def* __ty_def, int slot_size, unsigned char multi, int (*setup)(type_value_t*, type_value_t*), int (*conflict_fix)(type_value_t*, type_value_t*)) 
@@ -177,14 +176,15 @@ container_t* hash_create(T_def* __ty_def, int slot_size, unsigned char multi, in
         *__ty_def, 
         __mem_pool
     );
-    return hashmap;
+    return hash;
 }
 
 int hashmap_destroy(container_t* container)
 {
-    hashmap_t* hashmap = (hashmap_t*)container;
-    container_destroy(list, hashmap->_hash_table);
-    alloc_destroy(container_mem_pool(hashmap));
-    free(hashmap);
+    hash_t* hash = (hash_t*)container;
+    //container_destroy(list, hashmap->_hash_table);
+    // TODO : 内部的 list 销毁。我操他妈的个 B。
+    alloc_destroy(container->mem_pool);
+    free(hash);
     return 0;
 }

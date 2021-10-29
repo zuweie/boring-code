@@ -1,71 +1,73 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:09:36
- * @LastEditTime: 2021-10-27 12:59:35
+ * @LastEditTime: 2021-10-29 16:49:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_value_def.c
  */
 #include <stdlib.h>
-#include "__built_in_type.h"
+#include "__built_in_type_adapters.h"
 #include "__type_value_def.h"
+
+static T_adapter _T_ADAPTERS[MAX_T_DEF_SLOT_SIZE][4] = 
+{
+    {0,0,0,0},
+    {&cmp_char, &hash_char, &setup_char, &vargs_char},
+    {&cmp_uchar, &hash_uchar, &setup_uchar, &vargs_uchar},
+    {&cmp_int, &hash_int, &setup_int, &vargs_int},
+    {&cmp_uint, &hash_uint, &setup_uint, &vargs_uint},
+    {&cmp_long, &hash_long, &setup_long, &vargs_long},
+    {&cmp_ulong, &hash_ulong, &setup_long, &vargs_long},
+    {&cmp_float, &hash_float, &setup_float, &vargs_float},
+    {&cmp_double, &hash_double, &setup_double, &vargs_double},
+    {&cmp_str, &hash_str, &setup_str, &setup_str},
+    {&cmp_ptr, &hash_ptr, &setup_ptr, &vargs_ptr},
+
+    {0,0,0,0},
+    {0,0,0,0},
+    {0,0,0,0},
+    {0,0,0,0},
+    {0,0,0,0},
+};
 
 static T_def _T_DEFS[MAX_T_DEF_SLOT_SIZE] = 
 {
     // 0
-    {0, 0, NULL, NULL, {0,0,0,0}},
-    // 1 ~ 13
-    {char_t, sizeof(char), &cmp_char, &hash_char, {}},
-    {uchar_t, sizeof(unsigned char), &cmp_uchar, &hash_uchar, {&read_vargs_uchar, &write_vargs_uchar, &bit_cpy_uchar}},
-    {short_t, sizeof(short), &cmp_short, &hash_short, {&read_vargs_short, &write_vargs_short, &bit_cpy_short}},
-    {ushort_t, sizeof(unsigned short), &cmp_ushort, &hash_ushort, {&read_vargs_ushort, &write_vargs_ushort, &bit_cpy_ushort}},
-    {int_t, sizeof(int), &cmp_int, &hash_int, {&read_vargs_int, &write_vargs_int, &bit_cpy_int}},
-    {uint_t, sizeof(unsigned int), &cmp_uint, &hash_uint, {&read_vargs_uint, &write_vargs_uint, &bit_cpy_uint}},
-    {long_t, sizeof(long), &cmp_long, &hash_long, {&read_vargs_long, &write_vargs_long, &bit_cpy_long}},
-    {ulong_t, sizeof(unsigned long), &cmp_ulong, &hash_ulong, {&read_vargs_ulong, &write_vargs_ulong, &bit_cpy_ulong}},
-    {fl_t, sizeof(float), &cmp_flv, &hash_float, {&read_vargs_float, &write_vargs_float, &bit_cpy_float}},
-    {db_t, sizeof(double), &cmp_dbl, &hash_double, {&read_vargs_double, &write_vargs_double, &bit_cpy_double}}, 
-    {str_t, sizeof(char*), &cmp_str, &hash_str, {&read_vargs_str, &write_vargs_str, &bit_cpy_str}},
-    {ptr_t, sizeof(char*), &cmp_ptr, &hash_ptr, {&read_vargs_ptr, &write_vargs_ptr, &bit_cpy_ptr}},
+    {0, 0},
+    // 1 ~ 10
+    {char_t, sizeof(char)},
+    {uchar_t, sizeof(unsigned char)},
+    {int_t, sizeof(int)},
+    {uint_t, sizeof(unsigned int)},
+    {long_t, sizeof(long)},
+    {ulong_t, sizeof(unsigned long)},
+    {fl_t, sizeof(float)},
+    {db_t, sizeof(double)}, 
+    {str_t, sizeof(char*)},
+    {ptr_t, sizeof(char*)},
 
-    // 14 ~ 31 保留自用
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-    {0, 0, NULL, NULL, {NULL, NULL, NULL}},
-}
-
-
-static T_vargs_adapter _T_VARGS_ADAPTER[MAX_T_VARGS_ADAPTER_SLOT_SIZE] {
-    {0, NULL},
-    {sizeof(char), &}
+    // 11 ~ 15 保留备用
+    {0, 0, NULL, NULL},
+    {0, 0, NULL, NULL},
+    {0, 0, NULL, NULL},
+    {0, 0, NULL, NULL},
+    {0, 0, NULL, NULL},
 };
-int T_def_reg(int T_size, int (*cmp)(type_value_t*, type_value_t*), int(*hasher)(type_value_t*, int), int (*read_vargs)(va_list, type_value_t*), int (*write_args)(va_list, type_value_t*), int(*bit_cpy)(type_value_t*, type_value_t*))
+
+
+int T_def_reg(int T_size, 
+    int (*cmp)(type_value_t*, type_value_t*, int), 
+    int(*hasher)(type_value_t*, int, int), 
+    int (*setup)(type_value_t*, type_value_t*), 
+    int(*vargs_read)(va_list, type_value_t*, int)
+)
 {
     for (int i=1; i<MAX_T_DEF_SLOT_SIZE; ++i) {
         T_def* _def= T_def_get(i);
         if (_def->ty_id == 0) {
             _def->ty_id = i;
             _def->ty_size = T_size;
-            _def->ty_cmp = cmp;
-            _def->ty_hasher = hasher;
-            _def->ty_adapter.read_vargs = read_vargs;
-            _def->ty_adapter.write_vargs = write_args;
-            _def->ty_adapter.bit_cpy = bit_cpy;
         }
         return i;
     }

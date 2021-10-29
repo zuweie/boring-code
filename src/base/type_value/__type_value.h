@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:10:29
- * @LastEditTime: 2021-10-27 13:36:25
+ * @LastEditTime: 2021-10-28 13:51:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__type_value.h
@@ -29,6 +29,7 @@
     } \
 })
 #define type_value_(ty_ptr, type) *((type*)(ty_ptr))
+
 typedef char type_value_t;
 
 #endif

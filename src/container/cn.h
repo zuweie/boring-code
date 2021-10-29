@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-26 15:53:42
+ * @LastEditTime: 2021-10-27 13:40:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -44,6 +44,8 @@ enum {
     customized_entity = (unsigned long) 1 << 13,
     customized_compare = (unsigned long) 1 << 12,
     customized_hasher = (unsigned long) 1 << 11,
+    customized_insert_vargs_adapter = (unsigned long) 1 << 10,
+    customized_find_vargs_adapter = (unsigned long) 1 << 9,
 };  
 
 enum {

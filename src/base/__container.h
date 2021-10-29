@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-26 13:09:42
+ * @LastEditTime: 2021-10-27 15:10:00
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -28,6 +28,7 @@
 #define container_tail(container_ptr) ({iterator_t last=container_last(container_ptr); iterator_move(&last, 1); last;})
 // 容器的
 #define container_access(container_ptr, step) ({iterator_t first=container_first(container_ptr); iterator_move(&first, step); first;})
+
 // 容器搜索
 #define container_search(container_ptr, offset, find, compare) \
     (((container_t*)(container_ptr))->search(((container_t*)(container_ptr)), offset, find, compare))
