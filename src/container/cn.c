@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-10-26 15:53:22
+ * @LastEditTime: 2021-11-01 10:58:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -116,17 +116,16 @@ CN CN_create(unsigned long build_code, ...)
     va_list valist;
     var_start(valist, build_code);
 
-    cn_t* cn_ptr                = NULL;
-    entity_template_t* etpl_ptr = NULL;
+    cn_t* cn_ptr         = NULL;
+    T_clazz* type_clazz  = NULL;
 
     if (cn) {
-        void* type_info      = NULL;
         container_t* eng_ptr = NULL;
 
-        void* cmp_func = NULL;
-        void* hash_func = NULL;
-        void* conflict_fix_func = NULL;
-        void* setup_func = NULL;
+        // void* cmp_func = NULL;
+        // void* hash_func = NULL;
+        // void* setup_func = NULL;
+        // void* vargs_reader_func = NULL;
 
         // 1 初始化容器的数据类型
         if (build_code & use_entity) {
@@ -144,7 +143,9 @@ CN CN_create(unsigned long build_code, ...)
                     err = err_invalid_ent_keys_number;
                     goto BUILD_FAIL;
                 }
-                etpl_ptr = (entity_template_t*)malloc(sizeof(entity_template_t) + filed_num * sizeof(int));
+                entity_template_t* etpl = (entity_template_t*)malloc(sizeof(entity_template_t) + filed_num * sizeof(int));
+                type_clazz = etpl;
+
                 etpl_ptr->field_types = (int*)(&etpl_ptr[1]);
 
                 for (i=0; i<filed_num; ++i) {
@@ -158,7 +159,9 @@ CN CN_create(unsigned long build_code, ...)
                 etpl_ptr->value_idx = value_index;
             } else {
                 // 使用默认的复合体，也就是一个key, 一个value
-                etpl_ptr = (entity_template_t*)malloc(sizeof(entity_template_t) + 2 * sizeof(int));
+                entity_template_t* etpl_ptr = (entity_template_t*)malloc(sizeof(entity_template_t) + 2 * sizeof(int));
+                type_clazz = etpl_ptr;
+
                 etpl_ptr->field_types = (int*)(&etpl_ptr[1]);
                 etpl_ptr->field_types[0] = va_arg(valist, int);
                 etpl_ptr->field_types[1] = va_arg(valist, int);
@@ -173,7 +176,10 @@ CN CN_create(unsigned long build_code, ...)
                 etpl_ptr->field_num = 2;
                 etpl_ptr->value_idx = 1;
             }
-            type_info = etpl_ptr;
+            //初始化 type_clazz，entity 本质就是一个 pointer 类型
+            type_clazz->_def = T_def_get(ptr_t);
+
+
         } else {
             // 使用单值
             int type = va_arg(valist, int);
@@ -181,65 +187,61 @@ CN CN_create(unsigned long build_code, ...)
                 err = err_unsupported_type;
                 goto BUILD_FAIL;
             }
-            type_info = (void*)type;
+            type_clazz = (T_clazz*)malloc(sizeof(T_clazz));
+            type_clazz->_def = T_def_get(type);
         }
-        // 2 使用自定义的比较函数
+
+        // 2 初始化函数行为。
         if (build_code & customized_compare) {
-            cmp_func = (void*)va_arg(valist, void*);
+            type_clazz->_adapter[e_cmp] = (T_adapter)va_arg(valist, T_adapter);
         } else if (build_code & use_entity) {
-            cmp_func = (void*)&cmp_entity;
-        } 
+            type_clazz->_adapter[e_cmp] = (T_adapter)&cmp_entity;
+        } else {
+            type_clazz->_adapter[e_cmp] = T_adapter_get(type_clazz->_def->ty_id, e_cmp);
+        }
 
         if (build_code & customized_hasher) {
-            hash_func = (void*)va_arg(valist, void*);
+            type_clazz->_adapter[e_hash] = (T_adapter)va_arg(valist, T_adapter);
         } else if (build_code & use_entity) {
-            hash_func = (void*)&hash_entity;
+            type_clazz->_adapter[e_hash] = (T_adapter)&hash_entity;
+        } else {
+            type_clazz->_adapter[e_hash] = T_adapter_get(type_clazz->_def->ty_id, e_hash);
         }
 
-        if ((build_code & TREE_SET || build_code & HASH_SET) && ( build_code & use_entity) {
-            conflict_fix_func = (void*)&conflict_fix_entity;
-            setup_func        = (void*)&setup_entity;
+        if (build_code & customized_setup) {
+            type_clazz->_adapter[e_setup] = (T_adapter)va_arg(valist, T_adapter);
+        } else if (build_code & use_entity) {
+            type_clazz->_adapter[e_setup] = (T_adapter)&setup_entity;
+        } else {
+            type_clazz->_adapter[e_setup] = T_adapter_get(type_clazz->_def->ty_id, e_setup);
+        }
+        
+        if (build_code & customized_vargs_reader) {
+            type_clazz->_adapter[e_vargs] = (T_adapter)va_arg(valist, T_adapter);
+        } else if (build_code & use_entity) {
+            type_clazz->_adapter[e_vargs] = (T_adapter)&vargs_reader_entity;
+        } else {
+            type_clazz->_adapter[e_vargs] = T_adapter_get(type_clazz->_def->ty_id, e_vargs);
         }
         
         // 要认真开始 建造容器了
         cn_ptr = (cn_t*)malloc(sizeof(cn_t));
         T_def* _def;
         if (build_code & VECTOR) {
-            if (build_code & use_entity) {
-                _def = T_def_get(ptr_t);
-            } else {
-                _def = T_def_get((int)type_info);
-            }
-            eng_ptr = container_create(vector, _def);
+            eng_ptr = container_create(vector, type_clazz);
         } else if (build_code & LIST) {
-            if (build_code & use_entity) {
-                _def = T_def_get(ptr_t);                
-            } else {
-                _def = T_def_get((int)type_info);
-            }
-            if (cmp_func) _def->ty_cmp = cmp_func;
-            eng_ptr = container_create(list, _def);
+            eng_ptr = container_create(list, type_clazz);
         } else if (build_code & TREE_SET) {
             unsigned char multi = build_code & multi_key;
-            if (build_code & use_entity) {
-                _def = T_def_get(ptr_t);
-            } else {
-                _def = T_def_get((int)type_info);
-            }
-            eng = container_create(rb_tree, multi, setup_func, conflict_fix_func);
+            eng_ptr = container_create(rb_tree, multi, type_clazz);
         } else if (build_code & HASH_SET) {
             unsigned char multi = build_code & multi_key;
-            if (build_code & use_entity) {
-                _def = T_def_get(ptr_t);
-            } else {
-                _def = T_def_get((int)type_info);
-            }
-            eng = container_create(hash, multi, setup_func, conficlt_fix_func);
+            eng_ptr = container_create(hash, multi, type_clazz);
         }
         
         cn_ptr->build_code = build_code;
         cn_ptr->eng = eng_ptr;
-        cn_ptr->type_info = type_info;
+        cn_ptr->type_clazz = type_clazz;
         cn_ptr->is_forwag = 1;
 
     } else {
@@ -248,7 +250,7 @@ CN CN_create(unsigned long build_code, ...)
     BUILD_FAIL:
     va_end(valist);
     if (err != err_ok) {
-        if (etpl_ptr) free(etpl_ptr);
+        if (type_clazz) free(type_clazz);
         if (cn_ptr) free(cn_ptr);
         return err;
     } else {

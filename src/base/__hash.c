@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-10-28 11:41:19
+ * @LastEditTime: 2021-11-01 11:09:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -150,7 +150,7 @@ static size_t _hash_size(container_t* container)
     return container_size(container);
 }
 
-container_t* hash_create(T_def* __ty_def, int slot_size, unsigned char multi, int (*setup)(type_value_t*, type_value_t*), int (*conflict_fix)(type_value_t*, type_value_t*)) 
+container_t* hash_create(T_clazz* __type_clazz, int slot_size, unsigned char multi) 
 {
     hash_t* hash = (hash_t*) malloc (sizeof(hash_t) + sizeof(hash_inner_list_node_t*)*slot_size);
     pool_t* __mem_pool = alloc_create(0);
@@ -173,7 +173,7 @@ container_t* hash_create(T_def* __ty_def, int slot_size, unsigned char multi, in
         __hash_insert, 
         __hash_remove, 
         __hash_size,
-        *__ty_def, 
+        __type_clazz, 
         __mem_pool
     );
     return hash;

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-10-27 15:10:00
+ * @LastEditTime: 2021-11-01 09:43:24
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -53,7 +53,7 @@
 #define container_size(container_ptr) \
     (((container_t*)(container_ptr))->size((container_t*)container_ptr))
 
-#define initialize_container(container_ptr, __first, __last, __move, __search, __insert, __remove, __size, __type_def, __mem_pool) \
+#define initialize_container(container_ptr, __first, __last, __move, __search, __insert, __remove, __size, __type_clazz, __mem_pool) \
 ({ \
     ((container_t*)(container_ptr))->first  = (__first);                                        \
     ((container_t*)(container_ptr))->last   = (__last);                                         \
@@ -62,7 +62,7 @@
     ((container_t*)(container_ptr))->insert = (__insert);                                       \
     ((container_t*)(container_ptr))->remove = (__remove);                                       \
     ((container_t*)(container_ptr))->size   = (__size);                                         \
-    ((container_t*)(container_ptr))->type_def = (__type_def);                                   \
+    ((container_t*)(container_ptr))->type_clazz = (__type_clazz);                               \
     ((container_t*)(container_ptr))->mem_pool = (__mem_pool);                                   \
 })
 
@@ -77,7 +77,7 @@ struct _container {
     int (*insert) (container_t* container_ptr, iterator_t iter, type_value_t* data); 
     int (*remove) (container_t* container_ptr, iterator_t iter, void* rdata);
     int (*size) (container_t* container_ptr);
-    T_def type_def;
+    T_class *type_clazz;
     pool_t* mem_pool;
 };
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-10-27 13:40:09
+ * @LastEditTime: 2021-11-01 10:57:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -44,8 +44,8 @@ enum {
     customized_entity = (unsigned long) 1 << 13,
     customized_compare = (unsigned long) 1 << 12,
     customized_hasher = (unsigned long) 1 << 11,
-    customized_insert_vargs_adapter = (unsigned long) 1 << 10,
-    customized_find_vargs_adapter = (unsigned long) 1 << 9,
+    customized_setup = (unsigned long) 1 << 10,
+    customized_vargs_reader = (unsigned long) 1 << 9,
 };  
 
 enum {
@@ -79,7 +79,7 @@ typedef struct __cn cn_t;
 struct __cn {
     container_t* eng;
     unsigned long build_code;
-    void* type_info;
+    T_clazz* type_clazz;
     unsigned char is_forward;
 };
 

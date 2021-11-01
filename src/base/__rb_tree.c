@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-10-27 15:11:23
+ * @LastEditTime: 2021-11-01 11:07:09
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -561,7 +561,7 @@ static size_t __rb_tree_size(container_t* container)
 }
 
 
-container_t* rb_tree_create(T_def* _def, unsigned char multi, int(*setup)(type_value_t*, type_value_t*), int (*conflict_fix)(type_value_t*, type_value_t*));
+container_t* rb_tree_create(T_clazz* __type_clazz, unsigned char multi);
 {
     container_t* tree = (rb_tree_t*) malloc( sizeof(rb_tree_t) );
     pool_t* _mem_pool = alloc_create(0);
@@ -574,10 +574,10 @@ container_t* rb_tree_create(T_def* _def, unsigned char multi, int(*setup)(type_v
         __rb_tree_insert, 
         __rb_tree_remove, 
         __rb_tree_size,
-        *__def
+        __type_clazz,
         _mem_pool
     );
-    __init_rb_tree(tree, multi, setup, conflict_fix);
+    __init_rb_tree(tree, multi);
     return tree;
 }
 int rb_tree_destroy(container_t* tree) {

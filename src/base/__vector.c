@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2021-10-26 13:22:05
+ * @LastEditTime: 2021-11-01 11:03:56
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -132,7 +132,7 @@ static size_t __vector_size (container_t* container)
 }
 /** container **/
 
-container_t* vector_create(T_def* __ty_def) {
+container_t* vector_create(T_clazz* __type_clazz) {
     vector_t* vector = (vector_t*) malloc (sizeof(vector_t));
     pool_t* __mem_pool = alloc_create(0);
     initialize_container(
@@ -144,7 +144,7 @@ container_t* vector_create(T_def* __ty_def) {
         __vector_insert, 
         __vector_remove, 
         __vector_size,
-        *__ty_def, 
+        __type_clazz, 
         __mem_pool
     );
     vector->_size = 0;

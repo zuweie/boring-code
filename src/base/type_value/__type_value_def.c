@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:09:36
- * @LastEditTime: 2021-10-29 17:32:00
+ * @LastEditTime: 2021-11-01 10:36:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_value_def.c
@@ -48,20 +48,20 @@ static T_def __T_DEFS_BASE[MAX_T_DEF_SLOT_SIZE] =
     {ptr_t, sizeof(char*)},
 
     // 11 ~ 15 保留备用
-    {0, 0, NULL, NULL},
-    {0, 0, NULL, NULL},
-    {0, 0, NULL, NULL},
-    {0, 0, NULL, NULL},
-    {0, 0, NULL, NULL},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
 };
 
 
 int T_def_reg(
     int T_size, 
-    int (*cmp)(type_value_t*, type_value_t*, int), 
-    int (*hasher)(type_value_t*, int, int), 
-    int (*setup)(type_value_t*, type_value_t*), 
-    int (*vargs_reader)(va_list, type_value_t*, int)
+    adapter_cmp cmp,
+    adapter_hasher hasher,
+    adapter_setup setup,
+    adapter_vargs_reader vargs_reader
 )
 {
     for (int i=1; i<MAX_T_DEF_SLOT_SIZE; ++i) {
@@ -70,10 +70,10 @@ int T_def_reg(
             _def->ty_id = i;
             _def->ty_size = T_size;
         }
-        __T_ADAPTERS_TAB[i][adapter_cmp] = cmp;
-        __T_ADAPTERS_TAB[i][adapter_hash] = hasher;
-        __T_ADAPTERS_TAB[i][adapter_setup] = setup;
-        __T_ADAPTERS_TAB[i][adapter_vargs] = vargs_reader;
+        __T_ADAPTERS_TAB[i][e_cmp] = cmp;
+        __T_ADAPTERS_TAB[i][e_hash] = hasher;
+        __T_ADAPTERS_TAB[i][e_setup] = setup;
+        __T_ADAPTERS_TAB[i][e_vargs] = vargs_reader;
         return i;
     }
     return -1;
@@ -82,6 +82,8 @@ int T_def_reg(
 int T_def_unreg(int T_id) 
 {
     __T_DEFS_BASE[T_id].ty_id = 0;
+    __T_DEFS_BASE[T_id].ty_size = 0;
+    memset(__T_ADAPTERS_TAB[T_id], 0, 4 * sizeof(T_adapter));
 }
 
 int T_def_is_reg(int T_id) 
@@ -89,7 +91,12 @@ int T_def_is_reg(int T_id)
     return (T_id < 1 || T_id > MAX_T_DEF_SLOT_SIZE)? 0 : __T_DEFS_BASE[T_id].ty_id > 0;
 }
 
-T_def* T_def_get_base(int T_id)
+T_def T_def_get(int T_id) 
 {
-    return &__T_DEFS_BASE[T_id];
+    return __T_DEFS_BASE[T_id];
+}
+
+T_adapter T_adapter_get(int T_id, adapter_t adapter) 
+{
+    return __T_ADAPTERS_TAB[T_id][adapter];
 }
