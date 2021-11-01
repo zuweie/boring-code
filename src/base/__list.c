@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-11-01 11:08:00
+ * @LastEditTime: 2021-11-01 12:24:15
  * @LastEditors: Please set LastEditors
  */
 
@@ -33,11 +33,7 @@ static iterator_t __list_last (container_t* plist)
 static int __list_move(iterator_t* it, int step)
 {
     list_node_t* pnode = container_of(it->refer, list_node_t, w);
-   
-    // for(int next = step; next; next = step > 0? --step:++step) {
-    //     if (next > 0) pnode = pnode->next;
-    //     else if (next < 0) pnode = pnode->prev;
-    // }
+
     for (int next = step; next; next = step > 0? next - 1: next + 1) {
         if (step > 0) pnode = pnode->next;
         else if (step < 0) pnode = pnode->prev;
@@ -53,7 +49,7 @@ static iterator_t __list_search (container_t* container, iterator_t offset, type
 
     for(;!iterator_equal(first, tail); iterator_next(first)) {
         if ( (compare && compare(iterator_reference(first), find) == 0) 
-            || container->type_def.ty_cmp(iterator_reference(first), find) == 0) {
+            || (T_cmp(container->type_clazz)(iterator_reference(first), find， 0) == 0) {
             return first;
         } 
     }
@@ -65,10 +61,11 @@ static void* __list_insert(container_t* container, iterator_t pos, type_value_t*
 {
 
     list_node_t* insert = container_of(iterator_reference(pos), list_node_t, w);
-    list_node_t* pnew   = allocate(container->mem_pool, sizeof(list_node_t) + container->type_def.T_size);
+    list_node_t* pnew   = allocate(container->mem_pool, sizeof(list_node_t) + T_size(container->type_clazz));
     // 赋值
     //container->type_def.T_adapter.bit_cpy(pnew->w, data);
-    type_value_cpy(pnew->w, data, container->type_def.ty_size);
+    //type_value_cpy(pnew->w, data, container->type_def.ty_size);
+    T_setup(container->type_clazz)(pnew->w, data);
     // 插入
     pnew->prev = insert->prev;
     pnew->next = insert;
@@ -91,7 +88,7 @@ static int __list_remove(container_t* container, iterator_t pos, void* rdata)
 
     // 将要删除的值返回出去。
     //if (rdata) container->type_def.ty_adapter.bit_cpy(rdata, remove->w);
-    if (rdata) type_value_cpy(rdata, remove->w, container->ty, container->type_def.ty_size);
+    if (rdata) type_value_cpy(rdata, remove->w, T_size(container->type_clazz));
     // 回收
     deallocate(container_mem_pool(container), remove);
     ((list_t*)container)->_size--;
@@ -102,16 +99,6 @@ static size_t __list_size(container_t* container)
 {
     return ((list_t*)container)->_size;
 }
-
-// static int __list_sort(container_t* container, int(*compare)(type_value_t, type_value_t))
-// {
-//     return quick_sort(container_first(container), container_last(container), compare);
-// }
-
-// static int __list_wring(container_t* container, int(*compare)(type_value_t, type_value_t), int(*callback)(void*))
-// {
-//     return wring(container, compare, callback);
-// }
 
 container_t* list_create(T_clazz* __type_clazz) {
     

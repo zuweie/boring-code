@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-01 10:58:13
+ * @LastEditTime: 2021-11-01 15:50:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -197,7 +197,7 @@ CN CN_create(unsigned long build_code, ...)
         } else if (build_code & use_entity) {
             type_clazz->_adapter[e_cmp] = (T_adapter)&cmp_entity;
         } else {
-            type_clazz->_adapter[e_cmp] = T_adapter_get(type_clazz->_def->ty_id, e_cmp);
+            type_clazz->_adapter[e_cmp] = T_adapter_get(type_clazz->_def.ty_id, e_cmp);
         }
 
         if (build_code & customized_hasher) {
@@ -205,7 +205,7 @@ CN CN_create(unsigned long build_code, ...)
         } else if (build_code & use_entity) {
             type_clazz->_adapter[e_hash] = (T_adapter)&hash_entity;
         } else {
-            type_clazz->_adapter[e_hash] = T_adapter_get(type_clazz->_def->ty_id, e_hash);
+            type_clazz->_adapter[e_hash] = T_adapter_get(type_clazz->_def.ty_id, e_hash);
         }
 
         if (build_code & customized_setup) {
@@ -213,7 +213,7 @@ CN CN_create(unsigned long build_code, ...)
         } else if (build_code & use_entity) {
             type_clazz->_adapter[e_setup] = (T_adapter)&setup_entity;
         } else {
-            type_clazz->_adapter[e_setup] = T_adapter_get(type_clazz->_def->ty_id, e_setup);
+            type_clazz->_adapter[e_setup] = T_adapter_get(type_clazz->_def.ty_id, e_setup);
         }
         
         if (build_code & customized_vargs_reader) {
@@ -221,7 +221,7 @@ CN CN_create(unsigned long build_code, ...)
         } else if (build_code & use_entity) {
             type_clazz->_adapter[e_vargs] = (T_adapter)&vargs_reader_entity;
         } else {
-            type_clazz->_adapter[e_vargs] = T_adapter_get(type_clazz->_def->ty_id, e_vargs);
+            type_clazz->_adapter[e_vargs] = T_adapter_get(type_clazz->_def.ty_id, e_vargs);
         }
         
         // 要认真开始 建造容器了
@@ -242,7 +242,7 @@ CN CN_create(unsigned long build_code, ...)
         cn_ptr->build_code = build_code;
         cn_ptr->eng = eng_ptr;
         cn_ptr->type_clazz = type_clazz;
-        cn_ptr->is_forwag = 1;
+        cn_ptr->is_forward = 1;
 
     } else {
         err = err_out_of_capcity;
@@ -263,19 +263,11 @@ CN CN_finalize(CN cn, int(*cleanup)(T*))
     // TODO : release the container;
 }
 
-void* CN_type_info(CN cn) 
+T_clazz* CN_ty_clazz(CN cn) 
 {
-    return CN_(cn)->type_info;
+    return CN_(cn)->type_clazz;
 }
 
-T_def* CN_type_def(CN cn) 
-{
-    if (! (CN_(cn)->build_code & use_entity)) {
-        return T_get_def( (int)(CN_(cn)->type_info));
-    } else {
-        return NULL;
-    }
-}
 // sequence function
 int CN_add(CN cn, ...) 
 {

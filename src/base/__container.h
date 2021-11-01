@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-11-01 09:43:24
+ * @LastEditTime: 2021-11-01 13:34:53
  * @LastEditors: Please set LastEditors
  */
 #ifndef __CONTAINER_H__
@@ -77,7 +77,7 @@ struct _container {
     int (*insert) (container_t* container_ptr, iterator_t iter, type_value_t* data); 
     int (*remove) (container_t* container_ptr, iterator_t iter, void* rdata);
     int (*size) (container_t* container_ptr);
-    T_class *type_clazz;
+    T_clazz *type_clazz;
     pool_t* mem_pool;
 };
 

@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-11-01 10:57:30
+ * @LastEditTime: 2021-11-01 15:55:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
  */
 #ifndef __CN_H__
 #define __CN_H__
-#include "base/type_value/__built_in_type.h"
+#include "base/type_value/__built_in_type_adapters.h"
 #include "base/__container.h"
 #include "it.h"
 #include "ty.h"
@@ -16,20 +16,19 @@
 #define CAPACITY_NUMBER 1024
 
 #define CN_DEFINE_LOCAL_INDEPENDENT_ENTITY(cn, ent_name, accessor) \
-    entity_template_t* marco_##ent_name##_tpl = CN_type_info(cn); \
+    entity_template_t* marco_##ent_name##_tpl = CN_ty_clazz(cn); \
     int marco_##ent_name##_local_entity_body_size = entity_tpl_cal_independent_entity_body_size(marco_##ent_name##_tpl, accessor); \
     T marco_##ent_name##_ent_body[marco_##ent_name##_local_entity_body_size]; \
     entity_format_independent_entity_body(marco_##ent_name##_ent_body, marco_##ent_name##_tpl, accessor); \
     entity_t* ent_name = marco_##ent_name##_ent_body
 
-#define CN_READ_ENTITY_VARGS(cn, ent_name, valist, accessor) \
+#define CN_READ_ENTITY_VARGS(cn, ent_name, valist, accessor, context) \
     CN_DEFINE_LOCAL_INDEPENDENT_ENTITY(cn, ent_name, accessor); \
-    entity_read_from_vargs(ent_name,  valist, accessor)
+    T_vargs_read(CN_ty_clazz(cn))(valist, ent_name, context)
 
-#define CN_READ_SINGLE_VALUE_VARGS(cn, t_name, valist) \
-    T_def* marco_##t_name##_def = CN_type_def(cn); \
-    T t_name[marco_##t_name##_def->ty_size]; \
-    marco_##t_name##_def->ty_adapter.read_vargs(valist, t_name)
+#define CN_READ_SINGLE_VALUE_VARGS(cn, t_name, valist, context) \
+    T t_name[T_size(CN_ty_clazz(cn))]; \
+    T_vargs_read(CN_ty_clazz(cn))(valist, t_name, context)
 
 enum {
     // base container type 
@@ -85,6 +84,7 @@ struct __cn {
 
 CN CN_create(unsigned long build_code, ...);
 CN CN_finalize(CN cn, int(*cleanup)(T*));
+T_clazz* CN_ty_clazz(CN);
 
 It CN_head(CN cn);
 It CN_tail(CN cn);
@@ -111,8 +111,6 @@ int CN_del(CN, ...);
 int CN_set(CN, ...);
 T* CN_get(CN, ...);
 
-void* CN_type_info(CN);
-T_def* CN_type_def(CN);
 
 
 #endif

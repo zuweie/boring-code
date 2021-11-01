@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-01 11:07:09
+ * @LastEditTime: 2021-11-01 13:14:01
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -144,7 +144,8 @@ static int __tree_right_rotate(rb_tree_t* prb, rb_tree_node_t* px)
 static rb_tree_node_t* __rb_tree_do_search(rb_tree_t* prb, rb_tree_node_t* pnode, type_value_t* find)
 {
     if (pnode != _null(prb)) {
-        int result = prb->container.type_def.ty_cmp(pnode->w, find);
+        //int result = prb->container.type_def.ty_cmp(pnode->w, find);
+        int result = T_cmp(prb->container.type_clazz)(pnode->w, find, 0);
         if (result == 0) {
             return pnode;
         }else if (result == 1) {
@@ -250,17 +251,16 @@ static int __rb_tree_insert_fixup (rb_tree_t* prb, rb_tree_node_t* pz)
 }
 
 static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t* t) {
-    rb_tree_node_t* pnode = allocate(prb->container.mem_pool, sizeof (rb_tree_node_t) + prb->container.type_def.ty_size);
+    rb_tree_node_t* pnode = \
+        allocate( \
+            prb->container.mem_pool, sizeof (rb_tree_node_t) \
+            + T_size(prb->container.type_clazz) \
+        );
+
     pnode->parent = _null(prb);
     pnode->left   = _null(prb);
     pnode->right  = _null(prb);
-    if (prb->setup) {
-        prb->setup(pnode->w, t);
-    } else {
-        //pnode->node = t;
-        //prb->container.type_def.ty_adapter.bit_cpy(pnode->w, t);
-        type_value_cpy(pnode->w, t, prb->container.type_def.ty_size);
-    }
+    T_setup(prb->container.type_clazz)(pnode->w, t, 0);
     return pnode;
 }
 
@@ -273,22 +273,23 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
     // 找位置
     while(px != _null(prb)) {
         py = px;
-        if (prb->container.type_def.ty_cmp(t, px->w) == -1){
+        if ( T_cmp(prb->container.type_clazz)(px->w, t, 0) == -1 ){
             // 小于的情况
         	px = px->left;
         }else {
             
-            if (prb->multi || prb->container.type_def.ty_cmp(t, px->w) == 1) {
+            if (prb->multi || T_cmp(prb->container.type_clazz)(px->w, t, 0) == 1) {
                 // 大于或者允许多健值的情况
                 px = px->right;
             } else {
                 // 把旧值进行跟新
-                if (prb->conflict_fix) {
-                    prb->conflict_fix(px->w, t);
-                } else {
-                    type_value_cpy(px->w, t, prb->container.type_def.ty_size);
-                    //prb->container.type_def.ty_adapter.bit_cpy(px->w, t);
-                }
+                // if (prb->conflict_fix) {
+                //     prb->conflict_fix(px->w, t);
+                // } else {
+                //     type_value_cpy(px->w, t, prb->container.type_def.ty_size);
+                //     //prb->container.type_def.ty_adapter.bit_cpy(px->w, t);
+                // }
+                T_setup(prb->container.type_clazz)(px->w, t, 1);
                 return 1;
             }
         }
@@ -298,7 +299,7 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
     // 挂叶子
     if (py == _null(prb)){
     	prb->_root = pz;
-    }else if (prb->container.type_def.ty_cmp(pz->w, py->w) == -1){
+    }else if (T_cmp(prb->container.type_clazz)(pz->w, py->w, 0)== -1){
     	py->left = pz;
     }else{
         py->right = pz;
@@ -480,7 +481,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
             // type_value_t data = pz->node;
             // pz->node = py->node;
             // py->node = data;
-            type_value_swap(py->w, pz->w, prb->container.type_def.ty_size);
+            type_value_swap(py->w, pz->w, T_size(prb->container.type_clazz));
         }
 
         if (py->color == _rb_black){
@@ -488,9 +489,8 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
         }
 
         // 返回值。
-        //if (rdata) *((type_value_t*)rdata) = py->node;
-        //if (rdata) prb->container.type_def.ty_adapter.bit_cpy(rdata, py->w);
-        type_value_cpy(rdata, py->w, prb->container.type_def.ty_size);
+        if (rdata) type_value_cpy(rdata, py->w, T_size(prb->container.type_clazz));
+        
         deallocate(prb->container.mem_pool, py);
         prb->_size--;
         //return rdata;

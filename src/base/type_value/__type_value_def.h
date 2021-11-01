@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:08:54
- * @LastEditTime: 2021-11-01 10:42:28
+ * @LastEditTime: 2021-11-01 16:00:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_def.h
@@ -12,6 +12,11 @@
 #include "__type_value.h"
 
 #define MAX_T_DEF_SLOT_SIZE 16
+#define T_size(clazz_ptr) ((clazz_ptr)->_def.ty_size)
+#define T_cmp(clazz_ptr) ((adapter_cmp)((clazz_ptr)->_adapter[e_cmp]))
+#define T_hash(clazz_ptr) ((adapter_hasher)((clazz_ptr)->_adapter[e_hash]))
+#define T_setup(clazz_ptr) ( (adapter_setup)((clazz_ptr)->_adapter[e_setup]))
+#define T_vargs_read(clazz_ptr) ((adapter_vargs_reader) ((clazz_ptr)->_adapter[e_vargs]))
 
 typedef enum {
     char_t=1, 
@@ -61,4 +66,5 @@ int T_def_reg(
 int T_def_unreg(int T_id);
 int T_def_is_reg(int T_id);
 T_def T_def_get(int T_id);
+T_adapter T_adapter_get(int T_id, adapter_t adapter);
 #endif

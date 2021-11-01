@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2021-11-01 11:03:56
+ * @LastEditTime: 2021-11-01 13:27:30
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -19,7 +19,7 @@
 
 static int __vector_move (iterator_t* it, int step) 
 {
-    it->reference =  it->reference +  (step * it->container->type_def.ty_size);
+    it->reference =  it->reference +  (step * T_size(it->container->type_clazz));
     return 0;
 }
 /** iterator function **/
@@ -44,7 +44,7 @@ static iterator_t __vector_search (container_t* container, iterator_t offset, ty
 
     for(; !iterator_equal(first, tail); iterator_next(first)) {
         if ( (compare && compare(iterator_reference(first), find) == 0) 
-        || (container->type_def.ty_cmp(iterator_reference(first), find))) 
+        || (T_cmp(container->type_clazz)(first, find, 0)) == 0) 
         return first;
     }
     // 返回边界的指针
@@ -58,7 +58,7 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
     if (vec->_size >= vec->_capacity){
         // 注水
         int require_size = vec->_size + VEC_ALLOC_CHUNK_SIZE;
-        type_value_t *new_block = allocate(container_mem_pool(container), require_size * container->type_def.ty_size);
+        type_value_t *new_block = allocate(container_mem_pool(container), require_size * T_size(container->type_clazz));
 
         if (new_block == NULL){
             return -1;
@@ -68,7 +68,7 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
         // 隐藏的bug：地址的差值可能会超过 long 的最大值。
         ptrdiff_t offset = iterator_reference(it) - iterator_reference(container_head(vec));
         // copy 旧数据到新的内存
-        memcpy(new_block, vec->_data, vec->_size * container->type_def.ty_size);
+        memcpy(new_block, vec->_data, vec->_size * T_size(container->type_clazz));
         // 释放旧的内存
         deallocate(container->mem_pool, vec->_data);
         // 把新内存挂上去
@@ -95,7 +95,7 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
     }
     // 插入
     //container->type_def.ty_adapter.bit_cpy(it.refer, data);
-    type_value_cpy(it.reference, data);
+    T_setup(container->type_clazz)(it.reference, data);
     vec->_size++;
     return 0;
 }
@@ -116,15 +116,6 @@ static int __vector_remove (container_t* container, iterator_t it, void* rdata)
     return 0;
 }
 
-// static int __vector_sort(container_t* container, int(*compare)(type_value_t*, type_value_t*)) 
-// {
-//     return heap_sort(container, compare);
-// }
-
-// static int __vector_wring(container_t* container, int(*compare)(type_value_t*, type_value_t*), int(*callback)(void*)) 
-// {
-//     return wring(container, compare, callback);
-// }
 
 static size_t __vector_size (container_t* container) 
 {

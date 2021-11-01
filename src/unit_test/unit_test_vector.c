@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-10-26 17:10:12
+ * @LastEditTime: 2021-11-01 15:42:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -71,7 +71,7 @@ static void test_vector_remove(void)
 
     float target = tsd_get_float(5);
     float ret;
-    T_def* float_def = T_def_get(fl_t);
+    
     It remove = CN_find(vector, target);
 
     CU_ASSERT_TRUE(CN_remove_at(vector, remove, &ret) == 0);

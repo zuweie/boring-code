@@ -30,7 +30,7 @@ set (SOURCE
     src/base/operate/__quick_sort.c
     src/base/operate/__wring.c
     src/base/operate/__heap_sort.c
-    src/base/type_value/__built_in_type.c
+    src/base/type_value/__built_in_type_adapters.c
     src/base/type_value/__type_value_def.c
     src/container/entity.c
     src/container/cn.c

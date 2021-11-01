@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:26
- * @LastEditTime: 2021-10-25 00:08:00
+ * @LastEditTime: 2021-11-01 16:01:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -30,8 +30,8 @@ static int __entity_tpl_cal_block_data_size(entity_template_t* etpl, unsigned lo
     }
     int data_block_size = 0;
     for (int i = cal_field_start; i<cal_field_num; ++i) { 
-        T_def *_def = T_def_get(etpl->field_types[i]); 
-        data_block_size += ROUND_UP_4(_def->ty_size); 
+        T_def _def = T_def_get(etpl->field_types[i]); 
+        data_block_size += ROUND_UP_4(_def.ty_size); 
     } 
     return data_block_size; 
 }
@@ -61,7 +61,7 @@ static inline unsigned long __entity_values_accessor(entity_t* ent)
     }
     return accessor;
 }
-static int __entity_io_vargs(entity_t* ent, unsigned long accessor, va_list valist, unsigned char in) 
+static int __entity_read_vargs(entity_t* ent, unsigned long accessor, va_list valist) 
 {
     unsigned _accessor = 0;
     if (accessor & ef_keys) {
@@ -75,12 +75,9 @@ static int __entity_io_vargs(entity_t* ent, unsigned long accessor, va_list vali
     for (int i=0; i<ent->tpl->field_num; ++i) {
         if ( _accessor & ef_(i) ) {
             T* pT_i = ent->block[i];
-            T_def* _def = T_def_get(ent->tpl->field_types[i]);
-            if (in) {
-                _def->ty_adapter.read_vargs(valist, pT_i);
-            } else {
-                _def->ty_adapter.write_vargs(valist, pT_i);
-            }
+            T_adapter _adapter = 
+            // T_def _def = T_def_get(ent->tpl->field_types[i]);
+            // _def.ty_adapter.read_vargs(valist, pT_i);
         }
     }
     return 0;
