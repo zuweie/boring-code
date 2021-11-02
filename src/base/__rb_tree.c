@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-01 13:14:01
+ * @LastEditTime: 2021-11-02 10:04:07
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -11,7 +11,7 @@
 #include "container_of.h"
 /** tree function **/
 
- static void __init_rb_tree (rb_tree_t* prb, unsigned char multi, int (*setup)(type_value_t* target, type_value_t* data), int (conflict_fix)(type_value_t* target, type_value_t* data)) 
+ static void __init_rb_tree (rb_tree_t* prb, unsigned char multi) 
  {
     
     /** 初始化 _null 边界节点 **/
@@ -26,8 +26,6 @@
     prb->_first = _null(prb);
     prb->_last  = _null(prb);
     prb->multi = multi;
-    prb->setup = setup;
-    prb->conflict_fix = conflict_fix;
  }
 
 // 找到该节点往下最小的那个节点
@@ -144,8 +142,7 @@ static int __tree_right_rotate(rb_tree_t* prb, rb_tree_node_t* px)
 static rb_tree_node_t* __rb_tree_do_search(rb_tree_t* prb, rb_tree_node_t* pnode, type_value_t* find)
 {
     if (pnode != _null(prb)) {
-        //int result = prb->container.type_def.ty_cmp(pnode->w, find);
-        int result = T_cmp(prb->container.type_clazz)(pnode->w, find, 0);
+        int result = T_cmp(prb->container.type_clazz)(pnode->w, find);
         if (result == 0) {
             return pnode;
         }else if (result == 1) {
@@ -260,7 +257,7 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t* t) {
     pnode->parent = _null(prb);
     pnode->left   = _null(prb);
     pnode->right  = _null(prb);
-    T_setup(prb->container.type_clazz)(pnode->w, t, 0);
+    T_setup(prb->container.type_clazz)(pnode->w, t);
     return pnode;
 }
 
@@ -273,12 +270,12 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
     // 找位置
     while(px != _null(prb)) {
         py = px;
-        if ( T_cmp(prb->container.type_clazz)(px->w, t, 0) == -1 ){
+        if ( T_cmp(prb->container.type_clazz)(px->w, t, 1) == -1 ){
             // 小于的情况
         	px = px->left;
         }else {
             
-            if (prb->multi || T_cmp(prb->container.type_clazz)(px->w, t, 0) == 1) {
+            if (prb->multi || T_cmp(prb->container.type_clazz)(px->w, t) == 1) {
                 // 大于或者允许多健值的情况
                 px = px->right;
             } else {
@@ -289,7 +286,7 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
                 //     type_value_cpy(px->w, t, prb->container.type_def.ty_size);
                 //     //prb->container.type_def.ty_adapter.bit_cpy(px->w, t);
                 // }
-                T_setup(prb->container.type_clazz)(px->w, t, 1);
+                T_setup(prb->container.type_clazz)(px->w, t);
                 return 1;
             }
         }
@@ -299,7 +296,7 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
     // 挂叶子
     if (py == _null(prb)){
     	prb->_root = pz;
-    }else if (T_cmp(prb->container.type_clazz)(pz->w, py->w, 0)== -1){
+    }else if (T_cmp(prb->container.type_clazz)(pz->w, py->w)== -1){
     	py->left = pz;
     }else{
         py->right = pz;

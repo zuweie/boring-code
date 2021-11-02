@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2021-10-27 11:23:43
+ * @LastEditTime: 2021-11-02 14:54:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -34,7 +34,8 @@
         printf("\n\n"); \
     } \
 }while(0)
-
+#define long_id_printer(id) printf("%ld ", id)
+#define char_id_ptrinter(id) printf("%c ", id)
 #define BFS_exploring_printer(exploring, printer, printer_from) \ 
     ({  \
         if (exploring) { \
@@ -58,7 +59,7 @@
         if (exploring) { \
             prim_explor_t* __p_marco_explor = (prim_explor_t*) exploring;   \
             if (__p_marco_explor->pi) { \
-                printf("[ pi_id: %c, key:%f] ", t2i(__p_marco_explor->pi->vertex_id), __p_marco_explor->key); \
+                printf("[ pi_id: %c, key:%f] ", __p_marco_explor->pi->vertex_id, __p_marco_explor->key); \
             } \
         } \
     })
@@ -67,7 +68,7 @@
         if (exploring) { \
             relax_explor_t* __p_marco_explor = (relax_explor_t*) exploring; \
             if (__p_marco_explor->pi) { \
-                printf("[ pi_id: %c, distance: %f] ", t2i(__p_marco_explor->pi->vertex_id), __p_marco_explor->distance); \
+                printf("[ pi_id: %c, distance: %f] ", __p_marco_explor->pi->vertex_id, __p_marco_explor->distance); \
             } \
         } \
     }) 
@@ -88,63 +89,70 @@ static int suite_success_clean (void)
 }
 
 static int
-graph_match_vertex(T* v1, T* v2) 
+graph_match_vertex(T* t1, T* t2) 
 {
-    vertex_t* pv = T_ptr(v1);
-    unsigned long 
-    return 
+    vertex_t* pv = T_ptr(t1);
+    unsigned long id =  T_ulong(t2);
+    return (pv->vertex_id == id) ? 0 : 1; 
 }
 
 static int
-graph_match_path(Tv v1, Tv v2) 
+graph_match_path(T* t1, T* t2) 
 {
-    path_t* path = t2p(v1);
-    return Tv_equl(path->to->vertex_id, v2);
+    path_t* path = T_ptr(t1);
+    unsigned long id = T_ulong(t2);
+    return (path->to->vertex_id == id) ? 0 : 1;
 }
 
 
 static int 
-udgraph_match_vertex(Tv v1, Tv v2) 
+udgraph_match_vertex(T* t1, T* t2) 
 {
-    uvertex_t* pv = t2p(v1);
-    return Tv_equl(pv->id, v2);
+    uvertex_t* pv = T_ptr(t1);
+    //return Tv_equl(pv->id, v2);
+    unsigned long id = T_ulong(t2);
+    
+    return (pv->id == id) ? 0 : 1;
 }
 
 static int
-udgraph_match_edge_2p(Tv v1, Tv v2)
+udgraph_match_edge_2p(T* t1, T* t2)
 {
-    uedge_t* pedge = t2p(v1);
-    Tv* vertexs = t2p(v2);
-    return (Tv_equl(pedge->epv->id, vertexs[0]) | Tv_equl(pedge->epw->id, vertexs[1])) ? (Tv_equl(pedge->epw->id, vertexs[0]) | Tv_equl(pedge->epv->id, vertexs[1])) : 0;
+    uedge_t* pedge = T_ptr(t1);
+    unsigned long* vertexs = T_ptr(t2);
+    return (  (pedge->epv->id == vertexs[0]) && (pedge->epw->id == vertexs[1]) 
+           || (pedge->epw->id == vertexs[0]) && (pedge->epv->id == vertexs[1]) ) ? 0: 1;
 }
 
 static int
-udgraph_match_edge_1p(Tv v1, Tv v2) 
+udgraph_match_edge_1p(T* t1, T* t2) 
 {
-    uedge_t* pedge = t2p(v1);
-    return Tv_equl(pedge->epv->id, v2)? Tv_equl(pedge->epw->id, v2) : 0;
+    uedge_t* pedge = T_ptr(t1);
+    unsigned long id = T_ulong(t2);
+    // return Tv_equl(pedge->epv->id, v2)? Tv_equl(pedge->epw->id, v2) : 0;
+    return pedge->epv->id == id || pedge->epw->id == id ? 0 : 1;
 }
 
 static void test_graph_vertex_edge (void)
 {
-    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, 0);
-    Graph_add_vertex(graph, getTSi(1));
-    Graph_add_vertex(graph, getTSi(2));
-    vertex_t* from = Graph_get_vertex(graph, getTSi(1));
-    vertex_t* to   = Graph_get_vertex(graph, getTSi(2));
+    Graph* graph = Graph_create(0);
+    int v1 = tsd_get_int(1);
+    int v2 = tsd_get_int(2);
+    Graph_add_vertex(graph, v1);
+    Graph_add_vertex(graph, v2);
 
-    Graph_add_path(from, to, 0.f);
-    Graph_add_path(to, from, 0.f);
+    Graph_add_path(graph,v1, v2, 0.f);
+    Graph_add_path(graph,v2, v1, 0.f);
 
 
-    Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
+    Graph_inspect(graph, long_id_printer, NULL_exploring_printer);
     Graph_destroy(graph);
     CU_ASSERT_TRUE(1);
 }
 
 static void test_graph_matrix (void) 
 {
-    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, 0);
+    Graph* graph = Graph_create(0);
     // Graph_add_vertex(graph, getTSi(1));
     // Graph_add_vertex(graph, getTSi(2));
     // Graph_add_vertex(graph, getTSi(3));
@@ -161,21 +169,21 @@ static void test_graph_matrix (void)
     // Graph_add_vertex(graph, getTSi(14));   
     //Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
 
-    Graph_add_vertex(graph, i2t(1));
-    Graph_add_vertex(graph, i2t(2));
-    Graph_add_vertex(graph, i2t(3));
-    Graph_add_vertex(graph, i2t(4));
-    Graph_add_vertex(graph, i2t(5));
-    Graph_add_vertex(graph, i2t(6));
-    Graph_add_vertex(graph, i2t(7));
-    Graph_add_vertex(graph, i2t(8));
-    Graph_add_vertex(graph, i2t(9));
-    Graph_add_vertex(graph, i2t(10));
-    Graph_add_vertex(graph, i2t(11));
-    Graph_add_vertex(graph, i2t(12));
-    Graph_add_vertex(graph, i2t(13));
-    Graph_add_vertex(graph, i2t(14)); 
-    CooMatrix* matrix = CooMatrix_create(CN_size(&graph->vertexes), CN_size(&graph->vertexes));
+    Graph_add_vertex(graph, 1);
+    Graph_add_vertex(graph, 2);
+    Graph_add_vertex(graph, 3);
+    Graph_add_vertex(graph, 4);
+    Graph_add_vertex(graph, 5);
+    Graph_add_vertex(graph, 6);
+    Graph_add_vertex(graph, 7);
+    Graph_add_vertex(graph, 8);
+    Graph_add_vertex(graph, 9);
+    Graph_add_vertex(graph, 10);
+    Graph_add_vertex(graph, 11);
+    Graph_add_vertex(graph, 12);
+    Graph_add_vertex(graph, 13);
+    Graph_add_vertex(graph, 14); 
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
 
     Matrix_set(matrix, 1, 2, 1.0f);
     Matrix_set(matrix, 2, 3, 1.0f);
@@ -188,13 +196,13 @@ static void test_graph_matrix (void)
     Matrix_set(matrix, 9, 0, 1.0f);
     Matrix_set(matrix, 13, 2, 1.0f);
     Graph_connect_vertexes(graph, matrix);
-    Graph_inspect(graph, PRINTF_TV_ON_INT, NULL_exploring_printer);
+    Graph_inspect(graph, long_id_printer, NULL_exploring_printer);
     
     printf("Create reverse Graph \n\n");
 
     Graph* reverse = Graph_create_reverse(graph);
     
-    Graph_inspect(reverse, PRINTF_TV_ON_INT, NULL_exploring_printer);
+    Graph_inspect(reverse, long_id_printer, NULL_exploring_printer);
     
     CooMatrix_destroy(matrix);
     Graph_destroy(graph);
@@ -210,17 +218,17 @@ static void test_graph_bfs (void)
 static void test_graph_dfs (void) 
 {
 
-    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(dfs_explor_t));
-    Graph_add_vertex(graph, i2t('a')); // 0
-    Graph_add_vertex(graph, i2t('b')); // 1
-    Graph_add_vertex(graph, i2t('c')); // 2
-    Graph_add_vertex(graph, i2t('d')); // 3
-    Graph_add_vertex(graph, i2t('e')); // 4
-    Graph_add_vertex(graph, i2t('f')); // 5
-    Graph_add_vertex(graph, i2t('g')); // 6
-    Graph_add_vertex(graph, i2t('h')); // 7
+    Graph* graph = Graph_create( sizeof(dfs_explor_t));
+    Graph_add_vertex(graph, 'a'); // 0
+    Graph_add_vertex(graph, 'b'); // 1
+    Graph_add_vertex(graph, 'c'); // 2
+    Graph_add_vertex(graph, 'd'); // 3
+    Graph_add_vertex(graph, 'e'); // 4
+    Graph_add_vertex(graph, 'f'); // 5
+    Graph_add_vertex(graph, 'g'); // 6
+    Graph_add_vertex(graph, 'h'); // 7
 
-    CooMatrix* matrix = CooMatrix_create(CN_size(&graph->vertexes), CN_size(&graph->vertexes));
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
     Matrix_set(matrix, 0, 1, 1.0f); // a b
     Matrix_set(matrix, 1, 2, 1.0f); // b c
     Matrix_set(matrix, 2, 3, 1.0f); // c d
@@ -239,26 +247,26 @@ static void test_graph_dfs (void)
     //Graph_inspect(graph, PRINTF_TV_ON_CHAR, NULL_exploring_printer);
     grp_dfs_exploring(graph);
     grp_topological_sort(graph);
-    Graph_inspect(graph, PRINTF_TV_ON_CHAR, DFS_exploring_printer);
+    Graph_inspect(graph, char_id_ptrinter, DFS_exploring_printer);
     
     printf("\nreverse graph ...\n");
     Graph* reverse = Graph_create_reverse(graph);
     grp_dfs_exploring(reverse);
-    Graph_inspect(reverse, PRINTF_TV_ON_CHAR, DFS_exploring_printer);
+    Graph_inspect(reverse, char_id_ptrinter, DFS_exploring_printer);
 
-    List list = _List(CMP_PTR);   
-    grp_calculate_component(reverse, &list);
+    CN list = CN_create(LIST, ptr_t);   
+    grp_calculate_component(reverse, list);
     
-    for (It first = CN_first(&list); !It_equal(first, CN_tail(&list)); first = It_next(first)) {
-        vertex_t* v = It_getptr(first);
+    for (It first = CN_first(list); !It_equal(first, CN_tail(list)); It_next(first)) {
+        vertex_t* v = It_ptr(first);
         if (v) {
-            PRINTF_TV_ON_CHAR(v->vertex_id);
+            char_id_ptrinter(v->vertex_id);
         }else {
             printf(" 0 ");
         }
     }
     // clean up the malloc memory
-    List_(&list, NULL);
+    CN_finalize(list, NULL);
 
     CooMatrix_destroy(matrix);
     Graph_destroy(graph);
@@ -268,10 +276,10 @@ static void test_graph_dfs (void)
 
 static void test_grap_strongly_connect(void) {
 
-    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(dfs_explor_t));
-    Graph_add_vertex(graph, i2t('a')); // 0
-    Graph_add_vertex(graph, i2t('b')); // 1
-    Graph_add_vertex(graph, i2t('c')); // 2
+    Graph* graph = Graph_create(sizeof(dfs_explor_t));
+    Graph_add_vertex(graph, 'a'); // 0
+    Graph_add_vertex(graph, 'b'); // 1
+    Graph_add_vertex(graph, 'c'); // 2
     CooMatrix* matrix = CooMatrix_create(CN_size(&graph->vertexes), CN_size(&graph->vertexes));
     Matrix_set(matrix, 0, 1, 1.0f);
     Matrix_set(matrix, 0, 2, 1.0f);
@@ -279,19 +287,21 @@ static void test_grap_strongly_connect(void) {
     Graph_connect_vertexes(graph, matrix);
 
     Graph* strongly_connected = grp_calculate_strongly_connected_component_graph(graph);
-    List list = _List(CMP_PTR);
-    grp_calculate_component(strongly_connected, &list);
+
+    CN list = CN_create(LIST, ptr_t);
+
+    grp_calculate_component(strongly_connected, list);
     
-    for (It first = CN_first(&list); !It_equal(first, CN_tail(&list)); first = It_next(first)) {
-        vertex_t* v = It_getptr(first);
+    for (It first = CN_first(list); !It_equal(first, CN_tail(list)); It_next(first)) {
+        vertex_t* v = It_ptr(first);
         if (v) {
-            PRINTF_TV_ON_CHAR(v->vertex_id);
+            char_id_ptrinter(v->vertex_id);
         }else {
             printf(" 0 ");
         }
     }
 
-    List_(&list, NULL);
+    CN_finalize(list, NULL);
     //grp_cleanup_exploring(graph);
     //grp_cleanup_exploring(strongly_connected);
     Graph_destroy(graph);
@@ -302,19 +312,19 @@ static void test_grap_strongly_connect(void) {
 
 static void test_udgraph_mst_prim(void)
 {
-    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(prim_explor_t));
+    Graph* graph = Graph_create( sizeof(prim_explor_t));
 
-    Graph_add_vertex(graph, i2t('a')); // 0
-    Graph_add_vertex(graph, i2t('b')); // 1
-    Graph_add_vertex(graph, i2t('c')); // 2
-    Graph_add_vertex(graph, i2t('d')); // 3
-    Graph_add_vertex(graph, i2t('e')); // 4
-    Graph_add_vertex(graph, i2t('f')); // 5
-    Graph_add_vertex(graph, i2t('g')); // 6
-    Graph_add_vertex(graph, i2t('h')); // 7
-    Graph_add_vertex(graph, i2t('i')); // 8
+    Graph_add_vertex(graph, 'a'); // 0
+    Graph_add_vertex(graph, 'b'); // 1
+    Graph_add_vertex(graph, 'c'); // 2
+    Graph_add_vertex(graph, 'd'); // 3
+    Graph_add_vertex(graph, 'e'); // 4
+    Graph_add_vertex(graph, 'f'); // 5
+    Graph_add_vertex(graph, 'g'); // 6
+    Graph_add_vertex(graph, 'h'); // 7
+    Graph_add_vertex(graph, 'i'); // 8
 
-    CooMatrix* matrix = CooMatrix_create(CN_size(&graph->vertexes), CN_size(&graph->vertexes));
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
     Matrix_set(matrix, 0, 1, 4); // ab
     Matrix_set(matrix, 1, 2, 8); // bc
     Matrix_set(matrix, 2, 3, 7); // cd
@@ -334,9 +344,9 @@ static void test_udgraph_mst_prim(void)
 
     Matrix_trans(matrix);
     Graph_connect_vertexes(graph, matrix);
-    vertex_t* start = Graph_get_vertex(graph, i2t('a'));
+    vertex_t* start = Graph_get_vertex(graph, 'a');
     grp_calculate_mst_prim(graph, start);
-    Graph_inspect(graph, PRINTF_TV_ON_CHAR, PRIM_exploring_printer);
+    Graph_inspect(graph, char_id_ptrinter, PRIM_exploring_printer);
 
     Graph_destroy(graph);
     CooMatrix_destroy(matrix);
@@ -345,14 +355,14 @@ static void test_udgraph_mst_prim(void)
 static void 
 test_graph_bellman_ford(void) 
 {
-    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(relax_explor_t));
-    Graph_add_vertex(graph, i2t('s')); // 0
-    Graph_add_vertex(graph, i2t('t')); // 1
-    Graph_add_vertex(graph, i2t('x')); // 2
-    Graph_add_vertex(graph, i2t('y')); // 3
-    Graph_add_vertex(graph, i2t('z')); // 4
+    Graph* graph = Graph_create(sizeof(relax_explor_t));
+    Graph_add_vertex(graph, 's'); // 0
+    Graph_add_vertex(graph, 't'); // 1
+    Graph_add_vertex(graph, 'x'); // 2
+    Graph_add_vertex(graph, 'y'); // 3
+    Graph_add_vertex(graph, 'z'); // 4
 
-    CooMatrix* matrix = CooMatrix_create(CN_size(&graph->vertexes), CN_size(&graph->vertexes));
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
     Matrix_set(matrix, 0, 1, 6); // s t
     Matrix_set(matrix, 1, 2, 5); // t x
     Matrix_set(matrix, 2, 1, -2); // x t
@@ -366,11 +376,11 @@ test_graph_bellman_ford(void)
 
     Graph_connect_vertexes(graph, matrix);
     
-    vertex_t* start = Graph_get_vertex(graph, i2t('s'));
+    vertex_t* start = Graph_get_vertex(graph, 's');
 
     grp_calculate_bellman_ford(graph, start);
 
-    Graph_inspect(graph, PRINTF_TV_ON_CHAR, RELAX_exploring_printer);
+    Graph_inspect(graph, char_id_ptrinter, RELAX_exploring_printer);
 
     Graph_destroy(graph);
     CooMatrix_destroy(matrix);
@@ -379,14 +389,14 @@ test_graph_bellman_ford(void)
 static void
 test_graph_dijkstra(void) {
 
-    Graph* graph = Graph_create(graph_match_vertex, graph_match_path, sizeof(relax_explor_t));
-    Graph_add_vertex(graph, i2t('s')); // 0
-    Graph_add_vertex(graph, i2t('t')); // 1
-    Graph_add_vertex(graph, i2t('x')); // 2
-    Graph_add_vertex(graph, i2t('y')); // 3
-    Graph_add_vertex(graph, i2t('z')); // 4
+    Graph* graph = Graph_create(sizeof(relax_explor_t));
+    Graph_add_vertex(graph, 's'); // 0
+    Graph_add_vertex(graph, 't'); // 1
+    Graph_add_vertex(graph, 'x'); // 2
+    Graph_add_vertex(graph, 'y'); // 3
+    Graph_add_vertex(graph, 'z'); // 4
 
-    CooMatrix* matrix = CooMatrix_create(CN_size(&graph->vertexes), CN_size(&graph->vertexes));
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
     Matrix_set(matrix, 0, 1, 10); // s t
     Matrix_set(matrix, 0, 3, 5);  // s y
     Matrix_set(matrix, 1, 2, 1); // t x
@@ -399,16 +409,16 @@ test_graph_dijkstra(void) {
     Matrix_set(matrix, 3, 4, 2); // y z
 
     Graph_connect_vertexes(graph, matrix);
-    vertex_t* start = Graph_get_vertex(graph, i2t('s'));
-    List list = _List(NULL);
+    vertex_t* start = Graph_get_vertex(graph, 's');
+    CN list = CN_create(LIST, ptr_t);
 
-    grp_calculate_dijkstra(graph, start, &list);
+    grp_calculate_dijkstra(graph, start, list);
 
-    Graph_inspect(graph, PRINTF_TV_ON_CHAR, RELAX_exploring_printer);
+    Graph_inspect(graph, char_id_ptrinter, RELAX_exploring_printer);
 
     Graph_connect_vertexes(graph, matrix);
     CooMatrix_destroy(matrix);
-    List_(&list, NULL);
+    CN_finalize(list, NULL);
     Graph_destroy(graph);
 }
 static void

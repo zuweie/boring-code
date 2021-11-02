@@ -1,13 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-11-01 15:42:50
+ * @LastEditTime: 2021-11-02 10:08:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <CUnit/Basic.h>
 #include "container/cn.h"
 #include "unit_test.h"
@@ -106,12 +107,12 @@ void test_vector_sort(void)
     // 从小到大的排序
     CN_sort(&vector, NULL);
 
-    T_def* flt_def = T_def_get(fl_t);
-
     for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); It_next(first)){
         It next = first;
         It_next(next);
-        CU_ASSERT_TRUE(flt_def->ty_cmp(It_refer(first), It_refer(next)) <= 0);
+        float f1 = It_float(first);
+        float f2 = It_float(next);
+        CU_ASSERT_TRUE(f1 <= f2);
     }
     CN_finalize(vector,NULL);
 //---------------------------------------------------------------------
@@ -119,7 +120,6 @@ void test_vector_sort(void)
     // 测试 string 的排序。
     CN vector2 = CN_create(VECTOR, str_t);
     // 灌入数据
-    T_def* str_def = T_def_get(str_t);
     for (int i=0; i<TEST_DATA_STR_SIZE; ++i) {
         CN_add(vector2, tsd_get_str(i));
     }
@@ -129,7 +129,9 @@ void test_vector_sort(void)
     for(It first=CN_first(vector2); !It_equal(first, CN_last(vector2)); It_next(first)){
         It next = first;
         It_next(next);
-        CU_ASSERT_TRUE( str_def->ty_cmp(It_refer(first), It_refer(next)) <= 0);
+        char* s1 = It_str(first);
+        char *s2 = It_str(next);
+        CU_ASSERT_TRUE( strcmp(s1, s2) <=0 );
     }
 }
 

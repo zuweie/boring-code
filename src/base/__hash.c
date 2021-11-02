@@ -1,25 +1,25 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-11-01 13:26:26
+ * @LastEditTime: 2021-11-02 10:06:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
  */
 #include "__hash.h"
-#include "type_value/__built_in_type.h"
+#include "type_value/__built_in_type_adapters.h"
 #include "container_of.h"
 #include "mem_pool/__mem_pool.h"
 
-static hash_inner_list_node_t* __get_slot_node_by_key(hash_t* hash, type_value_t* key, int context) 
+static hash_inner_list_node_t* __get_slot_node_by_key(hash_t* hash, type_value_t* key) 
 {
-    int hash_index = T_hash(hash->container.type_clazz)(key, hash->_slot_size, context);
+    int hash_index = T_hash(hash->container.type_clazz)(key, hash->_slot_size);
     return hash->_slot[hash_index];
 }
 
-static hash_inner_list_node_t* __search_in_inner_list(hash_t* hash, hash_inner_list_node_t* from, type_value_t* find, int context) 
+static hash_inner_list_node_t* __search_in_inner_list(hash_t* hash, hash_inner_list_node_t* from, type_value_t* find) 
 {
-    int hash_index = T_hash(hash->container.type_clazz)(key, hash->_slot_size, context);
+    int hash_index = T_hash(hash->container.type_clazz)(key, hash->_slot_size);
     hash_inner_list_node_t* tail  = hash_table_tail(hash);
     
     for(;from != tail;from = from->next) {        
@@ -60,8 +60,8 @@ static iterator_t __hash_search (container_t* container, iterator_t offset, type
     hash_inner_list_node_t* target; 
     
     if (iterator_is_null(offset)) {
-        hash_inner_list_node_t* slot_from = __get_slot_node_by_key(container, find, 0);
-        target = (slot_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, find, 0);
+        hash_inner_list_node_t* slot_from = __get_slot_node_by_key(container, find);
+        target = (slot_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, find);
     } else {
         hash_inner_list_node_t* from = container_of(offset.reference, hash_inner_list_node_t, w);
         target =  __search_in_inner_list(container, from, find, 0);
@@ -75,8 +75,8 @@ static int __hash_insert(container_t* container, iterator_t pos, type_value_t* e
     int ret = -1;
     hash_t* hash  = (hash_t*) container;
 
-    hash_inner_list_node_t* slot_from  = __get_slot_node_by_key(hash, en, 0);
-    hash_inner_list_node_t* target     = (slot_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, en, 0);
+    hash_inner_list_node_t* slot_from  = __get_slot_node_by_key(hash, en);
+    hash_inner_list_node_t* target     = (slot_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, en);
 
     if (slot_from == hash_table_tail(hash) || target == hash_table_tail(hash) || hash->_multi) {
         // 插入新元素
@@ -85,16 +85,8 @@ static int __hash_insert(container_t* container, iterator_t pos, type_value_t* e
         // 申请内存。
         hash_inner_list_node_t* inner_list_node = allocate(container->mem_pool, sizeof(hash_inner_list_node_t) + T_size(container->type_clazz));
         // 初始化。
-        inner_list_node->slot_index = T_hash(container->type_clazz)(en, hash->_slot_size, 0);//container->type_def.ty_hasher(en, hash->_slot_size);
+        inner_list_node->slot_index = T_hash(container->type_clazz)(en, hash->_slot_size);//container->type_def.ty_hasher(en, hash->_slot_size);
         T_setup(container->type_clazz)(inner_list_node->w, en, 0);
-
-        // if (hash->setup) {
-        //     hash->setup(inner_list_node->w, en);
-        // } else {
-        //     //container->type_def.ty_adapter.bit_cpy(inner_list_node->w, en);
-        //     type_value_cpy(inner_list_node->w, en, container->type_def.ty_size);
-        // }
-        // 插入。
 
         inner_list_node->prev = insert->prev;
         inner_list_node->next = insert;
@@ -107,15 +99,7 @@ static int __hash_insert(container_t* container, iterator_t pos, type_value_t* e
             hash->_slot[inner_list_node->slot_index] = inner_list_node;
         }
     } else {
-        // 找到元素，跟新它
-        // 更新元素的 value
-        // if (hash->conflict_fix) {
-        //     // 如果有冲突解决函数，则调用冲突解决函数
-        //     hash->conflict_fix(target->w, en);
-        // } else {
-        //     //hash->container.type_def.ty_adapter.bit_cpy(target->w, en);
-        //     type_value_cpy(target->w, en, container->type_def.ty_size);
-        // }
+ 
         T_setup(container->type_clazz)(target->w, en, 1);
 
         ret = 1;

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-10-26 17:10:27
+ * @LastEditTime: 2021-11-02 10:13:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -78,7 +78,7 @@ void test_list_sort()
 {
     CN list = CN_create(LIST, fl_t);
     const LIST_SIZE = 10;
-    T_def* flt_def = T_def_get(fl_t);
+    //T_def* flt_def = T_def_get(fl_t);
 
     for (int i=0; i<LIST_SIZE; ++i) {
         CN_add(list, tsd_get_float(i));
@@ -89,7 +89,10 @@ void test_list_sort()
     for(It first=CN_first(list); !It_equal(first, CN_last(list)); It_next(first)){
         It next = first;
         It_next(next);
-        CU_ASSERT_TRUE(flt_def->ty_cmp(It_refer(first), It_refer(next)) <= 0);
+        float f1 = It_float(first);
+        float f2 = It_float(next);
+        CU_ASSERT_TRUE(f1 <= f2);
+        //CU_ASSERT_TRUE(flt_def->ty_cmp(It_refer(first), It_refer(next)) <= 0);
     }
 }
 
@@ -110,13 +113,15 @@ static void test_list_unique(void)
     CN_add(list, 44);
     
     CN_to_unique(list);
-    T_def* int_def = T_def_get(int_t);
+
     for(It first = CN_first(&list); !It_equal(first, CN_last(&list)); It_next(first)){
         
         It next = first;
         It_next(next);
-
-        CU_ASSERT_FALSE(int_def->ty_cmp(It_refer(first), It_refer(next)) == 0);
+        int i1 = It_int(first);
+        int i2 = It_int(next);
+        
+        CU_ASSERT_FALSE(i1 == i2);
     }
 
     CN_finalize(list, NULL);

@@ -1,16 +1,18 @@
 /*
  * @Author: your name
  * @Date: 2020-12-04 07:26:51
- * @LastEditTime: 2021-06-29 15:10:32
+ * @LastEditTime: 2021-11-02 16:26:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_set.c
  */
 #include <stdio.h>
 #include <CUnit/Basic.h>
-#include "container/HashSet.h"
-#include "container/TreeSet.h"
-#include "cmp_component.h"
+
+#include "container/cn.h"
+// #include "container/HashSet.h"
+// #include "container/TreeSet.h"
+
 #include "test_data.h"
 static int  suite_success_init (void) 
 {
@@ -24,64 +26,66 @@ static int suite_success_clean (void)
 
 static void test_hashset_set(void)
 {
-    Set hashset = _Hashset(entity_int_keyhasher);
+    //Set hashset = _Hashset(entity_int_keyhasher);
+    CN hashset = CN_create(HASH_SET, int_t);
+
     for(int i=0; i<10; ++i) {
-        Set_set(&hashset, getTSi(i));
+        CN_set(hashset, tsd_get_int(i));
     }
 
     for (int j=9; j>=0; j--) {
-        CU_ASSERT_TRUE(Set_has(&hashset, getTSi(j)));
+        CU_ASSERT_TRUE( CN_has(hashset, tsd_get_int(j)) );
     }
-    Hashset_(&hashset);
+    CN_finalize(hashset, NULL);
 }
 
 static void test_hashset_del(void) 
 {
-    Set hashset = _Hashset(entity_int_keyhasher);
+    CN hashset = CN_create(HASH_SET, int_t);
     for (int i=0; i<10; ++i) {
-        Set_set(&hashset, getTSi(i));
+        CN_set(hashset, tsd_get_int(i));
     }
 
     for (int j=3; j<7; ++j) {
-        Set_del(&hashset, getTSi(j), NULL);
+        CN_del(hashset, tsd_get_int(j));
     }
  
     for (int k=3; k<7; ++k) {
-        CU_ASSERT_FALSE(Set_has(&hashset, getTSi(k)));
+        CU_ASSERT_FALSE(CN_has(&hashset,tsd_get_int(k)));
     }
 
-    Hashset_(&hashset);
+    CN_finalize(hashset, NULL);
 }
 
 static void test_treeset_set(void)
 {
-    Set treeset = _Treeset(entity_int_insert_cmp);
+    CN treeset = CN_create(TREE_SET, int_t);
     for(int i=0; i<10; ++i) {
-        Set_set(&treeset, getTSi(i));
+        CN_set(treeset, tsd_get_int(i));
     }
 
     for (int j=9; j>=0; j--) {
-        CU_ASSERT_TRUE(Set_has(&treeset, getTSi(j)));
+        CU_ASSERT_TRUE(CN_has(treeset, tsd_get_int(j)));
     }
-    Treeset_(&treeset);
+    CN_finalize(treeset, NULL);
 }
 
 static void test_treeset_del(void)
 {
-    Set treeset = _Treeset(entity_int_keyhasher);
+    CN treeset = CN_create(TREE_SET, int_t);
     for (int i=0; i<10; ++i) {
-        Set_set(&treeset, getTSi(i));
+        CN_set(treeset, tsd_get_int(i));
     }
 
     for (int j=3; j<7; ++j) {
-        Set_del(&treeset, getTSi(j), NULL);
+        CN_del(treeset, tsd_get_int(j));
     }
  
     for (int k=3; k<7; ++k) {
-        CU_ASSERT_FALSE(Set_has(&treeset, getTSi(k)));
+        CU_ASSERT_FALSE(CN_has(treeset, tsd_get_int(k)));
     }
 
-    Treeset_(&treeset);
+    CN_finalize(treeset, NULL);
 }
 int do_set_test(void) 
 {

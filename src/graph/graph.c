@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2021-10-27 11:30:54
+ * @LastEditTime: 2021-11-02 15:18:01
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -13,14 +13,14 @@ static int __match_vertex(T* t1, T* t2)
 {
     vertex_t* pver1  = T_ptr(t1);
     unsigned long id = T_ulong(t2);
-    return pver1->vertex_id == id;
+    return (pver1->vertex_id == id) ? 0 : 1;
 }
 
 static int __match_path(T* t1, T* t2)
 {
     path_t* path = T_ptr(t1);
     unsigned long id = T_ulong(t2);
-    return path->to->vertex_id == id;
+    return (path->to->vertex_id == id) ? 0 : 1;
 }
 static vertex_t* __create_vertex(Graph* graph, unsigned long vertex_id) 
 {
@@ -46,11 +46,13 @@ static path_t* __create_path(vertex_t* to, float weight)
     return node;
 }
 
+
+
 Graph* Graph_create(int exploring_size) 
 {
     // 初始化图
     Graph* graph = (Graph*) malloc (sizeof(Graph));
-    graph->vertexes = CN_create(LIST|customized_compare, ptr_t, __match_vertex);
+    graph->vertexes = CN_create(LIST|customized_compare, ptr_t, &__match_vertex);
     graph->match_path   = &__match_path;
     graph->match_vertex = &__match_vertex;
     graph->exploring_size = exploring_size;
@@ -99,17 +101,30 @@ int Graph_destroy(Graph* graph)
     return 0;
 }
 
-int Graph_add_vertex(Graph* graph, unsigned long vertex) 
+vertex_t* Graph_add_vertex(Graph* graph, unsigned long vertex_id) 
 {
-    vertex_t* v = __create_vertex(graph, vertex);
-    return CN_add(graph->vertexes, v);
+    vertex_t* v = __create_vertex(graph, vertex_id);
+    CN_add(graph->vertexes, v);
+    return v;
 }
 
-int Graph_add_path(vertex_t* from, vertex_t* to, float weight)
+vertex_t* Graph_get_vertex(Graph* graph,  unsigned long vertex_id) 
+{
+    It i = CN_find(graph->vertexes, vertex_id);
+    return It_is_tail(i) ? It_ptr(i) : NULL;
+}
+
+path_t* Graph_add_path(Graph* graph, unsigned long from_id, unsigned long to_id, float weight)
 {
     // 首先得找一下 开始点 到 终结点 是不是在图中。
-    path_t *p = __create_path(to, weight);
-    return CN_add(from->paths, p);
+    vertex_t* from = Graph_get_vertex(graph, from_id);
+    vertex_t* to   = Graph_get_vertex(graph, to_id);
+    if (from && to) {
+        path_t *p = __create_path(to, weight);
+        CN_add(from->paths, p);  
+        return p;
+    }
+    return NULL;
 }
 
 int Graph_del_vertex(vertex_t* vertex)
@@ -125,27 +140,26 @@ int Graph_del_vertex(vertex_t* vertex)
     return 0;
 }
 
-int Graph_del_path(vertex_t* from, vertex_t* to)
+int Graph_del_path(vertex_t* from, unsigned long to)
 {
-    It del = CN_find(from->paths, to, NULL);
+    It del = CN_find(from->paths, to);
     path_t* del_path;
     CN_remove_at(from->paths, del, &del_path);
     free(del_path);
-    
     return 0;
 }
 
-vertex_t* Graph_get_vertex(Graph* graph,  unsigned long vertex_id) 
-{
-    It i = CN_find(graph->vertexes, &vertex_id);
-    return It_valid(i) ? It_getptr(i) : NULL;
-}
+// vertex_t* Graph_get_vertex(Graph* graph,  unsigned long vertex_id) 
+// {
+//     It i = CN_find(graph->vertexes, vertex_id);
+//     return It_valid(i) ? It_getptr(i) : NULL;
+// }
 
-path_t* Graph_get_path(vertex_t* from, unsigned long to_id) 
-{
-    It i = CN_find(&from->paths, &to_id, NULL);
-    return It_valid(i) ? It_getptr(i) : NULL;
-}
+// path_t* Graph_get_path(vertex_t* from, unsigned long to_id) 
+// {
+//     It i = CN_find(&from->paths, to_id);
+//     return It_valid(i) ? It_getptr(i) : NULL;
+// }
 
 int Graph_get_paths_matrix(Graph* graph, CooMatrix* matrix) 
 {

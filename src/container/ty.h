@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 13:42:12
- * @LastEditTime: 2021-10-24 15:34:10
+ * @LastEditTime: 2021-11-02 10:23:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/t.h
@@ -10,7 +10,7 @@
 #define __TY_H__
 #include "base/type_value/__type_value.h"
 
-#define T_type(T_ptr, type) (*((type*)(T_ptr)))
+#define T_type(T_ptr, type) type_value_(T_ptr, type)
 #define T_char(T_ptr) T_type(T_ptr, char)
 #define T_uchar(T_ptr) T_type(T_ptr, unsigned char)
 #define T_short(T_ptr) T_type(T_ptr, short)

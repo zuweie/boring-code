@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:11
- * @LastEditTime: 2021-10-29 16:33:17
+ * @LastEditTime: 2021-11-02 09:51:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.h
@@ -19,27 +19,27 @@
     *((type*)(p_dest)) = *((type*)(p_src))
     
 
-int cmp_char(type_value_t*, type_value_t*, int);
-int cmp_uchar(type_value_t*, type_value_t*, int);
-int cmp_int(type_value_t*, type_value_t*, int);
-int cmp_uint(type_value_t*, type_value_t*, int);
-int cmp_long(type_value_t*, type_value_t*, int);
-int cmp_ulong(type_value_t*, type_value_t*, int);
-int cmp_float(type_value_t*, type_value_t*, int);
-int cmp_double(type_value_t*, type_value_t*, int);
-int cmp_str(type_value_t*, type_value_t*, int);
-int cmp_ptr(type_value_t*, type_value_t*, int);
+int cmp_char(type_value_t*, type_value_t*);
+int cmp_uchar(type_value_t*, type_value_t*);
+int cmp_int(type_value_t*, type_value_t*);
+int cmp_uint(type_value_t*, type_value_t*);
+int cmp_long(type_value_t*, type_value_t*);
+int cmp_ulong(type_value_t*, type_value_t*);
+int cmp_float(type_value_t*, type_value_t*);
+int cmp_double(type_value_t*, type_value_t*);
+int cmp_str(type_value_t*, type_value_t*);
+int cmp_ptr(type_value_t*, type_value_t*);
 
-int hash_char(type_value_t*, int, int);
-int hash_uchar(type_value_t*, int, int);
-int hash_int(type_value_t*, int, int);
-int hash_uint(type_value_t*, int, int);
-int hash_long(type_value_t*, int, int);
-int hash_ulong(type_value_t*, int, int);
-int hash_float(type_value_t*, int, int);
-int hash_double(type_value_t*, int, int);
-int hash_str(type_value_t*, int, int);
-int hash_ptr(type_value_t*, int, int);
+int hash_char(type_value_t*, int);
+int hash_uchar(type_value_t*, int);
+int hash_int(type_value_t*, int);
+int hash_uint(type_value_t*, int);
+int hash_long(type_value_t*, int);
+int hash_ulong(type_value_t*, int);
+int hash_float(type_value_t*, int);
+int hash_double(type_value_t*, int);
+int hash_str(type_value_t*, int);
+int hash_ptr(type_value_t*, int);
 
 int setup_char(type_value_t*, type_value_t*, unsigned char);
 int setup_uchar(type_value_t*, type_value_t*, unsigned char);

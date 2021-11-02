@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2021-10-26 09:44:24
+ * @LastEditTime: 2021-11-02 15:20:40
  * @LastEditors: Please set LastEditors
  */
 #include "graph_research.h"
@@ -230,7 +230,7 @@ int grp_calculate_component(Graph* graph, List* list)
     return 0;
 }
 
-int ugrp_calculate_mst_kruskal(UDGraph* graph, List* list) 
+int ugrp_calculate_mst_kruskal(UDGraph* graph, CN list) 
 {
     List group_list = _List(NULL);
     

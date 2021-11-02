@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2021-11-01 13:27:30
+ * @LastEditTime: 2021-11-02 09:55:08
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -44,7 +44,7 @@ static iterator_t __vector_search (container_t* container, iterator_t offset, ty
 
     for(; !iterator_equal(first, tail); iterator_next(first)) {
         if ( (compare && compare(iterator_reference(first), find) == 0) 
-        || (T_cmp(container->type_clazz)(first, find, 0)) == 0) 
+        || (T_cmp(container->type_clazz)(first, find)) == 0) 
         return first;
     }
     // 返回边界的指针

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:49
- * @LastEditTime: 2021-10-29 16:24:35
+ * @LastEditTime: 2021-11-02 09:53:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.c
@@ -11,44 +11,44 @@
 #include <math.h>
 #include "__built_in_type_adapters.h"
 
-int cmp_char(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_char(type_value_t* t1, type_value_t* t2)
 {
     char v1 = type_value_(t1, char);
     char v2 = type_value_(t2, char);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
 
-int cmp_uchar(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_uchar(type_value_t* t1, type_value_t* t2)
 {
     unsigned char v1 = type_value_(t1, unsigned char);
     unsigned char v2 = type_value_(t2, unsigned char);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
-int cmp_int(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_int(type_value_t* t1, type_value_t* t2)
 {
     int v1 = type_value_(t1, int);
     int v2 = type_value_(t2, int);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
-int cmp_uint(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_uint(type_value_t* t1, type_value_t* t2)
 {
     unsigned int v1 = type_value_(t1, unsigned int);
     unsigned int v2 = type_value_(t2, unsigned int);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
-int cmp_long(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_long(type_value_t* t1, type_value_t* t2)
 {
     long v1 = type_value_(t1, long);
     long v2 = type_value_(t2, long);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
-int cmp_ulong(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_ulong(type_value_t* t1, type_value_t* t2)
 {
     unsigned long v1 = type_value_(t1, unsigned long);
     unsigned long v2 = type_value_(t2, unsigned long);
     return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
 }
-int cmp_float(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_float(type_value_t* t1, type_value_t* t2)
 {
     float v1 = type_value_(t1, float);
     float v2 = type_value_(t2, float);
@@ -57,7 +57,7 @@ int cmp_float(type_value_t* t1, type_value_t* t2, int using_at)
     else if (v1 > v2) return 1;
     else return -1;
 }
-int cmp_double(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_double(type_value_t* t1, type_value_t* t2)
 {
     double v1 = type_value_(t1, double);
     double v2 = type_value_(t2, double);
@@ -66,52 +66,52 @@ int cmp_double(type_value_t* t1, type_value_t* t2, int using_at)
     else if (v1 > v2) return 1;
     else return -1;
 }
-int cmp_str(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_str(type_value_t* t1, type_value_t* t2)
 {
     char* v1 = type_value_(t1, char*);
     char* v2 = type_value_(t1, char*);
     return strcmp(v1, v2);
 }
 
-int cmp_ptr(type_value_t* t1, type_value_t* t2, int using_at)
+int cmp_ptr(type_value_t* t1, type_value_t* t2)
 {
-    return cmp_long(t1, t2, using_at);
+    return cmp_long(t1, t2);
 }
 
-int hash_char(type_value_t* t, int slot_size, int using_at)
+int hash_char(type_value_t* t, int slot_size)
 {
     return type_value_(t, char) % slot_size;
 }
-int hash_uchar(type_value_t* t, int slot_size, int using_at)
+int hash_uchar(type_value_t* t, int slot_size)
 {
     return type_value_(t, unsigned int) % slot_size;
 }
-int hash_int(type_value_t* t, int slot_size, int using_at)
+int hash_int(type_value_t* t, int slot_size)
 {
     return type_value_(t, int) % slot_size;
 }
-int hash_uint(type_value_t* t, int slot_size, int using_at)
+int hash_uint(type_value_t* t, int slot_size)
 {
     return type_value_(t, unsigned int) % slot_size;
 }
-int hash_long(type_value_t* t, int slot_size, int using_at)
+int hash_long(type_value_t* t, int slot_size)
 {
     return type_value_(t, long) % slot_size;
 }
-int hash_ulong(type_value_t* t, int slot_size, int using_at)
+int hash_ulong(type_value_t* t, int slot_size)
 {
     return type_value_(t, unsigned long) % slot_size;
 }
 
-int hash_float(type_value_t* t, int slot_size, int using_at)
+int hash_float(type_value_t* t, int slot_size)
 {
     return type_value_(t, unsigned int) % slot_size;
 }
-int hash_double(type_value_t* t, int slot_size, int using_at)
+int hash_double(type_value_t* t, int slot_size)
 {
     return type_value_(t, unsigned long) % slot_size;
 }
-int hash_str(type_value_t* t, int slot_size, int using_at)
+int hash_str(type_value_t* t, int slot_size)
 {
     char* str = t;
     int str_size = strlen(str);
@@ -122,7 +122,7 @@ int hash_str(type_value_t* t, int slot_size, int using_at)
     return sum % slot_size;
 }
 
-int hash_ptr(type_value_t* t, int slot_size, int using_at)
+int hash_ptr(type_value_t* t, int slot_size)
 {
     return type_value_(t, unsigned long) % slot_size;
 }

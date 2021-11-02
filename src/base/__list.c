@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-11-01 12:24:15
+ * @LastEditTime: 2021-11-02 09:53:45
  * @LastEditors: Please set LastEditors
  */
 
@@ -49,7 +49,7 @@ static iterator_t __list_search (container_t* container, iterator_t offset, type
 
     for(;!iterator_equal(first, tail); iterator_next(first)) {
         if ( (compare && compare(iterator_reference(first), find) == 0) 
-            || (T_cmp(container->type_clazz)(iterator_reference(first), find， 0) == 0) {
+            || (T_cmp(container->type_clazz)(iterator_reference(first), find) == 0) {
             return first;
         } 
     }
@@ -121,7 +121,6 @@ container_t* list_create(T_clazz* __type_clazz) {
     list_first(list) = list_head(list);
     list_last(list) = list_tail(list);
     list->_size = 0;
-    list->_sentinel.data = int_vtype(-1);      
     return list;
 }
 

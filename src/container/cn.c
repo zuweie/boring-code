@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-01 15:50:54
+ * @LastEditTime: 2021-11-02 10:58:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -38,7 +38,7 @@ static int __cn_remove_at(CN cn, It at, T* rdata)
     int err = err_ok;
     if (CN_size(cn) != 0) {
 
-        if (It_is_tail(at)) 
+        if (It_is_tail(at) || It_is_head(at)) 
             return err_invalid_pos;
 
         if (CN_(cn)->build_code & use_entity) {
@@ -62,10 +62,10 @@ static int __cn_add_at(CN cn, It at, va_list valist)
     int err = err_ok;
 
     if (CN_(cn)->build_code & use_entity) {
-        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all);
+        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all, 1);
         container_insert(CN_(cn)->eng, at._iter, ent);
     } else {
-        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
+        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist, 1);
         container_insert(CN_(cn)->eng, at._iter, tv);
     }
     return err;
@@ -74,11 +74,11 @@ static It __cn_find_at(CN cn, It at, va_list valist)
 {   
     iterator_t it;
     if (CN_(cn)->build_code & use_entity) {
-        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys);
+        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys, 0);
         it = container_search(CN_(cn)->eng, at._iter, ent, NULL);
     } else {
-        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
-        it = container_search(CN_(cn), at._iter, tv, NULL);
+        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist, 0);
+        it = container_search(CN_(cn)->eng, at._iter, tv, NULL);
     }
     return It(it, cn);
 }
@@ -143,8 +143,8 @@ CN CN_create(unsigned long build_code, ...)
                     err = err_invalid_ent_keys_number;
                     goto BUILD_FAIL;
                 }
-                entity_template_t* etpl = (entity_template_t*)malloc(sizeof(entity_template_t) + filed_num * sizeof(int));
-                type_clazz = etpl;
+                entity_template_t* etpl_ptr = (entity_template_t*)malloc(sizeof(entity_template_t) + filed_num * sizeof(int));
+                type_clazz = etpl_ptr;
 
                 etpl_ptr->field_types = (int*)(&etpl_ptr[1]);
 
@@ -233,10 +233,10 @@ CN CN_create(unsigned long build_code, ...)
             eng_ptr = container_create(list, type_clazz);
         } else if (build_code & TREE_SET) {
             unsigned char multi = build_code & multi_key;
-            eng_ptr = container_create(rb_tree, multi, type_clazz);
+            eng_ptr = container_create(rb_tree, type_clazz, multi);
         } else if (build_code & HASH_SET) {
             unsigned char multi = build_code & multi_key;
-            eng_ptr = container_create(hash, multi, type_clazz);
+            eng_ptr = container_create(hash, type_clazz, multi);
         }
         
         cn_ptr->build_code = build_code;
@@ -379,7 +379,7 @@ int CN_del(CN cn, ...)
         va_start(valist, cn);
         if (CN_(cn)->build_code & use_entity) {
             // 这里是一个map
-            CN_READ_ENTITY_VARGS(cn, rm_keys, valist, ef_keys);
+            CN_READ_ENTITY_VARGS(cn, rm_keys, valist, ef_keys,0);
             iterator_t it = container_search(CN_(cn)->eng, __null_iterator, rm_keys, NULL);
             if (!iterator_is_tail(it)) {
                 entity_t* rm;
@@ -390,7 +390,7 @@ int CN_del(CN cn, ...)
             }
             
         } else {
-            CN_READ_SINGLE_VALUE_VARGS(cn, rm, valist);
+            CN_READ_SINGLE_VALUE_VARGS(cn, rm, valist, 0);
             iterator_t it = container_search(CN_(cn)->eng, __null_iterator, rm, NULL);
             if (!iterator_is_tail(it)) {
                 container_remove(CN_(cn)->eng, it, NULL);
@@ -413,10 +413,10 @@ int CN_set(CN cn, ...)
         va_start(valist, cn);
 
         if (CN_(cn)->build_code & use_entity) {
-            CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all);
+            CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all, 1);
             container_insert(CN_(cn)->eng, __null_iterator, ent);
         }  else {
-            CN_READ_SINGLE_VALUE_VARGS(cn, tvalue, valist);
+            CN_READ_SINGLE_VALUE_VARGS(cn, tvalue, valist, 1);
             container_insert(CN_(cn)->eng, __null_iterator, tvalue);
         }
         va_end(valist);
@@ -436,7 +436,7 @@ T* CN_get(CN cn, ...)
         va_start(valist, cn);
 
         if (CN_(cn)->build_code & use_entity) {
-            CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys);
+            CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys, 0);
             iterator_t it = container_search(CN_(cn)->eng, __null_iterator, ent, NULL);
             if (!iterator_is_tail(it)) {
                 entity_t* ent = it.reference;
@@ -444,7 +444,7 @@ T* CN_get(CN cn, ...)
             }
             
         } else {
-            CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist);
+            CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist, 0);
             iterator_t it = container_search(CN_(cn)->eng, __null_iterator, tv, NULL);
             if (!iterator_is_tail(it)) {
                 return it.reference;

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:13:53
- * @LastEditTime: 2021-10-27 11:27:52
+ * @LastEditTime: 2021-11-02 14:53:06
  * @LastEditors: Please set LastEditors
  */
 #ifndef __GRAPH_H__
@@ -44,14 +44,17 @@ typedef struct _graph
 Graph* Graph_create(int);
 Graph* Graph_create_reverse(Graph* graph);
 int Graph_destroy(Graph* graph);
-int Graph_add_vertex(Graph* graph, unsigned long vertex);
-int Graph_add_path(vertex_t* from, vertex_t* to, float weight);
+
+vertex_t* Graph_add_vertex(Graph* graph, unsigned long vertex);
+path_t* Graph_add_path(Graph* graph, unsigned long from, unsigned long to, float weight);
 int Graph_del_vertex(vertex_t* vertex);
-int Graph_del_path(vertex_t* from, vertex_t* to);
+
+int Graph_del_path(vertex_t* from, unsigned long to);
+
 int Graph_get_paths_matrix(Graph* origin, CooMatrix* matrix);
 int Graph_connect_vertexes(Graph* graph, CooMatrix* matrix);
 vertex_t* Graph_get_vertex(Graph* graph, unsigned long vertex_id);
-path_t* Graph_get_path(vertex_t* from, unsigned long to_id);
+// path_t* Graph_get_path(vertex_t* from, unsigned long to_id);
 int Graph_set_path_matrix(Graph* graph, T* from, T* to, CooMatrix* matrix);
 int Graph_initialize_exploring(Graph* graph, int (*)(void*));
 void Graph_indexing_vertex(Graph* graph);

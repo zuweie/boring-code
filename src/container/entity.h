@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2021-11-01 09:46:15
+ * @LastEditTime: 2021-11-02 10:16:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -9,6 +9,7 @@
 #ifndef __ENTITY_H__
 #define __ENTITY_H__
 #include <stdarg.h>
+#include "base/type_value/__type_value_def.h"
 #include "ty.h"
 
 #define ROUND_UP_4(x) (((x) + 4 -1) & ~(4-1))
@@ -55,8 +56,6 @@
 #define ef_pT(pe, i) ((pe)->block[i])
 #define ef_char(pe, i) T_char(ef_pT(pe, i))
 #define ef_uchar(pe, i) T_uchar(ef_pT(pe, i))
-#define ef_short(pe, i) T_short(ef_pT(pe, i))
-#define ef_ushort(pe ,i) T_ushort(ef_pT(pe, i))
 #define ef_int(pe, i) T_int(ef_pT(pe, i))
 #define ef_uint(pe, i) T_uint(ef_pT(pe, i))
 #define ef_long(pe, i) T_long(ef_pT(pe, i))
@@ -80,10 +79,10 @@ typedef struct __entity {
     T** block;
 } entity_t;
 
-int cmp_entity(T*, T*);
-int hash_entity(T*, int);
-int conflict_fix_entity(T*, T*);
-int setup_entity(T*, T*);
+int cmp_entity(T*, T*, int);
+int hash_entity(T*, int, int);
+int setup_entity(T*, T*, unsigned char old_block);
+int vargs_reader_entity(va_list, T*, int);
 
 entity_t* entity_create(entity_template_t* etpl);
 entity_t* entity_cpy(entity_t* src);

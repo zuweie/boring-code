@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:08:54
- * @LastEditTime: 2021-11-01 16:00:02
+ * @LastEditTime: 2021-11-02 10:04:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_def.h
@@ -39,8 +39,8 @@ typedef enum {
 } adapter_t;
 
 typedef void (*T_adapter)(void);
-typedef int (*adapter_cmp) (type_value_t*, type_value_t*, int);
-typedef int (*adapter_hasher) (type_value_t*, int, int);
+typedef int (*adapter_cmp) (type_value_t*, type_value_t*);
+typedef int (*adapter_hasher) (type_value_t*, int);
 typedef int (*adapter_setup) (type_value_t*, type_value_t*, unsigned char);
 typedef int (*adapter_vargs_reader)(va_list, type_value_t*, int);
 

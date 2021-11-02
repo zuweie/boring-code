@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2021-10-26 08:37:13
+ * @LastEditTime: 2021-11-02 15:26:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
@@ -10,6 +10,12 @@
 #include "container/cn.h"
 #include "container/entity.h"
 #include "ud_graph.h"
+static int __match_uvertex(T* t1, T* t2) 
+{
+    uvertex_t* pv = T_ptr(t1);
+    unsigned long id = T_ulong(t2);
+    return (pv->id == id) ? 0 : 1;
+}
 
 static uvertex_t* __create_uvertex(UDGraph* graph, unsigned long vertex_id) 
 {
@@ -22,7 +28,7 @@ static uvertex_t* __create_uvertex(UDGraph* graph, unsigned long vertex_id)
     return vertex;
 }
 
-static uedge_t* _create_uedge(uvertex_t* vertex1, uvertex_t* vertex2, float weight)
+static uedge_t* __create_uedge(uvertex_t* vertex1, uvertex_t* vertex2, float weight)
 {
     uedge_t* edge = malloc(sizeof(uvertex_t));
     edge->epv = vertex1;
@@ -43,34 +49,33 @@ static void __free_uedge(T* v)
     free(edge);
 }
 
-UDGraph* UDGraph_create(int (*match_vertex)(T*, T*), int(*match_edge)(T*, T*),  size_t exploring_size) 
+UDGraph* UDGraph_create(size_t exploring_size) 
 {
     UDGraph* graph = malloc(sizeof(UDGraph));
     graph->exploring_size = exploring_size;
-    graph->uvertexs = CN_create(LIST|customized_compare, ptr_t, match_vertex); 
-    graph->uedges   = CN_create(LIST|customized_compare, ptr_t, match_edge);
+    graph->uvertexs = CN_create(LIST|customized_compare, ptr_t, &__match_uvertex); 
+    graph->uedges   = CN_create(LIST,ptr_t);
     return graph;
 }
 
 int UDGraph_destroy(UDGraph* udgraph) 
 {
     CN_finalize(udgraph->uedges, __free_uedge);
-    //List_(&udgraph->uvertexs, __free_uvertex);
     CN_finalize(udgraph->uvertexs, __free_uvertex);
     free(udgraph);
 }
 
-int UDGraph_add_vertex(UDGraph* udgraph, unsigned long vertex_id) 
+uvertex_t* UDGraph_add_vertex(UDGraph* udgraph, unsigned long vertex_id) 
 {
     uvertex_t* vertex = __create_uvertex(udgraph, vertex_id);
     CN_add(udgraph->uvertexs, vertex);
-    return 0;
+    return vertex;
 }
 
-int UDGraph_add_edge(UDGraph* udgraph, unsigned long vertex_1, unsigned long vertex_2, float w) 
+uedge_t* UDGraph_add_edge(UDGraph* udgraph, unsigned long vertex_1, unsigned long vertex_2, float w) 
 {
-    It i_v1 = CN_find(udgraph->uvertexs, vertex_1, NULL);
-    It i_v2 = CN_find(udgraph->uvertexs, vertex_2, NULL);
+    It i_v1 = CN_find(udgraph->uvertexs, vertex_1);
+    It i_v2 = CN_find(udgraph->uvertexs, vertex_2);
 
     if (!It_is_tail(i_v1) && !It_is_tail(i_v2)) {
         
@@ -80,9 +85,9 @@ int UDGraph_add_edge(UDGraph* udgraph, unsigned long vertex_1, unsigned long ver
         uedge_t* edge = __create_uedge(v1, v2, w);
         CN_add(udgraph->uedges, edge);
 
-        return 0;
+        return edge;
     }
-    return -1;
+    return NULL;
 }
 
 int UDGraph_del_vertex(UDGraph* udgraph, unsigned long vertex_id) 

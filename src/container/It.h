@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 13:39:44
- * @LastEditTime: 2021-10-26 15:04:07
+ * @LastEditTime: 2021-11-01 17:01:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/It.h
@@ -19,12 +19,12 @@
 
 #define It_char(it) T_char(it._iter.reference)
 #define It_uchar(it) T_uchar(it._iter.reference)
-#define It_short(it) T_short(it._iter.reference)
-#define It_ushort(it) T_ushort(it._iter.reference)
 #define It_int(it) T_int(it._iter.reference)
 #define It_uint(it) T_uint(it._iter.reference)
 #define It_long(it) T_long(it._iter.reference)
 #define It_ulong(it) T_ulong(it._iter.reference)
+#define It_float(it) T_float(it._iter.reference)
+#define It_double(it) T_double(it._iter.reference)
 #define It_ptr(it) T_ptr(it._iter.reference)
 #define It_str(it) T_str(it._iter.reference)
 
