@@ -1,14 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-07-29 00:18:35
+ * @LastEditTime: 2021-11-02 17:13:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
  */
 #include <stdio.h>
 #include <CUnit/Basic.h>
-#include "container/List.h"
+//#include "container/List.h"
+#include "container/cn.h"
 #include "ultra_array/ultra_array.h"
 #include "machine_learning/svm/support_vector_machines.h"
 #include "machine_learning/svm/svm_problem.h"
