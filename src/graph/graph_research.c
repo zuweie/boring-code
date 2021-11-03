@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2021-11-03 16:20:07
+ * @LastEditTime: 2021-11-03 16:49:16
  * @LastEditors: Please set LastEditors
  */
 #include <math.h>
@@ -40,7 +40,7 @@ static int __free_list_in_group_list(T* v)
     // List_(l, NULL);
     // free(l);
     CN l = T_int(v);
-    CN_finalize(l);
+    CN_finalize(l, NULL);
 }
 
 static void __init_bfs_exploring(void* exploring) 
@@ -74,19 +74,19 @@ static void __init_relax_exploring(void* exploring)
     explor->pi = NULL;
 }
 
-static int __prim_explor_key_cmp (Tv v1, Tv v2) 
+static int __prim_explor_key_cmp (T* v1, T* v2) 
 {
-    prim_explor_t* uv1_explor = ((vertex_t*)t2p(v1))->exploring;
-    prim_explor_t* uv2_explor = ((vertex_t*)t2p(v2))->exploring;
+    prim_explor_t* uv1_explor = ((vertex_t*)T_ptr(v1))->exploring;
+    prim_explor_t* uv2_explor = ((vertex_t*)T_ptr(v2))->exploring;
 
     if (uv1_explor->key == uv2_explor->key) return 0;
     if (uv1_explor->key > uv2_explor->key) return -1;
     return 1;
     
 }
-static int __dijkstra_explor_distance_cmp (Tv v1, Tv v2) {
-    relax_explor_t* u_explor = ((vertex_t*)t2p(v1))->exploring;
-    relax_explor_t* v_explor = ((vertex_t*)t2p(v2))->exploring;
+static int __dijkstra_explor_distance_cmp (T* v1, T* v2) {
+    relax_explor_t* u_explor = ((vertex_t*)T_ptr(v1))->exploring;
+    relax_explor_t* v_explor = ((vertex_t*)T_ptr(v2))->exploring;
 
     if (u_explor->distance == v_explor->distance) return 0;
     if (u_explor->distance > v_explor->distance) return -1;
@@ -95,43 +95,43 @@ static int __dijkstra_explor_distance_cmp (Tv v1, Tv v2) {
 // 广度优先算法
 int grp_bfs_exploring(Graph* graph, vertex_t* start) 
 {
-    Graph_initialize_exploring(graph, _init_bfs_exploring);
+    Graph_initialize_exploring(graph, __init_bfs_exploring);
     bfs_explor_t* pbfs = (bfs_explor_t*)start->exploring;
     pbfs->color = _grp_gray;
     pbfs->distance = 0;
     pbfs->pi = NULL;
 
-    Queue queue = _Queue(NULL);
-    Queue_offer(&queue, p2t(start));
-    Tv rdata;
+    Queue queue = Queue_create(ptr_t);
+    Queue_offer(queue, start);
+    vertex_t* rdata;
     
-    while(Queue_poll(&queue, &rdata) != -1) {
+    while(Queue_poll(queue, &rdata) != -1) {
 
-        vertex_t* pu = t2p(rdata);
+        vertex_t* pu = rdata;
         bfs_explor_t* pubfs = (bfs_explor_t*) pu->exploring;
 
         // 遍历节点的邻居表。
-        for(It first = CN_first(&pu->paths); 
-            !It_equal(first, CN_tail(&pu->paths)); 
-            first=It_next(first)) {
+        for(It first = CN_first(pu->paths); 
+            !It_equal(first, CN_tail(pu->paths)); 
+            It_next(first)) {
 
-            path_t* pv = It_getptr(first);
+            path_t* pv = It_ptr(first);
             bfs_explor_t* pvbfs  = (bfs_explor_t*) (pv->to->exploring);
 
             if (pvbfs->color == _grp_whtie) {
                 pvbfs->color = _grp_gray;
                 pvbfs->distance = pvbfs->distance + 1;
                 pvbfs->pi = pu;
-                Queue_offer(&queue, p2t(pv->to));
+                Queue_offer(queue, pv->to);
             }
         }
         pubfs->color = _grp_black;
     }
-    Queue_(&queue,NULL);
+    Queue_finalize(queue,NULL);
     return 0;
 }
 
-static int _dfs_visit(vertex_t* pu, int* time) 
+static int __dfs_visit(vertex_t* pu, int* time) 
 {
     dfs_explor_t* pudfs = (dfs_explor_t*) pu->exploring;
     pudfs->color = _grp_gray;
@@ -155,29 +155,29 @@ static int _dfs_visit(vertex_t* pu, int* time)
 int grp_dfs_exploring(Graph* graph) 
 {
     int time = -1;
-    Graph_initialize_exploring(graph, _init_dfs_exploring);
+    Graph_initialize_exploring(graph, __init_dfs_exploring);
     for(It first=CN_first(&graph->vertexes); 
         !It_equal(first, CN_tail(&graph->vertexes)); 
-        first=It_next(first)) {
+        It_next(first)) {
 
         vertex_t*   pu = It_getptr(first);
         dfs_explor_t* pudfs = (dfs_explor_t*)pu->exploring;
         if (pudfs->color == _grp_whtie) {
-            _dfs_visit(pu, &time);
+            __dfs_visit(pu, &time);
         }
     }
     return 0;
 }
 
-int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr) 
+int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, CN arr) 
 {
     if (start == desc) {
-        CN_add_tail(arr, p2t(start));
+        CN_add(arr, start);
     }else if (((bfs_explor_t*)(desc->exploring))->pi == NULL){
         return -1;
     }else {
         grp_bfs_path(graph, start, ((bfs_explor_t*)(desc->exploring))->pi, arr);
-        CN_add_tail(arr, p2t(desc));
+        CN_add(arr, desc);
     }
     return 0;
 }
@@ -185,7 +185,7 @@ int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, List* arr)
 // 再完成了 dfs 后启动的拓扑排序。
 int grp_topological_sort(Graph* graph)
 {
-    CN_sort(&graph->vertexes, _topological_sort_cmp);
+    CN_sort(&graph->vertexes, __topological_sort_cmp);
 }
 
 // 计算有向图的强连通分支
@@ -199,13 +199,13 @@ Graph* grp_calculate_strongly_connected_component_graph(Graph* graph)
 
 }
 
-int grp_calculate_component(Graph* graph, List* list) 
+int grp_calculate_component(Graph* graph, CN list) 
 {
     // 把所有的定点排好
-    size_t arr_size = CN_size(&graph->vertexes) * 2;
+    size_t arr_size = CN_size(graph->vertexes) * 2;
     vertex_t* vertex_arr[arr_size];
 
-    for (It first = CN_first(&graph->vertexes); !It_equal(first, CN_tail(&graph->vertexes)); first = It_next(first)) {
+    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)) {
         vertex_t* vertex = It_getptr(first);
         dfs_explor_t* dfs = vertex->exploring;
         vertex_arr[dfs->d_time] = vertex;
@@ -215,20 +215,20 @@ int grp_calculate_component(Graph* graph, List* list)
     vertex_t* close_flag = vertex_arr[0];
 
     // 1 把第一个塞进去容器。
-    CN_add_tail(list, p2t(close_flag));
+    CN_add(list, close_flag);
     It split_from = CN_last(list);
     for (int i=1; i<arr_size; ++i) {
         vertex_t* curr_vertex = vertex_arr[i];
 
         if (close_flag == curr_vertex && i < arr_size-1) {
-            CN_add_tail(list, p2t(NULL));
+            CN_add(list, NULL);
             close_flag = vertex_arr[++i];
-            CN_add_tail(list, p2t(close_flag));
+            CN_add(list, close_flag);
             split_from = CN_last(list);
         } else {
-            It is_find = CN_search(list, split_from, p2t(curr_vertex));
+            It is_find = CN_find_at(list, split_from, curr_vertex);
             if (It_is_tail(is_find)) {
-                CN_add_tail(list, p2t(curr_vertex));
+                CN_add(list, curr_vertex);
             }
         }
     }
