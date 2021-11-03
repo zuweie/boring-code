@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-11-02 10:06:55
+ * @LastEditTime: 2021-11-03 15:34:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -19,11 +19,11 @@ static hash_inner_list_node_t* __get_slot_node_by_key(hash_t* hash, type_value_t
 
 static hash_inner_list_node_t* __search_in_inner_list(hash_t* hash, hash_inner_list_node_t* from, type_value_t* find) 
 {
-    int hash_index = T_hash(hash->container.type_clazz)(key, hash->_slot_size);
+    int hash_index = T_hash(hash->container.type_clazz)(find, hash->_slot_size);
     hash_inner_list_node_t* tail  = hash_table_tail(hash);
     
     for(;from != tail;from = from->next) {        
-        if (T_cmp(hash->container.type_clazz)(from->w, find, context) == 0) {
+        if (T_cmp(hash->container.type_clazz)(from->w, find) == 0) {
             return from;
         }else if (from->slot_index != hash_index) {
             return tail;
@@ -64,7 +64,7 @@ static iterator_t __hash_search (container_t* container, iterator_t offset, type
         target = (slot_from == hash_table_tail(hash)) ? slot_from : __search_in_inner_list(container, slot_from, find);
     } else {
         hash_inner_list_node_t* from = container_of(offset.reference, hash_inner_list_node_t, w);
-        target =  __search_in_inner_list(container, from, find, 0);
+        target =  __search_in_inner_list(container, from, find);
     }
     return __iterator(target->w, container);    
 }
@@ -98,6 +98,7 @@ static int __hash_insert(container_t* container, iterator_t pos, type_value_t* e
         if ( slot_from == hash_table_tail(hash) || target == hash_table_tail(hash)) {
             hash->_slot[inner_list_node->slot_index] = inner_list_node;
         }
+        hash->_size ++;
     } else {
  
         T_setup(container->type_clazz)(target->w, en, 1);
@@ -129,15 +130,15 @@ static int __hash_remove(container_t* container, iterator_t pos, void* rdata)
     if (rdata) type_value_cpy(rdata, remove->w, T_size(container->type_clazz));
 
     deallocate(container->mem_pool, remove);
-
+    hash->_size --;
     return 0;
 }
 
 
 
-static size_t _hash_size(container_t* container) 
+static size_t __hash_size(container_t* container) 
 {
-    return container_size(container);
+    return ((hash_t*)container)->_size;
 }
 
 container_t* hash_create(T_clazz* __type_clazz, int slot_size, unsigned char multi) 
@@ -146,6 +147,7 @@ container_t* hash_create(T_clazz* __type_clazz, int slot_size, unsigned char mul
     pool_t* __mem_pool = alloc_create(0);
     hash->_slot_size = slot_size;
     hash->_multi = multi;
+    hash->_size = 0;
     // init the inner double direct linklist.
     hash->_hash_table._sentinel.prev = &(hash->_hash_table._sentinel);
     hash->_hash_table._sentinel.next = &(hash->_hash_table._sentinel);

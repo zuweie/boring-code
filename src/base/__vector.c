@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2021-11-02 09:55:08
+ * @LastEditTime: 2021-11-03 15:19:56
  * @LastEditors: Please set LastEditors
  */
 //#include <stdio.h>
@@ -10,9 +10,8 @@
 #include <string.h>
 #include "__vector.h"
 #include "__iterator.h"
-#include "__type_value.h"
+#include "base/type_value/__type_value.h"
 #include "mem_pool/__mem_pool.h"
-#include "base/operate/__sort.h"
 #include "base/operate/__heap_sort.h"
 #include "base/operate/__wring.h"
 /** iterator function **/
@@ -27,13 +26,14 @@ static int __vector_move (iterator_t* it, int step)
 /** container function **/
 static iterator_t __vector_first (container_t* container) 
 {
+    vector_t* vec = (vector_t*)container;
     return __iterator(vec->_data, container);
 }
 
 static iterator_t __vector_last (container_t* container) 
 {
     vector_t* vec = (vector_t*) container;
-    return __iterator((vec->_data + (vec->_size -1) * container->type_def.ty_size), container);
+    return __iterator((vec->_data + (vec->_size -1) * T_size(container->type_clazz)), container);
 }
 
 static iterator_t __vector_search (container_t* container, iterator_t offset, type_value_t* find, int (*compare)(type_value_t, type_value_t)) 
@@ -43,8 +43,8 @@ static iterator_t __vector_search (container_t* container, iterator_t offset, ty
     iterator_t tail = container_tail(container);
 
     for(; !iterator_equal(first, tail); iterator_next(first)) {
-        if ( (compare && compare(iterator_reference(first), find) == 0) 
-        || (T_cmp(container->type_clazz)(first, find)) == 0) 
+        if ( (compare && compare(first.reference, find) == 0) 
+        || (T_cmp(container->type_clazz)(first.reference, find)) == 0) 
         return first;
     }
     // 返回边界的指针
@@ -58,7 +58,7 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
     if (vec->_size >= vec->_capacity){
         // 注水
         int require_size = vec->_size + VEC_ALLOC_CHUNK_SIZE;
-        type_value_t *new_block = allocate(container_mem_pool(container), require_size * T_size(container->type_clazz));
+        type_value_t *new_block = allocate(container->mem_pool, require_size * T_size(container->type_clazz));
 
         if (new_block == NULL){
             return -1;
@@ -66,7 +66,7 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
 
         // 如果整个块要是重新malloc的，那么要重新计算it的位置。
         // 隐藏的bug：地址的差值可能会超过 long 的最大值。
-        ptrdiff_t offset = iterator_reference(it) - iterator_reference(container_head(vec));
+        ptrdiff_t offset = it.reference - container_head(vec).reference;
         // copy 旧数据到新的内存
         memcpy(new_block, vec->_data, vec->_size * T_size(container->type_clazz));
         // 释放旧的内存
@@ -77,8 +77,8 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
         vec->_capacity += VEC_ALLOC_CHUNK_SIZE;
 
         // 更新it的refer。
-        void *new_refer = iterator_reference(container_head(vec)) + offset;
-        it.refer = new_refer;
+        void *new_refer = container_head(vec).reference + offset;
+        it.reference = new_refer;
     }
 
     // 继续做插入动作。
@@ -95,7 +95,7 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
     }
     // 插入
     //container->type_def.ty_adapter.bit_cpy(it.refer, data);
-    T_setup(container->type_clazz)(it.reference, data);
+    T_setup(container->type_clazz)(it.reference, data, 0);
     vec->_size++;
     return 0;
 }
@@ -104,10 +104,14 @@ static int __vector_remove (container_t* container, iterator_t it, void* rdata)
 {
     vector_t *vec = container;
     //if (rdata) container->type_def.ty_adapter.bit_cpy(rdata, it.refer);
-    if (rdata)
-    iterator_t it_next = it;
-    iterator_next(it_next);      
+    if (rdata) type_value_cpy(rdata, it.reference, T_size(container->type_clazz));
+    // if (rdata) 
+    // iterator_t it_next = it;
+    // iterator_next(it_next); 
+
     // 擦除
+    iterator_t it_next = it;
+    iterator_next(it_next);
     for (;!iterator_equal(it, container_last(vec));iterator_next(it), iterator_next(it_next)){
         iterator_assign(it, it_next);
     }
@@ -141,12 +145,12 @@ container_t* vector_create(T_clazz* __type_clazz) {
     vector->_size = 0;
     vector->_capacity = VEC_ALLOC_CHUNK_SIZE;
     // 先给水池注点水。
-    vector->_data = allocate(container_mem_pool(vector), VEC_ALLOC_CHUNK_SIZE * __ty_def->ty_size);
+    vector->_data = allocate(vector->container.mem_pool, VEC_ALLOC_CHUNK_SIZE * T_size(vector->container.type_clazz));
     return vector;
 }
 
 int vector_destroy(container_t* vector) {
-    alloc_destroy(container_mem_pool(vector));
+    alloc_destroy(vector->mem_pool);
     free(vector);
     return 0;
 }

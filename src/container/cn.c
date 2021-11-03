@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-02 10:58:01
+ * @LastEditTime: 2021-11-03 16:03:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -14,6 +14,10 @@
 #include "base/operate/__heap_sort.h"
 #include "base/operate/__quick_sort.h"
 #include "base/operate/__wring.h"
+#include "base/__vector.h"
+#include "base/__list.h"
+#include "base/__hash.h"
+#include "base/__rb_tree.h"
 #include "entity.h"
 #include "it.h"
 #include "cn.h"
@@ -62,10 +66,10 @@ static int __cn_add_at(CN cn, It at, va_list valist)
     int err = err_ok;
 
     if (CN_(cn)->build_code & use_entity) {
-        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all, 1);
+        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_all, using_at_add);
         container_insert(CN_(cn)->eng, at._iter, ent);
     } else {
-        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist, 1);
+        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist, using_at_add);
         container_insert(CN_(cn)->eng, at._iter, tv);
     }
     return err;
@@ -74,10 +78,10 @@ static It __cn_find_at(CN cn, It at, va_list valist)
 {   
     iterator_t it;
     if (CN_(cn)->build_code & use_entity) {
-        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys, 0);
+        CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys, using_at_find);
         it = container_search(CN_(cn)->eng, at._iter, ent, NULL);
     } else {
-        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist, 0);
+        CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist, using_at_find);
         it = container_search(CN_(cn)->eng, at._iter, tv, NULL);
     }
     return It(it, cn);
@@ -114,7 +118,7 @@ CN CN_create(unsigned long build_code, ...)
     int i;
 
     va_list valist;
-    var_start(valist, build_code);
+    va_start(valist, build_code);
 
     cn_t* cn_ptr         = NULL;
     T_clazz* type_clazz  = NULL;
@@ -236,7 +240,7 @@ CN CN_create(unsigned long build_code, ...)
             eng_ptr = container_create(rb_tree, type_clazz, multi);
         } else if (build_code & HASH_SET) {
             unsigned char multi = build_code & multi_key;
-            eng_ptr = container_create(hash, type_clazz, multi);
+            eng_ptr = container_create(hash, type_clazz, 1024, multi);
         }
         
         cn_ptr->build_code = build_code;
@@ -316,12 +320,13 @@ int CN_mx_extract(CN cn, T* rdata, int (*cmp)(T*, T*))
 {
     int err = err_ok; 
     if (CN_size(cn) > 0) { 
-        cmp = cmp ? cmp : CN_(cn)->eng->type_def.ty_cmp;
+        cmp = cmp ? cmp : T_adapter_get(CN_(cn)->type_clazz->_def.ty_id, e_cmp);//CN_(cn)->eng->type_def.ty_cmp;
         heap_build_max_heap(CN_(cn)->eng, cmp); 
-        It first = CN_first(cn);
-        It last  = CN_last(cn);
-        It_exchange(first, last); 
-        err = CN_remove_at(cn, CN_last(cn), rdata); 
+        iterator_t first = container_first(CN_(cn)->eng);
+        iterator_t last  = container_last(CN_(cn)->eng);
+        //It_exchange(first, last); 
+        iterator_exchange(first, last);
+        err = container_remove(CN_(cn)->eng, container_last(CN_(cn)->eng), rdata);//CN_remove_at(cn, CN_last(cn), rdata); 
     } else { 
         err = err_empty; 
     } 
@@ -331,7 +336,7 @@ int CN_mx_extract(CN cn, T* rdata, int (*cmp)(T*, T*))
 int CN_sort(CN cn, int (*cmp)(T*, T*))
 {
     int err = err_ok;
-    cmp = cmp ? CN_(cn)->eng->type_def.ty_cmp;
+    cmp = cmp ? cmp : T_adapter_get(CN_(cn)->type_clazz->_def.ty_id, e_cmp);
     if (CN_(cn)->build_code & LIST){
         quick_sort(container_first(CN_(cn)->eng), container_last(CN_(cn)->eng), cmp);
     } else if (CN_(cn)->build_code & VECTOR) {
@@ -339,7 +344,7 @@ int CN_sort(CN cn, int (*cmp)(T*, T*))
     } else {
         err = err_unsupported_method;
     }
-    return err
+    return err;
 }
 
 int CN_size(CN cn) 
@@ -359,7 +364,7 @@ int CN_has(CN cn, ...)
 int CN_to_unique(CN cn)
 {
     int err;
-    int (*cmp)(T*, T*) = 0 ? 0 : CN_(cn)->eng->type_def.cmp;
+    int (*cmp)(T*, T*) = T_adapter_get(CN_(cn)->type_clazz->_def.ty_id, e_cmp);//0 ? 0 : CN_(cn)->eng->type_def.cmp;
     err = CN_sort(cn, cmp);
     if (err == err_ok) {
         if (CN_(cn)->build_code & use_entity)

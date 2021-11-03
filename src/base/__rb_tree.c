@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-02 10:04:07
+ * @LastEditTime: 2021-11-03 15:00:16
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -257,7 +257,7 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t* t) {
     pnode->parent = _null(prb);
     pnode->left   = _null(prb);
     pnode->right  = _null(prb);
-    T_setup(prb->container.type_clazz)(pnode->w, t);
+    T_setup(prb->container.type_clazz)(pnode->w, t, 0);
     return pnode;
 }
 
@@ -270,7 +270,7 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
     // 找位置
     while(px != _null(prb)) {
         py = px;
-        if ( T_cmp(prb->container.type_clazz)(px->w, t, 1) == -1 ){
+        if ( T_cmp(prb->container.type_clazz)(px->w, t) == -1 ){
             // 小于的情况
         	px = px->left;
         }else {
@@ -286,7 +286,7 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
                 //     type_value_cpy(px->w, t, prb->container.type_def.ty_size);
                 //     //prb->container.type_def.ty_adapter.bit_cpy(px->w, t);
                 // }
-                T_setup(prb->container.type_clazz)(px->w, t);
+                T_setup(prb->container.type_clazz)(px->w, t, 1);
                 return 1;
             }
         }
@@ -558,7 +558,7 @@ static size_t __rb_tree_size(container_t* container)
 }
 
 
-container_t* rb_tree_create(T_clazz* __type_clazz, unsigned char multi);
+container_t* rb_tree_create(T_clazz* __type_clazz, unsigned char multi)
 {
     container_t* tree = (rb_tree_t*) malloc( sizeof(rb_tree_t) );
     pool_t* _mem_pool = alloc_create(0);
@@ -577,11 +577,13 @@ container_t* rb_tree_create(T_clazz* __type_clazz, unsigned char multi);
     __init_rb_tree(tree, multi);
     return tree;
 }
+
 int rb_tree_destroy(container_t* tree) {
-    alloc_destroy(container_mem_pool(tree));
+    alloc_destroy(tree->mem_pool);
     free(tree);
     return 0;
 }
+
 iterator_t rb_tree_root(rb_tree_t* tree) {
     return __iterator(tree->_root->w, tree);
 }

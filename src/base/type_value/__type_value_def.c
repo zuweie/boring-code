@@ -1,12 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:09:36
- * @LastEditTime: 2021-11-01 16:00:56
+ * @LastEditTime: 2021-11-03 15:45:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_value_def.c
  */
 #include <stdlib.h>
+#include <string.h>
 #include "__built_in_type_adapters.h"
 #include "__type_value_def.h"
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:11
- * @LastEditTime: 2021-11-02 09:51:24
+ * @LastEditTime: 2021-11-03 14:57:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.h
@@ -41,16 +41,16 @@ int hash_double(type_value_t*, int);
 int hash_str(type_value_t*, int);
 int hash_ptr(type_value_t*, int);
 
-int setup_char(type_value_t*, type_value_t*, unsigned char);
-int setup_uchar(type_value_t*, type_value_t*, unsigned char);
-int setup_int(type_value_t*, type_value_t*, unsigned char);
-int setup_uint(type_value_t*, type_value_t*, unsigned char);
-int setup_long(type_value_t*, type_value_t*, unsigned char);
-int setup_ulong(type_value_t*, type_value_t*, unsigned char);
-int setup_float(type_value_t*, type_value_t*, unsigned char);
-int setup_double(type_value_t*, type_value_t*, unsigned char);
-int setup_str(type_value_t*, type_value_t*, unsigned char);
-int setup_ptr(type_value_t*, type_value_t*, unsigned char);
+int setup_char(type_value_t*, type_value_t*, unsigned char old);
+int setup_uchar(type_value_t*, type_value_t*, unsigned char old);
+int setup_int(type_value_t*, type_value_t*, unsigned char old);
+int setup_uint(type_value_t*, type_value_t*, unsigned char old);
+int setup_long(type_value_t*, type_value_t*, unsigned char old);
+int setup_ulong(type_value_t*, type_value_t*, unsigned char old);
+int setup_float(type_value_t*, type_value_t*, unsigned char old);
+int setup_double(type_value_t*, type_value_t*, unsigned char old);
+int setup_str(type_value_t*, type_value_t*, unsigned char old);
+int setup_ptr(type_value_t*, type_value_t*, unsigned char old);
 
 int vargs_char(va_list, type_value_t*, int);
 int vargs_uchar(va_list, type_value_t*, int);

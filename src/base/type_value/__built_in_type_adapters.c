@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:49
- * @LastEditTime: 2021-11-02 09:53:17
+ * @LastEditTime: 2021-11-03 14:58:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.c
@@ -128,52 +128,52 @@ int hash_ptr(type_value_t* t, int slot_size)
 }
 
 
-int setup_char(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_char(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, char);
     return 0;
 }
-int setup_uchar(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_uchar(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, unsigned char);
     return 0;
 }
-int setup_int(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_int(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, int);
     return 0;
 }
-int setup_uint(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_uint(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, unsigned int);
     return 0;
 }
-int setup_long(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_long(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, long);
     return 0;
 }
-int setup_ulong(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_ulong(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, unsigned long);
     return 0;
 }
-int setup_float(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_float(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, float);
     return 0;
 }
-int setup_double(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_double(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, double);
     return 0;
 }
-int setup_str(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_str(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, char*);
     return 0;
 }
-int setup_ptr(type_value_t* p_dest, type_value_t* p_src, unsigned char is_new)
+int setup_ptr(type_value_t* p_dest, type_value_t* p_src, unsigned char old)
 {
     BIT_CPY(p_dest, p_src, char*);
     return 0;

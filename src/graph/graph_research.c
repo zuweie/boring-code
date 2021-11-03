@@ -2,43 +2,48 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2021-11-02 15:20:40
+ * @LastEditTime: 2021-11-03 16:20:07
  * @LastEditors: Please set LastEditors
  */
+#include <math.h>
 #include "graph_research.h"
 #include "container/Queue.h"
-#include "container/Tv.h"
-#include "container/It.h"
-#include "container/List.h"
-#include "container/HashMap.h"
+//#include "container/Tv.h"
+#include "container/it.h"
+//#include "container/List.h"
+//#include "container/HashMap.h"
 #include "container/MxQueue.h"
 
 #define DISTANCE_MAX 9999999.99f;
 
-static int _topological_sort_cmp(Tv t1, Tv t2) 
+static int __topological_sort_cmp(T* t1, T* t2) 
 {
-    dfs_explor_t* v1 = ((vertex_t*)t2p(t1))->exploring;
-    dfs_explor_t* v2 = ((vertex_t*)t2p(t2))->exploring;
+    dfs_explor_t* v1 = ((vertex_t*)T_ptr(t1))->exploring;//((vertex_t*)t2p(t1))->exploring;
+    dfs_explor_t* v2 = ((vertex_t*)T_ptr(t2))->exploring;
 
-    return INCMP_INT(i2t(v1->f_time), i2t(v2->f_time));
+    //return INCMP_INT(i2t(v1->f_time), i2t(v2->f_time));
+    return v1->f_time > v2->f_time ? -1 : v1->f_time < v2->f_time ? 1 : 0;
 }
 
-static int _udgaph_edge_weight_sort_cmp(Tv v1, Tv v2)
+static int __udgaph_edge_weight_sort_cmp(T* v1, T* v2)
 {
-    uedge_t* e1 = t2p(v1);
-    uedge_t* e2 = t2p(v2);
+    uedge_t* e1 = T_ptr(v1);//t2p(v1);
+    uedge_t* e2 = T_ptr(v2);
     
-    return CMP_FLT(f2t(e1->weight), f2t(e2->weight));
+    //return CMP_FLT(f2t(e1->weight), f2t(e2->weight));
+    return fabs(e1->weight - e2->weight) < 0.000001 ? 0 : e1->weight > e2->weight ? 1 : -1;
 }
 
-static int _free_list_in_group_list(Tv v) 
+static int __free_list_in_group_list(T* v) 
 {
-    List* l = t2p(v);
-    List_(l, NULL);
-    free(l);
+    // List* l = t2p(v);
+    // List_(l, NULL);
+    // free(l);
+    CN l = T_int(v);
+    CN_finalize(l);
 }
 
-static void _init_bfs_exploring(void* exploring) 
+static void __init_bfs_exploring(void* exploring) 
 {
     bfs_explor_t* pn = exploring;
     pn->color = _grp_whtie;
@@ -46,7 +51,7 @@ static void _init_bfs_exploring(void* exploring)
     pn->pi = NULL;
 }
 
-static void _init_dfs_exploring(void* exploring) 
+static void __init_dfs_exploring(void* exploring) 
 {
     dfs_explor_t* pn = exploring;
     pn->color = _grp_whtie;
@@ -55,21 +60,21 @@ static void _init_dfs_exploring(void* exploring)
     pn->f_time = -1;
 }
 
-static void _init_prim_exploring(void* exploring) 
+static void __init_prim_exploring(void* exploring) 
 {
     prim_explor_t* explor = exploring;
     explor->key = DISTANCE_MAX;
     explor->pi  = NULL;
     explor->in_queue = 1;
 }
-static void _init_relax_exploring(void* exploring) 
+static void __init_relax_exploring(void* exploring) 
 {
     relax_explor_t* explor = exploring;
     explor->distance = DISTANCE_MAX;
     explor->pi = NULL;
 }
 
-static int prim_explor_key_cmp (Tv v1, Tv v2) 
+static int __prim_explor_key_cmp (Tv v1, Tv v2) 
 {
     prim_explor_t* uv1_explor = ((vertex_t*)t2p(v1))->exploring;
     prim_explor_t* uv2_explor = ((vertex_t*)t2p(v2))->exploring;
@@ -79,7 +84,7 @@ static int prim_explor_key_cmp (Tv v1, Tv v2)
     return 1;
     
 }
-static int dijkstra_explor_distance_cmp (Tv v1, Tv v2) {
+static int __dijkstra_explor_distance_cmp (Tv v1, Tv v2) {
     relax_explor_t* u_explor = ((vertex_t*)t2p(v1))->exploring;
     relax_explor_t* v_explor = ((vertex_t*)t2p(v2))->exploring;
 

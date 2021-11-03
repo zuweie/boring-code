@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2021-11-01 17:31:03
+ * @LastEditTime: 2021-11-03 15:05:38
  * @LastEditors: Please set LastEditors
  */
 #ifndef __ITERATOR_H__
@@ -16,7 +16,7 @@
 ({ \
     iterator_t t1 = (iter1); \
     iterator_t t2 = (iter2); \
-    int ty_size = t1.container->type_def.ty_size; \
+    int ty_size = T_size(t1.container->type_clazz); \
     type_value_cpy(t1.reference, t2.reference, ty_size); \
 }) 
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:26
- * @LastEditTime: 2021-11-01 16:47:25
+ * @LastEditTime: 2021-11-03 10:43:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -91,7 +91,7 @@ int entity_tpl_cal_independent_entity_body_size(entity_template_t* etpl, unsigne
     return independent_entity_size;
 }
 
-int cmp_entity(T* t1, T* t2, int context)
+int cmp_entity(T* t1, T* t2)
 {
     entity_t* e1 = (entity_t*) t1;
     entity_t* e2 = (entity_t*) t2;
@@ -99,13 +99,13 @@ int cmp_entity(T* t1, T* t2, int context)
     T_def _def;
     for (int i=0; i<e1->tpl->value_idx; ++i) {
         T_adapter _adapter = T_adapter_get(e1->tpl->field_types[i], e_cmp);
-        result = ((adapter_cmp)(_adapter))(e1, e2, context);
+        result = ((adapter_cmp)(_adapter))(e1, e2);
         if (result != 0) return result;
     }
     return result;
 }
 
-int hash_entity(T* t, int slot_size, int context)
+int hash_entity(T* t, int slot_size)
 {
     entity_t* ent = (entity_t*)t;
     unsigned long hash_code = 0;
@@ -113,7 +113,7 @@ int hash_entity(T* t, int slot_size, int context)
     for (int i=0; i<ent->tpl->value_idx; ++i) {
         //_def = T_def_get(ent->tpl->field_types[i]);
         T_adapter _adapter = T_adapter_get(ent->tpl->field_types[i], e_hash);
-        hash_code += ((adapter_hasher)(_adapter))(ent, slot_size, context);
+        hash_code += ((adapter_hasher)(_adapter))(ent, slot_size);
     }
     return hash_code % slot_size;
 }

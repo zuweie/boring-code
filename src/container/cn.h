@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-11-01 15:55:01
+ * @LastEditTime: 2021-11-03 15:46:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -72,6 +72,11 @@ enum {
     err_invalid_pos = -16
 };
 
+enum {
+    using_at_add = 1,
+    using_at_find,
+};
+typedef struct __It It;
 typedef int CN;
 typedef struct __cn cn_t;
 

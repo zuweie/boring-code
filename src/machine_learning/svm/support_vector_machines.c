@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-02 17:17:45
+ * @LastEditTime: 2021-11-03 14:41:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -10,7 +10,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include "container/LeList.h"
+#include "container/cn.h"
+#include "container/entity.h"
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
 #include "support_vector_machines.h"
@@ -24,7 +25,7 @@
 // 数据预处理：
 // 统计一下那个 _Y 中 class 的类别，以及各种类别所占有的比例。
 // 只用于 c_svc 与 nu_svc
-int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
+int svm_classify_problem(u_array_t* _X, u_array_t* _Y, CN svm_problems)
 {
     
     size_t len_Y    = UA_length(_Y);
@@ -33,86 +34,106 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, List* svm_problems)
     size_t len_Xc             = UA_shape_axis(_X, 1);
     vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(_X);
 
-    List counting_list = _LeList(Entity_is_key_equal);
+    //List counting_list = _LeList(Entity_is_key_equal);
+    CN counting_map = CN_create(HASH_MAP, vf_t, int_t);
+    
     for (size_t i=0; i<len_Y; ++i) {
         vfloat_t y = Y_ptr[i];
 
-        It it = LeCN_find(&counting_list, f2t(y));
-        List* class_list = NULL;
-        if (!It_valid(it)) {
+        // It it = LeCN_find(&counting_list, f2t(y));
+        // List* class_list = NULL;
+        if (!CN_has(counting_map, y)) {
             // 没找到这个 float 
-            class_list = malloc(sizeof(List));
-            *class_list = _List(NULL);
-            CN_add(class_list, i2t(i));
-            LeCN_add2(&counting_list, f2t(y), p2t(class_list));
+            // class_list = malloc(sizeof(List));
+            // *class_list = _List(NULL);
+            // CN_add(class_list, i2t(i));
+            // LeCN_add2(&counting_list, f2t(y), p2t(class_list));
+            CN class_list = CN_create(LIST, int_t);
+            CN_add(class_list, i);
+            CN_set(counting_map, y, class_list);
         } else {
-            Entity* ent = LeCN_get_entity(&counting_list, it);
-            List* class_list = t2p(ent->tv[1]);
-            CN_add(class_list, i2t(i));
+            // 找到了这个 float
+            // Entity* ent = LeCN_get_entity(&counting_list, it);
+            // List* class_list = t2p(ent->tv[1]);
+            // CN_add(class_list, i2t(i));
+            CN class_list = CN_get(counting_map, y);
+            CN_add(class_list, i);
         }
     }
 
     // 组成配对。
-    int class_nr = CN_size(&counting_list);
+    int class_nr = CN_size(counting_map);
     if (class_nr > 2) {
         // 三个以上的class
-        for(It firstA=CN_first(&counting_list); !It_equal(firstA, CN_last(&counting_list)); firstA=It_next(firstA)) {
-            for (It firstB=It_next(firstA); !It_equal(firstB, CN_tail(&counting_list)); firstB=It_next(firstB)) {
+        for(It firstA=CN_first(counting_map); !It_equal(firstA, CN_last(counting_map)); It_next(firstA)) {
+
+            It firstB = firstA;
+            It_next(firstB);
+            
+            for (;!It_equal(firstB, CN_tail(counting_map)); It_next(firstB)) {
                 
-                Entity* entity_A = It_getptr(firstA);
-                Entity* entity_B = It_getptr(firstB);
+                entity_t* entity_A = It_ptr(firstA);
+                entity_t* entity_B = It_ptr(firstB);
 
                 svm_classify_problem_t* problem = malloc(sizeof(svm_classify_problem_t));
                 
-                problem->tagA = t2f(entity_A->tv[0]);
-                problem->class_ls_A = t2p(entity_A->tv[1]);
-                problem->c_weight_A = (double)CN_size(problem->class_ls_A) / (double)len_Y;
+                problem->tagA = ef_vft(entity_A, 0);//t2f(entity_A->tv[0]);
+                problem->class_ls_A = ef_int(entity_A, 1);//t2p(entity_A->tv[1]);
+                
+                // weight 要使用外来输入，这里暂时用1就 ok 了
+                //problem->c_weight_A = (double)CN_size(problem->class_ls_A) / (double)len_Y;
+                problem->c_weight_A = 1.f;
+                
+                problem->tagB = ef_vft(entity_B, 0);//t2f(entity_B->tv[0]);
+                problem->class_ls_B = ef_int(entity_B, 1);//t2p(entity_B->tv[1]);
+                problem->c_weight_B = 1.f;
 
-                problem->tagB = t2f(entity_B->tv[0]);
-                problem->class_ls_B = t2p(entity_B->tv[1]);
-                problem->c_weight_B = (double)CN_size(problem->class_ls_B) / (double)len_Y;
+                //problem->c_weight_B = (double)CN_size(problem->class_ls_B) / (double)len_Y;
 
-                CN_add(svm_problems, p2t(problem));
+                CN_add(svm_problems, problem);
             }
         }
 
     } else if ( class_nr == 2 ) {
         // 两个 class
-        Entity* entity_A = It_getptr(CN_first(&counting_list));
-        Entity* entity_B = It_getptr(CN_last(&counting_list));
+        entity_t* entity_A = It_ptr(CN_first(counting_map));
+        entity_t* entity_B = It_ptr(CN_last(counting_map));
 
 
         svm_classify_problem_t* problem = malloc(sizeof(svm_classify_problem_t));
-        problem->tagA = t2f(entity_A->tv[0]);
-        problem->class_ls_A = t2p(entity_A->tv[1]);
 
-        problem->tagB = t2f(entity_B->tv[0]);
-        problem->class_ls_B = t2p(entity_B->tv[1]);
+        problem->tagA = ef_vft(entity_A, 0);//t2f(entity_A->tv[0]);
+        problem->class_ls_A = ef_int(entity_A, 1);//t2p(entity_A->tv[1]);
+        problem->c_weight_A = 1.f;
 
-        CN_add(svm_problems, p2t(problem));
+        problem->tagB = ef_vft(entity_B, 0);//t2f(entity_B->tv[0]);
+        problem->class_ls_B = ef_int(entity_B, 1);//t2p(entity_B->tv[1]);
+        problem->c_weight_B = 1.f;
+
+        CN_add(svm_problems, problem);
 
     } 
-    LeList_(&counting_list);
+    CN_finalize(counting_map, NULL);
     return class_nr;
 }
 
-int svm_classify_problem_finalize(List* problems)
+int svm_classify_problem_finalize(CN problems)
 {
     int problems_nr = CN_size(problems);
     int i = 0;
     int j = 2;
     // 这里有个问题，若果是两个怎么办，
     // 
-    for (It last=CN_last(problems); !It_equal(last, CN_head(problems)); last=It_prev(last)) {
+    for (It last=CN_last(problems); !It_equal(last, CN_head(problems)); It_prev(last)) {
 
-        svm_classify_problem_t* problem = It_getptr(last);
+        svm_classify_problem_t* problem = It_ptr(last);
         int c_nr = j * (j -1) / 2;
         if (i == c_nr-1) {
 
             if (i == 0) {
-                List_(problem->class_ls_B, NULL);
+                CN_finalize(problem->class_ls_B, NULL);
             }
-            List_(problem->class_ls_A, NULL);
+            CN_finalize(problem->class_ls_A, NULL);
             j ++;
         }
         free(problem);
@@ -275,7 +296,7 @@ int svm_solve_c_svc(
         double _coef, double _degree, 
         double eps, 
         int max_iter,
-        List* classify_models)
+        CN classify_models)
 {
 
     size_t len_Xc = UA_shape_axis(X, 1);
@@ -293,15 +314,15 @@ int svm_solve_c_svc(
     solver_t solver;
 
     // 归类各种类比嗯
-    List problems = _List(NULL);
-    svm_classify_problem(X, Y, &problems);
+    CN problems = CN_create(LIST, ptr_t);
+    svm_classify_problem(X, Y, problems);
     
     // 初始化 solver
     solver_initialize(&solver, C_SVC, svm_kernel, _gammer, _coef, _degree, eps, max_iter);
 
     size_t problem_size = CN_size(&problems);
 
-    for ( It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); first=It_next(first) ) {
+    for ( It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); It_next(first) ) {
 
         svm_classify_problem_t* problem = It_getptr(first);
         
@@ -455,27 +476,29 @@ int svm_solve_c_svc(
 
 // 需要劳动成果来做测试的时候到了。
 // 实现 svc 投票判断。
-double svm_c_svc_predict(List* classify_models, u_array_t* sample)
+double svm_c_svc_predict(CN classify_models, u_array_t* sample)
 {
     // 1 确定类别的数量
     // 2 为每个类别生成一个投票站
     // 3 开始使用判断函数进行判断投票。
 
-    List vote = _LeList(Entity_is_key_equal);
+    CN vote = CN_create(HASH_MAP, db_t, int_t); //_LeList(Entity_is_key_equal);
     int i = 0;
     int j = 2;
 
 
-    for (It last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); last=It_prev(last)) {
+    for (It last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); It_prev(last)) {
 
-        svm_model_t * model = It_getptr(last);
+        svm_model_t * model = It_ptr(last);
         
         int c_nr = j * (j -1) / 2;
         if (i == c_nr-1) {
             if (i == 0) {
-                LeCN_add2(&vote, f2t(model->tagB), i2t(0));
+                //LeCN_add2(&vote, f2t(model->tagB), i2t(0));
+                CN_set(vote, model->tagB, 0);
             }
-            LeCN_add2(&vote, f2t(model->tagA), i2t(0));
+            //LeCN_add2(&vote, f2t(model->tagA), i2t(0));
+            CN_set(vote, model->tagA, 0);
             j ++;
         }
         i++;
@@ -483,18 +506,21 @@ double svm_c_svc_predict(List* classify_models, u_array_t* sample)
     // // do the prediction 
     // Debug: 
     // printf("\n");
-    for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); first=It_next(first)){
+    for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); It_next(first)){
         svm_model_t* model = It_getptr(first);
         // Debug:
         // printf(" model->tagA is %f, model->tagB is %f \n", model->tagA, model->tagB);
         double tag = svm_c_svm_predict_one(model, sample);
         // Debug:
         // printf(" calculate tag is %f \n", tag);
-        It it = LeCN_find(&vote, f2t(tag));
-        Entity* entity = LeCN_get_entity(&vote, it);
+        // It it = LeCN_find(&vote, f2t(tag));
+        int ticket = CN_get(vote, tag);
+
+        //Entity* entity = LeCN_get_entity(&vote, it);
         // 增加一票
-        int v_count = t2i(entity->tv[1]) + 1;
-        entity->tv[1] = i2t(v_count);
+        //int v_count = t2i(entity->tv[1]) + 1;
+        //entity->tv[1] = i2t(v_count);
+        CN_set(vote, tag, ticket+1);
     }
 
     // // 选出票数最多的那个 tag 并返回。
@@ -502,17 +528,21 @@ double svm_c_svc_predict(List* classify_models, u_array_t* sample)
     // printf("\n");
     double winner_tag = -999.f;
     int count_vote = -1;
-    for (It first=CN_first(&vote); !It_equal(first, CN_tail(&vote)); first=It_next(first)) {
-        Entity* entity = LeCN_get_entity(&vote, first);
+    for (It first=CN_first(&vote); !It_equal(first, CN_tail(&vote)); It_next(first)) {
+        //Entity* entity = LeCN_get_entity(&vote, first);
+        entity_t* ent = It_ptr(first);
+
         // Debug:
         // printf(" entity tv0: %f, tag: %c, tv1: %d \n", t2f(entity->tv[0]), (char)t2f(entity->tv[0]), t2i(entity->tv[1]));
-        int v = t2i(entity->tv[1]);
-        if (count_vote < v) {
-            winner_tag = t2f(entity->tv[0]);
+        int ticket = ef_int(ent, 1);//t2i(entity->tv[1]);
+        if (count_vote < ticket) {
+            //winner_tag = t2f(entity->tv[0]);
+            winner_tag = ef_double(ent, 0);
         }
     }
     
-    LeList_(&vote);
+    //LeList_(&vote);
+    CN_finalize(vote, NULL);
     return winner_tag;
 }
 
@@ -540,17 +570,17 @@ double svm_c_svm_predict_one(svm_model_t* model, u_array_t* sample)
     return tag;
 }
 
-int svm_models_finalize(List* models)
+int svm_models_finalize(CN models)
 {
-    for(It first=CN_first(models); !It_equal(first, CN_tail(models)); first=It_next(first)) {
-        svm_model_t* model = It_getptr(first);
+    for(It first=CN_first(models); !It_equal(first, CN_tail(models)); It_next(first)) {
+        svm_model_t* model = It_ptr(first);
         svm_model_finalize(model);
         free(model);
     }
     return 0;
 }
 
-int svm_models_export(List* models)
+int svm_models_export(CN models)
 {
     /* TODO: 把模型 export 到文本文件中去，以备重复使用 */
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:27
- * @LastEditTime: 2021-11-01 13:15:30
+ * @LastEditTime: 2021-11-03 15:34:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.h
@@ -38,6 +38,7 @@ typedef struct _hash
     container_t container;
     int  _slot_size;
     unsigned char _multi;
+    int _size;
     hash_inner_list _hash_table;
     hash_inner_list_node_t*  _slot[0];
 } hash_t;

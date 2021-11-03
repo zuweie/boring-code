@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2021-11-02 10:16:45
+ * @LastEditTime: 2021-11-03 15:45:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -79,8 +79,8 @@ typedef struct __entity {
     T** block;
 } entity_t;
 
-int cmp_entity(T*, T*, int);
-int hash_entity(T*, int, int);
+int cmp_entity(T*, T*);
+int hash_entity(T*, int);
 int setup_entity(T*, T*, unsigned char old_block);
 int vargs_reader_entity(va_list, T*, int);
 

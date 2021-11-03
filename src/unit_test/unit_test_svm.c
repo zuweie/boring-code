@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-11-02 17:13:56
+ * @LastEditTime: 2021-11-03 14:48:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -135,26 +135,27 @@ test_sample_classify_problems()
     UA_load(&X, X_data);
     UA_load(&Y, Y_data);
 
-    List problems = _List(NULL);
-    int class_nr = svm_classify_problem(&X, &Y, &problems);
+    CN problems = CN_create(LIST, ptr_t);
+    int class_nr = svm_classify_problem(&X, &Y, problems);
 
-    for (It first=CN_first(&problems); !It_equal(first, CN_tail(&problems)); first = It_next(first)) {
-        svm_classify_problem_t* problem = It_getptr(first);
+    for (It first=CN_first(problems); !It_equal(first, CN_tail(problems)); It_next(first)) {
+
+        svm_classify_problem_t* problem = It_ptr(first);
 
         printf(" %c, %c ", (int)problem->tagA, (int)problem->tagB);
         printf("\n");
 
-        for (It a=CN_first(problem->class_ls_A); !It_equal(a, CN_tail(problem->class_ls_A)); a = It_next(a)) {
-            printf(" %d ", It_getint(a));
+        for (It a=CN_first(problem->class_ls_A); !It_equal(a, CN_tail(problem->class_ls_A)); It_next(a)) {
+            printf(" %d ", It_int(a));
         }
         printf("\n");
-        for (It b=CN_first(problem->class_ls_B); !It_equal(b, CN_tail(problem->class_ls_B)); b = It_next(b) ){
-            printf(" %d ", It_getint(b));
+        for (It b=CN_first(problem->class_ls_B); !It_equal(b, CN_tail(problem->class_ls_B)); It_next(b) ){
+            printf(" %d ", It_int(b));
         }
         printf("\n");
     }
 
-    svm_classify_problems_finalize(&problems);
+    svm_classify_problems_finalize(problems);
 
     UArray_(&X);
     UArray_(&Y);
@@ -169,8 +170,8 @@ static void test_c_svc_solve (void)
     UA_load(&X, X_data);
     UA_load(&Y, Y_data);
     UA_load(&sample, sample_data);
-    List list = _List(NULL);
-    
+    //List list = _List(NULL);
+    CN list = CN_create(LIST, ptr_t);
 
     // int svm_solve_c_svc( \
     //     u_array_t* X, u_array_t* Y, \
@@ -182,19 +183,19 @@ static void test_c_svc_solve (void)
     //     List* classify_models)
 
     svm_solve_c_svc(
-        &X, &Y, RBF, 10.f, 8.0f, 0.0f, 0.0f, 0.0001, 300, &list
+        &X, &Y, RBF, 10.f, 8.0f, 0.0f, 0.0f, 0.0001, 300, list
     );
 
-    double r = svm_c_svc_predict(&list, &sample);
+    double r = svm_c_svc_predict(list, &sample);
     // Debug:
     printf(" winner type is %c value is %f\n", (char)r, r);
 
     // svm_models_finalize(&list);
     
     //#if 0
-    for (It first=CN_first(&list); !It_equal(first, CN_tail(&list)); first=It_next(first)) {
+    for (It first=CN_first(list); !It_equal(first, CN_tail(list)); It_next(first)) {
 
-        svm_model_t* model = It_getptr(first);
+        svm_model_t* model = It_ptr(first);
         
         size_t len_Alpha    = UA_length(&model->_star_alpha);
         size_t len_Y        = UA_length(&model->_star_Y);
@@ -235,7 +236,7 @@ static void test_c_svc_solve (void)
     }
     // #endif
     // free models
-    _List(&list);
+    CN_finalize(list, NULL);
 }
 
 int do_svm_test (void) 
