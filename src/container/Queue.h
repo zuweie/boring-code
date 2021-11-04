@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 19:09:21
- * @LastEditTime: 2021-10-26 09:24:38
+ * @LastEditTime: 2021-11-04 11:21:16
  * @LastEditors: Please set LastEditors
  */
 #ifndef __QUEUE_H__
@@ -25,6 +25,6 @@ typedef CN Queue;
 #define Queue_offer(q, ...) CN_add_at(q, CN_tail(q), __VA_ARGS__)
 
 // 头部输出
-#define Queue_poll(q, rdata) CN_rm_first(q, CN_first(q), rdata)
+#define Queue_poll(q, prdata) CN_remove_at(q, CN_first(q), prdata)
 
 #endif

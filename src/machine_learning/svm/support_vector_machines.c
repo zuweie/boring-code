@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-03 14:41:59
+ * @LastEditTime: 2021-11-04 11:35:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -324,7 +324,7 @@ int svm_solve_c_svc(
 
     for ( It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); It_next(first) ) {
 
-        svm_classify_problem_t* problem = It_getptr(first);
+        svm_classify_problem_t* problem = It_ptr(first);
         
         size_t len_class_A = CN_size(problem->class_ls_A);
         size_t len_class_B = CN_size(problem->class_ls_B);
@@ -346,16 +346,16 @@ int svm_solve_c_svc(
         int i=0, j=0, k=0;
 
 
-        for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
-            size_t index_a = It_getint(it_a);
+        for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); It_next(it_a)) {
+            size_t index_a = It_int(it_a);
             memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] = 1.f;
             //_C_ptr[k++] = problem->c_weight_A * C;
             _C_ptr[k++] = C;
         }
         
-        for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
-            size_t index_b = It_getint(it_b);
+        for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); It_next(it_b)) {
+            size_t index_b = It_int(it_b);
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] =  -1.f;
             //_C_ptr[k++] = problem->c_weight_B * C;
@@ -458,7 +458,7 @@ int svm_solve_c_svc(
         /* 完成复制信息到计算 model中 */ 
 
         // 获取劳动果实
-        CN_add(classify_models, p2t(model));
+        CN_add(classify_models, model);
     }
 
     // 完了就释放内存。
@@ -507,7 +507,7 @@ double svm_c_svc_predict(CN classify_models, u_array_t* sample)
     // Debug: 
     // printf("\n");
     for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); It_next(first)){
-        svm_model_t* model = It_getptr(first);
+        svm_model_t* model = It_ptr(first);
         // Debug:
         // printf(" model->tagA is %f, model->tagB is %f \n", model->tagA, model->tagB);
         double tag = svm_c_svm_predict_one(model, sample);

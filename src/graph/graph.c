@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2021-11-02 15:18:01
+ * @LastEditTime: 2021-11-04 11:27:30
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -180,7 +180,7 @@ int Graph_get_paths_matrix(Graph* graph, CooMatrix* matrix)
                 !It_equal(first2, CN_tail(pvertex->paths));
                 It_next(first2)){
 
-                path_t *path = It_getptr(first2);
+                path_t *path = It_ptr(first2);
                 Matrix_set(matrix, pvertex->index, path->to->index, path->weight);
             }
         }
@@ -195,10 +195,10 @@ int Graph_connect_vertexes(Graph* graph, CooMatrix* coomatrix)
     size_t size = CN_size(graph->vertexes);
     if (Matrix_rows(coomatrix) == size && Matrix_cols(coomatrix) == size ) {
 
-        vertex_t* vertex_arr[size];
+        unsigned long vertex_id[size];
         int i=0;
         for (It first=CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first), ++i) {
-            vertex_arr[i] = It_ptr(first);
+            vertex_id[i] = ((vertex_t*)It_ptr(first))->vertex_id;
         }
 
         for (It first = CN_first(coomatrix->coo); !It_equal(first, CN_tail(coomatrix->coo)); It_next(first)) {
@@ -206,9 +206,7 @@ int Graph_connect_vertexes(Graph* graph, CooMatrix* coomatrix)
             unsigned int x = ef_uint(ent, 0);
             unsigned int y = ef_uint(ent, 1);
             float w = ef_float(ent, 2);
-            vertex_t* from = vertex_arr[x];
-            vertex_t* to   = vertex_arr[y];
-            Graph_add_path(from, to, w);
+            Graph_add_path(graph, vertex_id[x], vertex_id[y], w);
        }
        return 0;
     }

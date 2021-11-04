@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-03 16:03:46
+ * @LastEditTime: 2021-11-04 11:39:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -281,14 +281,22 @@ int CN_add(CN cn, ...)
     va_end(valist);
     return err;
 }
+int CN_add_at(CN cn, It at, ...)
+{
+    va_list valist;
+    va_start(valist, at);
+    int err = __cn_add_at(cn, at, valist);
+    va_end(valist);
+    return err;
+}
 int CN_remove(CN cn, T* rdata)
 {
     return __cn_remove_at(cn, CN_last(cn), rdata);
 }
 
-int CN_remove_at(CN cn, It it, T* rdata) 
+int CN_remove_at(CN cn, It at, T* rdata) 
 {
-    return __cn_remove_at(cn, it, rdata);
+    return __cn_remove_at(cn, at, rdata);
 }
 
 It CN_find(CN cn, ...) 
@@ -300,11 +308,11 @@ It CN_find(CN cn, ...)
     return it;
 }
 
-It CN_find_at(CN cn, It pos, ...) 
+It CN_find_at(CN cn, It at, ...) 
 {
     va_list valist;
-    va_start(valist, pos);
-    It it = __cn_find_at(cn, pos, valist);
+    va_start(valist, at);
+    It it = __cn_find_at(cn, at, valist);
     va_end(valist);
     return it;
 }
@@ -315,18 +323,16 @@ int CN_reverse(CN cn)
     return CN_(cn)->is_forward;
 }
 
-// 抽最大 或者 最小, 如果 cmp 为空，则使用默认的 cmp。
-int CN_mx_extract(CN cn, T* rdata, int (*cmp)(T*, T*))
+int CN_extract(CN cn, T* rdata, int (*cmp)(T*, T*))
 {
     int err = err_ok; 
     if (CN_size(cn) > 0) { 
-        cmp = cmp ? cmp : T_adapter_get(CN_(cn)->type_clazz->_def.ty_id, e_cmp);//CN_(cn)->eng->type_def.ty_cmp;
+        cmp = cmp ? cmp : T_adapter_get(CN_(cn)->type_clazz->_def.ty_id, e_cmp);
         heap_build_max_heap(CN_(cn)->eng, cmp); 
         iterator_t first = container_first(CN_(cn)->eng);
         iterator_t last  = container_last(CN_(cn)->eng);
-        //It_exchange(first, last); 
         iterator_exchange(first, last);
-        err = container_remove(CN_(cn)->eng, container_last(CN_(cn)->eng), rdata);//CN_remove_at(cn, CN_last(cn), rdata); 
+        err = container_remove(CN_(cn)->eng, container_last(CN_(cn)->eng), rdata);
     } else { 
         err = err_empty; 
     } 
@@ -371,6 +377,23 @@ int CN_to_unique(CN cn)
             wring(CN_(cn)->eng, cmp, entity_release);
         else 
             wring(CN_(cn)->eng, cmp, NULL);
+    }
+    return err;
+}
+
+int CN_merge(CN cn1, CN cn2)
+{
+    int err = err_ok;
+    T_clazz* clazz1 = CN_ty_clazz(cn1);
+    T_clazz* clazz2 = CN_ty_clazz(cn2);
+
+    if (clazz1->_def.ty_id == clazz1->_def.ty_id) {
+        for (iterator_t first2=container_first(CN_(cn2)->eng); !iterator_equal(first2, container_tail(CN_(cn2)->eng)); iterator_next(first2))
+        {
+            container_insert(CN_(cn1)->eng, container_tail(CN_(cn1)), first2.reference);
+        }
+    } else {
+        err = err_merge;
     }
     return err;
 }

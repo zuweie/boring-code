@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2021-11-03 16:49:16
+ * @LastEditTime: 2021-11-04 11:20:25
  * @LastEditors: Please set LastEditors
  */
 #include <math.h>
@@ -137,13 +137,13 @@ static int __dfs_visit(vertex_t* pu, int* time)
     pudfs->color = _grp_gray;
     pudfs->d_time = ++(*time);
     // 访问邻接表
-    for(It first=CN_first(&pu->paths); !It_equal(first, CN_tail(&pu->paths)); first=It_next(first)) {
-        path_t* pv   = It_getptr(first);
+    for(It first=CN_first(pu->paths); !It_equal(first, CN_tail(pu->paths)); It_next(first)) {
+        path_t* pv   = It_ptr(first);
         dfs_explor_t* pvdfs = (dfs_explor_t*)pv->to->exploring;
 
         if (pvdfs->color == _grp_whtie) {
             pvdfs->pi = pu;
-            _dfs_visit(pv->to, time);
+            __dfs_visit(pv->to, time);
         }
     }
     pudfs->color = _grp_black;
@@ -160,7 +160,7 @@ int grp_dfs_exploring(Graph* graph)
         !It_equal(first, CN_tail(&graph->vertexes)); 
         It_next(first)) {
 
-        vertex_t*   pu = It_getptr(first);
+        vertex_t*   pu = It_ptr(first);
         dfs_explor_t* pudfs = (dfs_explor_t*)pu->exploring;
         if (pudfs->color == _grp_whtie) {
             __dfs_visit(pu, &time);
@@ -206,7 +206,7 @@ int grp_calculate_component(Graph* graph, CN list)
     vertex_t* vertex_arr[arr_size];
 
     for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)) {
-        vertex_t* vertex = It_getptr(first);
+        vertex_t* vertex = It_ptr(first);
         dfs_explor_t* dfs = vertex->exploring;
         vertex_arr[dfs->d_time] = vertex;
         vertex_arr[dfs->f_time] = vertex;
@@ -237,81 +237,83 @@ int grp_calculate_component(Graph* graph, CN list)
 
 int ugrp_calculate_mst_kruskal(UDGraph* graph, CN list) 
 {
-    List group_list = _List(NULL);
+    CN group_list = CN_create(LIST, int_t);//_List(NULL);
     
-    for(It first = CN_first(&graph->uvertexs); !It_equal(first, CN_tail(&graph->uvertexs)); first = It_next(first)) {
+    for(It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); It_next(first)) {
 
-        List* l = malloc(sizeof(List));
-        *l = _List(NULL);//_Treeset(entity_insert_cmp);
+        // 这是啥 我是谁 我在哪里？
 
-        uvertex_t* vertex = It_getptr(first);
+        CN l = CN_create(LIST, ptr_t);
+        //*l = _List(NULL);//_Treeset(entity_insert_cmp);
+
+        uvertex_t* vertex = It_ptr(first);
         // 为每个定点分配一个 list
-        CN_add(l, p2t(vertex));
+        CN_add(l, vertex);
         
         // 存入一个 list 中
-        CN_add_tail(&group_list, p2t(l));
+        CN_add(group_list, l);
 
         // mark 下自己节点所在的 group 的 iterator
-        *((It*)(vertex->exploring)) = CN_last(&group_list);
+        *((It*)(vertex->exploring)) = CN_last(group_list);
 
     }
     
         // 3 以变得 weigth 递增的方式来排序。
-    CN_sort(&graph->uedges, _udgaph_edge_weight_sort_cmp);
+    CN_sort(graph->uedges, __udgaph_edge_weight_sort_cmp);
 
     // 遍历每一条边。
-    for (It first = CN_first(&graph->uedges); !It_equal(first, CN_tail(&graph->uedges)); first = It_next(first)){
-        uedge_t* edge = It_getptr(first);
-
-        List* epv_list = It_getptr((*((It*)(edge->epv->exploring))));
-        List* epw_list = It_getptr((*((It*)(edge->epw->exploring))));
+    for (It first = CN_first(graph->uedges); !It_equal(first, CN_tail(graph->uedges)); It_next(first)){
+        uedge_t* edge = It_ptr(first);
+        CN epv_list = It_int((*((It*)(edge->epv->exploring))));
+        CN epw_list = It_int((*((It*)(edge->epw->exploring))));
 
         if (epv_list != epw_list) {
 
             It epv_list_it = *((It*)(edge->epv->exploring));
             It epw_list_it = *((It*)(edge->epw->exploring));
             
-            for (It first = CN_first(epw_list); !It_equal(first, CN_tail(epw_list)); first = It_next(first)) {
+            for (It first = CN_first(epw_list); !It_equal(first, CN_tail(epw_list)); It_next(first)) {
                 //Tv v = Set_get_item(*epw_list, first);
-                uvertex_t* vertex = It_getptr(first);
+                uvertex_t* vertex = It_ptr(first);
                 // 把 epw list 都换成 epv 的 list;
                 *((It*)(vertex->exploring)) = epv_list_it;
             }
             // 把两个合并起来
             CN_merge(epv_list, epw_list);
-            Tv rdata;
-            CN_remove(&group_list, epw_list_it, &rdata);
+            CN rdata;
+            CN_remove_at(group_list, epw_list_it, &rdata);
             // 把这个列 set 干掉。
             //free(t2p(rdata));
-            _free_list_in_group_list(rdata);
-            CN_add(list, p2t(edge));
+            __free_list_in_group_list(rdata);
+            CN_add(list, edge);
         }
     }
     
-    List_(&group_list, _free_list_in_group_list);
+    CN_finalize(group_list, __free_list_in_group_list);
     return 0;
 }
 
 int grp_calculate_mst_prim(Graph* graph, vertex_t* start)
 {
     // 初始化
-    MxQueue q = _MxQueue(prim_explor_key_cmp); 
+    MxQueue q = MxQueue_create(ptr_t, __prim_explor_key_cmp); 
     
-    Graph_initialize_exploring(graph, _init_prim_exploring);
-    CN_duplicate(&graph->vertexes, &q);
+    Graph_initialize_exploring(graph, __init_prim_exploring);
+    //CN_duplicate(&graph->vertexes, &q);
+    CN_merge(q, graph->vertexes);
     
     prim_explor_t* explor = start->exploring;
     explor->key = 0.0f;
-    Tv extracted_vertex;
+    vertex_t* extracted_vertex;
     
-    while (MxQueue_extract(&q, extracted_vertex) != -1) {
+    while (MxQueue_extract(q, &extracted_vertex) != err_empty) {
 
-        vertex_t* u = t2p(extracted_vertex);
+        vertex_t* u = extracted_vertex;
         prim_explor_t* explor = u->exploring;
         explor->in_queue = 0;
         // 遍历这个顶点想邻接的边。
-        for (It first = CN_first(&u->paths); !It_equal(first, CN_tail(&u->paths)); first = It_next(first)) {
-            path_t* uv_path = It_getptr(first);
+        for (It first = CN_first(u->paths); !It_equal(first, CN_tail(u->paths)); It_next(first)) {
+            path_t* uv_path = It_ptr(first);
             vertex_t* v = uv_path->to;
             prim_explor_t* v_explor = v->exploring;
 
@@ -323,11 +325,11 @@ int grp_calculate_mst_prim(Graph* graph, vertex_t* start)
             }
         }
     }
-    MxQueue_(&q,NULL);
+    MxQueue_finalize(q,NULL);
     return 0;
 }
 
-int grp_relex(vertex_t* u, vertex_t* v, float w)
+static int __grp_relex(vertex_t* u, vertex_t* v, float w)
 {
     relax_explor_t* u_explor = u->exploring;
     relax_explor_t* v_explor = v->exploring;
@@ -340,25 +342,25 @@ int grp_relex(vertex_t* u, vertex_t* v, float w)
 
 int grp_calculate_bellman_ford(Graph* graph, vertex_t* start)
 {
-    Graph_initialize_exploring(graph, _init_relax_exploring);
+    Graph_initialize_exploring(graph, __init_relax_exploring);
     relax_explor_t* s_explor = start->exploring;
     s_explor->distance = 0.0f;
 
     // 进行 
-    for (int i=0; i<CN_size(&graph->vertexes)-2; ++i) {
-        for (It first = CN_first(&graph->vertexes); !It_equal(first, CN_tail(&graph->vertexes)); first=It_next(first)){
-            vertex_t* u = It_getptr(first);
-            for (It _f = CN_first(&u->paths); !It_equal(_f, CN_tail(&u->paths)); _f = It_next(_f)) {
-                path_t* path = It_getptr(_f);
-                grp_relex(u, path->to, path->weight);
+    for (int i=0; i<CN_size(graph->vertexes)-2; ++i) {
+        for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)){
+            vertex_t* u = It_ptr(first);
+            for (It _f = CN_first(u->paths); !It_equal(_f, CN_tail(u->paths)); It_next(_f)) {
+                path_t* path = It_ptr(_f);
+                __grp_relex(u, path->to, path->weight);
             }
         }
     }
 
-    for (It first = CN_first(&graph->vertexes); !It_equal(first, CN_tail(&graph->vertexes)); first=It_next(first)) {
-        vertex_t* u = It_getptr(first);
-        for (It _f = CN_first(&u->paths); !It_equal(_f, CN_tail(&u->paths)); _f = It_next(_f)) {
-            path_t* path = It_getptr(_f);
+    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)) {
+        vertex_t* u = It_ptr(first);
+        for (It _f = CN_first(u->paths); !It_equal(_f, CN_tail(u->paths)); It_next(_f)) {
+            path_t* path = It_ptr(_f);
             relax_explor_t* u_explor = u->exploring;
             relax_explor_t* v_explor = path->to->exploring;
 
@@ -370,24 +372,24 @@ int grp_calculate_bellman_ford(Graph* graph, vertex_t* start)
     return 1;
 }
 
-int grp_calculate_dijkstra(Graph* graph, vertex_t* start, List* list) 
+int grp_calculate_dijkstra(Graph* graph, vertex_t* start, CN list) 
 {
-    Graph_initialize_exploring(graph, _init_relax_exploring);
+    Graph_initialize_exploring(graph, __init_relax_exploring);
     ((relax_explor_t*)(start->exploring))->distance = 0;
     
-    MxQueue q = _MxQueue(dijkstra_explor_distance_cmp);
-    CN_duplicate(&graph->vertexes, &q);
-    Tv extract;
-    while(MxQueue_extract(&q, extract) != -1) {
+    MxQueue q = MxQueue_create(ptr_t, __dijkstra_explor_distance_cmp);
+    CN_merge(q, graph->vertexes);
+    vertex_t* extract;
+    while(MxQueue_extract(q, &extract) != -1) {
         
-        vertex_t* extract_v = t2p(extract);
+        vertex_t* extract_v = extract;
         CN_add(list, extract);
-        vertex_t* u = t2p(extract);
-        for (It first = CN_first(&u->paths); !It_equal(first, CN_tail(&u->paths)); first = It_next(first)) {
-            path_t* path = It_getptr(first);
-            grp_relex(u, path->to, path->weight);
+        vertex_t* u = extract;
+        for (It first = CN_first(u->paths); !It_equal(first, CN_tail(u->paths)); It_next(first)) {
+            path_t* path = It_ptr(first);
+            __grp_relex(u, path->to, path->weight);
         }
     }
-    MxQueue_(&q, NULL);
+    MxQueue_finalize(q, NULL);
     return 0;
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-07 08:50:00
- * @LastEditTime: 2021-10-26 09:41:25
+ * @LastEditTime: 2021-11-04 11:07:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MxQueue.h
@@ -25,6 +25,6 @@ typedef CN MxQueue;
 
 #define MxQueue_finalize(q, cleanup) CN_finalize(q, cleanup)
 
-#define MxQueue_extract(q, rdata, cmp) CN_mx_extract(q, rdata, cmp)
+#define MxQueue_extract(q, prdata) CN_extract(q, prdata, NULL)
 
 #endif

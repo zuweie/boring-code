@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:44:49
- * @LastEditTime: 2021-10-26 09:44:32
+ * @LastEditTime: 2021-11-04 11:12:07
  * @LastEditors: Please set LastEditors
  */
 #ifndef __GRAPH_SEARCH_H__
@@ -51,7 +51,7 @@ Graph* grp_calculate_strongly_connected_component_graph (Graph* graph);
 
 int ugrp_calculate_mst_kruskal(UDGraph*, CN list);
 int grp_calculate_mst_prim(Graph* graph, vertex_t* start);
-int grp_relex(vertex_t* u, vertex_t* v, float w);
+//int grp_relex(vertex_t* u, vertex_t* v, float w);
 int grp_calculate_bellman_ford(Graph* graph, vertex_t* start);
 int grp_calculate_dijkstra(Graph* graph, vertex_t* start, CN list);
 #endif

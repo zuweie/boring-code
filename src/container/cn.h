@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-11-03 15:46:59
+ * @LastEditTime: 2021-11-04 11:08:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -69,7 +69,8 @@ enum {
     err_out_of_max_ent_field = -13,
     err_invalid_ent_keys_number = -14,
     err_unsupported_method = -15,
-    err_invalid_pos = -16
+    err_invalid_pos = -16,
+    err_merge = -17
 };
 
 enum {
@@ -97,11 +98,12 @@ It CN_first(CN cn);
 It CN_last(CN cn);
   
 int CN_reverse(CN cn);
-int CN_mx_extract(CN, T*, int (*cmp)(T*, T*));
+int CN_extract(CN, T*, int (*cmp)(T*, T*));
 int CN_sort(CN, int (*cmp)(T*, T*));
 int CN_size(CN);
 int CN_has(CN, ...);
 int CN_to_unique(CN);
+int CN_merge(CN, CN);
 
 int CN_add(CN, ...);
 int CN_add_at(CN, It, ...);

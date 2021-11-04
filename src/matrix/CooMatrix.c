@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2021-10-24 15:55:08
+ * @LastEditTime: 2021-11-04 11:31:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
@@ -9,7 +9,6 @@
 #include "imatrix.h"
 #include "container/entity.h"
 #include "container/cn.h"
-#include "base/type_value/__built_in_type.h"
 #include "CooMatrix.h"
 static inline 
 int COOMATRIX_Keyhasher(T* v, size_t slot_t) 

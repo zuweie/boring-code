@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2021-11-02 15:26:57
+ * @LastEditTime: 2021-11-04 11:27:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
@@ -130,7 +130,7 @@ void UDGraph_indexing_vertex(UDGraph* graph)
 {
     size_t i = 0;
     for (It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); It_next(first)) {
-        uvertex_t* vertext = It_getptr(first);
+        uvertex_t* vertext = It_ptr(first);
         vertext->index     = i++;
     }
 }
