@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 13:39:44
- * @LastEditTime: 2021-11-01 17:01:29
+ * @LastEditTime: 2021-11-04 12:53:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/It.h
@@ -11,7 +11,7 @@
 #include "cn.h"
 #include "ty.h"
 #include "base/__iterator.h"
-#define It(iter, cn) ({It marco_##iter = {._iter = iter, ._cn_ptr = cn}; marco_##iter;})
+#define It(iter, cn_ptr) ({It marco_##iter = {._iter = (iter), ._cn_ptr = (cn_ptr)}; marco_##iter;})
 #define It_move(it, step) iterator_move(&it._iter, it._cn_ptr->is_forward? (step) : -(step))
 #define It_next(it) It_move(it, 1)
 #define It_prev(it) It_move(it, -1)

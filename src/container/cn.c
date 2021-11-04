@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-04 11:39:13
+ * @LastEditTime: 2021-11-04 12:58:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -84,30 +84,30 @@ static It __cn_find_at(CN cn, It at, va_list valist)
         CN_READ_SINGLE_VALUE_VARGS(cn, tv, valist, using_at_find);
         it = container_search(CN_(cn)->eng, at._iter, tv, NULL);
     }
-    return It(it, cn);
+    return It(it, CN_(cn));
 }
 
 // public function :
 It CN_head(CN cn)
 {
     iterator_t head = CN_(cn)->is_forward ? container_head(CN_(cn)->eng) : container_tail(CN_(cn)->eng);
-    return It(head, cn);
+    return It(head, CN_(cn));
 }
 It CN_tail(CN cn)
 {
     iterator_t tail = CN_(cn)->is_forward ? container_tail(CN_(cn)->eng) : container_head(CN_(cn)->eng);
-    return It(tail, cn);
+    return It(tail, CN_(cn));
 }
 It CN_first(CN cn)
 {
     iterator_t first = CN_(cn)->is_forward ? container_first(CN_(cn)->eng) : container_last(CN_(cn)->eng);
-    return It(first, cn);
+    return It(first, CN_(cn));
 }
 
 It CN_last(CN cn)
 {
     iterator_t last = CN_(cn)->is_forward ? container_last(CN_(cn)->eng) : container_first(CN_(cn)->eng);
-    return It(last, cn);
+    return It(last, CN_(cn));
 }
 
 

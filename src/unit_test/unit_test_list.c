@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-11-02 10:13:10
+ * @LastEditTime: 2021-11-04 15:54:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -114,7 +114,7 @@ static void test_list_unique(void)
     
     CN_to_unique(list);
 
-    for(It first = CN_first(&list); !It_equal(first, CN_last(&list)); It_next(first)){
+    for(It first = CN_first(list); !It_equal(first, CN_last(list)); It_next(first)){
         
         It next = first;
         It_next(next);

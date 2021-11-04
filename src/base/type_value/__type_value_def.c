@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:09:36
- * @LastEditTime: 2021-11-03 15:45:10
+ * @LastEditTime: 2021-11-04 13:44:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_value_def.c
@@ -22,7 +22,7 @@ static T_adapter __T_ADAPTERS_TAB[MAX_T_DEF_SLOT_SIZE][4] =
     {&cmp_ulong, &hash_ulong, &setup_long, &vargs_long},
     {&cmp_float, &hash_float, &setup_float, &vargs_float},
     {&cmp_double, &hash_double, &setup_double, &vargs_double},
-    {&cmp_str, &hash_str, &setup_str, &setup_str},
+    {&cmp_str, &hash_str, &setup_str, &vargs_str},
     {&cmp_ptr, &hash_ptr, &setup_ptr, &vargs_ptr},
 
     {0,0,0,0},

@@ -21,6 +21,7 @@ set (SOURCE
     src/unit_test/unit_test_machine_learning.c
     src/unit_test/unit_test_matrix.c
     src/unit_test/unit_test_toutiao.c
+    src/unit_test/unit_test_t.c
     src/unit_test/test_data.c
     src/unit_test/unit_test_svm.c
     src/base/__list.c

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2021-11-02 10:19:15
+ * @LastEditTime: 2021-11-04 16:58:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -12,15 +12,17 @@
 
 #define PRINTF_TV_ON_X(tv, label, x, trans) printf( " %s: "#x"| ", label, trans(tv))
 
-#define PRINTF_TV_ON_INT(tv)    printf("%d ", t2i(tv) )
-#define PRINTF_TV_ON_FLOAT(tv)  printf("%f ", t2f(tv) )
-#define PRINTF_TV_ON_CHAR(tv)   printf("%c ", t2i(tv) )
-#define PRINTF_TV_ON_STRING(tv) printf("%s ", t2p(tv) )
+#define PRINTF_T_ON_INT(tv)    printf("%d ", T_int(tv) )
+#define PRINTF_T_ON_FLOAT(tv)  printf("%f ", T_float(tv) )
+#define PRINTF_T_ON_DOUBLE(tv) printf("%f ", T_double(tv) )
+#define PRINTF_T_ON_CHAR(tv)   printf("%c ", T_char(tv) ) 
+#define PRINTF_T_ON_STRING(tv) printf("%s ", T_str(tv) )
 
-#define PRINTF_IT_ON_INT(it) PRINTF_TV_ON_INT(It_dref(it))
-#define PRINTF_IT_ON_CHAR(it) PRINTF_TV_ON_CHAR(It_dref(it))
-#define PRINTF_IT_ON_FLOAT(it) PRINTF_TV_ON_FLOAT(It_dref(it))
-#define PRINTF_IT_ON_STRING(it) PRINTF_TV_ON_STRING(It_dref(it))
+#define PRINTF_IT_ON_INT(it) PRINTF_T_ON_INT(It_refer(it))
+#define PRINTF_IT_ON_CHAR(it) PRINTF_T_ON_FLOAT(It_refer(it))
+#define PRINTF_IT_ON_FLOAT(it) PRINTF_T_ON_CHAR(It_refer(it))
+#define PRINTF_IT_ON_DOUBLE(it) PRINTF_T_ON_DOUBLE(It_refer(it))
+#define PRINTF_IT_ON_STRING(it) PRINTF_T_ON_STRING(It_refer(it))
 
 #define PRINTF_IT_ON_VERTEX_CHAR(it) do{ \
     vertex_t* v = It_getptr(it); \
@@ -28,9 +30,11 @@
     printf(" -- %d -> ", ((bfs_explor_t*)v->exploring)->distance);\
 }while(0) 
 
-#define CN_inspect(con, type)  do{ \
+#define CN_inspect(con, it_printer)  do{ \
     printf(" ********* inspection of container *****************\n"); \
-    CN_travel(con, PRINTF_IT_ON_##type); \
+    for(It first=CN_first(con); !It_equal(first, CN_tail(con)); It_next(first)) {\
+        it_printer(first);\
+    } \
     printf("\n"); \
 }while(0)
 
@@ -58,7 +62,7 @@
 
 int do_vector_test (void);
 int do_list_test(void);
-int do_tv_test(void);
+int do_t_test(void);
 int do_hashmap_test(void);
 int do_memory_pool_test(void);
 int do_coo_matrix_test(void);

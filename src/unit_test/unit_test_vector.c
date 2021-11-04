@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-11-02 10:08:19
+ * @LastEditTime: 2021-11-04 17:05:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -90,28 +90,34 @@ static void test_vector_remove(void)
     }
     char* target2 = tsd_get_str(5);
     char* ret2;
-    It remove2 = CN_find(vector2, target);
+    It remove2 = CN_find(vector2, target2);
     CU_ASSERT_TRUE(CN_remove_at(vector2, remove2, &ret2) == 0);
     CU_ASSERT_STRING_EQUAL(target2, ret2);
     CU_ASSERT_FALSE(CN_has(vector2, target2));
     
-    CN_finalize(&vector2, NULL);
+    CN_finalize(vector2, NULL);
 }
 
 void test_vector_sort(void)
 {
     CN vector = CN_create(VECTOR, fl_t);
-    for (int i=0; i<100; ++i) {
+    for (int i=0; i<10; ++i) {
         CN_add(vector, tsd_get_float(i));
+        printf("add %f, ", tsd_get_float(i));
     }
     // 从小到大的排序
-    CN_sort(&vector, NULL);
+    printf("\n inspect befort sort \n");
+    CN_inspect(vector, PRINTF_IT_ON_FLOAT);
+    CN_sort(vector, NULL);
+    printf("\n inspect after sort \n");
+    CN_inspect(vector, PRINTF_IT_ON_FLOAT);
 
     for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); It_next(first)){
         It next = first;
         It_next(next);
         float f1 = It_float(first);
         float f2 = It_float(next);
+        printf("f1 %f, f2 %f ", f1, f2);
         CU_ASSERT_TRUE(f1 <= f2);
     }
     CN_finalize(vector,NULL);
@@ -124,7 +130,10 @@ void test_vector_sort(void)
         CN_add(vector2, tsd_get_str(i));
     }
 
+    CN_inspect(vector2, PRINTF_IT_ON_STRING);
     CN_sort(vector2, NULL);
+
+    CN_inspect(vector2, PRINTF_IT_ON_STRING);
 
     for(It first=CN_first(vector2); !It_equal(first, CN_last(vector2)); It_next(first)){
         It next = first;
@@ -133,6 +142,7 @@ void test_vector_sort(void)
         char *s2 = It_str(next);
         CU_ASSERT_TRUE( strcmp(s1, s2) <=0 );
     }
+    CN_finalize(vector2, NULL);
 }
 
 static void test_vector_unique(void) 
