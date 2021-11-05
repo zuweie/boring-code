@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-11-04 15:54:37
+ * @LastEditTime: 2021-11-05 13:11:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -77,13 +77,13 @@ static void test_list_remove()
 void test_list_sort()
 {
     CN list = CN_create(LIST, fl_t);
-    const LIST_SIZE = 10;
+    const LIST_SIZE = 100;
     //T_def* flt_def = T_def_get(fl_t);
 
     for (int i=0; i<LIST_SIZE; ++i) {
         CN_add(list, tsd_get_float(i));
     }        
-    // 从小到大的排序
+    // 从小到大的排序    
     CN_sort(list, NULL);
 
     for(It first=CN_first(list); !It_equal(first, CN_last(list)); It_next(first)){
@@ -92,7 +92,6 @@ void test_list_sort()
         float f1 = It_float(first);
         float f2 = It_float(next);
         CU_ASSERT_TRUE(f1 <= f2);
-        //CU_ASSERT_TRUE(flt_def->ty_cmp(It_refer(first), It_refer(next)) <= 0);
     }
 }
 

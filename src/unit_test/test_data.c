@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 11:34:16
- * @LastEditTime: 2021-10-26 10:02:35
+ * @LastEditTime: 2021-11-05 13:07:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/test_data.c
@@ -157,15 +157,15 @@ void init_test_data(void)
 }
 
 int tsd_get_int(int i) {
-    return test_data_int[i];
+    return test_data_int[i%TEST_DATA_SIZE];
 }
 
 vfloat_t tsd_get_float(int i)
 {
-    return test_data_float[i];
+    return test_data_float[i%TEST_DATA_SIZE];
 }
 
 char* tsd_get_str(int i) 
 {
-    return test_data_string[i];
+    return test_data_string[i%TEST_DATA_SIZE];
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:10:29
- * @LastEditTime: 2021-11-04 16:34:29
+ * @LastEditTime: 2021-11-05 13:00:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__type_value.h
@@ -21,7 +21,7 @@
     type_value_t* ty1 = (pty1); \
     type_value_t* ty2 = (pty2); \
     int size = (ty_size); \
-    while (size--) \
+    while (ty1 != ty2 && size--) \
     { \
         (*ty1) = (*ty1)^(*ty2); \
         (*ty2) = (*ty1)^(*ty2); \

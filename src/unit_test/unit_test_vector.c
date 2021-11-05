@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-11-04 17:05:13
+ * @LastEditTime: 2021-11-05 11:46:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -103,21 +103,20 @@ void test_vector_sort(void)
     CN vector = CN_create(VECTOR, fl_t);
     for (int i=0; i<10; ++i) {
         CN_add(vector, tsd_get_float(i));
-        printf("add %f, ", tsd_get_float(i));
     }
     // 从小到大的排序
-    printf("\n inspect befort sort \n");
-    CN_inspect(vector, PRINTF_IT_ON_FLOAT);
+    //printf("\n inspect befort sort \n");
+    //CN_inspect(vector, PRINTF_T_ON_FLOAT);
     CN_sort(vector, NULL);
-    printf("\n inspect after sort \n");
-    CN_inspect(vector, PRINTF_IT_ON_FLOAT);
+    //printf("\n inspect after sort \n");
+    //CN_inspect(vector, PRINTF_T_ON_FLOAT);
 
     for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); It_next(first)){
         It next = first;
         It_next(next);
         float f1 = It_float(first);
         float f2 = It_float(next);
-        printf("f1 %f, f2 %f ", f1, f2);
+        //printf("f1 %f, f2 %f ", f1, f2);
         CU_ASSERT_TRUE(f1 <= f2);
     }
     CN_finalize(vector,NULL);
@@ -126,14 +125,14 @@ void test_vector_sort(void)
     // 测试 string 的排序。
     CN vector2 = CN_create(VECTOR, str_t);
     // 灌入数据
+    //char* strs[4] = {"klm", "hij", "efg", "abc"};
     for (int i=0; i<TEST_DATA_STR_SIZE; ++i) {
         CN_add(vector2, tsd_get_str(i));
     }
 
-    CN_inspect(vector2, PRINTF_IT_ON_STRING);
+    //CN_inspect(vector2, PRINTF_T_ON_STRING);
     CN_sort(vector2, NULL);
-
-    CN_inspect(vector2, PRINTF_IT_ON_STRING);
+    //CN_inspect(vector2, PRINTF_T_ON_STRING);
 
     for(It first=CN_first(vector2); !It_equal(first, CN_last(vector2)); It_next(first)){
         It next = first;

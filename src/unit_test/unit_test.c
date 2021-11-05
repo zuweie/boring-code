@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2021-11-04 16:38:00
+ * @LastEditTime: 2021-11-05 13:02:21
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -31,8 +31,14 @@ int main ()
     }
 
     /* run the testcase */
-    do_vector_test();
-    // do_list_test();
+    // test done
+    // do_vector_test(); 
+    // test done
+
+    // testing 
+    do_list_test();
+    // testing
+    
     // do_t_test();
     // do_hashmap_test();
     // do_memory_pool_test();

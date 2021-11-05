@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-04 12:58:24
+ * @LastEditTime: 2021-11-05 11:55:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -60,7 +60,7 @@ static int __cn_remove_at(CN cn, It at, T* rdata)
 }
 static int __cn_add_at(CN cn, It at, va_list valist)
 {
-    if (It_is_head(at)) 
+    if (CN_(cn)->build_code & VECTOR && It_is_head(at)) 
         return err_invalid_pos;
 
     int err = err_ok;

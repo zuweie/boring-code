@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:49
- * @LastEditTime: 2021-11-04 13:46:37
+ * @LastEditTime: 2021-11-05 11:45:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.c
@@ -70,7 +70,8 @@ int cmp_str(type_value_t* t1, type_value_t* t2)
 {
     char* v1 = type_value_(t1, char*);
     char* v2 = type_value_(t2, char*);
-    return strcmp(v1, v2);
+    int result = strcmp(v1, v2);
+    return result < 0 ? -1 : result > 0 ? 1 : 0;
 }
 
 int cmp_ptr(type_value_t* t1, type_value_t* t2)

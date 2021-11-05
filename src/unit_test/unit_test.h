@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2021-11-04 16:58:07
+ * @LastEditTime: 2021-11-05 12:03:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -30,10 +30,10 @@
     printf(" -- %d -> ", ((bfs_explor_t*)v->exploring)->distance);\
 }while(0) 
 
-#define CN_inspect(con, it_printer)  do{ \
-    printf(" ********* inspection of container *****************\n"); \
+#define CN_inspect(con, T_printer)  do{ \
+    printf("\n ********* inspection of container *****************\n"); \
     for(It first=CN_first(con); !It_equal(first, CN_tail(con)); It_next(first)) {\
-        it_printer(first);\
+        T_printer(first._iter.reference);\
     } \
     printf("\n"); \
 }while(0)
