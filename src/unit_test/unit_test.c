@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2021-11-05 13:02:21
+ * @LastEditTime: 2021-11-05 13:17:51
  * @LastEditors: Please set LastEditors
  */
 #include <stdio.h>
@@ -36,18 +36,18 @@ int main ()
     // test done
 
     // testing 
-    do_list_test();
+    // do_list_test();
     // testing
     
     // do_t_test();
-    // do_hashmap_test();
+     do_hashmap_test();
     // do_memory_pool_test();
-    // do_coo_matrix_test();
-    // do_dense_matrix_test();
-    // do_graph_test();
-    // do_udgraph_test();
-    // do_set_test();
-    // do_heapsort_test();
+     do_coo_matrix_test();
+     do_dense_matrix_test();
+     do_graph_test();
+     do_udgraph_test();
+     do_set_test();
+     //do_heapsort_test();
     // do_fft_test();
     // do_dct_test();
     // do_asr_test();

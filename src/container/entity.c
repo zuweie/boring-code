@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:26
- * @LastEditTime: 2021-11-03 10:43:16
+ * @LastEditTime: 2021-11-08 12:20:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -93,13 +93,13 @@ int entity_tpl_cal_independent_entity_body_size(entity_template_t* etpl, unsigne
 
 int cmp_entity(T* t1, T* t2)
 {
-    entity_t* e1 = (entity_t*) t1;
-    entity_t* e2 = (entity_t*) t2;
+    entity_t* e1 = *((entity_t**) t1);
+    entity_t* e2 = *((entity_t**) t2);
     int result;
     T_def _def;
     for (int i=0; i<e1->tpl->value_idx; ++i) {
         T_adapter _adapter = T_adapter_get(e1->tpl->field_types[i], e_cmp);
-        result = ((adapter_cmp)(_adapter))(e1, e2);
+        result = ((adapter_cmp)(_adapter))(e1->block[i], e2->block[i]);
         if (result != 0) return result;
     }
     return result;
@@ -111,9 +111,8 @@ int hash_entity(T* t, int slot_size)
     unsigned long hash_code = 0;
     T_def* _def;
     for (int i=0; i<ent->tpl->value_idx; ++i) {
-        //_def = T_def_get(ent->tpl->field_types[i]);
         T_adapter _adapter = T_adapter_get(ent->tpl->field_types[i], e_hash);
-        hash_code += ((adapter_hasher)(_adapter))(ent, slot_size);
+        hash_code += ((adapter_hasher)(_adapter))(ent->block[i], slot_size);
     }
     return hash_code % slot_size;
 }
@@ -121,14 +120,13 @@ int hash_entity(T* t, int slot_size)
 int setup_entity(T* t1, T* t2, unsigned char old_block)
 {
     if (old_block) {
-        entity_t* dest = t1;
-        entity_t* src  = t2;
+        entity_t* dest = *((entity_t**)t1);
+        entity_t* src  = *((entity_t**)t2);
         entity_cpy_block_data(t1, t2, ef_values);
     } else {
-        entity_t* ent1 = (entity_t*) t1;
         entity_t* ent2 = (entity_t*) t2;
-        entity_t* cpy = entity_cpy(t2);
-        ent1 = cpy;
+        entity_t* cpy = entity_cpy(ent2);
+        *((entity_t**)t1) = cpy;
     }
     return 0;
 }
@@ -202,16 +200,20 @@ void entity_format_independent_entity_body(T* body, entity_template_t* etpl, uns
     entity_t* ent = (entity_t*)body;
     char* base = body;
     int offset = sizeof(entity_t);
-    ent->block = base + offset;
+    ent->block = (char*)(base + offset);
 
     offset += __entity_tpl_cal_block_size(etpl, accessor);
-    ent->tpl = base + offset;
+    ent->tpl = (char*)(base + offset);
 
     ent->tpl->field_num = etpl->field_num;
     ent->tpl->value_idx = etpl->value_idx;
+    ent->tpl->type_class = etpl->type_class;
+
+    offset += sizeof(entity_template_t);
+    ent->tpl->field_types = (char*)(base + offset);
 
     for (int i=0; i<(accessor&ef_keys? etpl->value_idx : etpl->field_num); ++i) {
-        ent->tpl->field_types = etpl->field_types[i];
+        ent->tpl->field_types[i] = etpl->field_types[i];
     }
     entity_format_data_block(ent, accessor);
 }
