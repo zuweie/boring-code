@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2021-11-04 11:08:29
+ * @LastEditTime: 2021-11-08 15:31:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -15,15 +15,15 @@
 
 #define CAPACITY_NUMBER 1024
 
-#define CN_DEFINE_LOCAL_INDEPENDENT_ENTITY(cn, ent_name, accessor) \
+#define CN_DEFINE_LOCAL_ENTITY(cn, ent_name, accessor) \
     entity_template_t* marco_##ent_name##_tpl = CN_ty_clazz(cn); \
-    int marco_##ent_name##_local_entity_body_size = entity_tpl_cal_independent_entity_body_size(marco_##ent_name##_tpl, accessor); \
+    int marco_##ent_name##_local_entity_body_size = entity_cal_body_size(marco_##ent_name##_tpl, accessor); \
     T marco_##ent_name##_ent_body[marco_##ent_name##_local_entity_body_size]; \
-    entity_format_independent_entity_body(marco_##ent_name##_ent_body, marco_##ent_name##_tpl, accessor); \
+    entity_format_body(marco_##ent_name##_ent_body, marco_##ent_name##_tpl, accessor); \
     entity_t* ent_name = marco_##ent_name##_ent_body
 
 #define CN_READ_ENTITY_VARGS(cn, ent_name, valist, accessor, context) \
-    CN_DEFINE_LOCAL_INDEPENDENT_ENTITY(cn, ent_name, accessor); \
+    CN_DEFINE_LOCAL_ENTITY(cn, ent_name, accessor); \
     T_vargs_read(CN_ty_clazz(cn))(valist, ent_name, context)
 
 #define CN_READ_SINGLE_VALUE_VARGS(cn, t_name, valist, context) \

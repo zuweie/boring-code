@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2021-11-03 15:45:44
+ * @LastEditTime: 2021-11-08 15:22:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -87,8 +87,17 @@ int vargs_reader_entity(va_list, T*, int);
 entity_t* entity_create(entity_template_t* etpl);
 entity_t* entity_cpy(entity_t* src);
 void entity_format_data_block(entity_t*, unsigned long);
-void entity_format_independent_entity_body(T*, entity_template_t*, unsigned long);
-int entity_tpl_cal_independent_entity_body_size(entity_template_t*, unsigned long);
+
+// 用于计算包含 entity_template_t 实体 的 entity 的大小
+int entity_tpl_cal_body_size(entity_template_t*, unsigned long);
+// 用于格式化包含 entity_template_t 的 entity
+void entity_tpl_format_body(T*, entity_template_t*, unsigned long);
+
+// 用于计算包含 entity_template_t 指针的 entity 的大小
+int entity_cal_body_size(entity_template_t*, unsigned long);
+// 用于格式化包含 entity_template_t 指针的 entity 的大小
+void entity_format_body(T*, entity_template_t*, unsigned long);
+
 void entity_cpy_block_data(entity_t*, entity_t*, unsigned long);
 
 int entity_read_from_vargs(entity_t*,  va_list, unsigned long);

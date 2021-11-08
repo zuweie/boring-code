@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:26
- * @LastEditTime: 2021-11-08 12:20:53
+ * @LastEditTime: 2021-11-08 16:38:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -82,19 +82,12 @@ static int __entity_read_vargs(entity_t* ent, unsigned long accessor, va_list va
     return 0;
 }
 
-int entity_tpl_cal_independent_entity_body_size(entity_template_t* etpl, unsigned long accessor)
-{
-    int independent_entity_size = sizeof (entity_t);
-    independent_entity_size += __entity_tpl_cal_block_size(etpl, accessor);
-    independent_entity_size += sizeof (entity_template_t);
-    independent_entity_size += sizeof(int) * (accessor & ef_keys ? etpl->value_idx : etpl->field_num);
-    return independent_entity_size;
-}
+
 
 int cmp_entity(T* t1, T* t2)
 {
     entity_t* e1 = *((entity_t**) t1);
-    entity_t* e2 = *((entity_t**) t2);
+    entity_t* e2 = (entity_t*) t2;
     int result;
     T_def _def;
     for (int i=0; i<e1->tpl->value_idx; ++i) {
@@ -121,8 +114,8 @@ int setup_entity(T* t1, T* t2, unsigned char old_block)
 {
     if (old_block) {
         entity_t* dest = *((entity_t**)t1);
-        entity_t* src  = *((entity_t**)t2);
-        entity_cpy_block_data(t1, t2, ef_values);
+        entity_t* src  = (entity_t*)t2;
+        entity_cpy_block_data(dest, src, ef_values);
     } else {
         entity_t* ent2 = (entity_t*) t2;
         entity_t* cpy = entity_cpy(ent2);
@@ -195,7 +188,16 @@ void entity_format_data_block(entity_t* ent, unsigned long accessor)
     memset(data_base_ptr, 0, data_size);
 }
 
-void entity_format_independent_entity_body(T* body, entity_template_t* etpl, unsigned long accessor)
+int entity_tpl_cal_body_size(entity_template_t* etpl, unsigned long accessor)
+{
+    int independent_entity_size = sizeof (entity_t);
+    independent_entity_size += __entity_tpl_cal_block_size(etpl, accessor);
+    independent_entity_size += sizeof (entity_template_t);
+    independent_entity_size += sizeof(int) * (accessor & ef_keys ? etpl->value_idx : etpl->field_num);
+    return independent_entity_size;
+}
+
+void entity_tpl_format_body(T* body, entity_template_t* etpl, unsigned long accessor)
 {
     entity_t* ent = (entity_t*)body;
     char* base = body;
@@ -218,7 +220,23 @@ void entity_format_independent_entity_body(T* body, entity_template_t* etpl, uns
     entity_format_data_block(ent, accessor);
 }
 
-
+// 用于计算包含 entity_template_t 指针的 entity 的大小
+int entity_cal_body_size(entity_template_t* etpl, unsigned long accessor)
+{
+    int entity_size = sizeof (entity_t);
+    entity_size += __entity_tpl_cal_block_size(etpl, accessor);
+    return entity_size;
+}
+// 用于格式化包含 entity_template_t 指针的 entity 的大小
+void entity_format_body(T* body, entity_template_t* etpl, unsigned long accessor)
+{
+    entity_t* ent = (entity_t*)body;
+    char* base = body;
+    int offset = sizeof(entity_t);
+    ent->block = (char*)(base+offset);
+    ent->tpl = etpl;
+    entity_format_data_block(ent, accessor);
+}
 
 int entity_release(entity_t* ent)
 {

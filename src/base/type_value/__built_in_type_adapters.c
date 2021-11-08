@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:49
- * @LastEditTime: 2021-11-05 11:45:55
+ * @LastEditTime: 2021-11-08 14:03:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.c
@@ -15,38 +15,38 @@ int cmp_char(type_value_t* t1, type_value_t* t2)
 {
     char v1 = type_value_(t1, char);
     char v2 = type_value_(t2, char);
-    return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
+    return v1 > v2 ? 1 : (v1 == v2 ? 0 : -1);
 }
 
 int cmp_uchar(type_value_t* t1, type_value_t* t2)
 {
     unsigned char v1 = type_value_(t1, unsigned char);
     unsigned char v2 = type_value_(t2, unsigned char);
-    return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
+    return v1 > v2 ? 1 : (v1 == v2 ? 0 : -1);
 }
 int cmp_int(type_value_t* t1, type_value_t* t2)
 {
     int v1 = type_value_(t1, int);
     int v2 = type_value_(t2, int);
-    return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
+    return v1 > v2 ? 1 : (v1 == v2 ? 0 : -1);
 }
 int cmp_uint(type_value_t* t1, type_value_t* t2)
 {
     unsigned int v1 = type_value_(t1, unsigned int);
     unsigned int v2 = type_value_(t2, unsigned int);
-    return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
+    return v1 > v2 ? 1 : (v1 == v2 ? 0 : -1);
 }
 int cmp_long(type_value_t* t1, type_value_t* t2)
 {
     long v1 = type_value_(t1, long);
     long v2 = type_value_(t2, long);
-    return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
+    return v1 > v2 ? 1 : (v1 == v2 ? 0 : -1);
 }
 int cmp_ulong(type_value_t* t1, type_value_t* t2)
 {
     unsigned long v1 = type_value_(t1, unsigned long);
     unsigned long v2 = type_value_(t2, unsigned long);
-    return v1 > v2 ? 1 : (v1 = v2 ? 0 : -1);
+    return v1 > v2 ? 1 : (v1 == v2 ? 0 : -1);
 }
 int cmp_float(type_value_t* t1, type_value_t* t2)
 {

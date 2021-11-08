@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-05 11:55:53
+ * @LastEditTime: 2021-11-08 15:44:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -467,7 +467,7 @@ T* CN_get(CN cn, ...)
             CN_READ_ENTITY_VARGS(cn, ent, valist, ef_keys, 0);
             iterator_t it = container_search(CN_(cn)->eng, __null_iterator, ent, NULL);
             if (!iterator_is_tail(it)) {
-                entity_t* ent = it.reference;
+                entity_t* ent = *((entity_t**)it.reference);
                 return &ent->block[ent->tpl->value_idx];
             }
             
