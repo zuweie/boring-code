@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:26
- * @LastEditTime: 2021-11-08 16:38:31
+ * @LastEditTime: 2021-11-09 09:45:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
@@ -22,7 +22,7 @@ static int __entity_tpl_cal_block_data_size(entity_template_t* etpl, unsigned lo
         cal_field_num = etpl->value_idx;
         cal_field_start = 0;
     } else if (accessor & ef_values) {
-        cal_field_num = etpl->field_num - etpl->value_idx;
+        cal_field_num = etpl->field_num - etpl->value_idx + 1;
         cal_field_start = etpl->value_idx;
     } else {
         cal_field_num = etpl->field_num;
@@ -87,7 +87,7 @@ static int __entity_read_vargs(entity_t* ent, unsigned long accessor, va_list va
 int cmp_entity(T* t1, T* t2)
 {
     entity_t* e1 = *((entity_t**) t1);
-    entity_t* e2 = (entity_t*) t2;
+    entity_t* e2 = *((entity_t**) t2);
     int result;
     T_def _def;
     for (int i=0; i<e1->tpl->value_idx; ++i) {
@@ -100,7 +100,7 @@ int cmp_entity(T* t1, T* t2)
 
 int hash_entity(T* t, int slot_size)
 {
-    entity_t* ent = (entity_t*)t;
+    entity_t* ent = *((entity_t**)t);
     unsigned long hash_code = 0;
     T_def* _def;
     for (int i=0; i<ent->tpl->value_idx; ++i) {
@@ -114,10 +114,10 @@ int setup_entity(T* t1, T* t2, unsigned char old_block)
 {
     if (old_block) {
         entity_t* dest = *((entity_t**)t1);
-        entity_t* src  = (entity_t*)t2;
+        entity_t* src  = *((entity_t**)t2);
         entity_cpy_block_data(dest, src, ef_values);
     } else {
-        entity_t* ent2 = (entity_t*) t2;
+        entity_t* ent2 = *((entity_t**) t2);
         entity_t* cpy = entity_cpy(ent2);
         *((entity_t**)t1) = cpy;
     }

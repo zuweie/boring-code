@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-11-03 15:34:32
+ * @LastEditTime: 2021-11-09 10:58:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -80,12 +80,12 @@ static int __hash_insert(container_t* container, iterator_t pos, type_value_t* e
 
     if (slot_from == hash_table_tail(hash) || target == hash_table_tail(hash) || hash->_multi) {
         // 插入新元素
-
-        hash_inner_list_node_t* insert = hash->_multi ? target : slot_from;
+        hash_inner_list_node_t* insert = hash->_multi ? (target == hash_table_tail(hash) ? slot_from : target->next): slot_from;
         // 申请内存。
         hash_inner_list_node_t* inner_list_node = allocate(container->mem_pool, sizeof(hash_inner_list_node_t) + T_size(container->type_clazz));
         // 初始化。
-        inner_list_node->slot_index = T_hash(container->type_clazz)(en, hash->_slot_size);//container->type_def.ty_hasher(en, hash->_slot_size);
+        inner_list_node->slot_index = T_hash(container->type_clazz)(en, hash->_slot_size);
+        
         T_setup(container->type_clazz)(inner_list_node->w, en, 0);
 
         inner_list_node->prev = insert->prev;

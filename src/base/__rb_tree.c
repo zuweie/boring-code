@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-03 15:00:16
+ * @LastEditTime: 2021-11-09 13:05:15
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -475,9 +475,6 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
         // 交换两个的值
         if (py != pz){
-            // type_value_t data = pz->node;
-            // pz->node = py->node;
-            // py->node = data;
             type_value_swap(py->w, pz->w, T_size(prb->container.type_clazz));
         }
 
@@ -508,10 +505,10 @@ static int __rb_tree_move(iterator_t* it, int step)
     rb_tree_node_t* pnode = container_of(it->reference, rb_tree_node_t, w);
     rb_tree_t* tree       = it->container;
     
-    for (int next = step; next; next = step>0?--step:++step){
+    for (int next = step; next; step>0?next--:next++){
         /* code */
-        if (next>0) pnode = __tree_successor(tree, pnode);
-        else if (next<0) pnode = __tree_predecessor(tree, pnode);
+        if (step>0) pnode = __tree_successor(tree, pnode);
+        else if (step<0) pnode = __tree_predecessor(tree, pnode);
     }
     it->reference = pnode->w;
     return 0;
