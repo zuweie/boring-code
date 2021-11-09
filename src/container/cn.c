@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-09 11:48:00
+ * @LastEditTime: 2021-11-09 15:12:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -410,6 +410,9 @@ int CN_del(CN cn, ...)
             CN_READ_ENTITY_VARGS(cn, rm_keys, valist, ef_keys,0);
             iterator_t it = container_search(CN_(cn)->eng, __null_iterator, &rm_keys, NULL);
             if (!iterator_is_tail(it)) {
+
+                entity_t* ent = type_value_(it.reference, entity_t*);
+                
                 entity_t* rm;
                 container_remove(CN_(cn)->eng, it, &rm);
                 entity_release(rm);

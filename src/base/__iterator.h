@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2021-11-05 13:13:50
+ * @LastEditTime: 2021-11-09 15:25:59
  * @LastEditors: Please set LastEditors
  */
 #ifndef __ITERATOR_H__
@@ -48,6 +48,6 @@ struct _iterator {
     type_value_t* reference;
 };
 
-#define __iterator(__refer, __container) ({ iterator_t it = { .reference = (__refer), .container = (__container),}; it;})
+#define __iterator(__refer, __container) ({ iterator_t it = { .reference = (__refer), .container = (__container)}; it;})
 #define __null_iterator ({iterator_t it = {.reference = NULL, .container = NULL}; it;})
 #endif

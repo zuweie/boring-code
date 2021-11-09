@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2021-11-09 14:41:43
+ * @LastEditTime: 2021-11-09 15:36:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -323,35 +323,41 @@ static void test_treemap_del(void)
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
     
+    // CN_del(treemap, 1);
+
     CN_set(treemap, 11, "11");
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
-    CN_set(treemap, 12, "12");
 
-    CN_set(treemap, 22, "22");
+    CN_set(treemap, 12, "12");
+    CN_set(treemap, 13, "13");
 
     // printf("\n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
-
-    for (It first = CN_first(treemap); !It_equal(first, CN_tail(treemap)); It_next(first))
-    {
-        entity_t* ent = It_ptr(first);
-        printf("key: %d, value: %s \n", ef_int(ent, 0), ef_str(ent, 1));
-    }
+    // printf("\n");
+    // for (It first = CN_first(treemap); !It_equal(first, CN_tail(treemap)); It_next(first))
+    // {
+    //     entity_t* ent = It_ptr(first);
+    //     printf("key: %d, value: %s \n", ef_int(ent, 0), ef_str(ent, 1));
+    // }
     
-    // CN_del(treemap, 11);
-    // CN_del(treemap, 22);
-    // CN_del(treemap, 3);
+    CN_del(treemap, 11);
+    CN_del(treemap, 12);
+    CN_del(treemap, 13);
     // printf("\n\n after del \n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
     // printf("\n\n");
 
     //CU_ASSERT(1);
-    // CU_ASSERT_FALSE(CN_has(treemap, 11));
-    // CU_ASSERT_FALSE(CN_has(treemap, 22));
-    // CU_ASSERT_FALSE(CN_has(treemap, 33));
+    CU_ASSERT_FALSE(CN_has(treemap, 11));
+    CU_ASSERT_FALSE(CN_has(treemap, 22));
+    CU_ASSERT_FALSE(CN_has(treemap, 33));
+
+    CU_ASSERT_TRUE(CN_has(treemap, 1));
+    CU_ASSERT_TRUE(CN_has(treemap, 2));
+    CU_ASSERT_TRUE(CN_has(treemap, 3));
 
     CN_finalize(treemap, NULL);
 }

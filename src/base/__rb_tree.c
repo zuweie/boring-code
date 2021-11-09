@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-09 13:05:15
+ * @LastEditTime: 2021-11-09 15:33:18
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -261,8 +261,9 @@ static rb_tree_node_t* __rb_tree_create_node (rb_tree_t* prb, type_value_t* t) {
     return pnode;
 }
 
-static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t) 
+static int __rb_tree_insert (container_t* container, iterator_t pos, type_value_t* t) 
 {
+    rb_tree_t* prb = (rb_tree_t*)container;
 	rb_tree_node_t* py = _null(prb);
 	rb_tree_node_t* px = prb->_root; 
     
@@ -270,12 +271,12 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
     // 找位置
     while(px != _null(prb)) {
         py = px;
-        if ( T_cmp(prb->container.type_clazz)(px->w, t) == -1 ){
+        if ( T_cmp(container->type_clazz)(px->w, t) == 1 ){
             // 小于的情况
         	px = px->left;
         }else {
             
-            if (prb->multi || T_cmp(prb->container.type_clazz)(px->w, t) == 1) {
+            if (prb->multi || T_cmp(container->type_clazz)(px->w, t) == -1) {
                 // 大于或者允许多健值的情况
                 px = px->right;
             } else {
@@ -286,7 +287,7 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
                 //     type_value_cpy(px->w, t, prb->container.type_def.ty_size);
                 //     //prb->container.type_def.ty_adapter.bit_cpy(px->w, t);
                 // }
-                T_setup(prb->container.type_clazz)(px->w, t, 1);
+                T_setup(container->type_clazz)(px->w, t, 1);
                 return 1;
             }
         }
@@ -296,7 +297,7 @@ static int __rb_tree_insert (rb_tree_t* prb, iterator_t pos, type_value_t* t)
     // 挂叶子
     if (py == _null(prb)){
     	prb->_root = pz;
-    }else if (T_cmp(prb->container.type_clazz)(pz->w, py->w)== -1){
+    }else if (T_cmp(container->type_clazz)(pz->w, py->w)== -1){
     	py->left = pz;
     }else{
         py->right = pz;
@@ -433,8 +434,11 @@ static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
     return 0;
 }
 
-static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
-{
+static int __rb_tree_remove (container_t* container, iterator_t pos, void* rdata)
+{ 
+    rb_tree_t* prb = (rb_tree_t*)container;
+    rb_tree_node_t* pz = (rb_tree_node_t*)container_of(pos.reference, rb_tree_node_t, w);
+
     if (pz != _null(prb)){
         
         // 更新 tree 的 first 和 last
@@ -475,7 +479,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
 
         // 交换两个的值
         if (py != pz){
-            type_value_swap(py->w, pz->w, T_size(prb->container.type_clazz));
+            type_value_swap(py->w, pz->w, T_size(container->type_clazz));
         }
 
         if (py->color == _rb_black){
@@ -483,7 +487,7 @@ static int __rb_tree_remove (rb_tree_t* prb, rb_tree_node_t* pz, void* rdata)
         }
 
         // 返回值。
-        if (rdata) type_value_cpy(rdata, py->w, T_size(prb->container.type_clazz));
+        if (rdata) type_value_cpy(rdata, py->w, T_size(container->type_clazz));
         
         deallocate(prb->container.mem_pool, py);
         prb->_size--;
@@ -534,7 +538,7 @@ static iterator_t __rb_tree_last(container_t* container)
     return __iterator(pnode->w, container);
 }
 
-static iterator_t __rb_tree_search(container_t* container, iterator_t offset, type_value_t* find, int (*compare)(type_value_t, type_value_t)) 
+static iterator_t __rb_tree_search(container_t* container, iterator_t offset, type_value_t* find, int (*compare)(type_value_t*, type_value_t*)) 
 {
     rb_tree_t* tree = container;
     rb_tree_node_t* p;
