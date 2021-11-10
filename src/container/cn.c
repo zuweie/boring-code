@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-10 09:51:14
+ * @LastEditTime: 2021-11-10 13:19:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -410,10 +410,7 @@ int CN_del(CN cn, ...)
             // 这里是一个map
             CN_READ_ENTITY_VARGS(cn, rm_keys, valist, ef_keys,0);
             iterator_t it = container_search(CN_(cn)->eng, __null_iterator, &rm_keys, NULL);
-            if (!iterator_is_tail(it)) {
-
-                entity_t* ent = type_value_(it.reference, entity_t*);
-                
+            if (!iterator_is_tail(it)) {                
                 entity_t* rm;
                 container_remove(CN_(cn)->eng, it, &rm);
                 entity_release(rm);
@@ -472,7 +469,12 @@ T* CN_get(CN cn, ...)
             iterator_t it = container_search(CN_(cn)->eng, __null_iterator, &ent, NULL);
             if (!iterator_is_tail(it)) {
                 entity_t* ent = *((entity_t**)it.reference);
-                return &ent->block[ent->tpl->value_idx];
+                // 
+                if (ent->tpl->field_num - ent->tpl->value_idx == 1) {
+                    return ent->block[ent->tpl->value_idx];
+                } else {
+                    return &ent->block[ent->tpl->value_idx];
+                }
             }
             
         } else {
