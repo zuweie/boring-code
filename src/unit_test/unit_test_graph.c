@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2021-11-02 14:54:53
+ * @LastEditTime: 2021-11-10 14:55:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -280,7 +280,7 @@ static void test_grap_strongly_connect(void) {
     Graph_add_vertex(graph, 'a'); // 0
     Graph_add_vertex(graph, 'b'); // 1
     Graph_add_vertex(graph, 'c'); // 2
-    CooMatrix* matrix = CooMatrix_create(CN_size(&graph->vertexes), CN_size(&graph->vertexes));
+    CooMatrix* matrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
     Matrix_set(matrix, 0, 1, 1.0f);
     Matrix_set(matrix, 0, 2, 1.0f);
     Matrix_set(matrix, 2, 1, 1.0f);

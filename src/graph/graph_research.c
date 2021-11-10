@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2021-11-04 11:20:25
+ * @LastEditTime: 2021-11-10 14:56:52
  * @LastEditors: Please set LastEditors
  */
 #include <math.h>
@@ -156,8 +156,8 @@ int grp_dfs_exploring(Graph* graph)
 {
     int time = -1;
     Graph_initialize_exploring(graph, __init_dfs_exploring);
-    for(It first=CN_first(&graph->vertexes); 
-        !It_equal(first, CN_tail(&graph->vertexes)); 
+    for(It first=CN_first(graph->vertexes); 
+        !It_equal(first, CN_tail(graph->vertexes)); 
         It_next(first)) {
 
         vertex_t*   pu = It_ptr(first);
@@ -185,7 +185,7 @@ int grp_bfs_path(Graph* graph, vertex_t* start, vertex_t* desc, CN arr)
 // 再完成了 dfs 后启动的拓扑排序。
 int grp_topological_sort(Graph* graph)
 {
-    CN_sort(&graph->vertexes, __topological_sort_cmp);
+    CN_sort(graph->vertexes, __topological_sort_cmp);
 }
 
 // 计算有向图的强连通分支

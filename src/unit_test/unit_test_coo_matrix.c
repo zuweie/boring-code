@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-11 14:37:11
- * @LastEditTime: 2021-03-26 11:53:03
+ * @LastEditTime: 2021-11-10 14:53:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_coo_matrix.c
@@ -35,25 +35,37 @@ static void test_coo_matrix_set_get (void)
 {
     extern vfloat_t test_data_float[TEST_DATA_SIZE];
     CooMatrix* matrix = CooMatrix_load(20, 5, test_data_float);
-    printf("\n\n");
-    PR_COOMATRIX(matrix);
+    // printf("\n\n");
+    // PR_COOMATRIX(matrix);
     
+    vfloat_t v1 = Matrix_get(matrix, 0, 0);
+    vfloat_t v2 = Matrix_get(matrix, 19, 4);
+    vfloat_t v3 = tsd_get_float(0);
+    vfloat_t v4 = tsd_get_float(99);
+    CU_ASSERT_DOUBLE_EQUAL(v1, v3, 0.0001);
+    CU_ASSERT_DOUBLE_EQUAL(v2, v4, 0.0001);
     CooMatrix_destroy(matrix);
-    CU_ASSERT_TRUE(1);
+    //CU_ASSERT_TRUE(1);
 }
 static void test_coo_matrix_trans (void) 
 {
     extern vfloat_t test_data_float[TEST_DATA_SIZE];
     CooMatrix* matrix = CooMatrix_load(2, 10, test_data_float);
-    printf("\n\n");
-    PR_COOMATRIX(matrix);
-
+    //printf("\n\n");
+    //PR_COOMATRIX(matrix);
+    vfloat_t v1 = Matrix_get(matrix, 0, 7);
+    vfloat_t v2 = Matrix_get(matrix, 1, 5);
     Matrix_trans(matrix);
 
-    printf("\n\n");
-    PR_COOMATRIX(matrix);
+    vfloat_t v3 = Matrix_get(matrix, 7, 0);
+    vfloat_t v4 = Matrix_get(matrix, 5, 1);
+    
+    CU_ASSERT_DOUBLE_EQUAL(v1, v3, 0.0001);
+    CU_ASSERT_DOUBLE_EQUAL(v2, v4, 0.0001);
+    //printf("\n\n");
+    //PR_COOMATRIX(matrix);
     CooMatrix_destroy(matrix);
-    CU_ASSERT_TRUE(1);
+    //CU_ASSERT_TRUE(1);
 }
 
 static void test_coo_matrix_product (void) {
@@ -65,17 +77,28 @@ static void test_coo_matrix_product (void) {
 
     CooMatrix* product = CooMatrix_create(Matrix_rows(matrix1), Matrix_cols(matrix2));
     product = Matrix_product(matrix1, matrix2, product);
-    printf("\n\n");
-    printf("rows %d cols %d\n", Matrix_rows(product), Matrix_cols(product));
-    PR_COOMATRIX(product);
-    printf("\n\n");
+    //printf("\n\n");
+    //printf("rows %d cols %d\n", Matrix_rows(product), Matrix_cols(product));
+    int row = Matrix_rows(product);
+    int col = Matrix_cols(product);
+    CU_ASSERT_EQUAL(row, 4);
+    CU_ASSERT_EQUAL(col, 3);
+    
+    //PR_COOMATRIX(product);
+    //printf("\n\n");
+    vfloat_t v1 = Matrix_get(product, 0, 1);
+    vfloat_t v2 = Matrix_get(product, 3, 2);
+    
+    CU_ASSERT_DOUBLE_EQUAL(v1, 15.f, 0.0001f);
+    CU_ASSERT_DOUBLE_EQUAL(v2, -5.f, 0.0001);
+
     CooMatrix_destroy(matrix1);
     DenseMatrix_destroy(matrix2);
     CooMatrix_destroy(product);
 }
 int do_coo_matrix_test (void) 
 {
-    #if 0
+    
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Test CooMatrix Suite", suite_success_init, suite_success_clean);
     if (NULL == pSuite){
@@ -97,5 +120,4 @@ int do_coo_matrix_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
-    #endif
 }

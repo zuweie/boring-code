@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-10 13:19:47
+ * @LastEditTime: 2021-11-10 14:59:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -391,7 +391,7 @@ int CN_merge(CN cn1, CN cn2)
     if (clazz1->_def.ty_id == clazz1->_def.ty_id) {
         for (iterator_t first2=container_first(CN_(cn2)->eng); !iterator_equal(first2, container_tail(CN_(cn2)->eng)); iterator_next(first2))
         {
-            container_insert(CN_(cn1)->eng, container_tail(CN_(cn1)), first2.reference);
+            container_insert(CN_(cn1)->eng, container_tail(CN_(cn1)->eng), first2.reference);
         }
     } else {
         err = err_merge;

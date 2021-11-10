@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2021-11-04 11:31:52
+ * @LastEditTime: 2021-11-10 13:42:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
@@ -13,7 +13,7 @@
 static inline 
 int COOMATRIX_Keyhasher(T* v, size_t slot_t) 
 {
-   entity_t* entity = v;
+   entity_t* entity = T_ptr(v);
    unsigned int row = ef_uint(entity, 0);
    unsigned int col = ef_uint(entity, 1);
    size_t sum = row + col;

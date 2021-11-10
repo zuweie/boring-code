@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2021-11-04 11:27:30
+ * @LastEditTime: 2021-11-10 15:22:09
  * @LastEditors: Please set LastEditors
  */
 #include "container/cn.h"
@@ -13,7 +13,8 @@ static int __match_vertex(T* t1, T* t2)
 {
     vertex_t* pver1  = T_ptr(t1);
     unsigned long id = T_ulong(t2);
-    return (pver1->vertex_id == id) ? 0 : 1;
+    int cmp = (pver1->vertex_id == id) ? 0 : 1;
+    return cmp;
 }
 
 static int __match_path(T* t1, T* t2)
@@ -74,7 +75,7 @@ Graph* Graph_create_reverse(Graph* graph)
         Graph_add_vertex(new_graph, v->vertex_id);
     }
     
-    CooMatrix* cooMatrix = CooMatrix_create(CN_size(&graph->vertexes), CN_size(&graph->vertexes));
+    CooMatrix* cooMatrix = CooMatrix_create(CN_size(graph->vertexes), CN_size(graph->vertexes));
     Graph_get_paths_matrix(graph, cooMatrix);
     Matrix_trans(cooMatrix);
     Graph_connect_vertexes(new_graph, cooMatrix);
@@ -111,7 +112,7 @@ vertex_t* Graph_add_vertex(Graph* graph, unsigned long vertex_id)
 vertex_t* Graph_get_vertex(Graph* graph,  unsigned long vertex_id) 
 {
     It i = CN_find(graph->vertexes, vertex_id);
-    return It_is_tail(i) ? It_ptr(i) : NULL;
+    return !It_is_tail(i) ? It_ptr(i) : NULL;
 }
 
 path_t* Graph_add_path(Graph* graph, unsigned long from_id, unsigned long to_id, float weight)
@@ -164,7 +165,7 @@ int Graph_del_path(vertex_t* from, unsigned long to)
 int Graph_get_paths_matrix(Graph* graph, CooMatrix* matrix) 
 {
     
-    size_t size = CN_size(&graph->vertexes);
+    size_t size = CN_size(graph->vertexes);
 
     if (Matrix_rows(matrix) == size && Matrix_cols(matrix) == size ) {
 
