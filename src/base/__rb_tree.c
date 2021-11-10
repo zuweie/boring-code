@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-09 15:33:18
+ * @LastEditTime: 2021-11-10 11:59:15
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -442,13 +442,13 @@ static int __rb_tree_remove (container_t* container, iterator_t pos, void* rdata
     if (pz != _null(prb)){
         
         // 更新 tree 的 first 和 last
-        if (prb->_first == pz) {
-            prb->_first = __tree_successor(prb, pz);
-        } 
+        // if (prb->_first == pz) {
+        //     prb->_first = __tree_successor(prb, pz);
+        // } 
         
-        if (prb->_last == pz) {
-            prb->_last = __tree_predecessor(prb, pz);
-        }
+        // if (prb->_last == pz) {
+        //     prb->_last = __tree_predecessor(prb, pz);
+        // }
 
         rb_tree_node_t *py = _null(prb);
         rb_tree_node_t *px = _null(prb);
@@ -484,6 +484,15 @@ static int __rb_tree_remove (container_t* container, iterator_t pos, void* rdata
 
         if (py->color == _rb_black){
             __rb_tree_remove_fixup(prb, px);
+        }
+
+        // 更新 first 于 last 的关系
+        if (prb->_first == py) {
+            prb->_first = __tree_minimum(prb, prb->_root);
+        }
+
+        if (prb->_last == py) {
+            prb->_last = __tree_maximun(prb, prb->_root);
         }
 
         // 返回值。

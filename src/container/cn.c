@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-09 15:12:59
+ * @LastEditTime: 2021-11-10 09:51:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -364,7 +364,8 @@ int CN_has(CN cn, ...)
     va_start(valist, cn);
     It it = __cn_find_at(cn, ((CN_(cn)->build_code & HASH_SET || CN_(cn)->build_code &TREE_SET)?It_null:CN_first(cn)), valist);
     va_end(valist);
-    return !It_is_tail(it);
+    int has = !It_is_tail(it);
+    return has;
 }
 
 int CN_to_unique(CN cn)

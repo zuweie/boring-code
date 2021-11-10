@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2021-11-09 15:36:46
+ * @LastEditTime: 2021-11-10 12:04:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -348,8 +348,13 @@ static void test_treemap_del(void)
     CN_del(treemap, 13);
     // printf("\n\n after del \n\n");
     // CN_foreach(hashmap, PRINTF_HASH_NODE);
-    // printf("\n\n");
+    printf("\n\n");
 
+    for (It first = CN_first(treemap); !It_equal(first, CN_tail(treemap)); It_next(first))
+    {
+        entity_t* ent = It_ptr(first);
+        printf("key: %d, value: %s \n", ef_int(ent, 0), ef_str(ent, 1));
+    }
     //CU_ASSERT(1);
     CU_ASSERT_FALSE(CN_has(treemap, 11));
     CU_ASSERT_FALSE(CN_has(treemap, 22));
@@ -521,8 +526,8 @@ int do_hashmap_test (void)
     }
     
 
-    // if (NULL == CU_add_test(pSuite, "test treemap first last", test_treemap_first_last) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test treemap first last", test_treemap_first_last) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
