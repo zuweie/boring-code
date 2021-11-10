@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2021-11-09 10:58:02
+ * @LastEditTime: 2021-11-10 16:59:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -171,7 +171,7 @@ container_t* hash_create(T_clazz* __type_clazz, int slot_size, unsigned char mul
     return hash;
 }
 
-int hashmap_destroy(container_t* container)
+int hash_destroy(container_t* container)
 {
     hash_t* hash = (hash_t*)container;
     //container_destroy(list, hashmap->_hash_table);

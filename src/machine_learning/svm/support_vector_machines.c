@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-04 11:35:50
+ * @LastEditTime: 2021-11-10 16:10:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -56,8 +56,8 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, CN svm_problems)
             // Entity* ent = LeCN_get_entity(&counting_list, it);
             // List* class_list = t2p(ent->tv[1]);
             // CN_add(class_list, i2t(i));
-            CN class_list = CN_get(counting_map, y);
-            CN_add(class_list, i);
+            CN* class_list = CN_get(counting_map, y);
+            CN_add(*class_list, i);
         }
     }
 
@@ -320,9 +320,9 @@ int svm_solve_c_svc(
     // 初始化 solver
     solver_initialize(&solver, C_SVC, svm_kernel, _gammer, _coef, _degree, eps, max_iter);
 
-    size_t problem_size = CN_size(&problems);
+    size_t problem_size = CN_size(problems);
 
-    for ( It first = CN_first(&problems); !It_equal(first, CN_tail(&problems)); It_next(first) ) {
+    for ( It first = CN_first(problems); !It_equal(first, CN_tail(problems)); It_next(first) ) {
 
         svm_classify_problem_t* problem = It_ptr(first);
         
@@ -463,7 +463,7 @@ int svm_solve_c_svc(
 
     // 完了就释放内存。
     // TODO : 释放 problems
-    svm_classify_problem_finalize(&problems);
+    svm_classify_problem_finalize(problems);
 
     // TODO : 这里释放 solver 的内容
     solver_finalize(&solver);
@@ -528,7 +528,7 @@ double svm_c_svc_predict(CN classify_models, u_array_t* sample)
     // printf("\n");
     double winner_tag = -999.f;
     int count_vote = -1;
-    for (It first=CN_first(&vote); !It_equal(first, CN_tail(&vote)); It_next(first)) {
+    for (It first=CN_first(vote); !It_equal(first, CN_tail(vote)); It_next(first)) {
         //Entity* entity = LeCN_get_entity(&vote, first);
         entity_t* ent = It_ptr(first);
 

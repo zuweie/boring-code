@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2021-11-10 14:55:54
+ * @LastEditTime: 2021-11-10 15:25:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
@@ -445,25 +445,25 @@ int do_graph_test (void)
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "test graph bfs", test_graph_bfs) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test graph bfs", test_graph_bfs) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test graph dfs", test_graph_dfs) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test graph dfs", test_graph_dfs) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test graph vertex edge", test_graph_vertex_edge) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test graph vertex edge", test_graph_vertex_edge) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test graph vertex matrix", test_graph_matrix) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test graph vertex matrix", test_graph_matrix) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     if (NULL == CU_add_test(pSuite, "test graph strongly connected", test_grap_strongly_connect) ) {
         CU_cleanup_registry();

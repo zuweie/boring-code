@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-20 09:34:56
- * @LastEditTime: 2021-11-10 14:56:52
+ * @LastEditTime: 2021-11-10 15:37:17
  * @LastEditors: Please set LastEditors
  */
 #include <math.h>
@@ -264,7 +264,7 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, CN list)
     // 遍历每一条边。
     for (It first = CN_first(graph->uedges); !It_equal(first, CN_tail(graph->uedges)); It_next(first)){
         uedge_t* edge = It_ptr(first);
-        CN epv_list = It_int((*((It*)(edge->epv->exploring))));
+        CN epv_list = It_int((*( (It*) (edge->epv->exploring))));
         CN epw_list = It_int((*((It*)(edge->epw->exploring))));
 
         if (epv_list != epw_list) {
@@ -284,7 +284,7 @@ int ugrp_calculate_mst_kruskal(UDGraph* graph, CN list)
             CN_remove_at(group_list, epw_list_it, &rdata);
             // 把这个列 set 干掉。
             //free(t2p(rdata));
-            __free_list_in_group_list(rdata);
+            __free_list_in_group_list(&rdata);
             CN_add(list, edge);
         }
     }
@@ -380,7 +380,7 @@ int grp_calculate_dijkstra(Graph* graph, vertex_t* start, CN list)
     MxQueue q = MxQueue_create(ptr_t, __dijkstra_explor_distance_cmp);
     CN_merge(q, graph->vertexes);
     vertex_t* extract;
-    while(MxQueue_extract(q, &extract) != -1) {
+    while(MxQueue_extract(q, &extract) == err_ok) {
         
         vertex_t* extract_v = extract;
         CN_add(list, extract);
