@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-13 15:38:28
+ * @LastEditTime: 2021-11-13 15:45:42
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -89,7 +89,7 @@ static int __tree_left_rotate (rb_tree_t* prb, rb_tree_node_t* px)
     
     rb_tree_node_t *py = px->right;
 
-    // 如果 py 为 nil 节点，则结束旋转。
+    // 如果 py 为 nil 节点，则结束旋转，参考算法导论165页倒数第三行。
     if (py == _null(prb)) return -1;
 
     px->right = py->left;
@@ -124,7 +124,7 @@ static int __tree_right_rotate(rb_tree_t* prb, rb_tree_node_t* px)
 {
     rb_tree_node_t *py = px->left;
 
-    // 如果 py 为 nil 节点，则结束旋转
+    // 如果 py 为 nil 节点，则结束旋转, 参考算法导论165页倒数第三行
     if (py == _null(prb)) return -1;
 
     px->left = py->right;
