@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-10 11:59:15
+ * @LastEditTime: 2021-11-13 15:38:28
  * @LastEditors: Please set LastEditors
  */
 #include <stdlib.h>
@@ -80,14 +80,17 @@ static rb_tree_node_t* __tree_predecessor(rb_tree_t* prb, rb_tree_node_t* pnode)
     return up;
 }
 
-static void __tree_left_rotate (rb_tree_t* prb, rb_tree_node_t* px)
+static int __tree_left_rotate (rb_tree_t* prb, rb_tree_node_t* px)
 {
     // 先动自己的右子树。
     // py为px 的右子树。
     // 将py的左子树变成自己的右子树了。
     // 也就是讲自己的孙子变为儿子了。
-
+    
     rb_tree_node_t *py = px->right;
+
+    // 如果 py 为 nil 节点，则结束旋转。
+    if (py == _null(prb)) return -1;
 
     px->right = py->left;
 
@@ -114,12 +117,15 @@ static void __tree_left_rotate (rb_tree_t* prb, rb_tree_node_t* px)
 
     py->left = px;
     px->parent = py;
-    return;
+    return 0;
 }
 
 static int __tree_right_rotate(rb_tree_t* prb, rb_tree_node_t* px)
 {
     rb_tree_node_t *py = px->left;
+
+    // 如果 py 为 nil 节点，则结束旋转
+    if (py == _null(prb)) return -1;
 
     px->left = py->right;
     
@@ -129,10 +135,12 @@ static int __tree_right_rotate(rb_tree_t* prb, rb_tree_node_t* px)
 
     if (px->parent == _null(prb)){
         prb->_root = py;
-    }else if (px->parent->left == px){
-        px->parent->left = py;
-    }else{
-        px->parent->right = py;
+    }else  {
+        if (px == px->parent->right) {
+            px->parent->right = py;
+        } else {
+            px->parent->left = py;
+        }
     }
     py->right = px;
     px->parent = py;
@@ -388,7 +396,7 @@ static int __rb_tree_remove_fixup (rb_tree_t* prb, rb_tree_node_t* px)
                     pw->color = _rb_red;
                     // 把自己的左孩子右转上去。
                     __tree_right_rotate(prb, pw);
-                    pw = pw->parent->right;
+                    pw = px->parent->right; 
                 }
                 // CASE 4
                 pw->color = px->parent->color;

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2021-11-10 17:15:18
+ * @LastEditTime: 2021-11-13 14:20:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
@@ -375,55 +375,67 @@ static void test_treemap_del(void)
 
 static void test_treemap_first_last(void) 
 {
-    CN treemap = CN_create(TREE_MAP, int_t, int_t);
-    CN_set(treemap, 1, 1);
+    // CN treemap = CN_create(TREE_MAP, int_t, int_t);
+    // CN_set(treemap, 1, 1);
 
-    It first = CN_first(treemap);
-    entity_t* ent = It_ptr(first);
-    CU_ASSERT_TRUE(ef_int(ent, 0) == 1);
-    CU_ASSERT_TRUE(ef_int(ent, 1) == 1);
+    // It first = CN_first(treemap);
+    // entity_t* ent = It_ptr(first);
+    // CU_ASSERT_TRUE(ef_int(ent, 0) == 1);
+    // CU_ASSERT_TRUE(ef_int(ent, 1) == 1);
 
-    It last = CN_last(treemap);
-    ent = It_ptr(last);
-    CU_ASSERT_TRUE( ef_int(ent, 0) == 1 );
-    CU_ASSERT_TRUE( ef_int(ent, 1) == 1 );
+    // It last = CN_last(treemap);
+    // ent = It_ptr(last);
+    // CU_ASSERT_TRUE( ef_int(ent, 0) == 1 );
+    // CU_ASSERT_TRUE( ef_int(ent, 1) == 1 );
 
-    // 插入一个2
-    CN_set(treemap, 2, 2);
+    // // 插入一个2
+    // CN_set(treemap, 2, 2);
 
-    first = CN_first(treemap);
-    ent = It_ptr(first);
-    CU_ASSERT_TRUE( ef_int(ent, 0) == 1);
-    CU_ASSERT_TRUE( ef_int(ent, 1) == 1);
+    // first = CN_first(treemap);
+    // ent = It_ptr(first);
+    // CU_ASSERT_TRUE( ef_int(ent, 0) == 1);
+    // CU_ASSERT_TRUE( ef_int(ent, 1) == 1);
 
-    last = CN_last(treemap);
-    ent = It_ptr(last);
-    CU_ASSERT_TRUE( ef_int(ent, 0) == 2);
-    CU_ASSERT_TRUE( ef_int(ent, 1) == 2 );
+    // last = CN_last(treemap);
+    // ent = It_ptr(last);
+    // CU_ASSERT_TRUE( ef_int(ent, 0) == 2);
+    // CU_ASSERT_TRUE( ef_int(ent, 1) == 2 );
     
-    CN_del(treemap, 1);
-    first = CN_first(treemap);
-    ent = It_ptr(first);
-    CU_ASSERT_TRUE( ef_int(ent, 0) == 2);
-    CU_ASSERT_TRUE( ef_int(ent, 1) == 2 );
+    // CN_del(treemap, 1);
+    // first = CN_first(treemap);
+    // ent = It_ptr(first);
+    // CU_ASSERT_TRUE( ef_int(ent, 0) == 2);
+    // CU_ASSERT_TRUE( ef_int(ent, 1) == 2 );
 
 
-    last  = CN_last(treemap);
-    ent = It_ptr(last);
-    CU_ASSERT_TRUE( ef_int(ent, 0) == 2);
-    CN_finalize(treemap, NULL);
+    // last  = CN_last(treemap);
+    // ent = It_ptr(last);
+    // CU_ASSERT_TRUE( ef_int(ent, 0) == 2);
+    // CN_finalize(treemap, NULL);
 // -----------------------------------------------------------
 
-    CN treemap2 = CN_create(TREE_MAP, int_t, int_t);
+    
+    CN treemap2 = CN_create(TREE_MAP, ulong_t, int_t);
     CN list     = CN_create(LIST, int_t);
 
+    printf("\n\n");
     for (int i=0; i<100; ++i) {
         int v1 = tsd_get_int(i);
         int v2 = tsd_get_int(i);
-
-        CN_set(treemap2,v1, v2);
+        //printf("v1: %d ", v1);
+        //if (i % 5 == 0) printf("\n");
+        CN_set(treemap2, v1, v2);
+        //CN_set(treemap2, i, i);
         CN_add(list, v1);
     }
+    // printf("\n\n");
+    // int j = 0;
+    // for (It first=CN_first(treemap2); !It_equal(first, CN_tail(treemap2)); It_next(first))
+    // {
+    //     entity_t* ent = It_ptr(first);
+    //     printf(" ent_%i: %d ", j++, ef_int(ent, 0));
+    //     if (j%5 == 0) printf("\n");
+    // }
 
     CN_sort(list, NULL);
     
@@ -447,8 +459,8 @@ static void test_treemap_first_last(void)
     CU_ASSERT_TRUE(  ef_int(first_entity, 0) == list_first );/*CMP_INT(first_entity->tv[0], list_first) == 0*/
     CU_ASSERT_TRUE( ef_int(last_entity, 0) == list_last );/*CMP_INT(last_entity->tv[0], list_last) == 0*/
 
-    CN_del(treemap2, 45);
-    CN_del(treemap2, 53);
+    //CN_del(treemap2, 45);
+    //CN_del(treemap2, 53);
 
     tree2_first = CN_first(treemap2);
     first_entity = It_ptr(tree2_first);
@@ -467,8 +479,20 @@ static void test_treemap_first_last(void)
     // }
     // printf("\n");
 
+    //CN_del(treemap2, 9);
+    //CN_del(treemap2, 0);
+    //CN_del(treemap2, 2);
     CN_del(treemap2, list_first);
     CN_del(treemap2, list_last);
+
+    // printf("\n\n");
+    // j = 99;
+    // for (It first=CN_last(treemap2); !It_equal(first, CN_head(treemap2)); It_prev(first))
+    // {
+    //     entity_t* ent = It_ptr(first);
+    //     printf(" ent_%i: %d ", j--, ef_int(ent, 0));
+    //     if (j%5 == 0) printf("\n");
+    // }
 
     // printf("\n");
     // for (It first = CN_first(treemap2); !It_equal(first, CN_tail(treemap2)); first = It_next(first)) 
@@ -490,7 +514,17 @@ static void test_treemap_first_last(void)
 
     CU_ASSERT_TRUE(ef_int(first_entity, 0) == list_sec);
     CU_ASSERT_TRUE(ef_int(last_entity, 0) == list_rsec);
-
+    // printf("\n\n");
+    // int i=99;
+    // printf("size: %d\n ", CN_size(treemap2));
+    // CN_DEFINE_LOCAL_ENTITY(treemap2, fuck_ent, ef_all);
+    // while (CN_remove(treemap2, fuck_ent) == err_ok)
+    // {
+        
+    //     printf("f_ent_%d: %d ", i--, ef_int(fuck_ent, 0));
+    //     if (i%5== 0) printf("\n");
+    // }
+    // printf("\n\n");
     CN_finalize(treemap2, NULL);
     CN_finalize(list, NULL);
 }
@@ -518,29 +552,29 @@ int do_hashmap_test (void)
         return CU_get_error();
     }
     
-    if (NULL == CU_add_test(pSuite, "test hashmap set", test_hashmap) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test hashmap set", test_hashmap) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 
 
-    if (NULL == CU_add_test(pSuite, "test hashmap del", test_hashmap_del) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test hashmap del", test_hashmap_del) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     
-    if (NULL == CU_add_test(pSuite, "test treemap set", test_treemap_set) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test treemap set", test_treemap_set) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 
-    if (NULL == CU_add_test(pSuite, "test treemap del", test_treemap_del) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test treemap del", test_treemap_del) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     
 
     if (NULL == CU_add_test(pSuite, "test treemap first last", test_treemap_first_last) ) {
@@ -548,8 +582,8 @@ int do_hashmap_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test multi", test_multi_tree) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test multi", test_multi_tree) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }

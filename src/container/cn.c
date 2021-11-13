@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-10 16:59:20
+ * @LastEditTime: 2021-11-11 15:26:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -264,24 +264,16 @@ CN CN_create(unsigned long build_code, ...)
 }
 CN CN_finalize(CN cn, int(*cleanup)(T*))
 {
-    // TODO : release the container;
+    // // TODO : release the container;
     T_clazz* _class = CN_ty_clazz(cn);
-    T rT[_class->_def.ty_size];
-
-    int err = err_ok;
-    while (err == err_ok)
-    {
-        if (CN_(cn)->build_code & use_entity) {
-            
-            err = CN_remove(cn, NULL);
-
-        } else {
-            err = CN_remove(cn, rT);
-            if (err == err_ok && cleanup) cleanup(rT);
+    
+    if (cleanup) {
+        for (It first=CN_first(cn); !It_equal(first, CN_tail(cn)); It_next(first))
+        {
+            cleanup(first._iter.reference);
         }
     }
-    
-    
+
     if (CN_(cn)->build_code & VECTOR) {
         container_destroy(vector, CN_(cn)->eng);
     } else if (CN_(cn)->build_code & LIST) {
