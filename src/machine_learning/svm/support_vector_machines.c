@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-10 16:10:46
+ * @LastEditTime: 2021-11-17 11:31:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -152,7 +152,7 @@ int svm_solve_generic(solver_t* solver)
     size_t len_alpha = UA_length(&solver->alpha);
     size_t len_Qc    = UA_shape_axis(&solver->Q, 1);
     
-        // 一堆变脸个
+        // 一堆变量
     vfloat_t C_i, C_j;
     vfloat_t old_alpha_i, old_alpha_j, alpha_i, alpha_j;
     vfloat_t delta_alpha_i, delta_alpha_j;
@@ -186,8 +186,9 @@ int svm_solve_generic(solver_t* solver)
         //TODO: 2 通过计算获取两个需要优化的 Bate，找不到或者循环次数大于最大的循环次数，则退出循环。
         if (solver->select_working_set(solver, &selected_i, &selected_j) != 0 || iter++ > solver->max_iter ) 
         break;
-        
-        printf(" select i: %d, j: %d, iter: %d \n", selected_i, selected_j, iter);
+
+        // Debug
+        //printf(" select i: %d, j: %d, iter: %d \n", selected_i, selected_j, iter);
 
         //TODO: 3 更新这两个 Bate。
         vfloat_t* Qi_ptr = Qc_ptr[selected_i];
@@ -271,15 +272,15 @@ int svm_solve_generic(solver_t* solver)
         delta_alpha_j = alpha_j - old_alpha_j;
 
         // Debug
-        printf("\n update G:\n");
+        //printf("\n update G:\n");
         for (size_t k=0; k<len_alpha; ++k) {
-            printf("Qi_%d_ptr[%d]: %f, delta_alpha_i: %f, Qj_%d_ptr[%d]: %f, delta_alpha_j: %f ",selected_i, k, Qi_ptr[k], delta_alpha_i, selected_j, k,  Qj_ptr[k], delta_alpha_j);
+            //printf("Qi_%d_ptr[%d]: %f, delta_alpha_i: %f, Qj_%d_ptr[%d]: %f, delta_alpha_j: %f ",selected_i, k, Qi_ptr[k], delta_alpha_i, selected_j, k,  Qj_ptr[k], delta_alpha_j);
             G_ptr[k] += Qi_ptr[k] * delta_alpha_i + Qj_ptr[k] * delta_alpha_j;
             // 
-            printf("   G[%d]: %lf \n ", k, G_ptr[k]);
+            //printf("   G[%d]: %lf \n ", k, G_ptr[k]);
         }
-        // Debug
-        printf("\n\n\n");
+        // // Debug
+        //printf("\n\n\n");
     }
 
     // 计算 b。将来用作 预测函数上
@@ -397,6 +398,7 @@ int svm_solve_c_svc(
 
         size_t    len_solver_alpha = UA_length(&solver.alpha);
 
+        // 只有大于 0.f 的拉格朗日因子才有用。统计一下大于 0 的拉格朗日因子。
         for (int i=0; i<len_solver_alpha; ++i) {
             // Debug;
             if (solver_alpha_ptr[i] > 0.f) {
@@ -416,7 +418,8 @@ int svm_solve_c_svc(
 
         for (int i=0, j=0; i<len_solver_alpha; ++i) {
 
-            // Debug
+            // 只有大于 0.f 的拉格朗日因子才有用。统计一下大于 0 的拉格朗日因子。
+            // 把大于 0.f 的拉格朗日因子和对应的 y 拷贝出来。
             if (solver_alpha_ptr[i] > 0.f) {
             
                 star_alpha_ptr[j] = solver_alpha_ptr[i];
@@ -514,13 +517,13 @@ double svm_c_svc_predict(CN classify_models, u_array_t* sample)
         // Debug:
         // printf(" calculate tag is %f \n", tag);
         // It it = LeCN_find(&vote, f2t(tag));
-        int ticket = CN_get(vote, tag);
+        int* ticket = CN_get(vote, tag);
 
         //Entity* entity = LeCN_get_entity(&vote, it);
         // 增加一票
         //int v_count = t2i(entity->tv[1]) + 1;
         //entity->tv[1] = i2t(v_count);
-        CN_set(vote, tag, ticket+1);
+        CN_set(vote, tag, *ticket+1);
     }
 
     // // 选出票数最多的那个 tag 并返回。
@@ -529,15 +532,15 @@ double svm_c_svc_predict(CN classify_models, u_array_t* sample)
     double winner_tag = -999.f;
     int count_vote = -1;
     for (It first=CN_first(vote); !It_equal(first, CN_tail(vote)); It_next(first)) {
-        //Entity* entity = LeCN_get_entity(&vote, first);
         entity_t* ent = It_ptr(first);
 
         // Debug:
         // printf(" entity tv0: %f, tag: %c, tv1: %d \n", t2f(entity->tv[0]), (char)t2f(entity->tv[0]), t2i(entity->tv[1]));
-        int ticket = ef_int(ent, 1);//t2i(entity->tv[1]);
+        int ticket = ef_int(ent, 1);
         if (count_vote < ticket) {
             //winner_tag = t2f(entity->tv[0]);
             winner_tag = ef_double(ent, 0);
+            count_vote = ticket;
         }
     }
     
@@ -548,7 +551,7 @@ double svm_c_svc_predict(CN classify_models, u_array_t* sample)
 
 double svm_c_svm_predict_one(svm_model_t* model, u_array_t* sample)
 {
-    double sum = model->_star_rho;
+    double sum = -model->_star_rho;
     // 计算核函数
     u_array_t kernel_X = model->calculate_kernel(model, sample);
 
@@ -557,11 +560,11 @@ double svm_c_svm_predict_one(svm_model_t* model, u_array_t* sample)
     int len_kernel_X    = UA_length(&kernel_X);
     
     vfloat_t* _start_alpha_ptr = UA_data_ptr(&model->_star_alpha);
-    vfloat_t* _start_Y_ptr     = UA_data_ptr(&model->_star_X);
+    vfloat_t* _start_Y_ptr     = UA_data_ptr(&model->_star_Y);
     vfloat_t* kernel_X_ptr     = UA_data_ptr(&kernel_X);
     
     for (int i=0; i<len_start_alpha; ++i) {
-        
+    
         sum += _start_alpha_ptr[i] * _start_Y_ptr[i] * kernel_X_ptr[i];
 
     }

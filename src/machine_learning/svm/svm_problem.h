@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-01 12:22:37
- * @LastEditTime: 2021-11-03 10:04:47
+ * @LastEditTime: 2021-11-16 10:14:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/svm_probrom.h
@@ -22,5 +22,7 @@ typedef struct _svm_classify_problem {
     double c_weight_B;
 
 } svm_classify_problem_t;
+
+int svm_classify_problem_finalize(CN problem);
 
 #endif

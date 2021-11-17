@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-07-28 23:48:30
+ * @LastEditTime: 2021-11-16 11:42:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -188,7 +188,7 @@ int select_working_set(solver_t* solver, int* out_i, int* out_j)
     *out_i = Gmax1_idx;
     *out_j = Gmax2_idx;
     // Debug 
-    printf("(Gmax1:%lf) + (Gmax2:%lf) = %lf \n", Gmax1, Gmax2, Gmax1 + Gmax2);
+    //printf("(Gmax1:%lf) + (Gmax2:%lf) = %lf \n", Gmax1, Gmax2, Gmax1 + Gmax2);
     return Gmax1 + Gmax2 < solver->eps;
 }
 
@@ -402,9 +402,7 @@ int build_c_svc_Q (solver_t* solver)
 
     for (size_t i=0; i<len_alpha; ++i) {
         for (size_t j=0; j<len_alpha; ++j) {
-
             Q_r[i][j] = Y_ptr[i] * Y_ptr[j] * solver->kernel(solver, i, j);
-
         }
     }
     return 0;
@@ -442,9 +440,7 @@ int build_e_svr_Q(solver_t* solver) {
 
     for (size_t i=0; i<len_alpha;  ++i) {
         for (size_t j=0; j<len_alpha; ++j) {
-
             Q_r[i][j] = Z[i] * Z[j] * solver->kernel(solver, i, j);
-
         }
     }
 
