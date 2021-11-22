@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:30
- * @LastEditTime: 2021-11-03 11:41:16
+ * @LastEditTime: 2021-11-22 11:13:50
  * @LastEditors: Please set LastEditors
  * @Description: 软间隔支持向量机的实现
  * @FilePath: /boring-code/src/machine_learning/svm.h
@@ -37,7 +37,18 @@ int svm_solve_c_svc(
         CN classify_models 
     );
 
-int svm_solve_nu_svc();
+// 完全搞不懂那个 nu 拿来干嘛的
+int svm_solve_nu_svc(
+        u_array_t* X, u_array_t* Y, 
+        SVM_kernel SVM_kernel, 
+        double nu,
+        double _gammer, 
+        double _coef, 
+        double _degree, 
+        double eps, 
+        int max_iter, 
+        CN classify_models 
+    );
 int svm_solve_one_class();
 int svm_solve_e_svr();
 int svm_solve_nu_svr();

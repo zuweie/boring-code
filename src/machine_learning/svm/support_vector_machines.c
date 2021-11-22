@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-17 11:31:51
+ * @LastEditTime: 2021-11-22 12:19:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -290,6 +290,7 @@ int svm_solve_generic(solver_t* solver)
 }
 
 // 开始计算分类 svm 中最简单的分类 C_SVC
+// 这里的惩罚参数 C，以后要更数组输入 
 int svm_solve_c_svc( 
         u_array_t* X, u_array_t* Y, 
         SVM_kernel svm_kernel, 
@@ -476,6 +477,88 @@ int svm_solve_c_svc(
     UArray_(&_Y);
 }
 
+int svm_solve_nu_svc(        
+        u_array_t* X, 
+        u_array_t* Y, 
+        SVM_kernel SVM_kernel, 
+        double nu,
+        double _gammer, 
+        double _coef, 
+        double _degree, 
+        double eps, 
+        int max_iter, 
+        CN classify_models 
+)
+{
+    size_t len_Xc = UA_shape_axis(X, 1);
+    size_t len_Xr = UA_shape_axis(X, 0);
+    size_t len_Y  = UA_length(Y);
+    
+    vfloat_t (*X_ptr)[len_Xc] = UA_data_ptr(X);
+    vfloat_t *Y_ptr           = UA_data_ptr(Y);
+
+    // 这个用于临时罐装数据。
+    u_array_t _X = _UArray2d(len_Xr/2, len_Xc);
+    u_array_t _Y = _UArray1d(len_Y/2);
+    u_array_t _C = _UArray1d(len_Y/2);
+
+    solver_t solver;
+
+    CN problems = CN_create(LIST, ptr_t);
+    svm_classify_problem(X, Y, problems);
+
+    for (It first = CN_first(problems); !It_equal(first, CN_tail(problems)); It_next(first)) {
+        svm_classify_problem_t* problem = It_ptr(first);
+
+        size_t len_class_A = CN_size(problem->class_ls_A);
+        size_t len_class_B = CN_size(problem->class_ls_B);
+
+        size_t total = len_class_A + len_class_B;
+
+        UA_reshape_dots(&_X, 2, total, len_Xc);
+        UA_reshape_dots(&_Y, 1, total);
+        UA_reshape_dots(&_C, 1, total);
+
+        vfloat_t (*_X_ptr)[len_Xc] = UA_data_ptr(&_X);
+        vfloat_t *_Y_ptr           = UA_data_ptr(&_Y);
+        vfloat_t *_C_ptr           = UA_data_ptr(&_C);
+        // 开始初始化所有的要计算的数据
+        int i = 0, j = 0, k = 0;
+        for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); It_next(it_a)) {
+            size_t index_a = It_int(it_a);
+            memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
+            _Y_ptr[j++] = 1.f;
+            // nu_svc 的 惩罚参数为1。
+            _C_ptr[k++] = 1.f;
+        }
+        
+        for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); It_next(it_b)) {
+            size_t index_b = It_int(it_b);
+            memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
+            _Y_ptr[j++] =  -1.f;
+            // nu_svc 的 惩罚 参数为1。
+            _C_ptr[k++] = 1.f;
+        }
+        // 将数据集塞入 solver 中，最终拿来计算
+        solver_set_calculating_dataset(&solver, &_X, &_Y, &_C);
+
+        // 初始化 alpha 的值，整个 nu_svc 的算法中的 nu，好像就这里用到了。这是为什么呢，这么嗨奇怪。
+        vfloat_t* _alpha_ptr = UA_data_ptr(&solver.alpha);
+        double sum_pos = nu * total * 0.5;
+        double sum_neg = nu * total * 0.5;
+        // zh
+        for (i=0; i<total; ++i) {
+            if (_Y_ptr[i] > 0) {
+                _alpha_ptr[i] = SVM_MIN(1.0, sum_pos);
+                sum_pos -= _alpha_ptr[i];
+            } else {
+                _alpha_ptr[i] = SVM_MIN(1.0, sum_neg);
+                sum_neg -= _alpha_ptr[i];
+            }
+        }
+    }
+    
+}
 
 // 需要劳动成果来做测试的时候到了。
 // 实现 svc 投票判断。

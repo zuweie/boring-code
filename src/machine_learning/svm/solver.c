@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-11-16 11:42:55
+ * @LastEditTime: 2021-11-17 14:59:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -14,15 +14,15 @@
 #include "svm_kernel_function.h"
 #include "solver.h"
 
-int solver_initialize(     \
-        solver_t* solver,  \ 
-        SVM_type svm_type, \
-        SVM_kernel kerenl, \
-        double _gammer, \
-        double _coef,   \
-        double _degree, \
-        double eps,  \
-        int max_iter \
+int solver_initialize(     
+        solver_t* solver,  
+        SVM_type svm_type, 
+        SVM_kernel kerenl, 
+        double _gammer, 
+        double _coef,   
+        double _degree, 
+        double eps,  
+        int max_iter 
 )
 {
     

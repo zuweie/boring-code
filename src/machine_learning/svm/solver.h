@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-10-24 09:40:41
+ * @LastEditTime: 2021-11-17 15:05:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -49,6 +49,7 @@ struct _solver {
     double eps;   // select working set 精度要求。
     double rho;
     double r;
+    double nu;
     kernel_param_t kernel_param;
 };
 
