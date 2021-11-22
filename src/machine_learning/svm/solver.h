@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:43:31
- * @LastEditTime: 2021-11-17 15:05:21
+ * @LastEditTime: 2021-11-22 16:27:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.h
@@ -50,19 +50,22 @@ struct _solver {
     double rho;
     double r;
     double nu;
+    double c;
     kernel_param_t kernel_param;
 };
 
 
-int solver_initialize(     \
-        solver_t* solver,  \ 
-        SVM_type svm_type, \
-        SVM_kernel kerenl, \
-        double _gammer,  \
-        double _coef,    \
-        double _degree,  \
-        double eps,      \
-        int max_iter     \
+int solver_initialize(     
+        solver_t* solver,   
+        SVM_type svm_type, 
+        SVM_kernel kerenl,
+        double _C,
+        double _nu,
+        double _gammer,  
+        double _coef,    
+        double _degree,  
+        double eps,      
+        int max_iter     
 );
 
 int solver_finalize(solver_t* solver);

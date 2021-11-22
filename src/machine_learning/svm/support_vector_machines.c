@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-22 12:19:45
+ * @LastEditTime: 2021-11-22 16:29:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -320,7 +320,7 @@ int svm_solve_c_svc(
     svm_classify_problem(X, Y, problems);
     
     // 初始化 solver
-    solver_initialize(&solver, C_SVC, svm_kernel, _gammer, _coef, _degree, eps, max_iter);
+    solver_initialize(&solver, C_SVC, svm_kernel, C, 0.f, _gammer, _coef, _degree, eps, max_iter);
 
     size_t problem_size = CN_size(problems);
 
@@ -353,7 +353,7 @@ int svm_solve_c_svc(
             memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] = 1.f;
             //_C_ptr[k++] = problem->c_weight_A * C;
-            _C_ptr[k++] = C;
+            _C_ptr[k++] = solver.c;
         }
         
         for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); It_next(it_b)) {
@@ -361,7 +361,7 @@ int svm_solve_c_svc(
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] =  -1.f;
             //_C_ptr[k++] = problem->c_weight_B * C;
-            _C_ptr[k++] = C;
+            _C_ptr[k++] = solver.c;
         }
 
         // 设置 X Y C 到 solver 中
@@ -475,12 +475,13 @@ int svm_solve_c_svc(
     // TODO : 这里释放 _X 与 _Y 的内存。
     UArray_(&_X);
     UArray_(&_Y);
+    return 0;
 }
 
 int svm_solve_nu_svc(        
         u_array_t* X, 
         u_array_t* Y, 
-        SVM_kernel SVM_kernel, 
+        SVM_kernel svm_kernel, 
         double nu,
         double _gammer, 
         double _coef, 
@@ -507,6 +508,10 @@ int svm_solve_nu_svc(
     CN problems = CN_create(LIST, ptr_t);
     svm_classify_problem(X, Y, problems);
 
+    solver_initialize(&solver, NU_SVC, svm_kernel, 1.f, 0.05f, _gammer, _coef, _degree, eps, max_iter);
+
+    // TOOD：这里要做 3-66 的 nu-svc 的监测。
+
     for (It first = CN_first(problems); !It_equal(first, CN_tail(problems)); It_next(first)) {
         svm_classify_problem_t* problem = It_ptr(first);
 
@@ -529,7 +534,7 @@ int svm_solve_nu_svc(
             memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] = 1.f;
             // nu_svc 的 惩罚参数为1。
-            _C_ptr[k++] = 1.f;
+            _C_ptr[k++] = solver.c;
         }
         
         for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); It_next(it_b)) {
@@ -537,7 +542,7 @@ int svm_solve_nu_svc(
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] =  -1.f;
             // nu_svc 的 惩罚 参数为1。
-            _C_ptr[k++] = 1.f;
+            _C_ptr[k++] = solver.c;
         }
         // 将数据集塞入 solver 中，最终拿来计算
         solver_set_calculating_dataset(&solver, &_X, &_Y, &_C);
@@ -546,7 +551,8 @@ int svm_solve_nu_svc(
         vfloat_t* _alpha_ptr = UA_data_ptr(&solver.alpha);
         double sum_pos = nu * total * 0.5;
         double sum_neg = nu * total * 0.5;
-        // zh
+
+        // 这要做一个 特殊的监测。
         for (i=0; i<total; ++i) {
             if (_Y_ptr[i] > 0) {
                 _alpha_ptr[i] = SVM_MIN(1.0, sum_pos);
@@ -556,7 +562,93 @@ int svm_solve_nu_svc(
                 sum_neg -= _alpha_ptr[i];
             }
         }
+
+        UA_ones(&solver.alpha, 0);
+
+        svm_solve_generic(&solver);
+        
+        svm_model_t* model = malloc(sizeof(svm_model_t));
+        int sv_count = 0;
+        
+        vfloat_t* solver_alpha_ptr = UA_data_ptr(&solver.alpha);
+        vfloat_t* solver_Y_ptr     = UA_data_ptr(solver.Y);
+        size_t len_solver_Xc       = UA_shape_axis(solver.X, 1);
+        vfloat_t (*solver_X_ptr)[len_solver_Xc] = UA_data_ptr(solver.X);
+        size_t    len_solver_alpha = UA_length(&solver.alpha);
+
+        // 只有大于 0.f 的拉格朗日因子才有用。统计一下大于 0 的拉格朗日因子。
+        for (int i=0; i<len_solver_alpha; ++i) {
+            // Debug;
+            if (solver_alpha_ptr[i] > 0.f) {
+                sv_count++;
+            }
+        }
+
+        model->_star_alpha       = _UArray1d(sv_count);
+        vfloat_t* star_alpha_ptr = UA_data_ptr(&model->_star_alpha);
+
+        model->_star_Y        = _UArray1d(sv_count);
+        vfloat_t* star_Y_ptr  = UA_data_ptr(&model->_star_Y);
+
+        model->_star_X                 = _UArray2d(sv_count, len_Xc);
+        vfloat_t (*star_X_ptr)[len_Xc] = UA_data_ptr(&model->_star_X);
+
+        for (int i=0, j=0; i<len_solver_alpha; ++i) {
+
+            // 只有大于 0.f 的拉格朗日因子才有用。统计一下大于 0 的拉格朗日因子。
+            // 把大于 0.f 的拉格朗日因子和对应的 y 拷贝出来。
+            if (solver_alpha_ptr[i] > 0.f) {
+            
+                star_alpha_ptr[j] = solver_alpha_ptr[i];
+                star_Y_ptr[j]     = solver_Y_ptr[i];
+                memcpy(star_X_ptr[j], solver_X_ptr[i], sizeof(vfloat_t)*len_solver_Xc);
+                j++;
+            }
+        }
+
+            
+        model->_star_rho = solver.rho;
+        model->_star_r   = solver.r;
+        model->sv_count = sv_count;
+        model->k_param = solver.kernel_param;
+        
+        model->tagA = problem->tagA;
+        model->tagB = problem->tagB;
+        model->kernel = svm_kernel;
+        model->type   = NU_SVC;
+        switch (svm_kernel)
+        {
+        case LINEAR:
+            /* code */
+            model->calculate_kernel = &svm_model_calculate_liner;
+            break;
+        case POLY:
+            model->calculate_kernel = &svm_model_calculate_poly;
+            break;
+        case SIGMOID:
+            model->calculate_kernel = &svm_model_calculate_sigmoid;
+            break;
+        case RBF:
+            model->calculate_kernel = &svm_model_calculate_rbf;
+            break;
+        default:
+            break;
+        }
+
+        CN_add(classify_models, model);
     }
+        // 完了就释放内存。
+    // TODO : 释放 problems
+    svm_classify_problem_finalize(problems);
+
+    // TODO : 这里释放 solver 的内容
+    solver_finalize(&solver);
+
+    // TODO : 这里释放 _X 与 _Y 的内存。
+    UArray_(&_X);
+    UArray_(&_Y);
+
+    return 0;
     
 }
 

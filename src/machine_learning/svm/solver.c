@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-11-17 14:59:45
+ * @LastEditTime: 2021-11-22 16:28:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -18,6 +18,8 @@ int solver_initialize(
         solver_t* solver,  
         SVM_type svm_type, 
         SVM_kernel kerenl, 
+        double _C,
+        double _nu,
         double _gammer, 
         double _coef,   
         double _degree, 
@@ -36,7 +38,8 @@ int solver_initialize(
         solver->select_working_set = &select_working_nu_svm;
         solver->calc_rho = &calc_rho;
     }
-
+    solver->c  = _C;
+    solver->nu = _nu;
     // 初始化核函数参数
     solver->kernel_param.gammer = _gammer;
     solver->kernel_param.coef0  = _coef;

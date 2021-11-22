@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:30
- * @LastEditTime: 2021-11-22 11:13:50
+ * @LastEditTime: 2021-11-22 14:46:21
  * @LastEditors: Please set LastEditors
  * @Description: 软间隔支持向量机的实现
  * @FilePath: /boring-code/src/machine_learning/svm.h
@@ -49,6 +49,7 @@ int svm_solve_nu_svc(
         int max_iter, 
         CN classify_models 
     );
+    
 int svm_solve_one_class();
 int svm_solve_e_svr();
 int svm_solve_nu_svr();
