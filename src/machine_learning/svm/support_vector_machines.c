@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-22 16:29:13
+ * @LastEditTime: 2021-11-23 10:55:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -174,9 +174,9 @@ int svm_solve_generic(solver_t* solver)
     // G sum P
     UA_sum_uar(&solver->G, &solver->P);
     
-    // Debug
-    //printf("\n G is \n");
-    //UA_display(&solver->G);
+    //Debug
+    printf("\n G is \n");
+    UA_display(&solver->G);
     
     int selected_i, selected_j;
     int iter = 0;
@@ -188,7 +188,7 @@ int svm_solve_generic(solver_t* solver)
         break;
 
         // Debug
-        //printf(" select i: %d, j: %d, iter: %d \n", selected_i, selected_j, iter);
+        printf(" select i: %d, j: %d, iter: %d \n", selected_i, selected_j, iter);
 
         //TODO: 3 更新这两个 Bate。
         vfloat_t* Qi_ptr = Qc_ptr[selected_i];
@@ -274,13 +274,13 @@ int svm_solve_generic(solver_t* solver)
         // Debug
         //printf("\n update G:\n");
         for (size_t k=0; k<len_alpha; ++k) {
-            //printf("Qi_%d_ptr[%d]: %f, delta_alpha_i: %f, Qj_%d_ptr[%d]: %f, delta_alpha_j: %f ",selected_i, k, Qi_ptr[k], delta_alpha_i, selected_j, k,  Qj_ptr[k], delta_alpha_j);
+            printf("Qi_%d_ptr[%d]: %f, delta_alpha_i: %f, Qj_%d_ptr[%d]: %f, delta_alpha_j: %f ",selected_i, k, Qi_ptr[k], delta_alpha_i, selected_j, k,  Qj_ptr[k], delta_alpha_j);
             G_ptr[k] += Qi_ptr[k] * delta_alpha_i + Qj_ptr[k] * delta_alpha_j;
             // 
-            //printf("   G[%d]: %lf \n ", k, G_ptr[k]);
+            printf("   G[%d]: %lf \n ", k, G_ptr[k]);
         }
         // // Debug
-        //printf("\n\n\n");
+        printf("\n\n\n");
     }
 
     // 计算 b。将来用作 预测函数上
@@ -563,7 +563,9 @@ int svm_solve_nu_svc(
             }
         }
 
-        UA_ones(&solver.alpha, 0);
+        UA_ones(&solver.P, 0);
+        
+        solver.build_Q(&solver);
 
         svm_solve_generic(&solver);
         

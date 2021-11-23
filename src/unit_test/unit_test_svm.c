@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-11-22 15:20:44
+ * @LastEditTime: 2021-11-23 11:29:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -270,7 +270,7 @@ static void test_nu_svc_solve(void)
 //         CN classify_models 
 // )
     svm_solve_nu_svc(
-        &X, &Y, RBF, 0.05f, 8.0f, 0.0f, 0.0f, 0.0001, 1000, models
+        &X, &Y, RBF, 0.05f, 8.0f, 0.0f, 0.0f, 0.0001, 300, models
     );
     #if 1
     // model report
@@ -290,6 +290,7 @@ static void test_nu_svc_solve(void)
         printf(" \n\n ... model report ... \n");
         printf(" support vectors : %d, \n", model->sv_count);
         printf(" rho: %lf \n", model->_star_rho);
+        printf(" r: %f \n", model->_star_r);
         printf(" tagA: %lf, %c\n", model->tagA, (char)model->tagA);
         printf(" tagB: %lf, %c \n", model->tagB, (char)model->tagB);
 

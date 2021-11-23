@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-11-22 16:28:18
+ * @LastEditTime: 2021-11-22 16:45:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -221,14 +221,14 @@ int select_working_nu_svm(solver_t* solver, int* out_i, int* out_j)
         double t;
         if (Y_ptr[i] > 0) { 
 
-            if ( !solver_is_upper_bound(solver, i) && ( t = -G_ptr[i] > Gmax1) ) {
+            if ( !solver_is_upper_bound(solver, i) && ( t = -G_ptr[i]) > Gmax1 ) {
                 
                 Gmax1 = t;
                 Gmax1_idx = i;
 
             }
 
-            if ( !solver_is_lower_bound(solver, i) && (t = -G_ptr[i]) > Gmax2 ) {
+            if ( !solver_is_lower_bound(solver, i) && (t = G_ptr[i]) > Gmax2 ) {
 
                 Gmax2 = t;
                 Gmax2_idx = i;
@@ -244,7 +244,7 @@ int select_working_nu_svm(solver_t* solver, int* out_i, int* out_j)
                 Gmax3_idx = i;
             }
 
-            if ( !solver_is_lower_bound(solver, i) && (t = -G_ptr[i]) > Gmax4 ) {
+            if ( !solver_is_lower_bound(solver, i) && (t = G_ptr[i]) > Gmax4 ) {
 
                 Gmax4 = t;
                 Gmax4_idx = i;
