@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-03 13:59:00
- * @LastEditTime: 2021-11-22 16:45:17
+ * @LastEditTime: 2021-11-23 14:26:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm/solver.c
@@ -36,7 +36,7 @@ int solver_initialize(
     } else {
         // 这里是第二类
         solver->select_working_set = &select_working_nu_svm;
-        solver->calc_rho = &calc_rho;
+        solver->calc_rho = &calc_rho_nu_sum;
     }
     solver->c  = _C;
     solver->nu = _nu;
