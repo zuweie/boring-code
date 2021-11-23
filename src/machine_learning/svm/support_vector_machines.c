@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-23 10:55:43
+ * @LastEditTime: 2021-11-23 14:58:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -175,8 +175,8 @@ int svm_solve_generic(solver_t* solver)
     UA_sum_uar(&solver->G, &solver->P);
     
     //Debug
-    printf("\n G is \n");
-    UA_display(&solver->G);
+    // printf("\n G is \n");
+    // UA_display(&solver->G);
     
     int selected_i, selected_j;
     int iter = 0;
@@ -188,7 +188,7 @@ int svm_solve_generic(solver_t* solver)
         break;
 
         // Debug
-        printf(" select i: %d, j: %d, iter: %d \n", selected_i, selected_j, iter);
+        //printf(" select i: %d, j: %d, iter: %d \n", selected_i, selected_j, iter);
 
         //TODO: 3 更新这两个 Bate。
         vfloat_t* Qi_ptr = Qc_ptr[selected_i];
@@ -274,13 +274,13 @@ int svm_solve_generic(solver_t* solver)
         // Debug
         //printf("\n update G:\n");
         for (size_t k=0; k<len_alpha; ++k) {
-            printf("Qi_%d_ptr[%d]: %f, delta_alpha_i: %f, Qj_%d_ptr[%d]: %f, delta_alpha_j: %f ",selected_i, k, Qi_ptr[k], delta_alpha_i, selected_j, k,  Qj_ptr[k], delta_alpha_j);
+            // printf("Qi_%d_ptr[%d]: %f, delta_alpha_i: %f, Qj_%d_ptr[%d]: %f, delta_alpha_j: %f ",selected_i, k, Qi_ptr[k], delta_alpha_i, selected_j, k,  Qj_ptr[k], delta_alpha_j);
             G_ptr[k] += Qi_ptr[k] * delta_alpha_i + Qj_ptr[k] * delta_alpha_j;
             // 
-            printf("   G[%d]: %lf \n ", k, G_ptr[k]);
+            // printf("   G[%d]: %lf \n ", k, G_ptr[k]);
         }
         // // Debug
-        printf("\n\n\n");
+        //printf("\n\n\n");
     }
 
     // 计算 b。将来用作 预测函数上
@@ -564,7 +564,7 @@ int svm_solve_nu_svc(
         }
 
         UA_ones(&solver.P, 0);
-        
+
         solver.build_Q(&solver);
 
         svm_solve_generic(&solver);
@@ -750,6 +750,90 @@ double svm_c_svm_predict_one(svm_model_t* model, u_array_t* sample)
     return tag;
 }
 
+double svm_nu_svc_predict(CN classify_models, u_array_t* sample)
+{
+    CN vote = CN_create(HASH_MAP, db_t, int_t); //_LeList(Entity_is_key_equal);
+    int i = 0;
+    int j = 2;
+
+
+    for (It last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); It_prev(last)) {
+
+        svm_model_t * model = It_ptr(last);
+        
+        int c_nr = j * (j -1) / 2;
+        if (i == c_nr-1) {
+            if (i == 0) {
+                //LeCN_add2(&vote, f2t(model->tagB), i2t(0));
+                CN_set(vote, model->tagB, 0);
+            }
+            //LeCN_add2(&vote, f2t(model->tagA), i2t(0));
+            CN_set(vote, model->tagA, 0);
+            j ++;
+        }
+        i++;
+    }
+    // // do the prediction 
+    // Debug: 
+    // printf("\n");
+    for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); It_next(first)){
+        svm_model_t* model = It_ptr(first);
+
+        double tag = svm_nu_svc_predict_one(model, sample);
+        int* ticket = CN_get(vote, tag);
+        CN_set(vote, tag, *ticket+1);
+    }
+
+    // // 选出票数最多的那个 tag 并返回。
+    // Debug:
+    // printf("\n");
+    double winner_tag = -999.f;
+    int count_vote = -1;
+    for (It first=CN_first(vote); !It_equal(first, CN_tail(vote)); It_next(first)) {
+        entity_t* ent = It_ptr(first);
+
+        // Debug:
+        // printf(" entity tv0: %f, tag: %c, tv1: %d \n", t2f(entity->tv[0]), (char)t2f(entity->tv[0]), t2i(entity->tv[1]));
+        int ticket = ef_int(ent, 1);
+        if (count_vote < ticket) {
+            //winner_tag = t2f(entity->tv[0]);
+            winner_tag = ef_double(ent, 0);
+            count_vote = ticket;
+        }
+    }
+    
+    //LeList_(&vote);
+    CN_finalize(vote, NULL);
+    return winner_tag;
+}
+
+double svm_nu_svc_predict_one(svm_model_t* model, u_array_t* sample)
+{   
+    // 这里做 nu svc 的 prediction。
+    //double sum = -model->_star_rho;
+    double inv_r = 1. / model->_star_r;
+    double sum = - (model->_star_rho * inv_r);
+    // 计算核函数
+    u_array_t kernel_X = model->calculate_kernel(model, sample);
+
+    int len_start_alpha = UA_length(&model->_star_alpha);
+    int len_start_Y     = UA_length(&model->_star_Y);
+    int len_kernel_X    = UA_length(&kernel_X);
+    
+    vfloat_t* _start_alpha_ptr = UA_data_ptr(&model->_star_alpha);
+    vfloat_t* _start_Y_ptr     = UA_data_ptr(&model->_star_Y);
+    vfloat_t* kernel_X_ptr     = UA_data_ptr(&kernel_X);
+    
+    for (int i=0; i<len_start_alpha; ++i) {
+    
+        sum += _start_alpha_ptr[i] * _start_Y_ptr[i] * inv_r * kernel_X_ptr[i];
+
+    }
+    double tag = sum > 0 ? model->tagA : model->tagB;
+    UArray_(&kernel_X);
+    return tag;
+}
+
 int svm_models_finalize(CN models)
 {
     for(It first=CN_first(models); !It_equal(first, CN_tail(models)); It_next(first)) {
@@ -760,7 +844,7 @@ int svm_models_finalize(CN models)
     return 0;
 }
 
-int svm_models_export(CN models)
+int svm_models_export(CN models, const char* save_path)
 {
     /* TODO: 把模型 export 到文本文件中去，以备重复使用 */
 

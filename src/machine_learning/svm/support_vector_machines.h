@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:30
- * @LastEditTime: 2021-11-22 14:46:21
+ * @LastEditTime: 2021-11-23 14:32:08
  * @LastEditors: Please set LastEditors
  * @Description: 软间隔支持向量机的实现
  * @FilePath: /boring-code/src/machine_learning/svm.h
@@ -59,8 +59,11 @@ int svm_solve_generic(solver_t* solver);
 double svm_c_svc_predict(CN classify_models, u_array_t* sample);
 double svm_c_svm_predict_one(svm_model_t* model, u_array_t* sample);
 
+double svm_nu_svc_predict(CN classify_models, u_array_t* sample);
+double svm_nu_svc_predict_one(svm_model_t* model, u_array_t* sample);
+
 int svm_classify_problems_finalize(CN problems);
 int svm_classify_problem(u_array_t* X, u_array_t* Y, CN problems);
 int svm_models_finalize(CN models);
-int svm_models_export(CN models);
+int svm_models_export(CN models, const char* save_path);
 #endif
