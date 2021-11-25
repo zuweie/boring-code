@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-10-24 09:24:44
+ * @LastEditTime: 2021-11-25 09:56:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -22,7 +22,6 @@ typedef struct _u_array u_array_t;
 struct _u_array {
     char *start[2];
     int axis_n;
-    //size_t pool_size;
 };
 
 extern u_array_t ua_unable;
