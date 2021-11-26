@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-11-26 17:31:24
+ * @LastEditTime: 2021-11-26 20:24:12
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
@@ -52,7 +52,7 @@ static char* __nw_cal_wbase_ptr(ann_mpl_model_t* model)
     char* dest = base + (l_count-1) * sizeof(char*); 
     int v_count = 0; 
     for (int l=0; l<l_count-1; ++l) { 
-        v_count += Nw_vcount(model, l); 
+        v_count += Nw_vector_count(model, l); 
     } 
     dest += v_count * sizeof(char*); 
     return dest; 
@@ -60,15 +60,12 @@ static char* __nw_cal_wbase_ptr(ann_mpl_model_t* model)
 
 static char* __nw_cal_vptr(ann_mpl_model_t* model, int l, int v) 
 { 
-    int __marco_l = (l); 
-    int __marco_v = (v); 
     int w_num = 0; 
     /* 计算并非当前层数的 w 的数量 */ 
-    for (int il=0; il<__marco_l; ++il) { 
+    for (int il=0; il<l; ++il) { 
         w_num += Nw_count(model, il); 
-    } 
-    int cl_icount = Nw_icount(model, __marco_l);
-    w_num += cl_icount * (__marco_v);
+    }
+    w_num += Nw_item_count(model, l) * (v);
     char* base = (char*)__nw_cal_wbase_ptr(model); 
     base = (char*)(base + w_num*sizeof(vfloat_t));
     return base;
@@ -105,7 +102,7 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _act
 
     int len_Lr = UA_shape_axis(_layer_size, 0);
     int len_Lc = UA_shape_axis(_layer_size, 1);
-    if (len_Lr <= 2 || len_Lc != 0) return -1;
+    if (len_Lr <= 2 || len_Lc != 0) return NULL;
 
     ann_mpl_model_t* model = (ann_mpl_model_t*) malloc (sizeof(ann_mpl_model_t));
     
@@ -122,7 +119,7 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _act
     for (l=0; l<l_count; ++l) {
         if (l != l_count -1) {
             wb_num += Nw_count(model, l);
-            wb_v_mum += Nw_vcount(model, l);
+            wb_v_mum += Nw_vector_count(model, l);
         }
         cell_num += Ne_count(model, l);
     }
@@ -137,7 +134,7 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _act
     size_t v_offset = 0;
     for (l=0; l<l_count-1; ++l) {
         *((char**)(layer_ptr_base + l * sizeof(char*))) = (char*)(wv_ptr_base + v_offset);
-        int v_count = Nw_vcount(model, l);
+        int v_count = Nw_vector_count(model, l);
         for (v=0;v<v_count; ++v) {
             *((char**)(wv_ptr_base + v_offset + v * sizeof(char*))) =  __nw_cal_vptr(model, l, v);
         }

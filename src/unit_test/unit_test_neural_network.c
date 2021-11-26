@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:49:19
- * @LastEditTime: 2021-11-26 17:27:43
+ * @LastEditTime: 2021-11-26 20:23:32
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/unit_test/unit_test_neural_network.c
@@ -33,9 +33,9 @@ static void test_mlp_wb_init (void)
     int l, v, wb;
     int i = 0;
     for (l=0; l<Nl_count(model)-1; ++l) {
-        for (v=0; v<Nw_vcount(model, l); ++v) {
+        for (v=0; v<Nw_vector_count(model, l); ++v) {
             vfloat_t* wb_ptr = Wv_ptr(model, l, v);
-            for (wb = 0; wb<Nw_icount(model, l); ++wb) {
+            for (wb = 0; wb<Nw_item_count(model, l); ++wb) {
                 wb_ptr[wb] = (float)i;
                 //printf("wb[%d]: %p \n", wb, &wb_ptr[wb]);
             }
@@ -45,10 +45,10 @@ static void test_mlp_wb_init (void)
 
     for (l=0; l<Nl_count(model)-1; ++l) {
         printf("layer %d\n",l);
-        for (v=0; v<Nw_vcount(model, l); ++v){
+        for (v=0; v<Nw_vector_count(model, l); ++v){
             printf("vector %d\n", v);
             vfloat_t* wb_ptr = Wv_ptr(model, l, v);
-            for (wb=0; wb<Nw_icount(model,l); ++wb) {
+            for (wb=0; wb<Nw_item_count(model,l); ++wb) {
                 printf("wb[%d] %f, addr: %p\n", wb, wb_ptr[wb], &wb_ptr[wb]);
             }
         }
