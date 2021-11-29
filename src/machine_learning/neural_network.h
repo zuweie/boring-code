@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:20
- * @LastEditTime: 2021-11-26 20:22:19
+ * @LastEditTime: 2021-11-29 11:21:02
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.h
@@ -18,42 +18,42 @@
 // 某一层的神经元数量
 #define Ne_count(pmodel, l) \
 ({ \
-    int __marco_##l = (l); \
+    int __marco_l = (l); \
     vfloat_t* ptr = UA_data_ptr(&(pmodel)->layer_size); \
-    int e_count  = (int)ptr[__marco_##l]; \
+    int e_count  = (int)ptr[__marco_l]; \
     e_count; \
 })
 
-// // 某一层 wb 参数分组的数量。
-#define Nw_vector_count(pmodel, l) \
+//  神经网络参数矩阵行数从神经网络第二层开始算起。
+#define Wm_k(pmodel, l) \
 ({ \
-    int __marco_##l = (l); \
+    int __marco_l = (l); \
     vfloat_t* ptr = UA_data_ptr(&(pmodel)->layer_size); \
-    int v_count = (int)ptr[__marco_##l+1]; \
-    v_count; \
+    int k_count = (int)ptr[__marco_l]; \
+    k_count; \
 })
 
 
-// // 某一层 wb 参数单位数量
-#define Nw_item_count(pmodel, l) \
+// 神经网络参数矩阵列数从神经网络第一层开始算起。
+#define Wm_h(pmodel, l) \
 ({ \
-    int __marco_##l = (l); \
+    int __marco_l = (l); \
     vfloat_t* ptr = UA_data_ptr(&(pmodel)->layer_size); \
-    int item_count = (int)ptr[__marco_##l] + 1; \
-    item_count;\
+    int h_count = (int)ptr[__marco_l-1]+1; \
+    h_count;\
 })
     
-// 某一层的 wb 参数的总数量 
+// 神经网络参数矩阵行数从神经网络第二层开始算起。
 #define Nw_count(pmodel, l) \
 ({ \
-    int __marco_##l = (l); \
+    int __marco_l = (l); \
     vfloat_t* ptr = UA_data_ptr(&(pmodel)->layer_size); \
-    int total_num = ((int)ptr[__marco_##l] + 1) * ((int)ptr[__marco_##l+1]); \
+    int total_num = ((int)ptr[__marco_l-1] + 1) * ((int)ptr[__marco_l]); \
     total_num;\
 })
 
 
-#define Wv_ptr(pmodel, l, v) ((vfloat_t*)(((char**)(pmodel)->_w[(l)])[(v)]))
+#define Wk_ptr(pmodel, l, k) ((vfloat_t**)(pmodel)->_w_mat[(l)])[(k)]
 
 // 激活函数枚举类型。
 typedef enum {
@@ -75,13 +75,17 @@ typedef struct {
 typedef struct {
     active_func_t active;
     u_array_t layer_size;
-    char** _w;
-    void* _cell;
+    char** _w_mat;
+    //char** _cell;
 } ann_mpl_model_t;
 
 ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t* Y, ann_mpl_param_t* params);
 int ann_mpl_predict(ann_mpl_model_t* model, u_array_t* sample, u_array_t* prediction);
 
+int ann_mpl_forward_propagation(ann_mpl_model_t* model, u_array_t* input, u_array_t* output);
+
+int ann_mpl_back_propageation();
+double ann_mpl_rand1(int from, int to);
 ann_mpl_model_t* ann_mpl_model_create(u_array_t* layer_size, active_func_t active);
 int ann_mpl_model_finalize(ann_mpl_model_t* model);
 int ann_mpl_model_save(ann_mpl_model_t* model, const char* path);

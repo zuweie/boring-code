@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-07-15 12:07:30
+ * @LastEditTime: 2021-11-28 15:53:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -476,6 +476,15 @@ u_array_t* UArray_load(u_array_t* arr, vfloat_t data[])
     memcpy(ptr, data, size_arr);
     return arr;
 }
+
+int UArray_export(u_array_t* arr, vfloat_t data[]) 
+{
+    size_t size_arr = UA_size(arr);
+    vfloat_t* ptr = UA_data_ptr(arr);
+    memcpy(data, ptr, size_arr);
+    return 0;
+}
+
 
 // 超鸡吧复杂的计算算数平均值。
 vfloat_t UArray_mean(u_array_t* arr, int axis) 

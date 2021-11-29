@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:49:19
- * @LastEditTime: 2021-11-26 20:23:32
+ * @LastEditTime: 2021-11-29 11:21:45
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/unit_test/unit_test_neural_network.c
@@ -22,6 +22,12 @@ static int suite_success_clean (void)
     printf("\n neural suite success clean\n");
 }
 
+static void test_mlp_rand(void) {
+    for (int i=0; i<50; i++) {
+        double v = ann_mpl_rand1(-1, 1);
+        printf("v: %f ", v);
+    }
+}
 static void test_mlp_wb_init (void)
 {
     u_array_t layer = _UArray1d(3);
@@ -30,25 +36,25 @@ static void test_mlp_wb_init (void)
     
     ann_mpl_model_t* model = ann_mpl_model_create(&layer, 1);
 
-    int l, v, wb;
-    int i = 0;
-    for (l=0; l<Nl_count(model)-1; ++l) {
-        for (v=0; v<Nw_vector_count(model, l); ++v) {
-            vfloat_t* wb_ptr = Wv_ptr(model, l, v);
-            for (wb = 0; wb<Nw_item_count(model, l); ++wb) {
-                wb_ptr[wb] = (float)i;
-                //printf("wb[%d]: %p \n", wb, &wb_ptr[wb]);
-            }
-            i++;
-        }
-    }
+    int l, k, wb;
+    // int i = 0;
+    // for (l=1; l<Nl_count(model); ++l) {
+    //     for (k=0; k<Wm_k(model, l); ++k) {
+    //         vfloat_t* wb_ptr = Wk_ptr(model, l, k);
+    //         for (wb = 0; wb<Wm_h(model, l); ++wb) {
+    //             wb_ptr[wb] = (float)i;
+    //             //printf("wb[%d]: %p \n", wb, &wb_ptr[wb]);
+    //         }
+    //         i++;
+    //     }
+    // }
 
-    for (l=0; l<Nl_count(model)-1; ++l) {
+    for (l=1; l<Nl_count(model); ++l) {
         printf("layer %d\n",l);
-        for (v=0; v<Nw_vector_count(model, l); ++v){
-            printf("vector %d\n", v);
-            vfloat_t* wb_ptr = Wv_ptr(model, l, v);
-            for (wb=0; wb<Nw_item_count(model,l); ++wb) {
+        for (k=0; k<Wm_k(model, l); ++k){
+            printf("vector %d\n", k);
+            vfloat_t* wb_ptr = Wk_ptr(model, l, k);
+            for (wb=0; wb<Wm_h(model,l); ++wb) {
                 printf("wb[%d] %f, addr: %p\n", wb, wb_ptr[wb], &wb_ptr[wb]);
             }
         }
@@ -67,4 +73,9 @@ int do_neural_test (void) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    // if (NULL == CU_add_test(pSuite, "test rand int", test_mlp_rand) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }
