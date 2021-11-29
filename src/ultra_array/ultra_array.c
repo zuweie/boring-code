@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-11-28 15:53:21
+ * @LastEditTime: 2021-11-29 15:12:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -917,4 +917,10 @@ void UArray_1d_offset_to_xd_coord(u_array_t* arr, size_t offset, size_t coord[])
 {
     size_t* axes = UA_shape(arr);
     return __1d_offset_to_xd_coord(offset, axes, arr->axis_n, coord);
+}
+
+void UArray_absorb(u_array_t* arr1, u_array_t* arr2) 
+{
+    UA_reshape(arr1, UA_shape(arr2), UA_axisn(arr2));
+    UA_load(arr1, UA_data_ptr(arr2));
 }

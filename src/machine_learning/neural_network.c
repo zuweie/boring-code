@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-11-29 11:53:32
+ * @LastEditTime: 2021-11-29 16:12:22
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
@@ -12,10 +12,15 @@
 #include "matrix/matrix.h"
 #include "neural_network.h"
 
-
-static double __ann_mpl_active_func(ann_mpl_model_t* model, double u) 
+// 输入 u 的激活函数
+static double __ann_mpl_active_u(ann_mpl_model_t* model, double u) 
 {
     
+}
+// u 的激活函数对 u 的导数
+static double __ann_mpl_dactive_du(ann_mpl_model_t* model, double u) 
+{
+
 }
 static char* __nw_cal_wbase_ptr(ann_mpl_model_t* model) 
 {  
@@ -46,12 +51,9 @@ static char* __nw_cal_vptr(ann_mpl_model_t* model, int l, int k)
 ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t* Y, ann_mpl_param_t* params)
 {
     ann_mpl_model_t* model = ann_mpl_model_create(layer_size, params->active);
-    
 
-
-    size_t len_Xr = UA_shape_axis(X, 0);
-    int train_data_index[len_Xr];
-
+    // TODO 1: forward propagation to calculate the E
+    // TODO 2: backward propagation to update w mat
     
 }
 
@@ -59,13 +61,54 @@ int ann_mpl_forward_propagation(ann_mpl_model_t* model, u_array_t* input, u_arra
 {
     size_t len_input = UA_length(input);
     int l,k,h,l_count = Nl_count(model);
-    for ()
+    u_array_t w_mat = _UArray1d(1);
+    u_array_t x_mat = UA_copy(input);
+    vfloat_t* u0_ptr = model->_u0[0];
+    UA_export(input, u0_ptr);
+
+    for (l=1; l<l_count; ++l) {
+        k = Wm_k(model, l);
+        h = Wm_h(model, l);
+        vfloat_t* wk_ptr = Wk_ptr(model, l, 0);
+        UA_reshape_dots(&w_mat, 2, k, h);
+        UA_load(&w_mat, wk_ptr);
+
+        int x_r = UA_shape_axis(&x_mat, 0);
+        int x_c = UA_shape_axis(&x_mat, 1);
+        UA_reshape_dots(&x_mat, 2, x_r, x_c+1);
+        vfloat_t* x_mat_ptr = UA_data_ptr(&x_mat);
+        x_mat_ptr[x_c+1] = 1.f;
+        
+        UA_dot(&w_mat, &x_mat);
+        u0_ptr = model->_u0[l];
+        UA_export(&w_mat, u0_ptr);
+
+        // 每个 u0 做激活。作为下一个的输入进入下一个层计算。
+        vfloat_t* w_mat_ptr = UA_data_ptr(&w_mat);
+        for (size_t i=0; i<UA_length(&w_mat); ++i) {
+            w_mat_ptr[i] = __ann_mpl_active(model, w_mat_ptr[i]);
+        }
+        UA_absorb(&x_mat, &w_mat);
+    }
+    
+    // 
+    UA_absorb(output, &x_mat);
+    return 0;
 }
 
-int ann_mpl_backward_propagation(ann_mpl_model_t* model, u_array_t* input, u_array_t* output)
+int ann_mpl_backward_propagation(ann_mpl_model_t* model, u_array_t* y, u_array_t* t)
 {
+    // 一切重最后一层开始。然后做 w mat 矩阵的 update
+    int l,k,h,l_count = Nl_count(model);
+    u_array_t grad
+    for (l=l_count-1; l>=0; --l) 
+    {
+        
+    }
 
+    
 }
+
 int ann_mpl_predict(ann_mpl_model_t* model, u_array_t* sample, u_array_t* prediction)
 {
 
@@ -83,10 +126,13 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _act
     int l_count = Nl_count(model);
     int wm_len = 0;
     int wm_k_num = 0;
-
-    for (l=1; l<l_count; ++l) {
-        wm_len   += Nw_count(model, l);
-        wm_k_num += Wm_k(model, l);
+    int u0_num = 0;
+    for (l=0; l<l_count; ++l) {
+        if (l !=0 ) {
+            wm_len   += Nw_count(model, l);
+            wm_k_num += Wm_k(model, l);
+        }
+        u0_num += Ne_count(model, l);
     }
     
     int sz_wb   = sizeof(char*) * (l_count) + sizeof(char*) * wm_k_num + sizeof(vfloat_t) * wm_len;
@@ -105,6 +151,16 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _act
             *((char**)(wv_ptr_base + k_offset + k * sizeof(char*))) =  __nw_cal_vptr(model, l, k);
         }
         k_offset += k_count * sizeof(char*);
+    }
+
+    int sz_u0 = sizeof(char*) * (l_count) + sizeof(vfloat_t) * u0_num;
+    model->_u0 = (char**) malloc(sz_u0);
+    layer_ptr_base = (char*) model->_u0;
+    char* u0_ptr_base = layer_ptr_base + sizeof(char*) * l_count;
+    size_t u0_offset = 0;
+    for (l=0; l<l_count; ++l) {
+        model->_u0[l] = u0_ptr_base + u0_offset;
+        u0_offset += Ne_count(model, l) * sizeof(vfloat_t);
     }
 
     // 实际算法中其实不需要保存 cell 的内存，所以这段代码暂时不要了。
@@ -158,7 +214,7 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _act
 int ann_mpl_model_finalize(ann_mpl_model_t* model)
 {
     free(model->_w_mat);
-    //free(model->_cell);
+    free(model->_u0);
     UArray_(&model->layer_size);
     free(model);
     return 0;

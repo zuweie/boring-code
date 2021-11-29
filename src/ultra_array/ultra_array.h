@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-11-28 15:54:30
+ * @LastEditTime: 2021-11-29 15:13:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
@@ -53,7 +53,6 @@ u_array_t* UArray_pow2(u_array_t*);
 u_array_t* UArray_exp(u_array_t*);
 u_array_t* UArray_dot(u_array_t*, u_array_t*);
 u_array_t* UArray_load(u_array_t*, vfloat_t[]);
-int UArray_export(u_array_t*, vfloat_t[]);
 vfloat_t UArray_mean(u_array_t*, int);
 
 /* return new copy */
@@ -73,6 +72,8 @@ size_t UArray_axis_mulitply(u_array_t* a, int);
 vfloat_t UArray_get(u_array_t*, ...);
 void UArray_set(u_array_t*, ...);
 void UArray_display(u_array_t*);
+int UArray_export(u_array_t*, vfloat_t[]);
+void UArray_absorb(u_array_t*, u_array_t*);
 vfloat_t UArray_linalg_norm(u_array_t*);
 vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 
@@ -122,7 +123,7 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_pad_edge(parray, pad_width) UArray_pad(parray, pad_width, ua_pad_mode_edge, NULL)
 #define UA_pad_const(parray, pad_width, constanst) UArray_pad(parray, pad_width, ua_pad_mode_constanst, constanst)
 #define UA_norm(parray) UArray_linalg_norm(parray)
- 
+#define UA_absorb(parr1, parr2) UArray_absorb(parr1, parr2)
 #define UA_cover_coordinate(parray, coord) UArray_xd_coord_to_1d_offset(parray, coord)
 #define UA_cover_offset(parray, offset, coord) UArray_1d_offset_to_xd_coord(parray, offset, coord)
 
