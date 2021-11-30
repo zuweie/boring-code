@@ -1,26 +1,50 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-11-29 16:12:22
+ * @LastEditTime: 2021-11-30 16:01:30
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
  */
 #include <stdlib.h>
+#include <float.h>
 #include <math.h>
 #include <string.h>
 #include "matrix/matrix.h"
 #include "neural_network.h"
 
 // 输入 u 的激活函数
-static double __ann_mpl_active_u(ann_mpl_model_t* model, double u) 
+static double __active_u(ann_mpl_model_t* model, vfloat_t* y, vfloat_t* u, int size) 
 {
     
 }
 // u 的激活函数对 u 的导数
-static double __ann_mpl_dactive_du(ann_mpl_model_t* model, double u) 
+static double __dactive_du(ann_mpl_model_t* model, double u) 
 {
 
+}
+
+static double __calculate_e(vfloat_t* y, vfloat_t* t, int size)
+{
+    double e = 0.f;
+    for (int i=0; i<size; ++i) {
+        e += (t[i] - y[i]) * (t[i] - y[i]) 
+    }
+    return e * 0.5;
+}
+
+
+static void __calculate_delta_1(vfloat_t* delta, vfloat_t* y, vfloat_t* t, vfloat_t* u, int size) 
+{
+    for (int i=0; i<size; ++i) {
+        delta[i] = (y[i] - t[i]) * __dactive_du(u[i]);
+    }
+    return;
+}
+
+static void __calculate_delta_2(vfloat_t* o_delta, vfloat_t* i_delta, vfloat_t* u, vfloat_t* w, int size) 
+{
+    
 }
 static char* __nw_cal_wbase_ptr(ann_mpl_model_t* model) 
 {  
@@ -50,11 +74,148 @@ static char* __nw_cal_vptr(ann_mpl_model_t* model, int l, int k)
 
 ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t* Y, ann_mpl_param_t* params)
 {
+
+    // 检测输入 X 的列数于输入层的 列数是否一致，不一致返回null
+    vfloat_t* layer_size_pr = UA_data_ptr(layer_size);
+
+    if ((int)layer_size_pr[0] != UA_shape_axis(X, 1)
+    || (int)layer_size_ptr[layer_size->axis_n-1] != UA_shape_axis(Y, 1)) 
+        return NULL;
+
+    // 开始各种骚操作。
     ann_mpl_model_t* model = ann_mpl_model_create(layer_size, params->active);
 
     // TODO 1: forward propagation to calculate the E
     // TODO 2: backward propagation to update w mat
     
+    // 初始化一些需要用到的变量。
+    double Pre_E = DBL_MAX * 0.5, E = 0.f;
+    matrix_t u0_mat;
+    matrix_t y0_mat;
+    matrix_t w_mat = Mat_create(1, 1);
+    matrix_t delta_mat1 = Mat_create(1, 1);
+    matrix_t delta_mat2 = Mat_create(1, 1);
+    matrix_t dw_mat = Mat_create(1, 1);
+
+    int sample_count     = UA_shape_axis(X, 0);
+    int per_sample_count = UA_shape_axis(X, 1);
+    int per_response_count = UA_shape_axis(Y, 1);
+
+    int sample_index[sample_count];
+    vfloat_t (*sample_ptr)[per_sample_count] = UA_data_ptr(X);
+    vfloat_t (*response_ptr)[per_response_count] = UA_data_ptr(Y);
+
+    int idx;
+    for (int i=0; i<sample_count; ++i) {
+        sample_index[i] = i;
+    }
+
+    int l, k, h, l_count = Nl_count(model);
+    int y_num = 0;
+    int u_num = 0;
+    for (int l=0; l<l_count; ++l)
+    {
+        y_num += Ne_count(model, l);
+        // 第一层的 u 不要。
+        if (l > 0) u_num += Ne_count(model, l);
+    } 
+    // 
+    char** u_mat, y_mat;
+    u_mat = (char**) malloc( sizeof(char*) * l_count + sizeof(vfloat_t) * u_num);
+    y_mat = (char**) malloc( sizeof(char*) * l_count + sizeof(vfloat_t) * y_num);
+
+    char* u_data_base = (char*)u_mat + sizeof(char*) * l_count;
+    char* y_data_base = (char*)y_mat + sizeof(char*) * l_count;
+
+    size_t u_base_offset = 0;
+    size_t y_base_offset = 0;
+    
+    for (l=0;l<l_count; ++l) {
+
+        if (l=0)  
+            u_mat[l] = NULL;
+        else {
+            u_mat[l] = u_data_base + u_base_offset;
+            u_base_offset + sizeof(vfloat_t) * Ne_count(model, l);
+        }
+
+        y_mat[l] = y_data_base + y_base_offset;
+        y_base_offset += sizeof(vfloat_t) * Ne_count(model, l);
+    }
+    
+
+    for (int step=0; step<params->max_iter; ++step) {
+        // 
+        if (step % sample_count == 0 ) {
+            // 走完一圈，检测那个误差是否已经收敛了。收敛了就 break，跳出循环。
+            // 否则将样本的顺序打乱，在来一遍。
+            if (fabs(Per_E - E) < params->epsilon)
+                break;
+
+            for (int i = 0; i<sample_count; ++i) {
+                int j = rand() % sample_count;
+                int k = rand() % sample_count;
+                int tmp = sample_index[j];
+                sample_index[j] = sample_index[k];
+                sample_index[k] = tmp;
+            }
+
+        }
+
+        int idx = sample_index[step%sample_count];
+
+        memcpy(y_mat[0], sample_ptr[idx], per_sample_count);
+        
+
+        // 走向前传播
+        for(l=1; l<l_count; ++l) {
+            
+            int k = Wm_k(model, l);
+            int h = Wm_h(model, l);
+            vfloat_t* wptr = Wk_ptr(model, l, 0);
+
+            Mat_set(&y0_mat, h, 1, y_mat[l-1]);
+            Mat_put(&y0_mat, y0_mat.rows, 0, 1.f);
+
+            Mat_reload(w_mat, k, h, wptr);
+
+            // dot 后的结果就是 ul，将 ul 存入 u_ptr 中。
+            Mat_dot(&w_mat, &y0_mat);
+            
+            Mat_save(&w_mat, u_mat[l]);
+
+            __active_u(model, y_mat[l], u_mat[l], k);
+
+        }
+
+        E += __calculate_e(y_mat[l], response_ptr[idx], Ne_count(model, l_count-1));
+
+
+        // 走向后传播。
+        for (l=l_count-1; l<0; l--) {
+            if(l = l_count -1) {
+                // 当 l 是输出层的时候。
+                k = Ne_count(model, l);
+                Mat_reshpae(&delta_mat1, 1, k);
+
+                __calculate_delta_1(delta_mat1.pool, y_mat[l], response_ptr[idx], u_mat[l], k);
+                
+            } else {
+
+            }
+
+        }
+
+    }
+
+
+    // end
+    free(u_mat);
+    free(y_mat);
+
+    Mat_destroy(&w_mat);
+    Mat_destroy(&delta_mat1);
+    Mat_destroy(&delta_mat2);
 }
 
 int ann_mpl_forward_propagation(ann_mpl_model_t* model, u_array_t* input, u_array_t* output)
@@ -96,18 +257,7 @@ int ann_mpl_forward_propagation(ann_mpl_model_t* model, u_array_t* input, u_arra
     return 0;
 }
 
-int ann_mpl_backward_propagation(ann_mpl_model_t* model, u_array_t* y, u_array_t* t)
-{
-    // 一切重最后一层开始。然后做 w mat 矩阵的 update
-    int l,k,h,l_count = Nl_count(model);
-    u_array_t grad
-    for (l=l_count-1; l>=0; --l) 
-    {
-        
-    }
 
-    
-}
 
 int ann_mpl_predict(ann_mpl_model_t* model, u_array_t* sample, u_array_t* prediction)
 {

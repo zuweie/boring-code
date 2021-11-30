@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-10-24 09:22:23
+ * @LastEditTime: 2021-11-30 12:15:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -24,6 +24,7 @@ typedef struct _matrix
 matrix_t Mat_create(size_t rows, size_t cols);
 matrix_t Mat_load(size_t rows, size_t cols, vfloat_t* elems);
 matrix_t Mat_copy(matrix_t* mat);
+void Mat_set(matrix_t* mat, size_t rows, size_t cols, vfloat_t* pool);
 int Mat_destroy(matrix_t* mat);
 
 int Mat_inverse(matrix_t* mat);
@@ -43,9 +44,13 @@ int Mat_insert_col_by_value(matrix_t* mat, int i, vfloat_t v);
 int Mat_insert_col_by_arr(matrix_t* mat, int i, vfloat_t arr[]);
 int Mat_fill(matrix_t* mat, vfloat_t fill);
 int Mat_arange(matrix_t* mat, vfloat_t from, vfloat_t to);
+int Mat_reshpae(matrix_t* mat, size_t new_rows, size_t new_cols);
+int Mat_reload(matrix_t* mat, size_t new_rows, size_t new_cols, vfloat_t* data);
+int Mat_save(matrix_t* mat, void* buf);
 
 #define Mat_rows(pmat) ((pmat)->rows)
 #define Mat_cols(pmat) ((pmat)->cols)
 #define Mat_eptr(pmat, ptr) vfloat_t(*ptr)[(pmat)->cols] = (pmat)->pool
+#define Mat_put(pmat, x, y, v) ({ Mat_eptr(pmat, ptr); ptr[x][y] = v; })
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-04-14 14:23:28
+ * @LastEditTime: 2021-11-30 12:16:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
@@ -62,10 +62,11 @@ static void
 __resize_pool(matrix_t* mat, size_t new_size) 
 {
     if  (mat->pool_size < new_size) {
-        vfloat_t* new_chunk = (vfloat_t*) malloc (new_size);
-        memcpy(new_chunk, mat->pool, Mat_rows(mat) * Mat_cols(mat) * sizeof(vfloat_t));
-        free(mat->pool);
-        mat->pool = new_chunk;
+        mat->pool = (vfloat_t*) remalloc (new_size);
+        //if (save_old_data)
+            //memcpy(new_chunk, mat->pool, Mat_rows(mat) * Mat_cols(mat) * sizeof(vfloat_t));
+        //free(mat->pool);
+        //mat->pool = new_chunk;
         mat->pool_size = new_size;
     }
     return;
@@ -116,6 +117,15 @@ matrix_t Mat_copy(matrix_t* mat)
         .pool_size = rows * cols * sizeof(vfloat_t)
     };
     return matrix;
+}
+
+void Mat_set(matrix_t* mat, size_t _rows, size_t _cols, vfloat_t* _pool)
+{
+    mat->cols = _cols;
+    mat->rows = _rows;
+    mat->pool = _pool;
+    mat->pool_size = _rows * _cols * sizeof(vfloat_t);
+    return;
 }
 
 int Mat_destroy(matrix_t* mat)
@@ -261,7 +271,7 @@ int Mat_dot(matrix_t* mat1, matrix_t* mat2)
         if (cols_2 > cols_1) {
             // 需要扩大内存。
             size_t new_size = rows_1 * cols_2;
-            __resize_pool(mat1, new_size);
+            __resize_pool(mat1, new_size, 1);
         }
         Mat_cols(mat1) = cols_2;
 
@@ -306,7 +316,7 @@ int Mat_move_rows(matrix_t* mat, int picked, int step)
     if (step > 0) {
 
         size_t new_size  = step * sizeof(vfloat_t) * cols + sizeof(vfloat_t) * rows * cols;
-        __resize_pool(mat, new_size);
+        __resize_pool(mat, new_size, 1);
         
         Mat_eptr(mat, ptr);
 
@@ -343,6 +353,7 @@ int Mat_move_cols(matrix_t* mat, int picked, int step)
     return 0;
 }
 
+
 int Mat_fill(matrix_t* mat, vfloat_t fill) 
 {
     Mat_eptr(mat, ptr);
@@ -366,5 +377,33 @@ int Mat_arange(matrix_t* mat, vfloat_t from, vfloat_t to)
 
     }
 
+    return 0;
+}
+
+int Mat_reshpae(matrix_t* mat, size_t new_rows, size_t new_cols)
+{
+    if (new_rows <=0 || new_cols <=0) return -1;
+    size_t new_size = new_rows * new_cols * sizeof(vfloat_t);
+    __resize_pool(mat, new_size);
+    mat->rows = new_rows;
+    mat->cols = new_cols;
+    return 0;
+}
+
+int Mat_reload(matrix_t* mat, size_t new_rows, size_t new_cols, vfloat_t* data) 
+{
+    new_rows = new_rows >0 ? new_rows: mat->rows;
+    new_cols = new_cols >0 ? new_cols: mat->cols;
+
+    size_t new_size = new_rows * new_cols * sizeof(vfloat_t);
+    __resize_pool(mat, new_size);
+    memcpy(mat->pool, data, new_size);
+    return 0;
+}
+
+int Mat_save(matrix_t* mat, void* buf) 
+{
+    size_t size = mat->rows * mat->cols * sizeof(vfloat_t);
+    memcpy(buf, mat->pool, size);
     return 0;
 }
