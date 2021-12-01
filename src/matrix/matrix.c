@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-12-01 12:14:03
+ * @LastEditTime: 2021-12-01 14:55:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
@@ -271,7 +271,7 @@ int Mat_dot(matrix_t* mat1, matrix_t* mat2)
         if (cols_2 > cols_1) {
             // 需要扩大内存。
             size_t new_size = rows_1 * cols_2;
-            __resize_pool(mat1, new_size, 1);
+            __resize_pool(mat1, new_size);
         }
         Mat_cols(mat1) = cols_2;
 
@@ -380,7 +380,7 @@ int Mat_arange(matrix_t* mat, vfloat_t from, vfloat_t to)
     return 0;
 }
 
-int Mat_reshpae(matrix_t* mat, size_t new_rows, size_t new_cols)
+int Mat_reshape(matrix_t* mat, size_t new_rows, size_t new_cols)
 {
     if (new_rows <=0 || new_cols <=0) return -1;
     size_t new_size = new_rows * new_cols * sizeof(vfloat_t);
@@ -411,23 +411,24 @@ int Mat_op_mat(matrix_t* mat1, matrix_t* mat2, mat_op_t op)
 {
     int size = mat1->rows * mat1->cols;
     for (int i=0; i<size; ++i) {
-        switch (op)
-        {
-        case mat_add:
-            mat1->pool[i]= mat1->pool[i] + mat2->pool[i%size];
-            break;
-        case mat_sub:
-            mat1->pool[i]= mat1->pool[i] - mat2->pool[i%size];
-            break;
-        case mat_multi:
-            mat1->pool[i]= mat1->pool[i] * mat2->pool[i%size];   
-            break;
-        case mat_div:
-            mat1->pool[i]= mat1->pool[i] / mat2->pool[i%size];
-            break;
-        default:
-            break;
-        }
+        mat_op(mat1->pool[i], mat2->pool[i%size], op);
+        // switch (op)
+        // {
+        // case mat_add:
+        //     mat1->pool[i] +=  mat2->pool[i%size];
+        //     break;
+        // case mat_sub:
+        //     mat1->pool[i] -=  mat2->pool[i%size];
+        //     break;
+        // case mat_multi:
+        //     mat1->pool[i] *= mat1->pool[i] * mat2->pool[i%size];   
+        //     break;
+        // case mat_div:
+        //     mat1->pool[i]= mat1->pool[i] / mat2->pool[i%size];
+        //     break;
+        // default:
+        //     break;
+        // }
     }
     return 0;
 }
@@ -439,17 +440,30 @@ int Mat_dimen_reduct(matrix_t* mat, mat_dimen_t dimen, mat_op_t op)
     if (dimen == dimen_row) {
 
         for (int i=0; i<mat->cols; ++i) {
-
             for (int j=1; j<mat->rows; j++) {
-                ptr[][0] = 
+                mat_op(ptr[0][i], ptr[j][i], op);
             }
-
         }
-
+        mat->rows = 1;
     } else {
-        
+        for (int i=0; i<mat->rows; ++i) {
+            for (int j=1; j<mat->cols; ++j) {
+                mat_op(ptr[i][0], ptr[j][i], op);
+            } 
+        }
+        Mat_transpose(mat);
+        mat->cols = 1;
     }
-
     return 0;
 }
+
+int Mat_op_numberic(matrix_t* mat, vfloat_t v, mat_op_t op)
+{
+    int len = mat->rows * mat->cols;
+    for (int i=0; i<len; ++i) {
+        mat_op(mat->pool[i], v, op);
+    }
+    return 0;
+}
+
 

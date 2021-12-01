@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-12-01 11:57:46
+ * @LastEditTime: 2021-12-01 16:12:20
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
@@ -13,23 +13,37 @@
 #include "matrix/matrix.h"
 #include "neural_network.h"
 
-static void __do_active_u(ann_mpl_model_t* model, double u)
+static double __do_active_u(ann_mpl_param_t* params double u)
 {
-
+    double alpha = params->param1;
+    double beta  = params->param2;
+    
+    double v = beta * (1 - pow(2.7182818284, -alpha * u)) / (1 - pow(2.7182818284, -alpha * u));
+    return v;
 }
 
+static double __do_dactive_du(ann_mpl_param_t* params, double u) 
+{
+    double alpha = params->param1;
+    double beta  = params->param2;
+    double v = 2 * alpha * beta * pow(2.7182818284, -alpha * u) / ((1 + pow(2.7182818284, -alpha*u)) * (1 + pow(2.7182818284, -alpha*u)));
+    return v;
+}
 // 输入 u 的激活函数
-static void __active_u(ann_mpl_model_t* model, matrix_t* u,  int size) 
+static void __active_u(ann_mpl_model_t* model, matrix_t* u) 
 {
     int len = u->rows * u->cols;
     for (int i=0; i<len; ++i) {
-        u->pool[i] = __do_active_u(model, u->pool[i]);
+        u->pool[i] = __do_active_u(model->params, u->pool[i]);
     }
 }
 // u 的激活函数对 u 的导数
 static void __dactive_du(ann_mpl_model_t* model, matrix_t* u) 
 {
-
+    int len = u->rows * u->cols;
+    for (int i=0; i<len; ++i) {
+        u->pool[i] = __do_dactive_du(model->params, u->pool[i]);
+    }
 }
 
 static double __calculate_e(vfloat_t* y, vfloat_t* t, int size)
@@ -105,6 +119,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
     matrix_t delta1_mat = Mat_create(1, 1);
     
     matrix_t du1_mat = Mat_create(1, 1);
+    matrix_t dEdw1_mat = Mat_create(1, 1);
     matrix_t w1_mat = Mat_create(1, 1);
     matrix_t t1_mat = Mat_create(1, 1);
 
@@ -214,19 +229,19 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
 
         // 走向后传播。
         for (l=l_count-1; l<0; l--) {
+
             if(l = l_count -1) {
                 // 当 l 是输出层的时候。
                 k = Ne_count(model, l);
                 Mat_reload(&du1_mat, k, 1, u_mat[l]);
                 __dactive_du(model, &du1_mat);
-
                 // 先把 delta 的地址设置如 delta0_mat 
                 Mat_reload(&y1_mat, k, 1, y_mat[l]);
                 Mat_reload(&t1_mat, k, 1, response_ptr[idx]);
 
                 Mat_op_mat(&y1_mat, mat_sub, &t1_mat);
                 Mat_op_mat(&y1_mat, mat_multi, &du1_mat);
-                Mat_save(&y1_mat, delta1_mat[l]);
+                Mat_save(&y1_mat, delta_mat[l]);
 
             } else {
                 // 当 l 是中间层的时候，那就非常鸡吧复杂了。
@@ -238,16 +253,33 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
                 __dactive_du(model, &du1_mat);
 
                 // 这里要提出上一层的参数矩阵
-                vfloat_t* wk_ptr = 
                 Mat_reload(&w1_mat, next_layer_wk, next_layer_wh, Wk_ptr(model, l+1, 0));
-                
                 Mat_transpose(&w1_mat);
-                
-
+                Mat_reshpae(&w1_mat, w1_mat.rows-1, w1_mat.cols);
+                Mat_reload(&delta1_mat, next_layer_wk, 1);
+                Mat_op_mat(&w1_mat, &delta1_mat, mat_multi);
+                Mat_dimen_reduct(&w1_mat, dimen_col, mat_add);
+                Mat_op_mat(&w1_mat, &du1_mat);
+                Mat_save(&w1_mat, delta_mat[l]);
             }
 
+            // 算完 delta_mat,然后 update 那个 w 矩阵了
+            
+            int k_delta = Ne_count(model, l);
+            int h_y_1   = Ne_count(model, l-1);
+            vfloat_t* delta_ptr = delta_mat[l];
+            vfloat_t* y_1_ptr   = y_mat[l-1];
 
-
+            Mat_reshape(&dEdw1_mat, k_delta, h_y);
+            Mat_eptr(&dEdw1_mat, dEdw_ptr);
+            for (int i=0; i<k_delta; ++i) {
+                for (int j=0; j<h_y_1; ++j) {
+                    dEdw_ptr[i][j] = delta_ptr[i] * y_1_ptr[j];
+                }
+            }
+            Mat_op_numberic(&dEdw1_mat, -0.01, mat_multi);
+            Mat_reload(&w1_mat, k_delta, h_y_1, Wk_ptr(model, l, 0));
+            Mat_op_mat(&w1_mat, &dEdw1_mat, mat_add);
         }
 
     }
@@ -256,57 +288,44 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
     // end
     free(u_mat);
     free(y_mat);
+    free(delta_mat);
 
-    Mat_destroy(&w_mat);
-    Mat_destroy(&delta_mat1);
-    Mat_destroy(&delta_mat2);
-}
-
-int ann_mpl_forward_propagation(ann_mpl_model_t* model, u_array_t* input, u_array_t* output)
-{
-    size_t len_input = UA_length(input);
-    int l,k,h,l_count = Nl_count(model);
-    u_array_t w_mat = _UArray1d(1);
-    u_array_t x_mat = UA_copy(input);
-    vfloat_t* u0_ptr = model->_u0[0];
-    UA_export(input, u0_ptr);
-
-    for (l=1; l<l_count; ++l) {
-        k = Wm_k(model, l);
-        h = Wm_h(model, l);
-        vfloat_t* wk_ptr = Wk_ptr(model, l, 0);
-        UA_reshape_dots(&w_mat, 2, k, h);
-        UA_load(&w_mat, wk_ptr);
-
-        int x_r = UA_shape_axis(&x_mat, 0);
-        int x_c = UA_shape_axis(&x_mat, 1);
-        UA_reshape_dots(&x_mat, 2, x_r, x_c+1);
-        vfloat_t* x_mat_ptr = UA_data_ptr(&x_mat);
-        x_mat_ptr[x_c+1] = 1.f;
-        
-        UA_dot(&w_mat, &x_mat);
-        u0_ptr = model->_u0[l];
-        UA_export(&w_mat, u0_ptr);
-
-        // 每个 u0 做激活。作为下一个的输入进入下一个层计算。
-        vfloat_t* w_mat_ptr = UA_data_ptr(&w_mat);
-        for (size_t i=0; i<UA_length(&w_mat); ++i) {
-            w_mat_ptr[i] = __ann_mpl_active(model, w_mat_ptr[i]);
-        }
-        UA_absorb(&x_mat, &w_mat);
-    }
+    Mat_destroy(&u1_mat);
+    Mat_destroy(&y1_mat);
+    Mat_destroy(&delta1_mat);
     
-    // 
-    UA_absorb(output, &x_mat);
-    return 0;
+    Mat_destroy(&du1_mat); 
+    Mat_destroy(&dEdw1_mat); 
+    Mat_destroy(&w1_mat);
+    Mat_destroy(&t1_mat);
+    return model;
 }
-
-
 
 int ann_mpl_predict(ann_mpl_model_t* model, u_array_t* sample, u_array_t* prediction)
 {
+    int k, h, l_count = Nl_count(model);
+    matrix_t w1_mat = Mat_create(1, 1);
+    matrix_t y1_mat = Mat_create(1, 1);
+    Mat_reload(&y1_mat, UA_length(sample), 1, UA_data_ptr(sample));
 
+    for (l=1; l<l_count; ++l) {
+        int k = Wm_k(model, l);
+        int h = Wm_h(model, l);
+        Mat_reload(&w1_mat, k, h, Wk_ptr(model, l, 0));
+        Mat_reshape(&y1_mat, y1_mat.row+1, 1);
+        Mat_put(&y1_mat, y1_mat.rows, 0, 1.f);
+        Mat_dot(&w1_mat, &y1_mat);
+
+        __active_u(model, &w1_mat);
+
+        Mat_reshape(&y1_mat, Ne_count(model, l), 1);
+
+        Mat_save(&w1_mat, y1_mat.pool);
+    }
+    mat_save(&y1_mat, UA_data_ptr(prediction));
+    return 0;
 }
+
 
 ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _active)
 {
@@ -408,7 +427,6 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _act
 int ann_mpl_model_finalize(ann_mpl_model_t* model)
 {
     free(model->_w_mat);
-    free(model->_u0);
     UArray_(&model->layer_size);
     free(model);
     return 0;

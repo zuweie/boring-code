@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-12-01 12:07:38
+ * @LastEditTime: 2021-12-01 14:55:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -10,6 +10,8 @@
 #define __MATRIX_H__
 #include <stdlib.h>
 #include "vtype/vfloat_type.h"
+ 
+#define mat_op(v1, v2, op) (op == mat_add ? ((v1) += (v2)) : (op == mat_sub ? ((v1) -= (v2)) : (op == mat_multi? ((v1) *= (v2)) : ((v1) /= (v2)))))
 
 typedef struct _matrix
 {
@@ -55,10 +57,11 @@ int Mat_insert_col_by_value(matrix_t* mat, int i, vfloat_t v);
 int Mat_insert_col_by_arr(matrix_t* mat, int i, vfloat_t arr[]);
 int Mat_fill(matrix_t* mat, vfloat_t fill);
 int Mat_arange(matrix_t* mat, vfloat_t from, vfloat_t to);
-int Mat_reshpae(matrix_t* mat, size_t new_rows, size_t new_cols);
+int Mat_reshape(matrix_t* mat, size_t new_rows, size_t new_cols);
 int Mat_reload(matrix_t* mat, size_t new_rows, size_t new_cols, vfloat_t* data);
 int Mat_save(matrix_t* mat, void* buf);
 int Mat_op_mat(matrix_t* mat1, matrix_t* mat2, mat_op_t op);
+int Mat_op_numberic(matrix_t* mat, vfloat_t v, mat_op_t op);
 int Mat_dimen_reduct(matrix_t* mat, mat_dimen_t dimen, mat_op_t op);
 
 #define Mat_rows(pmat) ((pmat)->rows)

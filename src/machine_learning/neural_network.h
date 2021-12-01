@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:20
- * @LastEditTime: 2021-11-29 14:26:03
+ * @LastEditTime: 2021-12-01 15:45:55
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.h
@@ -82,10 +82,6 @@ typedef struct {
 
 ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t* Y, ann_mpl_param_t* params);
 int ann_mpl_predict(ann_mpl_model_t* model, u_array_t* sample, u_array_t* prediction);
-
-int ann_mpl_forward_propagation(ann_mpl_model_t* model, u_array_t* input, u_array_t* output);
-
-int ann_mpl_back_propageation();
 double ann_mpl_rand1(int from, int to);
 ann_mpl_model_t* ann_mpl_model_create(u_array_t* layer_size, active_func_t active);
 int ann_mpl_model_finalize(ann_mpl_model_t* model);
