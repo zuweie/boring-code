@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-11-30 12:15:50
+ * @LastEditTime: 2021-12-01 12:07:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -21,6 +21,17 @@ typedef struct _matrix
     
 } matrix_t;
 
+typedef enum {
+    mat_add = 1,
+    mat_sub,
+    mat_multi, 
+    mat_div
+} mat_op_t;
+
+typedef enum {
+    dimen_row = 1,
+    dimen_col
+} mat_dimen_t;
 matrix_t Mat_create(size_t rows, size_t cols);
 matrix_t Mat_load(size_t rows, size_t cols, vfloat_t* elems);
 matrix_t Mat_copy(matrix_t* mat);
@@ -47,6 +58,8 @@ int Mat_arange(matrix_t* mat, vfloat_t from, vfloat_t to);
 int Mat_reshpae(matrix_t* mat, size_t new_rows, size_t new_cols);
 int Mat_reload(matrix_t* mat, size_t new_rows, size_t new_cols, vfloat_t* data);
 int Mat_save(matrix_t* mat, void* buf);
+int Mat_op_mat(matrix_t* mat1, matrix_t* mat2, mat_op_t op);
+int Mat_dimen_reduct(matrix_t* mat, mat_dimen_t dimen, mat_op_t op);
 
 #define Mat_rows(pmat) ((pmat)->rows)
 #define Mat_cols(pmat) ((pmat)->cols)

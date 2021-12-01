@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-11-30 12:16:42
+ * @LastEditTime: 2021-12-01 12:14:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
@@ -316,7 +316,7 @@ int Mat_move_rows(matrix_t* mat, int picked, int step)
     if (step > 0) {
 
         size_t new_size  = step * sizeof(vfloat_t) * cols + sizeof(vfloat_t) * rows * cols;
-        __resize_pool(mat, new_size, 1);
+        __resize_pool(mat, new_size);
         
         Mat_eptr(mat, ptr);
 
@@ -407,3 +407,49 @@ int Mat_save(matrix_t* mat, void* buf)
     memcpy(buf, mat->pool, size);
     return 0;
 }
+int Mat_op_mat(matrix_t* mat1, matrix_t* mat2, mat_op_t op)
+{
+    int size = mat1->rows * mat1->cols;
+    for (int i=0; i<size; ++i) {
+        switch (op)
+        {
+        case mat_add:
+            mat1->pool[i]= mat1->pool[i] + mat2->pool[i%size];
+            break;
+        case mat_sub:
+            mat1->pool[i]= mat1->pool[i] - mat2->pool[i%size];
+            break;
+        case mat_multi:
+            mat1->pool[i]= mat1->pool[i] * mat2->pool[i%size];   
+            break;
+        case mat_div:
+            mat1->pool[i]= mat1->pool[i] / mat2->pool[i%size];
+            break;
+        default:
+            break;
+        }
+    }
+    return 0;
+}
+
+int Mat_dimen_reduct(matrix_t* mat, mat_dimen_t dimen, mat_op_t op)
+{
+    vfloat_t (*ptr)[mat->cols] = mat->pool;
+
+    if (dimen == dimen_row) {
+
+        for (int i=0; i<mat->cols; ++i) {
+
+            for (int j=1; j<mat->rows; j++) {
+                ptr[][0] = 
+            }
+
+        }
+
+    } else {
+        
+    }
+
+    return 0;
+}
+

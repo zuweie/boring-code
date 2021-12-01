@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-11-30 16:01:30
+ * @LastEditTime: 2021-12-01 11:57:46
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
@@ -13,13 +13,21 @@
 #include "matrix/matrix.h"
 #include "neural_network.h"
 
-// 输入 u 的激活函数
-static double __active_u(ann_mpl_model_t* model, vfloat_t* y, vfloat_t* u, int size) 
+static void __do_active_u(ann_mpl_model_t* model, double u)
 {
-    
+
+}
+
+// 输入 u 的激活函数
+static void __active_u(ann_mpl_model_t* model, matrix_t* u,  int size) 
+{
+    int len = u->rows * u->cols;
+    for (int i=0; i<len; ++i) {
+        u->pool[i] = __do_active_u(model, u->pool[i]);
+    }
 }
 // u 的激活函数对 u 的导数
-static double __dactive_du(ann_mpl_model_t* model, double u) 
+static void __dactive_du(ann_mpl_model_t* model, matrix_t* u) 
 {
 
 }
@@ -34,18 +42,20 @@ static double __calculate_e(vfloat_t* y, vfloat_t* t, int size)
 }
 
 
-static void __calculate_delta_1(vfloat_t* delta, vfloat_t* y, vfloat_t* t, vfloat_t* u, int size) 
-{
-    for (int i=0; i<size; ++i) {
-        delta[i] = (y[i] - t[i]) * __dactive_du(u[i]);
-    }
-    return;
-}
+// static void __calculate_delta_1(vfloat_t* delta, vfloat_t* y, vfloat_t* t, vfloat_t* u, int size) 
+// {
+//     for (int i=0; i<size; ++i) {
+//         delta[i] = (y[i] - t[i]) * __dactive_du(u[i]);
+//     }
+//     return;
+// }
 
-static void __calculate_delta_2(vfloat_t* o_delta, vfloat_t* i_delta, vfloat_t* u, vfloat_t* w, int size) 
-{
-    
-}
+// static void __calculate_delta_2(vfloat_t* o_delta, vfloat_t* i_delta, vfloat_t* u, vfloat_t* w, int size) 
+// {
+//     for (int i=0; i<size; ++i) {
+
+//     }
+// }
 static char* __nw_cal_wbase_ptr(ann_mpl_model_t* model) 
 {  
     char* base = (char*)(model)->_w_mat; 
@@ -90,12 +100,13 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
     
     // 初始化一些需要用到的变量。
     double Pre_E = DBL_MAX * 0.5, E = 0.f;
-    matrix_t u0_mat;
-    matrix_t y0_mat;
-    matrix_t w_mat = Mat_create(1, 1);
-    matrix_t delta_mat1 = Mat_create(1, 1);
-    matrix_t delta_mat2 = Mat_create(1, 1);
-    matrix_t dw_mat = Mat_create(1, 1);
+    matrix_t u1_mat = Mat_create(1, 1);
+    matrix_t y1_mat = Mat_create(1, 1);
+    matrix_t delta1_mat = Mat_create(1, 1);
+    
+    matrix_t du1_mat = Mat_create(1, 1);
+    matrix_t w1_mat = Mat_create(1, 1);
+    matrix_t t1_mat = Mat_create(1, 1);
 
     int sample_count     = UA_shape_axis(X, 0);
     int per_sample_count = UA_shape_axis(X, 1);
@@ -113,30 +124,39 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
     int l, k, h, l_count = Nl_count(model);
     int y_num = 0;
     int u_num = 0;
+    int delta_num = 0;
     for (int l=0; l<l_count; ++l)
     {
         y_num += Ne_count(model, l);
         // 第一层的 u 不要。
         if (l > 0) u_num += Ne_count(model, l);
+        // 第一层的 delta 不要
+        if (l > 0) delta_num += Ne_count(model, l);
     } 
     // 
-    char** u_mat, y_mat;
+    char** u_mat, y_mat, delta_mat;
     u_mat = (char**) malloc( sizeof(char*) * l_count + sizeof(vfloat_t) * u_num);
     y_mat = (char**) malloc( sizeof(char*) * l_count + sizeof(vfloat_t) * y_num);
-
+    delta_mat = (char**) malloc( sizeof(char*) * l_count + sizeof(vfloat_t) * delta_num);
+    
     char* u_data_base = (char*)u_mat + sizeof(char*) * l_count;
     char* y_data_base = (char*)y_mat + sizeof(char*) * l_count;
+    char* delta_mat_base = (char*) delta_mat + sizeof(char*) * l_count;
 
     size_t u_base_offset = 0;
     size_t y_base_offset = 0;
-    
+    size_t delta_base_offset = 0;
     for (l=0;l<l_count; ++l) {
 
         if (l=0)  
             u_mat[l] = NULL;
+            delta_mat[l] = NULL;
         else {
             u_mat[l] = u_data_base + u_base_offset;
             u_base_offset + sizeof(vfloat_t) * Ne_count(model, l);
+
+            delta_mat[l] = delta_mat_base + delta_base_offset;
+            delta_base_offset += sizeof(vfloat_t) * Ne_count(model, l);
         }
 
         y_mat[l] = y_data_base + y_base_offset;
@@ -167,25 +187,26 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
         memcpy(y_mat[0], sample_ptr[idx], per_sample_count);
         
 
-        // 走向前传播
+        // 走! 出发！向前传播！
         for(l=1; l<l_count; ++l) {
             
             int k = Wm_k(model, l);
             int h = Wm_h(model, l);
             vfloat_t* wptr = Wk_ptr(model, l, 0);
 
-            Mat_set(&y0_mat, h, 1, y_mat[l-1]);
-            Mat_put(&y0_mat, y0_mat.rows, 0, 1.f);
+            Mat_reload(&y1_mat, h, 1, y_mat[l-1]);
+            Mat_reshpae(&y1_mat, y1_mat.rows+1, 1);
+            Mat_put(&y1_mat, y0_mat.rows, 0, 1.f);
 
-            Mat_reload(w_mat, k, h, wptr);
+            Mat_reload(&w1_mat, k, h, wptr);
 
             // dot 后的结果就是 ul，将 ul 存入 u_ptr 中。
-            Mat_dot(&w_mat, &y0_mat);
-            
-            Mat_save(&w_mat, u_mat[l]);
+            Mat_dot(&w1_mat, &y1_mat);
+            Mat_save(&w1_mat, u_mat[l]);
 
-            __active_u(model, y_mat[l], u_mat[l], k);
-
+            // 然后做激活函数，然后再将结果放入 y_mat[l] 中。
+            __active_u(model, &w1_mat);
+            Mat_save(&w1_mat, y_mat[l]);
         }
 
         E += __calculate_e(y_mat[l], response_ptr[idx], Ne_count(model, l_count-1));
@@ -196,13 +217,36 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
             if(l = l_count -1) {
                 // 当 l 是输出层的时候。
                 k = Ne_count(model, l);
-                Mat_reshpae(&delta_mat1, 1, k);
+                Mat_reload(&du1_mat, k, 1, u_mat[l]);
+                __dactive_du(model, &du1_mat);
 
-                __calculate_delta_1(delta_mat1.pool, y_mat[l], response_ptr[idx], u_mat[l], k);
-                
+                // 先把 delta 的地址设置如 delta0_mat 
+                Mat_reload(&y1_mat, k, 1, y_mat[l]);
+                Mat_reload(&t1_mat, k, 1, response_ptr[idx]);
+
+                Mat_op_mat(&y1_mat, mat_sub, &t1_mat);
+                Mat_op_mat(&y1_mat, mat_multi, &du1_mat);
+                Mat_save(&y1_mat, delta1_mat[l]);
+
             } else {
+                // 当 l 是中间层的时候，那就非常鸡吧复杂了。
+                int cur_layer_k = Ne_count(model, l);
+                int next_layer_wk = Wm_k(model, l+1);
+                int next_layer_wh = Wm_h(model, l+1);
+                
+                Mat_reload(&du1_mat, cur_layer_k, 1, u_mat[l]);
+                __dactive_du(model, &du1_mat);
+
+                // 这里要提出上一层的参数矩阵
+                vfloat_t* wk_ptr = 
+                Mat_reload(&w1_mat, next_layer_wk, next_layer_wh, Wk_ptr(model, l+1, 0));
+                
+                Mat_transpose(&w1_mat);
+                
 
             }
+
+
 
         }
 
