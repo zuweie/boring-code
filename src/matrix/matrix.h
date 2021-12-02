@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-12-01 14:55:24
+ * @LastEditTime: 2021-12-02 10:43:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include "vtype/vfloat_type.h"
  
-#define mat_op(v1, v2, op) (op == mat_add ? ((v1) += (v2)) : (op == mat_sub ? ((v1) -= (v2)) : (op == mat_multi? ((v1) *= (v2)) : ((v1) /= (v2)))))
+#define mat_op(v1, v2, op) (op == op_add ? ((v1) += (v2)) : (op == op_sub ? ((v1) -= (v2)) : (op == op_multi? ((v1) *= (v2)) : ((v1) /= (v2)))))
 
 typedef struct _matrix
 {
@@ -24,10 +24,10 @@ typedef struct _matrix
 } matrix_t;
 
 typedef enum {
-    mat_add = 1,
-    mat_sub,
-    mat_multi, 
-    mat_div
+    op_add = 1,
+    op_sub,
+    op_multi, 
+    op_div
 } mat_op_t;
 
 typedef enum {
@@ -67,6 +67,6 @@ int Mat_dimen_reduct(matrix_t* mat, mat_dimen_t dimen, mat_op_t op);
 #define Mat_rows(pmat) ((pmat)->rows)
 #define Mat_cols(pmat) ((pmat)->cols)
 #define Mat_eptr(pmat, ptr) vfloat_t(*ptr)[(pmat)->cols] = (pmat)->pool
-#define Mat_put(pmat, x, y, v) ({ Mat_eptr(pmat, ptr); ptr[x][y] = v; })
+#define Mat_put(pmat, x, y, v) ((pmat)->pool[(x)*(pmat)->cols + y] = (v))//({ Mat_eptr(pmat, ptr); ptr[x][y] = v; })
 
 #endif

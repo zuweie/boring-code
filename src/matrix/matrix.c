@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-12-01 14:55:17
+ * @LastEditTime: 2021-12-02 12:20:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
@@ -62,11 +62,8 @@ static void
 __resize_pool(matrix_t* mat, size_t new_size) 
 {
     if  (mat->pool_size < new_size) {
-        mat->pool = (vfloat_t*) remalloc (new_size);
-        //if (save_old_data)
-            //memcpy(new_chunk, mat->pool, Mat_rows(mat) * Mat_cols(mat) * sizeof(vfloat_t));
-        //free(mat->pool);
-        //mat->pool = new_chunk;
+        void* new_pool = realloc (mat->pool, new_size);
+        mat->pool = new_pool;
         mat->pool_size = new_size;
     }
     return;
@@ -398,6 +395,8 @@ int Mat_reload(matrix_t* mat, size_t new_rows, size_t new_cols, vfloat_t* data)
     size_t new_size = new_rows * new_cols * sizeof(vfloat_t);
     __resize_pool(mat, new_size);
     memcpy(mat->pool, data, new_size);
+    mat->rows = new_rows;
+    mat->cols = new_cols;
     return 0;
 }
 

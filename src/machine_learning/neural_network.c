@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-12-01 16:12:20
+ * @LastEditTime: 2021-12-02 12:23:24
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
@@ -13,7 +13,7 @@
 #include "matrix/matrix.h"
 #include "neural_network.h"
 
-static double __do_active_u(ann_mpl_param_t* params double u)
+static double __do_active_u(ann_mpl_param_t* params, double u)
 {
     double alpha = params->param1;
     double beta  = params->param2;
@@ -34,7 +34,7 @@ static void __active_u(ann_mpl_model_t* model, matrix_t* u)
 {
     int len = u->rows * u->cols;
     for (int i=0; i<len; ++i) {
-        u->pool[i] = __do_active_u(model->params, u->pool[i]);
+        u->pool[i] = __do_active_u(&model->params, u->pool[i]);
     }
 }
 // u 的激活函数对 u 的导数
@@ -42,7 +42,7 @@ static void __dactive_du(ann_mpl_model_t* model, matrix_t* u)
 {
     int len = u->rows * u->cols;
     for (int i=0; i<len; ++i) {
-        u->pool[i] = __do_dactive_du(model->params, u->pool[i]);
+        u->pool[i] = __do_dactive_du(&model->params, u->pool[i]);
     }
 }
 
@@ -50,7 +50,7 @@ static double __calculate_e(vfloat_t* y, vfloat_t* t, int size)
 {
     double e = 0.f;
     for (int i=0; i<size; ++i) {
-        e += (t[i] - y[i]) * (t[i] - y[i]) 
+        e += (t[i] - y[i]) * (t[i] - y[i]);
     }
     return e * 0.5;
 }
@@ -100,14 +100,15 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
 {
 
     // 检测输入 X 的列数于输入层的 列数是否一致，不一致返回null
-    vfloat_t* layer_size_pr = UA_data_ptr(layer_size);
+    vfloat_t* layer_size_ptr = UA_data_ptr(layer_size);
 
-    if ((int)layer_size_pr[0] != UA_shape_axis(X, 1)
-    || (int)layer_size_ptr[layer_size->axis_n-1] != UA_shape_axis(Y, 1)) 
+    
+    if ((int)layer_size_ptr[0] != UA_shape_axis(X, 1)
+    || (int)layer_size_ptr[UA_length(layer_size)-1] != UA_shape_axis(Y, 1)) 
         return NULL;
 
     // 开始各种骚操作。
-    ann_mpl_model_t* model = ann_mpl_model_create(layer_size, params->active);
+    ann_mpl_model_t* model = ann_mpl_model_create(layer_size, params);
 
     // TODO 1: forward propagation to calculate the E
     // TODO 2: backward propagation to update w mat
@@ -130,7 +131,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
     int sample_index[sample_count];
     vfloat_t (*sample_ptr)[per_sample_count] = UA_data_ptr(X);
     vfloat_t (*response_ptr)[per_response_count] = UA_data_ptr(Y);
-
+    
     int idx;
     for (int i=0; i<sample_count; ++i) {
         sample_index[i] = i;
@@ -149,7 +150,10 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
         if (l > 0) delta_num += Ne_count(model, l);
     } 
     // 
-    char** u_mat, y_mat, delta_mat;
+    char** u_mat;
+    char** y_mat;
+    char** delta_mat;
+
     u_mat = (char**) malloc( sizeof(char*) * l_count + sizeof(vfloat_t) * u_num);
     y_mat = (char**) malloc( sizeof(char*) * l_count + sizeof(vfloat_t) * y_num);
     delta_mat = (char**) malloc( sizeof(char*) * l_count + sizeof(vfloat_t) * delta_num);
@@ -161,14 +165,15 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
     size_t u_base_offset = 0;
     size_t y_base_offset = 0;
     size_t delta_base_offset = 0;
+
     for (l=0;l<l_count; ++l) {
 
-        if (l=0)  
+        if (l==0) {
             u_mat[l] = NULL;
             delta_mat[l] = NULL;
-        else {
+        } else {
             u_mat[l] = u_data_base + u_base_offset;
-            u_base_offset + sizeof(vfloat_t) * Ne_count(model, l);
+            u_base_offset += sizeof(vfloat_t) * Ne_count(model, l);
 
             delta_mat[l] = delta_mat_base + delta_base_offset;
             delta_base_offset += sizeof(vfloat_t) * Ne_count(model, l);
@@ -184,7 +189,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
         if (step % sample_count == 0 ) {
             // 走完一圈，检测那个误差是否已经收敛了。收敛了就 break，跳出循环。
             // 否则将样本的顺序打乱，在来一遍。
-            if (fabs(Per_E - E) < params->epsilon)
+            if (fabs(Pre_E - E) < params->epsilon)
                 break;
 
             for (int i = 0; i<sample_count; ++i) {
@@ -197,21 +202,21 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
 
         }
 
-        int idx = sample_index[step%sample_count];
+        idx = sample_index[step%sample_count];
 
-        memcpy(y_mat[0], sample_ptr[idx], per_sample_count);
+        memcpy(y_mat[0], sample_ptr[idx], per_sample_count*sizeof(vfloat_t));
         
 
         // 走! 出发！向前传播！
         for(l=1; l<l_count; ++l) {
             
-            int k = Wm_k(model, l);
-            int h = Wm_h(model, l);
+            k = Wm_k(model, l);
+            h = Wm_h(model, l);
             vfloat_t* wptr = Wk_ptr(model, l, 0);
 
             Mat_reload(&y1_mat, h, 1, y_mat[l-1]);
-            Mat_reshpae(&y1_mat, y1_mat.rows+1, 1);
-            Mat_put(&y1_mat, y0_mat.rows, 0, 1.f);
+            Mat_reshape(&y1_mat, y1_mat.rows+1, 1);
+            Mat_put(&y1_mat, y1_mat.rows-1, 0, 1.f);
 
             Mat_reload(&w1_mat, k, h, wptr);
 
@@ -239,8 +244,8 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
                 Mat_reload(&y1_mat, k, 1, y_mat[l]);
                 Mat_reload(&t1_mat, k, 1, response_ptr[idx]);
 
-                Mat_op_mat(&y1_mat, mat_sub, &t1_mat);
-                Mat_op_mat(&y1_mat, mat_multi, &du1_mat);
+                Mat_op_mat(&y1_mat, op_sub, &t1_mat);
+                Mat_op_mat(&y1_mat, op_multi, &du1_mat);
                 Mat_save(&y1_mat, delta_mat[l]);
 
             } else {
@@ -255,11 +260,15 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
                 // 这里要提出上一层的参数矩阵
                 Mat_reload(&w1_mat, next_layer_wk, next_layer_wh, Wk_ptr(model, l+1, 0));
                 Mat_transpose(&w1_mat);
-                Mat_reshpae(&w1_mat, w1_mat.rows-1, w1_mat.cols);
-                Mat_reload(&delta1_mat, next_layer_wk, 1);
-                Mat_op_mat(&w1_mat, &delta1_mat, mat_multi);
-                Mat_dimen_reduct(&w1_mat, dimen_col, mat_add);
-                Mat_op_mat(&w1_mat, &du1_mat);
+                Mat_reshape(&w1_mat, w1_mat.rows-1, w1_mat.cols);
+
+                Mat_reload(&delta1_mat, next_layer_wk, 1, delta_mat[l+1]);
+                Mat_op_mat(&w1_mat, &delta1_mat, op_multi);
+
+                Mat_dimen_reduct(&w1_mat, dimen_col, op_add);
+
+                Mat_op_mat(&w1_mat, &du1_mat, op_multi );
+
                 Mat_save(&w1_mat, delta_mat[l]);
             }
 
@@ -270,16 +279,16 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
             vfloat_t* delta_ptr = delta_mat[l];
             vfloat_t* y_1_ptr   = y_mat[l-1];
 
-            Mat_reshape(&dEdw1_mat, k_delta, h_y);
+            Mat_reshape(&dEdw1_mat, k_delta, h_y_1);
             Mat_eptr(&dEdw1_mat, dEdw_ptr);
             for (int i=0; i<k_delta; ++i) {
                 for (int j=0; j<h_y_1; ++j) {
                     dEdw_ptr[i][j] = delta_ptr[i] * y_1_ptr[j];
                 }
             }
-            Mat_op_numberic(&dEdw1_mat, -0.01, mat_multi);
+            Mat_op_numberic(&dEdw1_mat, -0.01, op_multi);
             Mat_reload(&w1_mat, k_delta, h_y_1, Wk_ptr(model, l, 0));
-            Mat_op_mat(&w1_mat, &dEdw1_mat, mat_add);
+            Mat_op_mat(&w1_mat, &dEdw1_mat, op_add);
         }
 
     }
@@ -303,7 +312,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
 
 int ann_mpl_predict(ann_mpl_model_t* model, u_array_t* sample, u_array_t* prediction)
 {
-    int k, h, l_count = Nl_count(model);
+    int l, k, h, l_count = Nl_count(model);
     matrix_t w1_mat = Mat_create(1, 1);
     matrix_t y1_mat = Mat_create(1, 1);
     Mat_reload(&y1_mat, UA_length(sample), 1, UA_data_ptr(sample));
@@ -312,7 +321,7 @@ int ann_mpl_predict(ann_mpl_model_t* model, u_array_t* sample, u_array_t* predic
         int k = Wm_k(model, l);
         int h = Wm_h(model, l);
         Mat_reload(&w1_mat, k, h, Wk_ptr(model, l, 0));
-        Mat_reshape(&y1_mat, y1_mat.row+1, 1);
+        Mat_reshape(&y1_mat, y1_mat.rows+1, 1);
         Mat_put(&y1_mat, y1_mat.rows, 0, 1.f);
         Mat_dot(&w1_mat, &y1_mat);
 
@@ -322,16 +331,16 @@ int ann_mpl_predict(ann_mpl_model_t* model, u_array_t* sample, u_array_t* predic
 
         Mat_save(&w1_mat, y1_mat.pool);
     }
-    mat_save(&y1_mat, UA_data_ptr(prediction));
+    Mat_save(&y1_mat, UA_data_ptr(prediction));
     return 0;
 }
 
 
-ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _active)
+ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, ann_mpl_param_t* params)
 {
     ann_mpl_model_t* model = (ann_mpl_model_t*) malloc (sizeof(ann_mpl_model_t));
     
-    model->active = _active;
+    model->params = *params;
     model->layer_size = UA_copy(_layer_size);
     UA_display(&model->layer_size);
     
@@ -366,15 +375,15 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, active_func_t _act
         k_offset += k_count * sizeof(char*);
     }
 
-    int sz_u0 = sizeof(char*) * (l_count) + sizeof(vfloat_t) * u0_num;
-    model->_u0 = (char**) malloc(sz_u0);
-    layer_ptr_base = (char*) model->_u0;
-    char* u0_ptr_base = layer_ptr_base + sizeof(char*) * l_count;
-    size_t u0_offset = 0;
-    for (l=0; l<l_count; ++l) {
-        model->_u0[l] = u0_ptr_base + u0_offset;
-        u0_offset += Ne_count(model, l) * sizeof(vfloat_t);
-    }
+    // int sz_u0 = sizeof(char*) * (l_count) + sizeof(vfloat_t) * u0_num;
+    // model->_u0 = (char**) malloc(sz_u0);
+    // layer_ptr_base = (char*) model->_u0;
+    // char* u0_ptr_base = layer_ptr_base + sizeof(char*) * l_count;
+    // size_t u0_offset = 0;
+    // for (l=0; l<l_count; ++l) {
+    //     model->_u0[l] = u0_ptr_base + u0_offset;
+    //     u0_offset += Ne_count(model, l) * sizeof(vfloat_t);
+    // }
 
     // 实际算法中其实不需要保存 cell 的内存，所以这段代码暂时不要了。
     // cell 内存切糕。比 wb 简单一点。
