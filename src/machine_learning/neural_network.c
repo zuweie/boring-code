@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-12-02 12:23:24
+ * @LastEditTime: 2021-12-04 17:04:03
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
@@ -18,7 +18,7 @@ static double __do_active_u(ann_mpl_param_t* params, double u)
     double alpha = params->param1;
     double beta  = params->param2;
     
-    double v = beta * (1 - pow(2.7182818284, -alpha * u)) / (1 - pow(2.7182818284, -alpha * u));
+    double v = beta * (1 - pow(2.7182818284, -alpha * u)) / (1 + pow(2.7182818284, -alpha * u));
     return v;
 }
 
@@ -191,7 +191,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
             // 否则将样本的顺序打乱，在来一遍。
             if (fabs(Pre_E - E) < params->epsilon)
                 break;
-
+            Pre_E = E;
             for (int i = 0; i<sample_count; ++i) {
                 int j = rand() % sample_count;
                 int k = rand() % sample_count;
@@ -214,7 +214,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
             h = Wm_h(model, l);
             vfloat_t* wptr = Wk_ptr(model, l, 0);
 
-            Mat_reload(&y1_mat, h, 1, y_mat[l-1]);
+            Mat_reload(&y1_mat, Ne_count(model, l-1), 1, y_mat[l-1]);
             Mat_reshape(&y1_mat, y1_mat.rows+1, 1);
             Mat_put(&y1_mat, y1_mat.rows-1, 0, 1.f);
 
@@ -229,13 +229,13 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
             Mat_save(&w1_mat, y_mat[l]);
         }
 
-        E += __calculate_e(y_mat[l], response_ptr[idx], Ne_count(model, l_count-1));
+        E += __calculate_e(y_mat[l-1], response_ptr[idx], Ne_count(model, l_count-1));
 
 
         // 走向后传播。
-        for (l=l_count-1; l<0; l--) {
+        for (l=l_count-1; l>0; l--) {
 
-            if(l = l_count -1) {
+            if(l == l_count -1) {
                 // 当 l 是输出层的时候。
                 k = Ne_count(model, l);
                 Mat_reload(&du1_mat, k, 1, u_mat[l]);
@@ -244,8 +244,8 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
                 Mat_reload(&y1_mat, k, 1, y_mat[l]);
                 Mat_reload(&t1_mat, k, 1, response_ptr[idx]);
 
-                Mat_op_mat(&y1_mat, op_sub, &t1_mat);
-                Mat_op_mat(&y1_mat, op_multi, &du1_mat);
+                Mat_op_mat(&y1_mat, &t1_mat, op_sub);
+                Mat_op_mat(&y1_mat, &du1_mat,op_multi);
                 Mat_save(&y1_mat, delta_mat[l]);
 
             } else {
