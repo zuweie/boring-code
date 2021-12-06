@@ -1,17 +1,33 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-12-04 17:04:03
+ * @LastEditTime: 2021-12-06 16:48:14
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
 #include <string.h>
 #include "matrix/matrix.h"
 #include "neural_network.h"
+
+#define INSPECT_LAYER(l) \
+({ \
+    vfloat_t* u_ptr = u_mat[l]; \ 
+    vfloat_t* y_ptr = y_mat[l]; \
+    vfloat_t* d_ptr = delta_ptr[l]; \
+    vfloat_t** w_ptr = Wk_ptr(model, l); \
+    if (u_ptr) { \
+        int e_count = Ne_count(model, l); \
+        printf("u_mat: "); \
+        for (int i=0; i<e_count; ++i) { \
+            printf("%d ", u_ptr[i]); \
+        } \
+    } \
+})
 
 static double __do_active_u(ann_mpl_param_t* params, double u)
 {
@@ -265,7 +281,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
                 Mat_reload(&delta1_mat, next_layer_wk, 1, delta_mat[l+1]);
                 Mat_op_mat(&w1_mat, &delta1_mat, op_multi);
 
-                Mat_dimen_reduct(&w1_mat, dimen_col, op_add);
+                Mat_deflate(&w1_mat, dimen_col, op_add);
 
                 Mat_op_mat(&w1_mat, &du1_mat, op_multi );
 
@@ -274,21 +290,43 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
 
             // 算完 delta_mat,然后 update 那个 w 矩阵了
             
-            int k_delta = Ne_count(model, l);
-            int h_y_1   = Ne_count(model, l-1);
-            vfloat_t* delta_ptr = delta_mat[l];
-            vfloat_t* y_1_ptr   = y_mat[l-1];
+            // int k_delta = Ne_count(model, l);
+            // int h_y_1   = Ne_count(model, l-1);
+            // vfloat_t* delta_ptr = delta_mat[l];
+            // vfloat_t* y_1_ptr   = y_mat[l-1];
 
-            Mat_reshape(&dEdw1_mat, k_delta, h_y_1);
+            // Mat_reshape(&dEdw1_mat, k_delta, h_y_1);
+            // Mat_eptr(&dEdw1_mat, dEdw_ptr);
+            // for (int i=0; i<k_delta; ++i) {
+            //     for (int j=0; j<h_y_1; ++j) {
+            //         dEdw_ptr[i][j] = delta_ptr[i] * y_1_ptr[j];
+            //     }
+            // }
+            // Mat_op_numberic(&dEdw1_mat, -0.01, op_multi);
+            // Mat_reload(&w1_mat, k_delta, h_y_1, Wk_ptr(model, l, 0));
+            // Mat_op_mat(&w1_mat, &dEdw1_mat, op_add);
+            // Mat_save(&w1_mat, Wk_ptr(model, l, 0));
+        }
+
+        for (l=l_count-1; l>0; --l) {
+            h = Ne_count(model, l-1);
+            k = Ne_count(model, l);
+            Mat_reload(&y1_mat, h, 1, y_mat[l-1]);
+            Mat_reload(&delta1_mat, k, 1, delta_mat[l]);
+
+            Mat_reshape(&dEdw1_mat, k, h);
             Mat_eptr(&dEdw1_mat, dEdw_ptr);
-            for (int i=0; i<k_delta; ++i) {
-                for (int j=0; j<h_y_1; ++j) {
-                    dEdw_ptr[i][j] = delta_ptr[i] * y_1_ptr[j];
+
+            for (int i=0; i<k; ++i) {
+                for (int j=0; j<h;++j) {
+                    dEdw_ptr[i][j] = delta1_mat.pool[i] * y1_mat.pool[j];
                 }
             }
+
             Mat_op_numberic(&dEdw1_mat, -0.01, op_multi);
-            Mat_reload(&w1_mat, k_delta, h_y_1, Wk_ptr(model, l, 0));
+            Mat_reload(&w1_mat, k, h, Wk_ptr(model, l, 0));
             Mat_op_mat(&w1_mat, &dEdw1_mat, op_add);
+            Mat_save(&w1_mat, Wk_ptr(model, l, 0));
         }
 
     }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-12-02 10:43:09
+ * @LastEditTime: 2021-12-05 09:29:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -62,7 +62,7 @@ int Mat_reload(matrix_t* mat, size_t new_rows, size_t new_cols, vfloat_t* data);
 int Mat_save(matrix_t* mat, void* buf);
 int Mat_op_mat(matrix_t* mat1, matrix_t* mat2, mat_op_t op);
 int Mat_op_numberic(matrix_t* mat, vfloat_t v, mat_op_t op);
-int Mat_dimen_reduct(matrix_t* mat, mat_dimen_t dimen, mat_op_t op);
+int Mat_deflate(matrix_t* mat, mat_dimen_t dimen, mat_op_t op);
 
 #define Mat_rows(pmat) ((pmat)->rows)
 #define Mat_cols(pmat) ((pmat)->cols)

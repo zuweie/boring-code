@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-06 22:15:11
- * @LastEditTime: 2021-04-08 19:22:45
+ * @LastEditTime: 2021-12-05 10:30:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_matrix.h
@@ -13,7 +13,7 @@
 #define PRINTF_MATRIX(matrix) \
     ({ \
         printf("Max rows: %d, cols: %d \n", Mat_rows(&matrix), Mat_cols(&matrix)); \
-        Mat_eptr(&matrix, ptr); \
+        Mat_eptr(&matrix, ptr);\
         for (size_t i=0; i<Mat_rows(&matrix); ++i) { \
             for (size_t j=0; j<Mat_cols(&matrix); ++j) { \
                 printf("%lf ", ptr[i][j]); \
@@ -123,6 +123,36 @@ static void test_mat_dot()
 
 }
 
+static void test_mat_op(void) 
+{
+    int v1=1, v2=2;
+    mat_op(v1, v2, op_add);
+    CU_ASSERT_EQUAL(v1, 3);
+
+    v1 = 4; v2 = 2;
+    mat_op(v1, v2, op_sub);
+    CU_ASSERT_EQUAL(v1, 2);
+
+    v1 = 4; v2 = 2;
+    mat_op(v1, v2, op_multi);
+    CU_ASSERT_EQUAL(v1, 8);
+
+    v1 = 4; v2 = 2;
+    mat_op(v1, v2, op_div);
+    CU_ASSERT_EQUAL(v1, 2);
+}
+
+
+static void test_mat_deflate(void) 
+{
+    matrix_t mat = Mat_create(7, 3);
+    for (int i=0; i<mat.rows*mat.cols; ++i) {
+        mat.pool[i] = (float)1;
+    }
+    Mat_deflate(&mat, dimen_col, op_add);
+    PRINTF_MATRIX(mat);
+}
+
 int do_matrix_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -132,19 +162,28 @@ int do_matrix_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test move row", test_move_row) ) {
+    // if (NULL == CU_add_test(pSuite, "test move row", test_move_row) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, "test move col", test_move_col) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_dot) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_op) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_deflate) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-
-    if (NULL == CU_add_test(pSuite, "test move col", test_move_col) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_dot) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
 }

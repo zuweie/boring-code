@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-12-02 12:20:25
+ * @LastEditTime: 2021-12-05 10:38:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
@@ -432,7 +432,7 @@ int Mat_op_mat(matrix_t* mat1, matrix_t* mat2, mat_op_t op)
     return 0;
 }
 
-int Mat_dimen_reduct(matrix_t* mat, mat_dimen_t dimen, mat_op_t op)
+int Mat_deflate(matrix_t* mat, mat_dimen_t dimen, mat_op_t op)
 {
     vfloat_t (*ptr)[mat->cols] = mat->pool;
 
@@ -447,10 +447,12 @@ int Mat_dimen_reduct(matrix_t* mat, mat_dimen_t dimen, mat_op_t op)
     } else {
         for (int i=0; i<mat->rows; ++i) {
             for (int j=1; j<mat->cols; ++j) {
-                mat_op(ptr[i][0], ptr[j][i], op);
+                mat_op(ptr[i][0], ptr[i][j], op);
             } 
         }
+        int old_row = mat->rows;
         Mat_transpose(mat);
+        mat->rows = old_row;
         mat->cols = 1;
     }
     return 0;
