@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2021-12-05 09:29:16
+ * @LastEditTime: 2021-12-07 14:44:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include "vtype/vfloat_type.h"
  
-#define mat_op(v1, v2, op) (op == op_add ? ((v1) += (v2)) : (op == op_sub ? ((v1) -= (v2)) : (op == op_multi? ((v1) *= (v2)) : ((v1) /= (v2)))))
+#define mat_op(v1, v2, op) ((op) == op_add ? ((v1) += (v2)) : ((op) == op_sub ? ((v1) -= (v2)) : ((op) == op_multi? ((v1) *= (v2)) : ((v1) /= (v2)))))
 
 typedef struct _matrix
 {
@@ -68,5 +68,14 @@ int Mat_deflate(matrix_t* mat, mat_dimen_t dimen, mat_op_t op);
 #define Mat_cols(pmat) ((pmat)->cols)
 #define Mat_eptr(pmat, ptr) vfloat_t(*ptr)[(pmat)->cols] = (pmat)->pool
 #define Mat_put(pmat, x, y, v) ((pmat)->pool[(x)*(pmat)->cols + y] = (v))//({ Mat_eptr(pmat, ptr); ptr[x][y] = v; })
+#define Mat_inspect(pmat) \
+({ \
+    for (int i=0; i<(pmat)->rows; ++i) { \
+        for (int j=0; j<(pmat)->cols; ++j) { \
+            printf("%f ", (pmat)->pool[i*(pmat)->cols + j]); \
+        } \
+        printf("\n");\
+    } \
+})
 
 #endif

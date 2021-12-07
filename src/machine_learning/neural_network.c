@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-12-06 16:48:14
+ * @LastEditTime: 2021-12-07 16:15:28
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
@@ -14,18 +14,85 @@
 #include "matrix/matrix.h"
 #include "neural_network.h"
 
-#define INSPECT_LAYER(l) \
+#define INSPECT_U_MAT() \
 ({ \
-    vfloat_t* u_ptr = u_mat[l]; \ 
-    vfloat_t* y_ptr = y_mat[l]; \
-    vfloat_t* d_ptr = delta_ptr[l]; \
-    vfloat_t** w_ptr = Wk_ptr(model, l); \
-    if (u_ptr) { \
-        int e_count = Ne_count(model, l); \
-        printf("u_mat: "); \
-        for (int i=0; i<e_count; ++i) { \
-            printf("%d ", u_ptr[i]); \
+    int ll_count = Nl_count(model);\
+    int ll, ee, ee_count;\
+    for(ll=0; ll<ll_count; ++ll)\
+    { \
+        vfloat_t* u_ptr = u_mat[ll]; \
+        printf("u-layer %d: ", ll); \
+        if (u_ptr) { \
+            ee_count = Ne_count(model, ll); \
+            for (ee=0; ee<ee_count; ++ee) { \
+                printf("%f ", u_ptr[ee]); \
+            } \
+        } else { \ 
+            printf("NULL"); \
         } \
+        printf("\n"); \
+    } \
+})
+
+#define INSPECT_Y_MAT() \
+({ \
+    int ll_count = Nl_count(model);\
+    int ll, ee, ee_count;\
+    for(ll=0; ll<ll_count; ++ll){ \
+        vfloat_t* y_ptr = y_mat[ll]; \
+        printf("y-layer %d: ", ll); \
+        if (y_ptr) { \
+            ee_count = Ne_count(model, ll); \
+            for (ee=0; ee<ee_count; ++ee) { \
+                printf("%f ", y_ptr[ee]); \
+            } \
+        } else { \ 
+            printf("NULL"); \
+        } \
+        printf("\n");\
+    } \
+})
+
+#define INSPECT_W_MAT() \
+({ \    
+    int ll_count = Nl_count(model);\
+    int ll, ee, ee_count;\
+    for(ll=0; ll<ll_count; ++ll)\
+    { \
+        if (model->_w_mat[ll]) { \
+            printf("w-layer %d: \n", ll); \
+            int kk_count = Wm_k(model, ll); \
+            int hh_count = Wm_h(model, ll); \
+            for (int kk=0; kk<kk_count; ++kk) { \
+                vfloat_t* wvv_ptr = Wk_ptr(model, ll, kk); \
+                for (int hh=0; hh<hh_count; ++hh) { \
+                    printf("%f ", wvv_ptr[hh]); \
+                } \
+                printf("\n");\
+            } \
+        } else { \ 
+            printf("w-layer %d: NULL", ll); \
+        } \
+        printf("\n");\
+    } \
+})
+
+#define INSPECT_DELTA_MAT() \
+({ \
+    int ll_count = Nl_count(model);\
+    int ll, ee, ee_count;\
+    for(ll=0; ll<ll_count; ++ll){ \
+        vfloat_t* delta_ptr = delta_mat[ll]; \
+        printf("delta-layer %d: ", ll); \
+        if (delta_ptr) { \
+            ee_count = Ne_count(model, ll); \
+            for (ee=0; ee<ee_count; ++ee) { \
+                printf("%f ", delta_ptr[ee]); \
+            } \
+        } else { \ 
+            printf("NULL"); \
+        } \
+        printf("\n");\
     } \
 })
 
@@ -34,7 +101,8 @@ static double __do_active_u(ann_mpl_param_t* params, double u)
     double alpha = params->param1;
     double beta  = params->param2;
     
-    double v = beta * (1 - pow(2.7182818284, -alpha * u)) / (1 + pow(2.7182818284, -alpha * u));
+    //double v = beta * (1 - pow(2.7182818284, -alpha * u)) / (1 + pow(2.7182818284, -alpha * u));
+    double v = beta * ((1 - exp(-alpha * u)) / (1 + exp(-alpha * u)));
     return v;
 }
 
@@ -42,7 +110,9 @@ static double __do_dactive_du(ann_mpl_param_t* params, double u)
 {
     double alpha = params->param1;
     double beta  = params->param2;
-    double v = 2 * alpha * beta * pow(2.7182818284, -alpha * u) / ((1 + pow(2.7182818284, -alpha*u)) * (1 + pow(2.7182818284, -alpha*u)));
+    double v1 = exp(-alpha * u);
+    double v2 = 1+exp(-alpha*u);
+    double v = 2 * alpha * beta * exp(-alpha * u) / ((1+exp(-alpha*u)) * (1+exp(-alpha*u)));
     return v;
 }
 // 输入 u 的激活函数
@@ -125,7 +195,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
 
     // 开始各种骚操作。
     ann_mpl_model_t* model = ann_mpl_model_create(layer_size, params);
-
+    //INSPECT_W_MAT();
     // TODO 1: forward propagation to calculate the E
     // TODO 2: backward propagation to update w mat
     
@@ -205,6 +275,7 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
         if (step % sample_count == 0 ) {
             // 走完一圈，检测那个误差是否已经收敛了。收敛了就 break，跳出循环。
             // 否则将样本的顺序打乱，在来一遍。
+            printf("step %d, Pre_e %f, E %f , fabs(Pre_E - E) %f\n", step, Pre_E, E, fabs(Pre_E - E));
             if (fabs(Pre_E - E) < params->epsilon)
                 break;
             Pre_E = E;
@@ -215,13 +286,15 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
                 sample_index[j] = sample_index[k];
                 sample_index[k] = tmp;
             }
-
         }
 
         idx = sample_index[step%sample_count];
 
         memcpy(y_mat[0], sample_ptr[idx], per_sample_count*sizeof(vfloat_t));
         
+
+        //printf("inspect W_mat \n");
+        //INSPECT_W_MAT();
 
         // 走! 出发！向前传播！
         for(l=1; l<l_count; ++l) {
@@ -246,45 +319,72 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
         }
 
         E += __calculate_e(y_mat[l-1], response_ptr[idx], Ne_count(model, l_count-1));
-
-
+        //printf("step %d\n", step);
+        // INSPECT_U_MAT();
+        // printf("\n");
+        // INSPECT_Y_MAT();
+        // printf("\n");
         // 走向后传播。
         for (l=l_count-1; l>0; l--) {
 
             if(l == l_count -1) {
                 // 当 l 是输出层的时候。
+                //printf(" last layer \n\n");
                 k = Ne_count(model, l);
                 Mat_reload(&du1_mat, k, 1, u_mat[l]);
+                //printf("inspect last layer befort dactive du\n");
+                //Mat_inspect(&du1_mat);
                 __dactive_du(model, &du1_mat);
-                // 先把 delta 的地址设置如 delta0_mat 
+                //printf("inspect last layer dactve_du\n");
+                //Mat_inspect(&du1_mat);
+                //printf("inspect last layer y1_mat\n");
                 Mat_reload(&y1_mat, k, 1, y_mat[l]);
+                //Mat_inspect(&y1_mat);
+                //printf("inspect last layer t1_mat\n");
                 Mat_reload(&t1_mat, k, 1, response_ptr[idx]);
-
+                //Mat_inspect(&t1_mat);
+                
                 Mat_op_mat(&y1_mat, &t1_mat, op_sub);
+                //printf("inpsect &y1_mat sub &t1_mat\n");
+                //Mat_inspect(&y1_mat);
                 Mat_op_mat(&y1_mat, &du1_mat,op_multi);
                 Mat_save(&y1_mat, delta_mat[l]);
-
+                //printf("the last layer of delta_mat\n ");
+                //Mat_inspect(&y1_mat);
             } else {
+                //printf("not the last layer \n\n");
                 // 当 l 是中间层的时候，那就非常鸡吧复杂了。
                 int cur_layer_k = Ne_count(model, l);
                 int next_layer_wk = Wm_k(model, l+1);
                 int next_layer_wh = Wm_h(model, l+1);
                 
                 Mat_reload(&du1_mat, cur_layer_k, 1, u_mat[l]);
+                //printf("befort dactive_du\n");
+                //Mat_inspect(&du1_mat);
                 __dactive_du(model, &du1_mat);
-
+                //printf("after dactive_du\n");
+                //Mat_inspect(&du1_mat);
                 // 这里要提出上一层的参数矩阵
                 Mat_reload(&w1_mat, next_layer_wk, next_layer_wh, Wk_ptr(model, l+1, 0));
                 Mat_transpose(&w1_mat);
+                //printf("inspect w1_mat\n");
+                //Mat_inspect(&w1_mat);
                 Mat_reshape(&w1_mat, w1_mat.rows-1, w1_mat.cols);
 
                 Mat_reload(&delta1_mat, next_layer_wk, 1, delta_mat[l+1]);
+                //printf("inspect delta1_mat\n");
+                //Mat_inspect(&delta1_mat);
+
+                //printf("inspect w1 multi delta1\n");
                 Mat_op_mat(&w1_mat, &delta1_mat, op_multi);
+                //Mat_inspect(&w1_mat);
 
+                //printf("inspect &w1_mat deflate add \n");
                 Mat_deflate(&w1_mat, dimen_col, op_add);
-
+                //Mat_inspect(&w1_mat);
+                //printf("inspect &w1_mat multi &du1_mat\n");
                 Mat_op_mat(&w1_mat, &du1_mat, op_multi );
-
+                //Mat_inspect(&w1_mat);
                 Mat_save(&w1_mat, delta_mat[l]);
             }
 
@@ -307,12 +407,20 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
             // Mat_op_mat(&w1_mat, &dEdw1_mat, op_add);
             // Mat_save(&w1_mat, Wk_ptr(model, l, 0));
         }
-
+        // printf("\n");
+        // INSPECT_DELTA_MAT();
+        // printf("\n");
+        //printf("update W with dW \n");
         for (l=l_count-1; l>0; --l) {
             h = Ne_count(model, l-1);
             k = Ne_count(model, l);
+            //printf("inspect y_mat[l-1]\n");
             Mat_reload(&y1_mat, h, 1, y_mat[l-1]);
+            //Mat_inspect(&y1_mat);
+
+            //printf("inspect delta_mat[l]\n");
             Mat_reload(&delta1_mat, k, 1, delta_mat[l]);
+            //Mat_inspect(&delta1_mat);
 
             Mat_reshape(&dEdw1_mat, k, h);
             Mat_eptr(&dEdw1_mat, dEdw_ptr);
@@ -322,13 +430,21 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
                     dEdw_ptr[i][j] = delta1_mat.pool[i] * y1_mat.pool[j];
                 }
             }
+            //printf("inspect dEdw1_mat\n");
+            //Mat_inspect(&dEdw1_mat);
 
             Mat_op_numberic(&dEdw1_mat, -0.01, op_multi);
+            //printf("inspect after multi &dEdw1 -0.01\n");
+            //Mat_inspect(&dEdw1_mat);
+
+            //printf("inspect before update &w1_mat \n");
             Mat_reload(&w1_mat, k, h, Wk_ptr(model, l, 0));
+            //Mat_inspect(&w1_mat);
+            //printf("inspect after update &w1_mat \n");
             Mat_op_mat(&w1_mat, &dEdw1_mat, op_add);
+            //Mat_inspect(&w1_mat);
             Mat_save(&w1_mat, Wk_ptr(model, l, 0));
         }
-
     }
 
 
@@ -448,9 +564,8 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, ann_mpl_param_t* p
         double G = 0.7 * pow(n1, 1.f/ (n2 -1));
             
         for (k=0; k<Wm_k(model, l); ++k) {
-
+            svh = 0.f;
             vfloat_t* wk_ptr = Wk_ptr(model, l, k);
-                
             for (h=0; h<Wm_h(model, l); ++h) {
                 vh = ann_mpl_rand1(-1, 1);
                 wk_ptr[h] = vh;
@@ -458,7 +573,6 @@ ann_mpl_model_t* ann_mpl_model_create(u_array_t* _layer_size, ann_mpl_param_t* p
             }
             // 减掉最后一个。
             svh = svh - vh;
-
             for (h=0; h<Wm_h(model, l)-1; ++h) {
                 wk_ptr[h] = wk_ptr[h] / svh;
             }

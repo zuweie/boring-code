@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:49:19
- * @LastEditTime: 2021-12-01 16:22:17
+ * @LastEditTime: 2021-12-07 16:16:53
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/unit_test/unit_test_neural_network.c
@@ -174,10 +174,10 @@ static void test_mpl_training_predict(void)
     UA_load(&Y, response1);
     ann_mpl_param_t params;
     params.active = 0;
-    params.epsilon = 0.0001;
-    params.max_iter = 100000;
-    params.param1 = 0.1;
-    params.param2 = 0.1;
+    params.epsilon = 0.001;
+    params.max_iter = 10000;
+    params.param1 = 2./3;
+    params.param2 = 1.7159;
     ann_mpl_model_t* model = ann_mpl_training(&layer, &X, &Y, &params);
     
     u_array_t predict = _UArray1d(3);

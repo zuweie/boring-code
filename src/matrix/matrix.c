@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-12-05 10:38:29
+ * @LastEditTime: 2021-12-07 14:29:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
@@ -408,28 +408,15 @@ int Mat_save(matrix_t* mat, void* buf)
 }
 int Mat_op_mat(matrix_t* mat1, matrix_t* mat2, mat_op_t op)
 {
-    int size = mat1->rows * mat1->cols;
-    for (int i=0; i<size; ++i) {
-        mat_op(mat1->pool[i], mat2->pool[i%size], op);
-        // switch (op)
-        // {
-        // case mat_add:
-        //     mat1->pool[i] +=  mat2->pool[i%size];
-        //     break;
-        // case mat_sub:
-        //     mat1->pool[i] -=  mat2->pool[i%size];
-        //     break;
-        // case mat_multi:
-        //     mat1->pool[i] *= mat1->pool[i] * mat2->pool[i%size];   
-        //     break;
-        // case mat_div:
-        //     mat1->pool[i]= mat1->pool[i] / mat2->pool[i%size];
-        //     break;
-        // default:
-        //     break;
-        // }
+    int len_mat1 = mat1->rows * mat1->cols;
+    int len_mat2 = mat2->rows * mat2->cols;
+    if (len_mat1 % len_mat2 == 0) {
+        for (int i=0; i<len_mat1; ++i) {
+            mat_op(mat1->pool[i], mat2->pool[i%len_mat2], op);
+        }
+        return 0;
     }
-    return 0;
+    return -1;
 }
 
 int Mat_deflate(matrix_t* mat, mat_dimen_t dimen, mat_op_t op)
