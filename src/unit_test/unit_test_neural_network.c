@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:49:19
- * @LastEditTime: 2021-12-07 16:16:53
+ * @LastEditTime: 2021-12-09 16:20:56
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/unit_test/unit_test_neural_network.c
@@ -174,10 +174,11 @@ static void test_mpl_training_predict(void)
     UA_load(&Y, response1);
     ann_mpl_param_t params;
     params.active = 0;
-    params.epsilon = 0.001;
-    params.max_iter = 10000;
-    params.param1 = 2./3;
-    params.param2 = 1.7159;
+    params.epsilon = 0.01;
+    params.max_iter = 4000000;
+    params.down_scale = 0.05;
+    params.alpha = 2./3;
+    params.beta = 1.7159;
     ann_mpl_model_t* model = ann_mpl_training(&layer, &X, &Y, &params);
     
     u_array_t predict = _UArray1d(3);
@@ -186,7 +187,16 @@ static void test_mpl_training_predict(void)
     };
     u_array_t sample = _UArray1d(4);
     UA_load(&sample,sampleData);
+
+    UA_display(&sample);
+
     ann_mpl_predict(model, &sample, &predict);
+    
+    vfloat_t* predict_ptr = UA_data_ptr(&predict);
+    CU_ASSERT_TRUE(predict_ptr[0] > predict_ptr[1]);
+    CU_ASSERT_TRUE(predict_ptr[0] > predict_ptr[2]);
+
+    UA_display(&predict);
     ann_mpl_model_finalize(model);
 }
 

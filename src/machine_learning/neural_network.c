@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-12-07 16:15:28
+ * @LastEditTime: 2021-12-09 16:28:09
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
@@ -11,6 +11,7 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 #include "matrix/matrix.h"
 #include "neural_network.h"
 
@@ -96,39 +97,47 @@
     } \
 })
 
-static double __do_active_u(ann_mpl_param_t* params, double u)
-{
-    double alpha = params->param1;
-    double beta  = params->param2;
+// static double __do_active_u(ann_mpl_param_t* params, double u)
+// {
+//     double alpha = params->alpha;
+//     double beta  = params->beta;
     
-    //double v = beta * (1 - pow(2.7182818284, -alpha * u)) / (1 + pow(2.7182818284, -alpha * u));
-    double v = beta * ((1 - exp(-alpha * u)) / (1 + exp(-alpha * u)));
-    return v;
-}
+//     double v = beta * ((1 - exp(-alpha * u)) / (1 + exp(-alpha * u)));
+//     return v;
+// }
 
-static double __do_dactive_du(ann_mpl_param_t* params, double u) 
-{
-    double alpha = params->param1;
-    double beta  = params->param2;
-    double v1 = exp(-alpha * u);
-    double v2 = 1+exp(-alpha*u);
-    double v = 2 * alpha * beta * exp(-alpha * u) / ((1+exp(-alpha*u)) * (1+exp(-alpha*u)));
-    return v;
-}
+// static double __do_dactive_du(ann_mpl_param_t* params, double u) 
+// {
+//     double alpha = params->alpha;
+//     double beta  = params->beta;
+//     double v1 = exp(-alpha * u);
+//     double v2 = 1+exp(-alpha*u);
+//     double v = 2 * alpha * beta * exp(-alpha * u) / ((1+exp(-alpha*u)) * (1+exp(-alpha*u)));
+//     return v;
+// }
 // 输入 u 的激活函数
 static void __active_u(ann_mpl_model_t* model, matrix_t* u) 
 {
+    double alpha = model->params.alpha;
+    double beta  = model->params.beta;
+
     int len = u->rows * u->cols;
     for (int i=0; i<len; ++i) {
-        u->pool[i] = __do_active_u(&model->params, u->pool[i]);
+
+        u->pool[i] = beta * ((1 - exp(-alpha * u->pool[i])) / (1 + exp(-alpha * u->pool[i])));
     }
 }
 // u 的激活函数对 u 的导数
 static void __dactive_du(ann_mpl_model_t* model, matrix_t* u) 
 {
+    double alpha = model->params.alpha;
+    double beta  = model->params.beta;
+
     int len = u->rows * u->cols;
+
     for (int i=0; i<len; ++i) {
-        u->pool[i] = __do_dactive_du(&model->params, u->pool[i]);
+        u->pool[i] = \
+            2 * alpha * beta * exp(-alpha * u->pool[i]) / ((1+exp(-alpha*u->pool[i])) * (1+exp(-alpha*u->pool[i])));
     }
 }
 
@@ -142,20 +151,6 @@ static double __calculate_e(vfloat_t* y, vfloat_t* t, int size)
 }
 
 
-// static void __calculate_delta_1(vfloat_t* delta, vfloat_t* y, vfloat_t* t, vfloat_t* u, int size) 
-// {
-//     for (int i=0; i<size; ++i) {
-//         delta[i] = (y[i] - t[i]) * __dactive_du(u[i]);
-//     }
-//     return;
-// }
-
-// static void __calculate_delta_2(vfloat_t* o_delta, vfloat_t* i_delta, vfloat_t* u, vfloat_t* w, int size) 
-// {
-//     for (int i=0; i<size; ++i) {
-
-//     }
-// }
 static char* __nw_cal_wbase_ptr(ann_mpl_model_t* model) 
 {  
     char* base = (char*)(model)->_w_mat; 
@@ -269,16 +264,20 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
         y_base_offset += sizeof(vfloat_t) * Ne_count(model, l);
     }
     
-
+    
     for (int step=0; step<params->max_iter; ++step) {
         // 
         if (step % sample_count == 0 ) {
             // 走完一圈，检测那个误差是否已经收敛了。收敛了就 break，跳出循环。
             // 否则将样本的顺序打乱，在来一遍。
-            printf("step %d, Pre_e %f, E %f , fabs(Pre_E - E) %f\n", step, Pre_E, E, fabs(Pre_E - E));
+            //printf("step %d, Pre_e %f, E %f , fabs(Pre_E - E) %f\n", step, Pre_E, E, fabs(Pre_E - E));
             if (fabs(Pre_E - E) < params->epsilon)
+            {
+                //printf("o fuck is come out!!!\n");
                 break;
+            }
             Pre_E = E;
+            srand((unsigned int)time(NULL));
             for (int i = 0; i<sample_count; ++i) {
                 int j = rand() % sample_count;
                 int k = rand() % sample_count;
@@ -366,9 +365,11 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
                 //Mat_inspect(&du1_mat);
                 // 这里要提出上一层的参数矩阵
                 Mat_reload(&w1_mat, next_layer_wk, next_layer_wh, Wk_ptr(model, l+1, 0));
+                // 将其装置
                 Mat_transpose(&w1_mat);
                 //printf("inspect w1_mat\n");
                 //Mat_inspect(&w1_mat);
+                // 最后一行不要，那是因为最后一行时 bais， 也就是偏置量 b，不要于上一层的 delta 相乘。
                 Mat_reshape(&w1_mat, w1_mat.rows-1, w1_mat.cols);
 
                 Mat_reload(&delta1_mat, next_layer_wk, 1, delta_mat[l+1]);
@@ -416,29 +417,34 @@ ann_mpl_model_t* ann_mpl_training(u_array_t* layer_size, u_array_t* X, u_array_t
             k = Ne_count(model, l);
             //printf("inspect y_mat[l-1]\n");
             Mat_reload(&y1_mat, h, 1, y_mat[l-1]);
+            Mat_reshape(&y1_mat, y1_mat.rows + 1, 1);
+            Mat_put(&y1_mat, y1_mat.rows-1, 0, 1.f);
+
             //Mat_inspect(&y1_mat);
 
             //printf("inspect delta_mat[l]\n");
             Mat_reload(&delta1_mat, k, 1, delta_mat[l]);
             //Mat_inspect(&delta1_mat);
 
-            Mat_reshape(&dEdw1_mat, k, h);
+            Mat_reshape(&dEdw1_mat, k, h+1);
             Mat_eptr(&dEdw1_mat, dEdw_ptr);
 
             for (int i=0; i<k; ++i) {
-                for (int j=0; j<h;++j) {
+                for (int j=0; j<h+1;++j) {
                     dEdw_ptr[i][j] = delta1_mat.pool[i] * y1_mat.pool[j];
                 }
             }
             //printf("inspect dEdw1_mat\n");
             //Mat_inspect(&dEdw1_mat);
 
-            Mat_op_numberic(&dEdw1_mat, -0.01, op_multi);
+            Mat_op_numberic(&dEdw1_mat, -params->down_scale, op_multi);
             //printf("inspect after multi &dEdw1 -0.01\n");
             //Mat_inspect(&dEdw1_mat);
 
             //printf("inspect before update &w1_mat \n");
-            Mat_reload(&w1_mat, k, h, Wk_ptr(model, l, 0));
+            int wk = Wm_k(model, l);
+            int wh = Wm_h(model, l);
+            Mat_reload(&w1_mat, wk, wh, Wk_ptr(model, l, 0));
             //Mat_inspect(&w1_mat);
             //printf("inspect after update &w1_mat \n");
             Mat_op_mat(&w1_mat, &dEdw1_mat, op_add);

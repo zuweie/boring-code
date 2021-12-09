@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:20
- * @LastEditTime: 2021-12-05 09:50:34
+ * @LastEditTime: 2021-12-09 15:34:55
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.h
@@ -65,11 +65,16 @@ typedef enum {
 typedef struct {
 
     active_func_t active;
+    // 最大训练次数。
     int max_iter;
+    // 精度要求。
     float epsilon;
     // 备用参数。
-    float param1;
-    float param2;
+    // 参数下降步进， 0 ～ 1
+    double down_scale;
+    // 对称 Sigmoid 激活函数中的两个参数。
+    double alpha;
+    double beta;
 } ann_mpl_param_t;
 
 typedef struct {
