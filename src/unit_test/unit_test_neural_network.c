@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:49:19
- * @LastEditTime: 2021-12-09 16:20:56
+ * @LastEditTime: 2021-12-09 16:57:30
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/unit_test/unit_test_neural_network.c
@@ -164,7 +164,7 @@ static void test_mpl_training_predict(void)
         {0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.}
     };
     u_array_t layer = _UArray1d(3);
-    float layer_data[3] = {4, 5, 3};
+    float layer_data[3] = {4,5,3};
     UA_load(&layer, layer_data);
 
     u_array_t X = _UArray2d(x_data_row, x_data_col);
@@ -176,7 +176,7 @@ static void test_mpl_training_predict(void)
     params.active = 0;
     params.epsilon = 0.01;
     params.max_iter = 4000000;
-    params.down_scale = 0.05;
+    params.down_scale = 0.5;
     params.alpha = 2./3;
     params.beta = 1.7159;
     ann_mpl_model_t* model = ann_mpl_training(&layer, &X, &Y, &params);
@@ -193,8 +193,8 @@ static void test_mpl_training_predict(void)
     ann_mpl_predict(model, &sample, &predict);
     
     vfloat_t* predict_ptr = UA_data_ptr(&predict);
-    CU_ASSERT_TRUE(predict_ptr[0] > predict_ptr[1]);
-    CU_ASSERT_TRUE(predict_ptr[0] > predict_ptr[2]);
+    CU_ASSERT_TRUE(fabs(predict_ptr[0]) > fabs(predict_ptr[1]));
+    CU_ASSERT_TRUE(fabs(predict_ptr[0]) > fabs(predict_ptr[2]));
 
     UA_display(&predict);
     ann_mpl_model_finalize(model);
