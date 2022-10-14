@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-02-08 20:16:55
- * @LastEditTime: 2021-10-24 09:25:25
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-10-14 13:04:33
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.h
  */
@@ -13,6 +13,7 @@ typedef struct _u_array u_array_t;
 typedef struct _ua_indicator ua_indicator_t;
 typedef struct _ua_chunk_note ua_chunk_note_t;
 typedef struct _ua_data_chunk ua_data_chunk_t;
+typedef struct _ua_slicer ua_slicer_t;
 
 struct _ua_indicator {
     int __axis;
@@ -20,6 +21,11 @@ struct _ua_indicator {
     int __start;
     int __tail;
     struct _ua_indicator* next;
+};
+
+struct _ua_slicer {
+    int __start;
+    int __tail;
 };
 
 struct _ua_chunk_note {
@@ -33,7 +39,8 @@ void UArray_indicator_release(ua_indicator_t* );
 
 void UArray_indicator_addto(ua_indicator_t**, ua_indicator_t*);
 
-int UArray_indicator_parse(char*, ua_indicator_t**);
+int UArray_indicator_parse_str(char*, ua_indicator_t**);
+int UArray_indicator_parse_slicer(int, ua_slicer_t[], ua_indicator_t**);
 int UArray_indicator_analysis(ua_indicator_t*, u_array_t*, ua_chunk_note_t*);
 int UArray_survey_chuck_address(u_array_t*, char*, ua_indicator_t*, ua_chunk_note_t*);
 
@@ -96,5 +103,7 @@ void UArray_chunk_note_finalize(ua_chunk_note_t*);
 #define UA_set_scope_indicators_selected(marco_indicators_arr, marco_axis, marco_start, marco_tail) \
     UA_set_scope_indicators(marco_indicators_arr, marco_axis, -1, marco_start, marco_tail)
 
+#define _sc(s, t) (s),(t)
+#define _pk(i) _sc(i, i+1)
 #endif
 

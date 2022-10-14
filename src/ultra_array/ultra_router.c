@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-02-09 13:27:15
- * @LastEditTime: 2021-05-07 09:52:49
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-10-14 12:57:22
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/ultra_array/ultra_router.c
  */
@@ -79,7 +79,18 @@ void UArray_indicator_addto(ua_indicator_t** indicator_list, ua_indicator_t* ind
     return;
 }
 
-int UArray_indicator_parse(char indicator_str[], ua_indicator_t** indicator_list)
+int UArray_indicator_parse_slicer(int n, ua_slicer_t slicers[], ua_indicator_t** indicator_list) 
+{
+    *indicator_list = NULL;
+    int curr_axis = 0;
+    for (int i=0; i<n; ++i) {
+        ua_indicator_t* indicator = UArray_indicator_create(curr_axis++, -1, slicers[i].__start, slicers[i].__tail);
+        UArray_indicator_addto(indicator_list, indicator);
+    }
+    return 0;
+}
+
+int UArray_indicator_parse_str(char indicator_str[], ua_indicator_t** indicator_list)
 {
     *indicator_list = NULL;
     int curr_axis = 0;

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2021-07-13 11:30:29
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-10-14 13:09:38
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
  */
@@ -264,7 +264,7 @@ static void test_array_router (void)
     printf("router:\n");
     ua_indicator_t* list;
     char r1[] = ":,:,0";
-    UArray_indicator_parse(r1, &list);
+    UArray_indicator_parse_str(r1, &list);
     // PRINTF_INDICATOR_LIST(r1, list);
  
     UArray_indicator_analysis(list, &u1, &chunk_note);
@@ -407,11 +407,25 @@ static void test_array_router (void)
 }
 static void test_fission(void) 
 {
-    u_array_t u1 = _UArray3d(3,3,4);
-    UA_arange(&u1, 3*3*4);
+    // u_array_t u1 = _UArray3d(3,3,4);
+    // UA_arange(&u1, 3*3*4);
 
-    u_array_t u2 = UA_fission(&u1, ":,:,1");
-    CU_ASSERT_TRUE(UA_get(&u1, 2, 2, 1) == UA_get(&u2, 2, 2));
+    // u_array_t u2 = UA_fission(&u1, ":,:,1");
+    // CU_ASSERT_TRUE(UA_get(&u1, 2, 2, 1) == UA_get(&u2, 2, 2));
+    // UArray_(&u1);
+    // UArray_(&u2);
+
+    u_array_t u1 = _UArray3d(3,3,3);
+    UA_arange(&u1, 3*3*3);
+
+    u_array_t u2 = UA_fission(&u1, "0:2,0:1");
+    //CU_ASSERT_TRUE(UA_get(&u1, 2, 2, 1) == UA_get(&u2, 2, 2));
+
+    printf("u1: \n");
+    UA_display(&u1);
+    printf("\n u2: \n");
+    UA_display(&u2);
+
     UArray_(&u1);
     UArray_(&u2);
 }
@@ -458,6 +472,19 @@ static void test_fission3(void)
     UArray_(&u2);
     
 }
+
+static void test_slice(void) {
+    u_array_t u1 = _UArray3d(2,3,4);
+    UA_arange(&u1, 2*3*4);
+
+    printf_uarr(&u1, 0, UA_data_ptr(&u1), 0);
+    //u_array_t u2 = UA_slice(&u1, 3, 0, 2, 0, 3, 1, 2);
+    u_array_t u2 = UA_slice(&u1, 3, _sc(0,2), _sc(0, 3), _pk(1));
+    UA_display(&u2);
+
+    UArray_(&u1);
+    UArray_(&u2);
+}   
 
 static void test_assimilate(void) 
 {
@@ -532,7 +559,7 @@ static void test_ua_cover_padn_to_router(void)
     UArray_cover_pad_width_to_router_str(pad_ns, 3, buffer);
     
     ua_indicator_t* indicators;
-    UArray_indicator_parse(buffer, &indicators);
+    UArray_indicator_parse_str(buffer, &indicators);
 
     printf("\nrouter %s\n", buffer);
     PRINTF_INDICATOR_LIST(buffer, indicators);
@@ -681,7 +708,8 @@ int do_ultra_array_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     } 
-    //#if 0
+    
+    #if 0
     if (NULL == CU_add_test(pSuite, "test uarray create ", test_uarray_create) ) {
         CU_cleanup_registry();
         return CU_get_error();
@@ -711,11 +739,20 @@ int do_ultra_array_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    
+    
     if (NULL == CU_add_test(pSuite, "test ultra array fission ", test_fission) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
 
+    if (NULL == CU_add_test(pSuite, "test ultra array slice ", test_slice) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    #if 0
     if (NULL == CU_add_test(pSuite, "test ultra array fission2 ", test_fission2) ) {
         CU_cleanup_registry();
         return CU_get_error();
@@ -770,10 +807,10 @@ int do_ultra_array_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
-    //#endif
 
     if (NULL == CU_add_test(pSuite, "test uarray pool size", test_ua_pool_size) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
 }

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:25:14
- * @LastEditTime: 2021-11-29 15:13:45
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-10-14 11:36:38
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.h
  */
@@ -16,6 +16,7 @@ typedef enum _operator {ua_sum = 1 , ua_sub, ua_mulitply, ua_div} operater_t;
 typedef struct _ua_chunk_note ua_chunk_note_t;
 typedef struct _ua_data_chunk ua_data_chunk_t;
 typedef struct _ua_indicator ua_indicator_t;
+typedef struct _ua_slicer ua_slicer_t;
 typedef struct _u_array u_array_t;
 
 
@@ -58,6 +59,8 @@ vfloat_t UArray_mean(u_array_t*, int);
 /* return new copy */
 u_array_t UArray_dot_new_copy(u_array_t*, u_array_t*);
 u_array_t UArray_fission(u_array_t*, char[]);
+u_array_t UArray_slice(u_array_t*, int n, ...);
+
 u_array_t UArray_fission_with_indicators(u_array_t*, ua_indicator_t*);
 u_array_t UArray_padding(u_array_t*, ua_pad_width_t[], ua_pad_mode_t, vfloat_t*);
 u_array_t UArray_pad(u_array_t*, char[], ua_pad_mode_t, vfloat_t*);
@@ -112,6 +115,7 @@ vfloat_t __ua_operator_sum(vfloat_t*, size_t);
 #define UA_dot(pa1, pa2) UArray_dot(pa1, pa2)
 #define UA_data_copy(parray) UArray_data_copy(parray)
 #define UA_fission(parray, router) UArray_fission(parray, router)
+#define UA_slice(parray, n, ...) UArray_slice(parray, n, __VA_ARGS__)
 #define UA_fission_by_indicators(parray, indicator) UArray_fission_with_indicators(parray, indicator)
 #define UA_fission_to_uar_by_indicators(parray1, parray2, indicator) UArray_fission_to_uar_with_indicators(parray1, parray2, indicator)
 #define UA_assimilate(pa1, router, pa2) UArray_assimilate(pa1, router, pa2)

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2021-11-29 15:12:15
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-10-14 11:57:37
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
  */
@@ -473,7 +473,7 @@ u_array_t* UArray_load(u_array_t* arr, vfloat_t data[])
 {
     size_t size_arr = UA_size(arr);
     vfloat_t* ptr = UA_data_ptr(arr);
-    memcpy(ptr, data, size_arr);
+    memcpy(ptr, data, size_arr); 
     return arr;
 }
 
@@ -715,12 +715,28 @@ u_array_t* UArray_dot(u_array_t* a1, u_array_t* a2)
 u_array_t UArray_fission(u_array_t* a, char indicator_str[])
 {
     ua_indicator_t* indicators;
-    UArray_indicator_parse(indicator_str, &indicators);
+    UArray_indicator_parse_str(indicator_str, &indicators);
     u_array_t fission = UArray_fission_with_indicators(a, indicators);
     UArray_indicator_release(indicators);
     return fission;
 }
+u_array_t UArray_slice(u_array_t* a, int n, ...) 
+{
+    va_list valist;
+    va_start(valist, n);
+    ua_slicer_t slicers[n];
 
+    for (int i=0; i<n; ++i ) {
+        slicers[i].__start = va_arg(valist, int);
+        slicers[i].__tail  = va_arg(valist, int);
+    }
+    va_end(valist);
+
+    ua_indicator_t* indicators;
+    UArray_indicator_parse_slicer(n, slicers, &indicators);
+    u_array_t fission = UArray_fission_with_indicators(a, indicators);
+    return fission;
+}
 u_array_t UArray_fission_with_indicators(u_array_t* a, ua_indicator_t* indicators) 
 {
     ua_chunk_note_t chunk_note;
@@ -769,7 +785,7 @@ int UArray_fission_to_uar_with_indicators(u_array_t* u1, u_array_t* u2, ua_indic
 u_array_t* UArray_assimilate(u_array_t* a1, char indicator_str[], u_array_t* a2)
 {
     ua_indicator_t* indicators;
-    UArray_indicator_parse(indicator_str, &indicators);
+    UArray_indicator_parse_str(indicator_str, &indicators);
     u_array_t* ass = UArray_assimilate_with_indicators(a1, indicators, a2);
     UArray_indicator_release(indicators);
     return ass;
