@@ -565,6 +565,7 @@ static void test_ua_cover_padn_to_router(void)
     PRINTF_INDICATOR_LIST(buffer, indicators);
     UArray_indicator_release(indicators);
 }
+
 static void test_ua_pad(void) 
 {
     u_array_t u1 = _UArray3d(2,3,3);
@@ -612,6 +613,7 @@ static void test_ua_pad_const(void)
     UArray_(&u1);
     UArray_(&u2);
 }
+
 static void test_ua_pad_width_parse(void) 
 {
     ua_pad_width_t pad_width[3] = {0};

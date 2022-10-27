@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-31 16:24:27
- * @LastEditTime: 2022-10-14 11:57:37
+ * @LastEditTime: 2022-10-14 13:48:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/xarray/xarray.c
@@ -720,6 +720,7 @@ u_array_t UArray_fission(u_array_t* a, char indicator_str[])
     UArray_indicator_release(indicators);
     return fission;
 }
+
 u_array_t UArray_slice(u_array_t* a, int n, ...) 
 {
     va_list valist;
@@ -737,6 +738,7 @@ u_array_t UArray_slice(u_array_t* a, int n, ...)
     u_array_t fission = UArray_fission_with_indicators(a, indicators);
     return fission;
 }
+
 u_array_t UArray_fission_with_indicators(u_array_t* a, ua_indicator_t* indicators) 
 {
     ua_chunk_note_t chunk_note;
