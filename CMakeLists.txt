@@ -26,6 +26,7 @@ set (SOURCE
     src/unit_test/unit_test_svm.c
     src/unit_test/unit_test_neural_network.c
     src/unit_test/unit_test_decision_tree.c
+    src/unit_test/unit_test_dp.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__vector.c
@@ -62,6 +63,7 @@ set (SOURCE
     src/machine_learning/svm/svm_kernel_function.c
     src/machine_learning/neural_network.c
     src/machine_learning/decision_tree.c
+    src/dp/lcs.c
 )
 
 ## 连接 cunit 库
