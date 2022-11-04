@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2022-10-27 16:30:16
+ * @LastEditTime: 2022-11-04 11:05:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -81,4 +81,5 @@ int do_toutiao_test(void);
 int do_svm_test(void);
 int do_neural_test(void);
 int do_dp_test(void);
+int do_string_matcher_test(void);
 #endif

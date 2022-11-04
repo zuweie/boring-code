@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-10-27 16:36:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-10-29 09:43:45
+ * @LastEditTime: 2022-11-02 11:38:37
  * @FilePath: /boring-code/src/unit_test/unit_test_dp.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -101,8 +101,7 @@ static void test_lcs_test(void)
         printf("\n");
     }
 
-    CN strings = CN_create(LIST, str_t);
-    lcs_strings(s1, s2, path, strings);
+    CN strings = lcs_strings(s1, s2, path);
 
     // print lcs:
     printf(" --- LCS strings ---\n");

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-10-27 15:57:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-10-31 16:05:31
+ * @LastEditTime: 2022-11-02 11:39:20
  * @FilePath: /boring-code/src/dp/lcs.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -91,8 +91,9 @@ int lcs(const char* s1, const char* s2, int** table_dp, int** table_path)
  * @param strings 所有的最长公共子序列。 
  * @return int 
  */
-int lcs_strings(const char* s1, const char* s2, int **path, CN strings)
+CN lcs_strings(const char* s1, const char* s2, int **path)
 {
+    CN strings = CN_create(LIST, str_t);
     // 一个最长公共子序列，不会比 s1 长，
     int len_s1 = strlen(s1);
     int len_s2 = strlen(s2);
@@ -106,7 +107,8 @@ int lcs_strings(const char* s1, const char* s2, int **path, CN strings)
     char* str_lcs = malloc(lcs_capacity);
     memset(str_lcs, 0, lcs_capacity);
     CN_add(strings, str_lcs);
-    return combine_strings(path, len_s2+1, len_s1, len_s2, s1,  str_lcs, lcs_capacity, strings);
+    combine_strings(path, len_s2+1, len_s1, len_s2, s1,  str_lcs, lcs_capacity, strings);
+    return strings;
 }
 
 /**
