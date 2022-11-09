@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-10-27 16:36:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-04 19:38:01
+ * @LastEditTime: 2022-11-08 15:21:09
  * @FilePath: /boring-code/src/unit_test/unit_test_dp.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,7 @@
 #include "container/cn.h"
 #include "unit_test.h"
 #include "string_match/kmp.h"
+#include "string_match/regexp.h"
 
 
 static int  suite_success_init (void) 
@@ -50,6 +51,16 @@ static void test_string_matcher_kmp(void)
     CN_finalize(index, NULL);
 }
 
+
+static void test_regexp(void)
+{
+    char* s = "aab";
+    char* p = "c*a*b";
+
+    int match = reg_exp_match(s, p);
+    printf("\nmatch: %d \n", match);
+}
+
 int do_string_matcher_test (void) 
 {
 
@@ -65,9 +76,14 @@ int do_string_matcher_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test string matcher ..\n", test_string_matcher_kmp) ) {
+    // if (NULL == CU_add_test(pSuite, "test string matcher ..\n", test_string_matcher_kmp) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+
+    if (NULL == CU_add_test(pSuite, "test regexp ..\n", test_regexp) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-
 }
