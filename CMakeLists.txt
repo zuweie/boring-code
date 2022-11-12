@@ -66,6 +66,7 @@ set (SOURCE
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c
+    src/leetcode/longest_palindrome.c
 )
 
 ## 连接 cunit 库

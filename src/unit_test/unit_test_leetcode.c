@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-09 08:21:55
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-09 09:34:54
+ * @LastEditTime: 2022-11-12 18:42:07
  * @FilePath: /boring-code/src/unit_test/unit_test_leetcode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,6 +14,7 @@
 #include "leetcode/kmp.h"
 #include "leetcode/regexp.h"
 #include "leetcode/lcs.h"
+#include "leetcode/longest_palindrome.h"
 
 static int  suite_success_init (void) 
 {
@@ -152,6 +153,18 @@ static void test_lcs(void)
 
 }
 
+static void test_palinrome_str (void) {
+    const char* s = "a1bcb1";
+    char* p = longest_palidrome_str(s);
+
+    if (p) {
+        printf("\nps: %s, \n", p);
+        free(p);
+    } else {
+        printf(" ps : empty");
+    }
+}
+
 int do_leetcode_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -161,22 +174,27 @@ int do_leetcode_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test string matcher ..\n", test_kmp_computer_prefix) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test string matcher ..\n", test_kmp_computer_prefix) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test string matcher ..\n", test_kmp) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test string matcher ..\n", test_kmp) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test regexp ..\n", test_regexp) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test regexp ..\n", test_regexp) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test lcs ..\n", test_lcs) ) {
+    // if (NULL == CU_add_test(pSuite, "test lcs ..\n", test_lcs) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test palindrome ..\n", test_palinrome_str) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
