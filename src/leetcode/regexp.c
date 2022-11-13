@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-07 15:39:55
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-08 15:20:56
+ * @LastEditTime: 2022-11-13 22:54:13
  * @FilePath: /boring-code/src/string_match/regexp.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -49,14 +49,14 @@ int reg_exp_match(const char* s, const char* p)
         }
     }
 
-    printf("\n");
-    for (int i=0; i<len_s+1; ++i) 
-    {
-        for (int j=0; j<len_p+1; ++j) {
-            printf("%d, ", dp[i][j]);
-        }
-        printf("\n");
-    }
+    // printf("\n");
+    // for (int i=0; i<len_s+1; ++i) 
+    // {
+    //     for (int j=0; j<len_p+1; ++j) {
+    //         printf("%d, ", dp[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
     return dp[len_s][len_p];
 }
