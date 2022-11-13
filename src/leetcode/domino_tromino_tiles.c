@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-13 21:57:44
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-13 22:45:34
+ * @LastEditTime: 2022-11-13 22:52:56
  * @FilePath: /boring-code/src/leetcode/domino_tromino_tiles.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -25,6 +25,7 @@ long fn(int n, long fn_values[]) {
     fn_values[n] = total;
     return total;
 }
+
 long domino_tromino_tilings (int n) 
 {
     long fn_values[n+1];
