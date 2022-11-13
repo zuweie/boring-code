@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-09 08:21:55
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-12 18:42:07
+ * @LastEditTime: 2022-11-13 22:46:35
  * @FilePath: /boring-code/src/unit_test/unit_test_leetcode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,6 +15,7 @@
 #include "leetcode/regexp.h"
 #include "leetcode/lcs.h"
 #include "leetcode/longest_palindrome.h"
+#include "leetcode/domino_tromino_tiles.h"
 
 static int  suite_success_init (void) 
 {
@@ -165,6 +166,11 @@ static void test_palinrome_str (void) {
     }
 }
 
+static void test_domino_tromino_tiles (void) {
+    long n = domino_tromino_tilings(6);
+    printf("domino_tromino_numbers: %ld \n", n);
+}
+
 int do_leetcode_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -194,7 +200,12 @@ int do_leetcode_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test palindrome ..\n", test_palinrome_str) ) {
+    // if (NULL == CU_add_test(pSuite, "test palindrome ..\n", test_palinrome_str) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test domino_tromino_tiles ..\n", test_domino_tromino_tiles) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -67,6 +67,7 @@ set (SOURCE
     src/leetcode/kmp.c
     src/leetcode/regexp.c
     src/leetcode/longest_palindrome.c
+    src/leetcode/domino_tromino_tiles.c
 )
 
 ## 连接 cunit 库
