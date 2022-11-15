@@ -68,6 +68,7 @@ set (SOURCE
     src/leetcode/regexp.c
     src/leetcode/longest_palindrome.c
     src/leetcode/domino_tromino_tiles.c
+    src/leetcode/permutation_combination.c
 )
 
 ## 连接 cunit 库
