@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-09 08:21:55
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-15 21:27:04
+ * @LastEditTime: 2022-11-16 23:00:53
  * @FilePath: /boring-code/src/unit_test/unit_test_leetcode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -173,7 +173,18 @@ static void test_domino_tromino_tiles (void) {
 }
 
 static void test_permutation_combination (void) {
-    permutation_combination(NULL, 5, 3, NULL, NULL);
+    float input[9] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f};
+    int row, col;
+    float* ret = permutation_combination(input, 9, 1, &row, &col);
+    float (*mat)[col] = ret;
+    printf("\n");
+    for (int j=0; j<col; ++j) {
+        for (int i=0; i<row; ++i) {
+            printf("%d, ", (int)mat[i][j]);
+        }
+        printf("\n");
+    }
+    free(ret);
 }
 
 int do_leetcode_test (void) 
