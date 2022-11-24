@@ -69,6 +69,7 @@ set (SOURCE
     src/leetcode/longest_palindrome.c
     src/leetcode/domino_tromino_tiles.c
     src/leetcode/permutation_combination.c
+    src/leetcode/891.c
 )
 
 ## 连接 cunit 库

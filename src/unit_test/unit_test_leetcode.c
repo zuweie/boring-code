@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-09 08:21:55
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-21 18:11:31
+ * @LastEditTime: 2022-11-23 08:14:31
  * @FilePath: /boring-code/src/unit_test/unit_test_leetcode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,6 +17,7 @@
 #include "leetcode/longest_palindrome.h"
 #include "leetcode/domino_tromino_tiles.h"
 #include "leetcode/permutation_combination.h"
+#include "leetcode/891.h"
 
 static int  suite_success_init (void) 
 {
@@ -202,6 +203,14 @@ static void test_permutation_combination2 (void) {
     free(ret);
 }
 
+static void test_891 (void) {
+    //int input[3] = {2, 1, 3};
+    //int input[] ={5,69,89,92,31,16,25,45,63,40,16,56,24,40,75,82,40,12,50,62,92,44,67,38,92,22,91,24,26,21,100,42,23,56,64,43,95,76,84,79,89,4,16,94,16,77,92,9,30,13};
+    int input[] = {5,69,89,92,31,16,25,45,63,40};
+    long total = sum_sub_seq_widths(input, sizeof(input) / sizeof(int));
+    printf("total: %ld", total);
+}
+
 int do_leetcode_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -246,9 +255,13 @@ int do_leetcode_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test permutation_combination2 ..\n", test_permutation_combination2) ) {
+    // if (NULL == CU_add_test(pSuite, "test permutation_combination2 ..\n", test_permutation_combination2) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test permutation_combination2 ..\n", test_891) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-
 }
