@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-23 07:19:32
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-24 11:00:43
+ * @LastEditTime: 2022-11-24 11:14:52
  * @FilePath: /boring-code/src/leetcode/891.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -60,6 +60,26 @@ int sum_sub_seq_widths2(int* nums, int numsSize)
         y = y * 2 % mod;
     }
     return (res + mod) % mod;
+}
+
+int sum_sub_seq_widths3(int* nums, int numsSize) 
+{
+    qsort(nums, numsSize, sizeof(int), cmp);
+    int mod = (int)1e9 + 7;
+    int n = numsSize;
+    long result = 0;
+    long pow[n];
+    pow[0] = 1;
+    
+    for (int i=1; i<n; ++i) {
+        pow[i] = (pow[i-1] << 1) % mod;
+    }
+
+    for (int i=0; i<n; ++i) {
+        result = (result + (pow[i] - pow[n-i-1]) * nums[i] % mod) % mod;
+    }
+
+    return result;
 }
 
 
