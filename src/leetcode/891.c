@@ -2,10 +2,11 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-23 07:19:32
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-24 11:14:52
+ * @LastEditTime: 2022-11-24 11:58:31
  * @FilePath: /boring-code/src/leetcode/891.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
+#include <stdio.h>
 #include <limits.h>
 #include "891.h"
 
@@ -74,8 +75,9 @@ int sum_sub_seq_widths3(int* nums, int numsSize)
     for (int i=1; i<n; ++i) {
         pow[i] = (pow[i-1] << 1) % mod;
     }
-
+    
     for (int i=0; i<n; ++i) {
+        //printf("%ld, ", pow[i] - pow[n-i-1]);
         result = (result + (pow[i] - pow[n-i-1]) * nums[i] % mod) % mod;
     }
 

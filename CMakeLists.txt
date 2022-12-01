@@ -70,6 +70,7 @@ set (SOURCE
     src/leetcode/domino_tromino_tiles.c
     src/leetcode/permutation_combination.c
     src/leetcode/891.c
+    src/leetcode/813.c
 )
 
 ## 连接 cunit 库
