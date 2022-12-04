@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-30 09:24:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-12-01 09:22:12
+ * @LastEditTime: 2022-12-04 10:00:51
  * @FilePath: /boring-code/src/leetcode/813.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -22,12 +22,12 @@ static double fn(int* nums, int numsSize, int k, double (*_buffer)[k+1])
     if (_buffer[numsSize][k] > 0.f)
         return _buffer[numsSize][k];
 
-    int n = numsSize;
-
     if (k == 1) 
         return avg(nums, numsSize);
 
+    int n = numsSize;
     //double avgs[n-k+1];
+
     double res = -1.f;
 
     for (int i=1; i<=n-k+1; ++i) {
