@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-09 08:21:55
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-12-03 17:17:29
+ * @LastEditTime: 2022-12-04 15:01:06
  * @FilePath: /boring-code/src/unit_test/unit_test_leetcode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -261,19 +261,56 @@ static void test_813 (void)
 
 static void test_37 (void) 
 {
-char board[9][9] = {{"5","3",".",".","7",".",".",".","."}, \
-                    {"6",".",".","1","9","5",".",".","."}, \
-                    {".","9","8",".",".",".",".","6","."}, \
-                    {"8",".",".",".","6",".",".",".","3"}, \
-                    {"4",".",".","8",".","3",".",".","1"}, \
-                    {"7",".",".",".","2",".",".",".","6"}, \
-                    {".","6",".",".",".",".","2","8","."}, \
-                    {".",".",".","4","1","9",".",".","5"}, \
-                    {".",".",".",".","8",".",".","7","9"}};
+// char board[9][9] = {{'5','3','.','.','7','.','.','.','.'}, \
+//                     {'6','.','.','1','9','5','.','.','.'}, \
+//                     {'.','9','8','.','.','.','.','6','.'}, \
+//                     {'8','.','.','.','6','.','.','.','3'}, \
+//                     {'4','.','.','8','.','3','.','.','1'}, \
+//                     {'7','.','.','.','2','.','.','.','6'}, \
+//                     {'.','6','.','.','.','.','2','8','.'}, \
+//                     {'.','.','.','4','1','9','.','.','5'}, \
+//                     {'.','.','.','.','8','.','.','7','9'}};
+char board[9][9] = {{'.','.','.','.','9','.','.','.','.'}, \
+                    {'.','.','.','.','.','.','.','.','.'}, \
+                    {'.','.','.','.','.','.','.','.','.'}, \
+                    {'.','.','.','.','.','.','.','.','.'}, \
+                    {'.','.','.','.','.','.','.','.','.'}, \
+                    {'.','.','.','.','.','.','.','.','.'}, \
+                    {'.','.','.','.','.','.','.','.','.'}, \
+                    {'.','.','.','.','.','.','.','.','.'}, \
+                    {'.','.','.','.','.','.','.','.','.'}};
 
 
-    int out = calculate_valid_numbers(board, 0, 2);
-    print_b(&out, sizeof(out));
+    //int out = calculate_valid_numbers(board, 0, 2);
+    // print_b(&out, sizeof(out));
+
+    //printf("\n");
+    
+    // char number = pop_up_number(&out);
+    // printf("number:%c ", number);
+    // print_b(&out, sizeof(out));
+    // printf("\n");
+    // number = pop_up_number(&out);
+    // printf("number:%c ", number);
+    // print_b(&out, sizeof(out));
+    // printf("\n");
+    // number = pop_up_number(&out);
+    // printf("number:%c ", number);
+    // print_b(&out, sizeof(out));
+    // printf("\n");
+    // number = pop_up_number(&out);
+    // printf("number:%c ", number);
+    // print_b(&out, sizeof(out));
+    int col = 9;
+    int result = solve_sudoku(board, 9, &col);
+    printf("\n");
+    for (int i=0; i<9; ++i) {
+        for (int j=0; j<9; ++j) {
+            printf("%c ", board[i][j]);
+        }
+        printf("\n");
+    }
+    
 }
 
 int do_leetcode_test (void) 

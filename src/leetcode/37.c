@@ -2,12 +2,26 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-12-01 11:12:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-12-03 17:45:46
+ * @LastEditTime: 2022-12-04 14:53:52
  * @FilePath: /boring-code/src/leetcode/37.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include <stdlib.h>
+//#include <stdio.h>
 #include "37.h"
+static int calculate_valid_numbers(char** board, int x, int y);
+static char pop_up_number(int* out);
+// static void print_b(void* pointer, size_t size) 
+// {
+//     unsigned long data = *((unsigned long*) pointer);
+//     int length = size*8;
+//     int counter = 0;
+//     while (length-- > 0) {
+//         printf("%lu", (data>>length)&0x1);
+//         counter++;
+//         if (counter % 8 == 0) printf(" ");
+//     }
+// }
 /**
  * @brief 编写一个程序，通过填充空格来解决数独问题。
  * 数独的解法需 遵循如下规则：
@@ -44,6 +58,58 @@
  */ 
 int solve_sudoku(char** board, int board_size, int* board_col_size) 
 {
+    char* pb = board;
+    int go_step = 0;
+    // 一步需要储存两个数据，一个是 valid number。 一个是 step。最多有 9*9:81 步，81 *2 = 162 取整 168
+    int go_stack[168];
+    int go_stack_index = -2;
+    while (go_step < 81) {
+        
+        if (pb[go_step] == '.') {
+
+            int x = go_step / 9;
+            int y = go_step % 9;
+            int valid = calculate_valid_numbers(pb, x, y);
+
+            if (!valid) {
+                // 找不到可以走的路了。哪里回滚上一步。在走其他的路。
+                for (;go_stack_index>=0;) {
+
+                    valid   = go_stack[go_stack_index];
+                    go_step = go_stack[go_stack_index+1];
+
+                    // 把上一个数字还原成 .
+                    pb[go_step] = '.';
+
+                    if (!valid) go_stack_index -= 2;
+                    else break;
+                }
+
+            } else {
+                go_stack_index += 2;
+            }
+
+            //printf("go_step:%d, x:%d, y:%d, go_stack_index:%d, valid: ", go_step, x, y, go_stack_index);
+            //print_b(&valid, sizeof(valid));
+            //printf("\n");
+
+            if (valid) {
+                char number = pop_up_number(&valid);
+                //printf("number:%c ", number);
+                //print_b(&valid, sizeof(valid));
+                //printf("\n");
+                pb[go_step] = number;
+                
+                go_stack[go_stack_index] = valid;
+                go_stack[go_stack_index+1] = go_step;
+            } else {
+                // 失败了。最后都没找到路那就是失败了。
+                return -1;
+            }
+        }
+        go_step++;
+    }
+    return 0;
 }
 
 /**
@@ -57,7 +123,7 @@ int solve_sudoku(char** board, int board_size, int* board_col_size)
  * @param out
  * @return int 
  */
-int calculate_valid_numbers(char** board, int x, int y)
+static int calculate_valid_numbers(char** board, int x, int y)
 {
     char (*pboard)[9] = board;
     int out = ~0;
@@ -76,21 +142,42 @@ int calculate_valid_numbers(char** board, int x, int y)
         }
     }
 
-    // // 把行中出现的去除掉
-    // for (i=0; i<9; ++i) {
-    //     if (pboard[x][i] != '.') {
-    //         int mask = 1 << (pboard[x][i] - '0' -1 );
-    //         out &= ~mask;
-    //     }
-    // }
+    // 把行中出现的去除掉
+    for (i=0; i<9; ++i) {
+        if (pboard[x][i] != '.') {
+            int mask = 1 << (pboard[x][i] - '0' -1 );
+            out &= ~mask;
+        }
+    }
 
-    // // 吧列中出现去除掉
-    // for (j=0; j<9; ++j) {
-    //     if (pboard[j][y] != '.') {
-    //         int mask = 1 << (pboard[j][y] - '0' - 1 );
-    //         out &= ~mask;
-    //     }
-    // }
-    return out; //& ~(~0<<9);
+    // 吧列中出现去除掉
+    for (j=0; j<9; ++j) {
+        if (pboard[j][y] != '.') {
+            int mask = 1 << (pboard[j][y] - '0' - 1 );
+            out &= ~mask;
+        }
+    }
+    return out & ~(~0<<9);
 }
 
+/**
+ * @brief 
+ * 
+ * @param out 
+ * @return char 
+ */
+static char pop_up_number(int* out) 
+{
+    if (*out) {
+        int bit_pos = 0;
+        int mask;
+        do {
+            mask = 1 << bit_pos++;
+            if ((*out) & mask) {
+                *out &= ~mask;
+                return '0' + bit_pos;
+            };
+        }while(bit_pos < 9);
+    }
+    return '\0';
+}

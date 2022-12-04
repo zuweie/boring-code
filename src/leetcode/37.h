@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-12-01 11:12:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-12-03 17:11:01
+ * @LastEditTime: 2022-12-04 14:53:38
  * @FilePath: /boring-code/src/leetcode/37.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -42,8 +42,6 @@
  * @param boardSize 
  * @param boardColSize 
  */
-int solveSudoku(char** board, int boardSize, int* boardColSize);
-
-int calculate_valid_numbers(char** board, int x, int y);
+int solve_sudoku(char** board, int boardSize, int* boardColSize);
 
 #endif
