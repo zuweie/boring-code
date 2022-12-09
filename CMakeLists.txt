@@ -73,6 +73,7 @@ set (SOURCE
     src/leetcode/813.c
     src/leetcode/37.c
     src/leetcode/51.c
+    src/leetcode/1775.c
 )
 
 ## 连接 cunit 库

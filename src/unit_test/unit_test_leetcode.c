@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-11-09 08:21:55
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-12-04 15:01:06
+ * @LastEditTime: 2022-12-09 18:21:58
  * @FilePath: /boring-code/src/unit_test/unit_test_leetcode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -20,6 +20,7 @@
 #include "leetcode/891.h"
 #include "leetcode/813.h"
 #include "leetcode/37.h"
+#include "leetcode/1775.h"
 
 static int  suite_success_init (void) 
 {
@@ -313,6 +314,15 @@ char board[9][9] = {{'.','.','.','.','9','.','.','.','.'}, \
     
 }
 
+static void test_1775 (void) {
+    int nums1[6] = {1,2,3,4,5,6};
+    int nums2[6] = {1,1,2,2,2,2};
+    // int nums1[2] = {6,6};
+    // int nums2[1] = {1};
+    int ret = min_operations(nums1, sizeof(nums1)/sizeof(int), nums2, sizeof(nums2)/sizeof(int));
+    printf("ret:%d, ", ret);
+}   
+
 int do_leetcode_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -382,7 +392,12 @@ int do_leetcode_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test test_37 ..\n", test_37) ) {
+    // if (NULL == CU_add_test(pSuite, "test test_37 ..\n", test_37) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test test_1775 ..\n", test_1775) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
