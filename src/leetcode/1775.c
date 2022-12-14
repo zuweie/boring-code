@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-12-08 09:41:04
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-12-11 22:21:20
+ * @LastEditTime: 2022-12-11 22:34:35
  * @FilePath: /boring-code/src/leetcode/1775.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -42,33 +42,8 @@ int min_operations(int* nums1, int nums1_size, int* nums2, int nums2_size)
 static int fn(int target, int input[], int input_size, int* res, CN dp) 
 {
     int ok = 0;
-
-    // if (target < 0 && dp[0][-target][input_size] > 0) {
-    //     *res = dp[0][-target][input_size];
-    //     ok = 1;
-    // } else if (target > 0 && dp[1][target][input_size] ){
-    //     *res = dp[1][target][input_size];
-    //     ok = 1;
-    // }
-    
-    // if (target <0 && dp1[-target][input_size] >= 0) {
-    //     printf("target:%d, input_size\n", target, input_size);
-    //     *res = dp1[-target][input_size];
-    //     ok = 1;
-    // } else if (target > 0 && dp2[target][input_size] >=0) {
-    //     printf("target:%d, input_size\n", target, input_size);
-    //     *res = dp2[target][input_size];
-    //     ok =2;
-    // }
-
     int *val = CN_get(dp, target, input_size);
 
-    // if (CN_has(dp, target, input_size)) {
-    //     //printf("dp:%d, target:%d, input_size:%d\n", dp, target, input_size);
-    //     int* val = CN_get(dp, target, input_size);
-    //     *res = *val;
-    //     ok = 1;
-    // } 
     if (val) {
         *res = *val;
         ok = 1;
@@ -103,11 +78,6 @@ static int fn(int target, int input[], int input_size, int* res, CN dp)
         *res = ret;
     }
     if (ok) {
-        // if (target > 0) dp2[target][input_size] = *res;
-        // else dp1[-target][input_size] = *res;
-
-        //*res = dp[target][input_size];
-        //printf("dp:%d, target:%d, input_size:%d, res:%d\n", dp, target, input_size, (*res));
         CN_set(dp, target, input_size, (*res));
     }
     return ok;
