@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:08:54
- * @LastEditTime: 2021-11-02 10:04:37
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2023-03-07 10:53:32
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/type_def.h
  */
@@ -11,12 +11,23 @@
 #include <stdarg.h>
 #include "__type_value.h"
 
+
 #define MAX_T_DEF_SLOT_SIZE 16
 #define T_size(clazz_ptr) ((clazz_ptr)->_def.ty_size)
 #define T_cmp(clazz_ptr) ((adapter_cmp)((clazz_ptr)->_adapter[e_cmp]))
 #define T_hash(clazz_ptr) ((adapter_hasher)((clazz_ptr)->_adapter[e_hash]))
 #define T_setup(clazz_ptr) ( (adapter_setup)((clazz_ptr)->_adapter[e_setup]))
 #define T_vargs_read(clazz_ptr) ((adapter_vargs_reader) ((clazz_ptr)->_adapter[e_vargs]))
+
+/**以上宏可以做出改进版本**/
+/**
+ * 没时间了，以后再弄吧
+ * #define T_size(container_ptr) ((container_ptr)->type_clazz->_def.ty_size)
+ * #define T_cmp(container_ptr, t1_ptr, t2_ptr) ((adapter_cmp) ((container_ptr)->type_clazz->_adapter[e_cmp]))(t1_ptr, t2_ptr)
+ * #define T_hash(container_ptr, t1_ptr, int)  ((adapter_hasher) ((container_ptr)->type_clazz->adapter[e_hash]))(t1_ptr, int)
+ * 
+*/
+
 
 typedef enum {
     char_t=1, 
