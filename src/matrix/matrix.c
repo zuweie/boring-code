@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:28
- * @LastEditTime: 2021-12-07 14:29:51
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2023-03-31 00:24:35
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.c
  */
@@ -94,13 +94,13 @@ matrix_t Mat_load(size_t rows, size_t cols, vfloat_t elems[])
     };
     return mat;
 }
-int Mat_copy_elems(matrix_t* mat, vfloat_t buffer[])
+int Mat_export(matrix_t* mat, vfloat_t buffer[])
 {
     memcpy(buffer, mat->pool, sizeof(vfloat_t) * Mat_rows(mat) * Mat_cols(mat));
     return 0;
 }
 
-matrix_t Mat_copy(matrix_t* mat)
+matrix_t Mat_create_cpy(matrix_t* mat)
 {
     size_t rows = Mat_rows(mat);  
     size_t cols = Mat_cols(mat);
@@ -209,9 +209,9 @@ int Mat_inverse(matrix_t* mat)
 
 int Mat_pseudo_inverse(matrix_t* mat)
 {
-    matrix_t mat1 = Mat_copy(mat);
+    matrix_t mat1 = Mat_create_cpy(mat);
     Mat_transpose(mat);
-    matrix_t mat_t_cpy = Mat_copy(mat);
+    matrix_t mat_t_cpy = Mat_create_cpy(mat);
     Mat_dot(mat, &mat1);
     Mat_inverse(mat);
     Mat_dot(mat, &mat_t_cpy);
@@ -263,7 +263,7 @@ int Mat_dot(matrix_t* mat1, matrix_t* mat2)
     if (cols_1 == rows_2) {
 
         vfloat_t elems_1[rows_1][cols_1];
-        Mat_copy_elems(mat1, elems_1);
+        Mat_export(mat1, elems_1);
 
         if (cols_2 > cols_1) {
             // 需要扩大内存。
@@ -349,6 +349,61 @@ int Mat_move_cols(matrix_t* mat, int picked, int step)
     Mat_transpose(mat);
     return 0;
 }
+
+/**
+ * @brief 以左上角(0,0)为原点坐标，向下与向右为正方向（也就是屏幕坐标系统），对矩阵进行形变，被压缩，则数据丢失，被拉伸则填入 fill 数据。
+ * 
+ * @param mat 
+ * @param left   0，则不动，-x，则往左扩大，+x，则往右缩小
+ * @param top    0，则不动，-y，则往上扩大，+y，则往下缩小
+ * @param right  0，则不动，-x，则往左缩小，+x，则往右扩大
+ * @param bottom 0，则不动，-y，则往上缩小，+y，则往下扩大
+ * @param fill 如果有扩大填入数据
+ * @return int 
+ */
+int Mat_rescale(matrix_t* mat, int left, int top, int right, int bottom, vfloat_t fill)
+{
+    int o_rows = mat->rows;
+    int o_cols = mat->cols;
+    
+    int n_rows = o_rows - top  + bottom;
+    int n_cols = o_cols - left + right;
+
+    // 检查变形后形状有没有问题。
+    if (n_rows > 0 && n_cols > 0) {
+        // 没有问题，继续编码
+        
+        vfloat_t* dat_cpy = malloc(o_rows * o_cols * sizeof(vfloat_t));
+        vfloat_t (*dat_cpy_ptr)[o_cols] = dat_cpy;
+
+        Mat_export(mat, dat_cpy);
+        Mat_reshape(mat, n_rows, n_cols);
+
+        Mat_eptr(mat, mat_ptr);
+
+        
+        /* 拆分与填充数据 */
+        for (int i=0; i<n_rows; ++i) {
+            for (int j=0; j<n_cols; ++j) {
+                
+                // 计算 i 与 j 是否能映射到旧数据的坐标，如果不能映射则就只能填入 fill
+                int dat_cpy_i = top   + i; 
+                int dat_cpy_j = left + j;
+
+                if ((dat_cpy_i>=0 && dat_cpy_i < o_rows) && (dat_cpy_j >=0 && dat_cpy_j < o_cols))
+                    mat_ptr[i][j] = dat_cpy_ptr[dat_cpy_i][dat_cpy_j];
+                else 
+                    mat_ptr[i][j] = fill;
+            }
+        }
+
+        free(dat_cpy);
+        return 0;
+    }
+    
+    return -1;
+}
+
 
 
 int Mat_fill(matrix_t* mat, vfloat_t fill) 
@@ -454,4 +509,28 @@ int Mat_op_numberic(matrix_t* mat, vfloat_t v, mat_op_t op)
     return 0;
 }
 
+
+int Mat_vector_dot(matrix_t* m1, matrix_t* m2, vfloat_t* out) 
+{
+    if (m1->rows != 1 || m1->cols != 1)
+        return -1;
+
+    if (m2->rows != 1 || m2->cols != 1)
+        return -1;
+    
+    int m1_longest_dimens = m1->rows > m1->cols ? m1->rows : m1->cols;
+    int m2_longest_dimens = m2->rows > m2->cols ? m2->rows : m2->cols;
+
+    if (m1_longest_dimens != m2_longest_dimens)
+        return -1;
+
+    *out = __vet_dot_vet(m1->pool, m2->pool, m1_longest_dimens);
+    
+    return 0;
+}
+
+int Mat_copy(matrix_t* dest, matrix_t* src)
+{
+    return Mat_reload(dest, src->rows, src->cols, src->pool);
+}
 

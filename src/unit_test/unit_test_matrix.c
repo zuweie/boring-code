@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-04-06 22:15:11
- * @LastEditTime: 2021-12-05 10:30:11
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2023-03-31 00:13:41
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_matrix.h
  */
@@ -151,7 +151,46 @@ static void test_mat_deflate(void)
     }
     Mat_deflate(&mat, dimen_col, op_add);
     PRINTF_MATRIX(mat);
+    Mat_destroy(&mat);
 }
+
+static void test_mat_rescale(void) {
+    matrix_t mat = Mat_create(4, 4);
+    Mat_fill(&mat, 3);
+    PRINTF_MATRIX(mat);
+    Mat_rescale(&mat, 1, 1, -1, -1, 0);
+    PRINTF_MATRIX(mat);
+    Mat_rescale(&mat, -1,-1, 1, 1, 5);
+    PRINTF_MATRIX(mat);
+    Mat_destroy(&mat);
+}
+
+static void test_mat_fetch_row(void) {
+    matrix_t mat = Mat_create(4, 4);
+    Mat_fill(&mat, 3);
+    PRINTF_MATRIX(mat);
+
+    Mat_rescale(&mat, 0, 1, 0, -2, 0);
+    PRINTF_MATRIX(mat);
+    Mat_destroy(&mat);
+}
+
+
+static void test_mat_fetch_col(void) {
+    
+    matrix_t mat = Mat_create(4, 4);
+    Mat_arange(&mat, 1, 4*4);
+    PRINTF_MATRIX(mat);
+
+    Mat_rescale(&mat, 2, 0, -1, 0, 0);
+    PRINTF_MATRIX(mat);
+
+    Mat_rescale(&mat, 0, 0, 0, 1, 1);
+    PRINTF_MATRIX(mat);
+
+    Mat_destroy(&mat);
+}
+
 
 int do_matrix_test (void) 
 {
@@ -182,7 +221,22 @@ int do_matrix_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_deflate) ) {
+    // if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_deflate) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat_rescale) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat_fetch_row) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat_fetch_col) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
