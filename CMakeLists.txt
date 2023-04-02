@@ -27,6 +27,8 @@ set (SOURCE
     src/unit_test/unit_test_neural_network.c
     src/unit_test/unit_test_decision_tree.c
     src/unit_test/unit_test_leetcode.c
+    src/unit_test/unit_test_matrix2.c
+    src/unit_test/unit_test_machine_learning2.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__vector.c
@@ -63,6 +65,9 @@ set (SOURCE
     src/machine_learning/svm/svm_kernel_function.c
     src/machine_learning/neural_network.c
     src/machine_learning/decision_tree.c
+    src/machine_learning2/matrix2.c
+    src/machine_learning2/matrix2_operator.c
+    src/machine_learning2/perceptron.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c

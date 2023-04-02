@@ -53,11 +53,13 @@ int main ()
     // do_asr_test();
     // do_ultra_array_test();
     // do_macine_learning_test();
-    do_matrix_test();
+    // do_matrix_test();
+    do_matrix2_test();
     // do_toutiao_test();
     // do_svm_test();
     // do_neural_test();
     // do_leetcode_test();
+    // do_machine_learning2_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);
