@@ -96,10 +96,10 @@ int Mat2_fill(matrix2_t* mat, vfloat_t v)
 
 int Mat2_vect_dot(matrix2_t* mat1, matrix2_t* mat2, vfloat_t* out)
 {
-    if (mat1->rows != 1 || mat1->cols != 1)
+    if (mat1->rows !=1 && mat1->cols !=  1)
         return -1;
     
-    if (mat2->rows != 1 || mat2->cols != 2)
+    if (mat2->rows != 1 && mat2->cols != 1)
         return -1;
 
     size_t n1 = mat1->rows > mat1->cols ? mat1->rows : mat1->cols;
@@ -108,7 +108,8 @@ int Mat2_vect_dot(matrix2_t* mat1, matrix2_t* mat2, vfloat_t* out)
     if (n1 != n2)
         return -1;
     
-    return __mat2_vect_dot(mat1->pool, mat2->pool, n1);
+    *out = __mat2_vect_dot(mat1->pool, mat2->pool, n1);
+    return 0;
 }
 
 
@@ -158,4 +159,95 @@ int Mat2_put(matrix2_t* mat, size_t i, size_t j, vfloat_t v)
 {
     MAT2_POOL_PTR(mat, ptr);
     ptr[i][j] = v;
+}
+
+int Mat2_load_on_shape(matrix2_t* mat, vfloat_t* data, size_t rows, size_t cols) 
+{
+    mat->pool = realloc(mat->pool, rows * cols * sizeof(vfloat_t));
+    mat->rows = rows;
+    mat->cols = cols;
+    memcpy(mat->pool, data, rows * cols * sizeof(vfloat_t));
+    return 0;
+}
+
+int Mat2_padding_left(matrix2_t* mat, int offset, vfloat_t fill)
+{
+    vfloat_t* pool1 = (vfloat_t*) malloc(mat->rows * mat->cols * sizeof(vfloat_t));
+    memcpy(pool1, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+    __mat2_rescale(
+        &(mat->pool),
+        &(mat->rows),
+        &(mat->cols),
+        pool1,
+        mat->rows,
+        mat->cols,
+        -offset,
+        0,
+        0,
+        0,
+        fill
+    );
+    free(pool1);
+    return 0;
+}
+
+int Mat2_padding_top(matrix2_t* mat, int offset, vfloat_t fill)
+{
+    vfloat_t* pool1 = (vfloat_t*) malloc(mat->rows * mat->cols * sizeof(vfloat_t));
+    memcpy(pool1, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+    __mat2_rescale(
+        &(mat->pool),
+        &(mat->rows),
+        &(mat->cols),
+        pool1,
+        mat->rows,
+        mat->cols,
+        0,
+        -offset,
+        0,
+        0,
+        fill
+    );
+    free(pool1);
+    return 0;
+}
+int Mat2_padding_right(matrix2_t* mat, int offset, vfloat_t fill)
+{
+    vfloat_t* pool1 = (vfloat_t*) malloc(mat->rows * mat->cols * sizeof(vfloat_t));
+    memcpy(pool1, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+    __mat2_rescale(
+        &(mat->pool),
+        &(mat->rows),
+        &(mat->cols),
+        pool1,
+        mat->rows,
+        mat->cols,
+        0,
+        0,
+        offset,
+        0,
+        fill
+    );
+    free(pool1);
+    return 0;
+}
+int Mat2_padding_bottom(matrix2_t* mat, int offset, vfloat_t fill)
+{
+    vfloat_t* pool1 = (vfloat_t*) malloc(mat->rows * mat->cols * sizeof(vfloat_t));
+    memcpy(pool1, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+    __mat2_rescale(
+        &(mat->pool),
+        &(mat->rows),
+        &(mat->cols),
+        pool1,
+        mat->rows,
+        mat->cols,
+        0,
+        0,
+        0,
+        offset,
+        fill
+    );
+    free(pool1);
+    return 0;
 }
