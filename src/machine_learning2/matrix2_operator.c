@@ -100,6 +100,17 @@ int __mat2_rescale(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, si
 }
 
 
+/**
+ * @brief 两矩阵相加。
+ * 
+ * @param m1 矩阵1,相加后结果放入矩阵1。
+ * @param rows1 矩阵1行数指针。
+ * @param cols1 矩阵1列数指针。
+ * @param m2 矩阵2,数据源。
+ * @param rows2 矩阵2的行数
+ * @param cols2 矩阵2的列数。
+ * @return int 操作结果
+ */
 int __mat2_add(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2)
 {
    if (*rows1 == rows2 && *cols1 == cols2) {
@@ -117,6 +128,17 @@ int __mat2_add(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t
    return -1;
 }
 
+/**
+ * @brief 将矩阵相减
+ * 
+ * @param m1 矩阵1,相减后的结果放入矩阵1。
+ * @param rows1 矩阵1行数指针。
+ * @param cols1 矩阵1列数指针。
+ * @param m2 矩阵2,数据源。
+ * @param rows2 矩阵2行数。
+ * @param cols2 矩阵2列数。
+ * @return int 操作结果
+ */
 int __mat2_sub(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2)
 {
    if (*rows1 == rows2 && *cols1 == cols2) {
@@ -135,6 +157,18 @@ int __mat2_sub(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t
    return -1;
 }
 
+/**
+ * @brief 矩阵乘以标量。
+ * 
+ * @param m1 矩阵1,乘以标量后结果存入矩阵1。
+ * @param rows1 矩阵1行数指针。
+ * @param cols1 矩阵1列数指针。
+ * @param m2 矩阵2,数据源。
+ * @param rows2 矩阵2的行数。
+ * @param cols2 矩阵2行数。
+ * @param scalar 标量。
+ * @return int 操作结果。
+ */
 int __mat2_scalar_multiply(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t scalar)
 {
    if (*rows1 == rows2 && *cols1 == cols2) {
