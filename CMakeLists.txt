@@ -68,6 +68,7 @@ set (SOURCE
     src/machine_learning2/matrix2.c
     src/machine_learning2/matrix2_operator.c
     src/machine_learning2/perceptron.c
+    src/machine_learning2/knn.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c
