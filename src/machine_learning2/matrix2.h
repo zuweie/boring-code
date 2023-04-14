@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 10:14:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-04-03 14:15:27
+ * @LastEditTime: 2023-04-13 16:31:35
  * @FilePath: /boring-code/src/machine_learning2/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -30,7 +30,9 @@ int Mat2_fill(matrix2_t* mat, vfloat_t v);
 int Mat2_cpy(matrix2_t* dest, matrix2_t* src);
 //int Mat2_rescale_to(matrix2_t* dest, matrix2_t* src, int left, int top, int right, int bottom, vfloat_t fill);
 int Mat2_slice_row_to(matrix2_t* dest, matrix2_t* src, int row_idx);
+int Mat2_slice_rows_to(matrix2_t* dest, matrix2_t* src, int begin, int end);
 int Mat2_slice_col_to(matrix2_t* dest, matrix2_t* src, int col_idx);
+int Mat2_slice_cols_to(matrix2_t* dest, matrix2_t* src, int begin, int end);
 int Mat2_padding_left(matrix2_t* mat, int offset, vfloat_t fill);
 int Mat2_padding_top(matrix2_t* mat, int offset, vfloat_t fill);
 int Mat2_padding_right(matrix2_t* mat, int offset, vfloat_t fill);

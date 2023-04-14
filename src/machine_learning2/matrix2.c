@@ -54,6 +54,23 @@ int Mat2_slice_row_to(matrix2_t* dest, matrix2_t* src, int row_idx)
     );
 }
 
+int Mat2_slice_rows_to(matrix2_t* dest, matrix2_t* src, int begin, int end)
+{
+    return __mat2_rescale(
+        &(dest->pool),
+        &(dest->rows),
+        &(dest->cols),
+        src->pool,
+        src->rows,
+        src->cols,
+        0,
+        begin,
+        0,
+        -(src->rows - (end+1)),
+        0
+    );
+}
+
 int Mat2_slice_col_to(matrix2_t* dest, matrix2_t* src, int col_idx)
 {
     return __mat2_rescale(
@@ -71,6 +88,22 @@ int Mat2_slice_col_to(matrix2_t* dest, matrix2_t* src, int col_idx)
     );
 }
 
+int Mat2_slice_cols_to(matrix2_t* dest, matrix2_t* src, int begin, int end)
+{
+    return __mat2_rescale(
+        &(dest->pool),
+        &(dest->rows),
+        &(dest->cols),
+        src->pool,
+        src->rows,
+        src->cols,
+        begin,
+        0,
+        -(src->cols - (end+1)),
+        0,
+        0
+    );
+}
 
 int Mat2_arange(matrix2_t* mat, vfloat_t from, vfloat_t to)
 {
