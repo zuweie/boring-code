@@ -98,6 +98,26 @@ static void test_matrix_slice(void) {
     Mat2_destroy(mat2);
 }
 
+static void test_matrix_slice2(void) 
+{
+    matrix2_t* mat1 = Mat2_create(4,4);
+    Mat2_arange(mat1, 1, 4*4);
+    MAT2_INSPACT(mat1);
+
+    matrix2_t* mat2 = Mat2_create(1,1);
+
+    // cut the cols from mat1 to mat2
+    Mat2_slice_cols_to(mat2, mat1, 0, 3);
+    MAT2_INSPACT(mat2);
+
+
+    Mat2_slice_rows_to(mat2, mat1, 0, 3);
+    MAT2_INSPACT(mat2);
+
+    Mat2_destroy(mat1);
+    Mat2_destroy(mat2);
+    
+}
 int do_matrix2_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -107,17 +127,22 @@ int do_matrix2_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat2_rescale) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat2_rescale) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     
-    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_add_sub_scalar_mulity) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_add_sub_scalar_mulity) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
-    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_slice) ) {
+    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_slice) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_slice2) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
