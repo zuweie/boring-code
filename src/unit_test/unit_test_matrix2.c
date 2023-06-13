@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <CUnit/Basic.h>
-#include "machine_learning2/matrix2.h"
-#include "machine_learning2/matrix2_operator.h"
+#include "statistical_learning/matrix2.h"
+#include "statistical_learning/matrix2_operator.h"
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
 static int  suite_success_init (void) 

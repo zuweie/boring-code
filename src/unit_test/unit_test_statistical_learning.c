@@ -2,14 +2,14 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-04-06 11:17:53
- * @FilePath: /boring-code/src/unit_test/unit_test_machine_learning2.c
+ * @LastEditTime: 2023-06-13 09:30:53
+ * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include <stdio.h>
 #include <CUnit/Basic.h>
-#include "machine_learning2/matrix2.h"
-#include "machine_learning2/perceptron.h"
+#include "statistical_learning/matrix2.h"
+#include "statistical_learning/perceptron.h"
 
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
@@ -64,7 +64,7 @@ static void test_knn_perdict(void)
     // TODO : 测试 knn tree 的预测能力。
 }
 
-int do_machine_learning2_test (void) 
+int do_statistical_learning_test (void) 
 {
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Test machine learning 2 Suite", suite_success_init, suite_success_clean);

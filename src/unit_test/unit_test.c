@@ -59,7 +59,7 @@ int main ()
     // do_svm_test();
     // do_neural_test();
     // do_leetcode_test();
-    // do_machine_learning2_test();
+    // do_statistical_learning_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);

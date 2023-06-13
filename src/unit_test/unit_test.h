@@ -82,5 +82,5 @@ int do_svm_test(void);
 int do_neural_test(void);
 int do_leetcode_test(void);
 int do_matrix2_test(void);
-int do_machine_learning2_test(void);
+int do_statistical_learning_test(void);
 #endif
