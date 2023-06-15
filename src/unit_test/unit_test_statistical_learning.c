@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-15 14:10:41
+ * @LastEditTime: 2023-06-15 15:10:23
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -29,7 +29,7 @@ static int suite_success_clean (void)
 static void test_perceptron(void) 
 {
 
-    vfloat_t training_data[][3] = {
+    vfloat_t training_data[][2] = {
         {3, 3},
         {4, 3},
         {1, 1}
@@ -52,14 +52,20 @@ static void test_perceptron(void)
     matrix2_t* _W_b;
     pct_train(training_mat, training_label_mat, &_W_b, 1.f, 1000000);
     
-    MAT2_INSPACT(_W_b);
+    CU_ASSERT_DOUBLE_EQUAL(_W_b->pool[0], 1.f, 0.0001f);
+    CU_ASSERT_DOUBLE_EQUAL(_W_b->pool[1], 1.f, 0.0001f);
+    CU_ASSERT_DOUBLE_EQUAL(_W_b->pool[2], -3.f, 0.0001f);
+
+    //MAT2_INSPACT(_W_b);
 
     matrix2_t* _X_mat = Mat2_create(1,1);
     Mat2_load_on_shape(_X_mat, predict_x1, 1, 2);
     
     pct_predict(_X_mat, _W_b, &predict);
 
-    printf("predict: %f\n", predict);
+    /// printf("predict: %f\n", predict);
+
+    CU_ASSERT_DOUBLE_EQUAL(predict, 1.f, 0.0000f);
 
     Mat2_destroy(_W_b);
     Mat2_destroy(_X_mat);
