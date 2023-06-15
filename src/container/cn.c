@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2023-06-15 13:17:45
+ * @LastEditTime: 2023-06-15 13:22:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -266,7 +266,7 @@ CN CN_finalize(CN cn, int(*cleanup)(T*))
 {
     // // TODO : release the container;
     T_clazz* _class = CN_ty_clazz(cn);
-    
+
     // 若是有 cleanup 函数，或者此容器用的是 entity 则需要遍历一次进行处理。
     if ( (CN_(cn)->build_code & use_entity) || cleanup) {
 
@@ -469,10 +469,7 @@ int CN_del(CN cn, ...)
     }
     return err;
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/main
 int CN_set(CN cn, ...)
 {
     int err = err_ok;
@@ -494,10 +491,7 @@ int CN_set(CN cn, ...)
 
     return err;
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/main
 T* CN_get(CN cn, ...)
 {
     int err = err_ok;
