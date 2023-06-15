@@ -102,22 +102,48 @@ static void test_matrix_slice2(void)
 {
     matrix2_t* mat1 = Mat2_create(4,4);
     Mat2_arange(mat1, 1, 4*4);
-    MAT2_INSPACT(mat1);
+    //MAT2_INSPACT(mat1);
 
     matrix2_t* mat2 = Mat2_create(1,1);
 
     // cut the cols from mat1 to mat2
-    Mat2_slice_cols_to(mat2, mat1, 0, 3);
-    MAT2_INSPACT(mat2);
+    Mat2_slice_cols_to(mat2, mat1, 1, mat1->cols);
+    CU_ASSERT_EQUAL(mat2->cols, 3);
+    //MAT2_INSPACT(mat2);
 
+    Mat2_slice_cols_to(mat2, mat1, 1, 3);
+    CU_ASSERT_EQUAL(mat2->cols, 2);
+    //MAT2_INSPACT(mat2);
 
-    Mat2_slice_rows_to(mat2, mat1, 0, 3);
-    MAT2_INSPACT(mat2);
+    Mat2_slice_col_to(mat2, mat1, 3);
+    CU_ASSERT_EQUAL(mat2->cols, 1);
+    //MAT2_INSPACT(mat2);
+
+    Mat2_slice_rows_to(mat2, mat1, 1, mat1->rows);
+    CU_ASSERT_EQUAL(mat2->rows, 3);
+    //MAT2_INSPACT(mat2);
+
+    Mat2_slice_rows_to(mat2, mat1, 1, 3);
+    CU_ASSERT_EQUAL(mat2->rows, 2);
+    //MAT2_INSPACT(mat2);
+
+    Mat2_slice_row_to(mat2, mat1, 2);
+    CU_ASSERT_EQUAL(mat2->rows, 1);
+    //MAT2_INSPACT(mat2);
 
     Mat2_destroy(mat1);
     Mat2_destroy(mat2);
     
 }
+
+static void test_matrix_load_csv(void) 
+{
+    matrix2_t* mat = Mat2_create(1,1);
+    Mat2_load_csv(mat, "../src/unit_test/mnist/mnist_train.csv");
+    MAT2_INSPACT(mat);
+    Mat2_destroy(mat);
+}
+
 int do_matrix2_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -138,6 +164,11 @@ int do_matrix2_test (void)
     // }
 
     // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_slice) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, " load mnist csv ", test_matrix_load_csv) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }

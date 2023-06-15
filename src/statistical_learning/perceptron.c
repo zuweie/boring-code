@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-28 16:58:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-13 09:31:33
+ * @LastEditTime: 2023-06-15 08:27:28
  * @FilePath: /boring-code/src/statistical_learning/perceptron.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -79,7 +79,7 @@ int pct_train(matrix2_t* _Data, matrix2_t** _W_b, float learning_rate, int max_i
     return 0;
 }
 
-int pct_perdict(matrix2_t* _X, matrix2_t* _W_b, vfloat_t* perdict)
+int pct_predict(matrix2_t* _X, matrix2_t* _W_b, vfloat_t* perdict)
 {
     Mat2_padding_right(_X, 1, 1);
     vfloat_t v;

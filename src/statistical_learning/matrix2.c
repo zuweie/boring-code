@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "matrix2_operator.h"
@@ -39,19 +40,20 @@ int Mat2_cpy(matrix2_t* dest, matrix2_t* src)
 
 int Mat2_slice_row_to(matrix2_t* dest, matrix2_t* src, int row_idx)
 {
-    return __mat2_rescale(
-        &(dest->pool),
-        &(dest->rows),
-        &(dest->cols),
-        src->pool,
-        src->rows,
-        src->cols,
-        0,
-        row_idx,
-        0,
-        -(src->rows - (row_idx + 1)),
-        0
-    );
+    // return __mat2_rescale(
+    //     &(dest->pool),
+    //     &(dest->rows),
+    //     &(dest->cols),
+    //     src->pool,
+    //     src->rows,
+    //     src->cols,
+    //     0,
+    //     row_idx,
+    //     0,
+    //     -(src->rows - (row_idx + 1)),
+    //     0
+    // );
+    return Mat2_slice_rows_to(dest, src, row_idx, row_idx+1);
 }
 
 int Mat2_slice_rows_to(matrix2_t* dest, matrix2_t* src, int begin, int open_end)
@@ -66,26 +68,27 @@ int Mat2_slice_rows_to(matrix2_t* dest, matrix2_t* src, int begin, int open_end)
         0,
         begin,
         0,
-        -(src->rows - (open_end-1)),
+        -(src->rows - open_end),
         0
     );
 }
 
 int Mat2_slice_col_to(matrix2_t* dest, matrix2_t* src, int col_idx)
 {
-    return __mat2_rescale(
-        &(dest->pool),
-        &(dest->rows),
-        &(dest->cols),
-        src->pool,
-        src->rows,
-        src->cols,
-        col_idx,
-        0,
-        -(src->cols-(col_idx+1)),
-        0,
-        0
-    );
+    // return __mat2_rescale(
+    //     &(dest->pool),
+    //     &(dest->rows),
+    //     &(dest->cols),
+    //     src->pool,
+    //     src->rows,
+    //     src->cols,
+    //     col_idx,
+    //     0,
+    //     -(src->cols-(col_idx+1)),
+    //     0,
+    //     0
+    // );
+    return Mat2_slice_cols_to(dest, src, col_idx, col_idx+1);
 }
 
 int Mat2_slice_cols_to(matrix2_t* dest, matrix2_t* src, int begin, int open_end)
@@ -99,7 +102,7 @@ int Mat2_slice_cols_to(matrix2_t* dest, matrix2_t* src, int begin, int open_end)
         src->cols,
         begin,
         0,
-        -(src->cols - (open_end-1)),
+        -(src->cols - (open_end)),
         0,
         0
     );
@@ -284,3 +287,57 @@ int Mat2_padding_bottom(matrix2_t* mat, int offset, vfloat_t fill)
     free(pool1);
     return 0;
 }
+
+int Mat2_load_csv(matrix2_t* mat, char* file_csv)
+{
+    FILE *file = fopen(file_csv, "r");
+    if (!file) return -1;
+    
+    // TODO: 1 读取行数
+    int row_count = 0;
+    int col_count = 1;
+
+    char line[4096];
+    memset(line, 0, sizeof(line));
+
+    char* read = fgets(line, sizeof(line), file);
+    if (read) {
+
+        int line_len = strlen(read);
+        for (int i=0; i<line_len; ++i) {
+            if (read[i] == ',') col_count++;
+        }
+        row_count +=1;
+    }
+
+    while (fgets(line, sizeof(line), file) ) row_count++;
+
+    fseek(file, 0, SEEK_SET);
+
+    
+    // 改变内存大小。
+    mat->rows = row_count;
+    mat->cols = col_count;
+    mat->pool = (vfloat_t*) realloc(mat->pool, row_count * col_count * sizeof(vfloat_t));
+    int row_index = 0;
+    int col_index = 0;
+
+    while(fgets(line, sizeof(line), file) && row_index < row_count) {
+        col_index = 0;
+        
+        char* token = strtok(line, ",");
+        while (token && col_index < col_count) {
+            float value = atof(token);
+            mat->pool[row_index * col_count + col_index] = value;
+            token = strtok(NULL, ",");
+            col_index++;
+        }
+        row_index++;
+    }
+
+    fclose(file);
+
+    // TODO: 2 读取列数。
+    return 0;
+}
+
