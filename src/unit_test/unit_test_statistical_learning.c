@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-15 10:55:40
+ * @LastEditTime: 2023-06-15 14:10:41
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -30,9 +30,9 @@ static void test_perceptron(void)
 {
 
     vfloat_t training_data[][3] = {
-        {3, 3, 1},
-        {4, 3, 1},
-        {1, 1, -1}
+        {3, 3},
+        {4, 3},
+        {1, 1}
     };
 
     vfloat_t training_label[3] = {
@@ -44,10 +44,16 @@ static void test_perceptron(void)
     };
     vfloat_t predict;
     matrix2_t* training_mat = Mat2_create(1,1);
-    Mat2_load_on_shape(training_mat, training_data, 3, 3);
-    matrix2_t* _W_b;
-    pct_train(training_mat, &_W_b, 1.f, 1000000);
+    Mat2_load_on_shape(training_mat, training_data, 3, 2);
+
+    matrix2_t* training_label_mat = Mat2_create(1,1);
+    Mat2_load_on_shape(training_label_mat, training_label, 3, 1);
     
+    matrix2_t* _W_b;
+    pct_train(training_mat, training_label_mat, &_W_b, 1.f, 1000000);
+    
+    MAT2_INSPACT(_W_b);
+
     matrix2_t* _X_mat = Mat2_create(1,1);
     Mat2_load_on_shape(_X_mat, predict_x1, 1, 2);
     
@@ -57,9 +63,11 @@ static void test_perceptron(void)
 
     Mat2_destroy(_W_b);
     Mat2_destroy(_X_mat);
+    Mat2_destroy(training_mat);
+    Mat2_destroy(training_label_mat);
 }
 
-static void test_knn_perdict(void) 
+static void test_knn_predict(void) 
 {
     // TODO : 测试 knn tree 的预测能力。
     // TODO 1: 建立数据。
@@ -122,7 +130,12 @@ int do_statistical_learning_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "test dots_params", test_knn_perdict) ) {
+    // if (NULL == CU_add_test(pSuite, "test knn predict", test_knn_predict) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test perceptron test", test_perceptron) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
