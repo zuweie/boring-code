@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2021-11-11 15:26:55
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2023-06-15 13:17:45
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
  */
@@ -267,10 +267,22 @@ CN CN_finalize(CN cn, int(*cleanup)(T*))
     // // TODO : release the container;
     T_clazz* _class = CN_ty_clazz(cn);
     
-    if (cleanup) {
-        for (It first=CN_first(cn); !It_equal(first, CN_tail(cn)); It_next(first))
-        {
-            cleanup(first._iter.reference);
+    // 若是有 cleanup 函数，或者此容器用的是 entity 则需要遍历一次进行处理。
+    if ( (CN_(cn)->build_code & use_entity) || cleanup) {
+
+        for (It first=CN_first(cn); !It_equal(first, CN_tail(cn)); It_next(first)) {
+
+            // 若是有 cleanup 函数，即调用 cleanup 函数
+            if (cleanup) {
+                cleanup(first._iter.reference);
+            }
+
+            // 完了就释放 entity 的内存。
+            if (CN_(cn)->build_code & use_entity) {
+                entity_t* ent = It_ptr(first);
+                entity_release(ent);
+            }
+
         }
     }
 
@@ -457,6 +469,10 @@ int CN_del(CN cn, ...)
     }
     return err;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 int CN_set(CN cn, ...)
 {
     int err = err_ok;
@@ -478,6 +494,10 @@ int CN_set(CN cn, ...)
 
     return err;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 T* CN_get(CN cn, ...)
 {
     int err = err_ok;

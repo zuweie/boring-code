@@ -1,7 +1,11 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2023-06-15 11:23:34
+<<<<<<< HEAD
+ * @LastEditTime: 2023-06-15 13:15:14
+=======
+ * @LastEditTime: 2023-06-14 13:11:11
+>>>>>>> origin/main
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -49,13 +53,20 @@
 // #define ef_31 ef_(31)
 #define ef_none 0
 
+// ef => entity field 的缩写。这里设计 entity 的 body 中可以放 32 个单体数据。
+// ef_(x) 只是读写第几个元素。
+
+#define MAX_ENT_FIELD_NUM 32
+#define ef_(x) ((unsigned long)1<<x)
+
 #define ef_all (( (unsigned long) 1<<31) | ~(-( (unsigned long) 1<<31)))
 #define ef_keys ((unsigned long)1<<33)
 #define ef_values ((unsigned long)1<<34)
 
-#define ef_key   0
+#define ef_key 0
 #define ef_value 1
-
+ 
+// 定义将第几个entity 的字段取出，并还原成相应的数据。
 #define ef_pT(pe, i) ((pe)->block[i])
 #define ef_char(pe, i) T_char(ef_pT(pe, i))
 #define ef_uchar(pe, i) T_uchar(ef_pT(pe, i))
@@ -68,7 +79,6 @@
 #define ef_ptr(pe, i) T_prt(ef_pT(pe, i))
 #define ef_str(pe, i) T_str(ef_pT(pe, i))
 #define ef_x(pe, i, type) T_type(ef_pT(pe, i), type)
-
 
 typedef struct __entity_template {
     T_clazz type_class;
