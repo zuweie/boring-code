@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2022-10-28 18:54:19
+ * @LastEditTime: 2023-06-19 16:29:31
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -97,6 +97,7 @@ It CN_tail(CN cn);
 It CN_first(CN cn);
 It CN_last(CN cn);
   
+int CN_earse(CN cn, int (*chearup)(T*));
 int CN_reverse(CN cn);
 int CN_extract(CN, T*, int (*cmp)(T*, T*));
 int CN_sort(CN, int (*cmp)(T*, T*));

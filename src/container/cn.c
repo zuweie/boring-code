@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2023-06-15 13:22:43
+ * @LastEditTime: 2023-06-19 16:29:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -262,6 +262,7 @@ CN CN_create(unsigned long build_code, ...)
         return cn;
     }
 }
+
 CN CN_finalize(CN cn, int(*cleanup)(T*))
 {
     // // TODO : release the container;
@@ -305,6 +306,16 @@ CN CN_finalize(CN cn, int(*cleanup)(T*))
 T_clazz* CN_ty_clazz(CN cn) 
 {
     return CN_(cn)->type_clazz;
+}
+
+int CN_earse(CN cn, int (*cleanup)(T*))
+{
+
+    while (CN_size(cn))
+    {
+        __cn_remove_at(cn, CN_last(cn), );
+    }
+    return 0;
 }
 
 // sequence function
