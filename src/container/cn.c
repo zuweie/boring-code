@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:58:55
- * @LastEditTime: 2023-06-19 16:29:03
+ * @LastEditTime: 2023-06-20 12:16:51
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/cn.c
@@ -313,7 +313,9 @@ int CN_earse(CN cn, int (*cleanup)(T*))
 
     while (CN_size(cn))
     {
-        __cn_remove_at(cn, CN_last(cn), );
+        T data;
+        __cn_remove_at(cn, CN_last(cn), &data);
+        if (cleanup) cleanup(&data);
     }
     return 0;
 }

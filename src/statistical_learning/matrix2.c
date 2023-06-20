@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "matrix2_operator.h"
+#include "matrix2_count.h"
 #include "matrix2.h"
 
 matrix2_t* Mat2_create(size_t rows, size_t cols)
@@ -40,19 +41,6 @@ int Mat2_cpy(matrix2_t* dest, matrix2_t* src)
 
 int Mat2_slice_row_to(matrix2_t* dest, matrix2_t* src, int row_idx)
 {
-    // return __mat2_rescale(
-    //     &(dest->pool),
-    //     &(dest->rows),
-    //     &(dest->cols),
-    //     src->pool,
-    //     src->rows,
-    //     src->cols,
-    //     0,
-    //     row_idx,
-    //     0,
-    //     -(src->rows - (row_idx + 1)),
-    //     0
-    // );
     return Mat2_slice_rows_to(dest, src, row_idx, row_idx+1);
 }
 
@@ -75,19 +63,6 @@ int Mat2_slice_rows_to(matrix2_t* dest, matrix2_t* src, int begin, int open_end)
 
 int Mat2_slice_col_to(matrix2_t* dest, matrix2_t* src, int col_idx)
 {
-    // return __mat2_rescale(
-    //     &(dest->pool),
-    //     &(dest->rows),
-    //     &(dest->cols),
-    //     src->pool,
-    //     src->rows,
-    //     src->cols,
-    //     col_idx,
-    //     0,
-    //     -(src->cols-(col_idx+1)),
-    //     0,
-    //     0
-    // );
     return Mat2_slice_cols_to(dest, src, col_idx, col_idx+1);
 }
 
@@ -338,6 +313,16 @@ int Mat2_load_csv(matrix2_t* mat, char* file_csv)
     fclose(file);
 
     // TODO: 2 读取列数。
+    return 0;
+}
+
+int Mat2_list_different_in_col(matrix2_t* mat, int col, void** diff)
+{
+    matrix2_t* mat2 = Mat2_create(1,1);
+    Mat2_slice_col_to(mat2, mat, col);
+
+    __mat2_list_different(mat2->pool, mat2->rows, diff);
+    Mat2_destroy(mat2);
     return 0;
 }
 

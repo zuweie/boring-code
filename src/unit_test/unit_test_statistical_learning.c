@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-19 13:02:57
+ * @LastEditTime: 2023-06-20 14:24:37
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -58,7 +58,7 @@ static void test_perceptron(void)
     CU_ASSERT_DOUBLE_EQUAL(_W_b->pool[1], 1.f, 0.0001f);
     CU_ASSERT_DOUBLE_EQUAL(_W_b->pool[2], -3.f, 0.0001f);
 
-    //MAT2_INSPACT(_W_b);
+    //MAT2_INSPECT(_W_b);
 
     matrix2_t* _X_mat = Mat2_create(1,1);
     Mat2_load_on_shape(_X_mat, predict_x1, 1, 2);
@@ -107,7 +107,7 @@ static void test_knn_predict(void)
     printf("\n\n calculating ... \n\n");
     for (int i=0; i<test_count; ++i) {
         Mat2_slice_row_to(_input, test_mat, i);
-        //MAT2_INSPACT(_input);
+        //MAT2_INSPECT(_input);
         knn_predict(_input, train_mat, train_label_mat, 5, &predict);
 
         if (predict == (int) test_label_mat->pool[i]) 
@@ -131,21 +131,7 @@ static void test_knn_predict(void)
 
 static void test_navie_bayes (void) 
 {
-    float label[] = {3, 3, 3, 4, 4, 5, 5, 6, 6, 2, 2, 1,1,1};
-    matrix2_t* label_mat = Mat2_create(1,1);
-    Mat2_load_on_shape(label_mat, label, sizeof(label) / sizeof(float), 1);
 
-    navie_bayes_statistics_table_t table;
-    memset(&table, 0 , sizeof(table));
-
-    navie_bayes_statistics(NULL, label_mat, &table);
-
-    // 看看整理后出来什么效果。
-    navie_bayes_inspect_statistics_table(&table);
-
-    // 清理内存。
-    navie_bayes_release_statistics_table(&table);
-    Mat2_destroy(label_mat);
 }
 
 int do_statistical_learning_test (void) 

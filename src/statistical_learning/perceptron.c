@@ -51,7 +51,7 @@ int pct_train(matrix2_t* _Data, matrix2_t* _Data_label, matrix2_t** _W_b, float 
             Mat2_put(_X_1, 0, _X_1->cols-1, 1.f);
             // printf("\n");
             // printf("_X_1:");
-            // MAT2_INSPACT(_X_1);
+            // MAT2_INSPECT(_X_1);
             // 将 [w1, w2, w3, ..., b] dot [x1, x2, x3, ..., 1.f] => out
             vfloat_t out;
             Mat2_vect_dot(*_W_b, _X_1, &out);
@@ -61,7 +61,7 @@ int pct_train(matrix2_t* _Data, matrix2_t* _Data_label, matrix2_t** _W_b, float 
                 // TODO : fix _W and b
                 //printf("point %d mistake \n", i+1);
                 // printf("before update W b:");
-                // MAT2_INSPACT(*_W_b);
+                // MAT2_INSPECT(*_W_b);
 
                 // 把 learning_rate yi 与 [x1, x2, x3, ..., 1] 相乘！
                 Mat2_scalar_multiply(_X_1, (learning_rate * yi));
@@ -71,7 +71,7 @@ int pct_train(matrix2_t* _Data, matrix2_t* _Data_label, matrix2_t** _W_b, float 
                 mistake = 1;
 
                 // printf("after update W b ");
-                // MAT2_INSPACT(*_W_b);
+                // MAT2_INSPECT(*_W_b);
                 // printf("\n");
                 
                 break;
