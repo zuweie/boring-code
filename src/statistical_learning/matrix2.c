@@ -316,7 +316,7 @@ int Mat2_load_csv(matrix2_t* mat, char* file_csv)
     return 0;
 }
 
-int Mat2_list_different_in_col(matrix2_t* mat, int col, void** diff)
+int Mat2_list_difference_in_col(matrix2_t* mat, int col, void** diff)
 {
     matrix2_t* mat2 = Mat2_create(1,1);
     Mat2_slice_col_to(mat2, mat, col);
@@ -324,5 +324,10 @@ int Mat2_list_different_in_col(matrix2_t* mat, int col, void** diff)
     __mat2_list_different(mat2->pool, mat2->rows, diff);
     Mat2_destroy(mat2);
     return 0;
+}
+
+int Mat2_get_difference_number(void* diff, vfloat_t target) 
+{
+    return __mat2_get_diff_number(diff, target);
 }
 

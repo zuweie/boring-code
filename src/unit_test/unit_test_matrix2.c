@@ -178,11 +178,11 @@ static void test_matrix_list_different(void) {
 
     void* diff;
 
-    Mat2_list_different_in_col(mat, 0, &diff);
+    Mat2_list_difference_in_col(mat, 0, &diff);
     MAT2_INSPECT_DIFF(diff);
     free(diff);
 
-    Mat2_list_different_in_col(mat, 1, &diff);
+    Mat2_list_difference_in_col(mat, 1, &diff);
     MAT2_INSPECT_DIFF(diff);
     free(diff);
 

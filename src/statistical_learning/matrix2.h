@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 10:14:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-20 14:25:14
+ * @LastEditTime: 2023-06-20 14:50:04
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -50,9 +50,12 @@ int Mat2_put(matrix2_t* mat, size_t i, size_t j, vfloat_t v);
 
 int Mat2_load_csv(matrix2_t* mat, char* file_csv);
 
-int Mat2_list_different_in_col(matrix2_t* mat, int cols, void** diff);
+int Mat2_list_difference_in_col(matrix2_t* mat, int cols, void** diff);
+int Mat2_get_difference_number(void* diff, vfloat_t target);
 
 #define MAT2_POOL_PTR(mat, ptr_name) vfloat_t(*ptr_name)[(mat)->cols]=(mat)->pool
+#define MAT2_DIFF_LIST_PTR(diff_ptr) 
+
 
 #define MAT2_INSPECT(pmat) \
 ({ \
@@ -67,10 +70,10 @@ int Mat2_list_different_in_col(matrix2_t* mat, int cols, void** diff);
 
 #define MAT2_INSPECT_DIFF(diff_out)\
 ({\
-    int*     size_ptr   = COUNT_DIFF_SIZE_PTR(diff_out);\
-    vfloat_t* diff_ptr   = COUNT_DIFF_LIST_PTR(diff_out);\
-    int*     number_ptr = COUNT_DIFF_NUMBERS_PTR(diff_out);\
-    printf("\n <diff size: %d>: \n", *size_ptr);\
+    int*     size_ptr   = MAX2_DIFF_SIZE_PTR(diff_out);\
+    vfloat_t* diff_ptr  = MAX2_DIFF_LIST_PTR(diff_out);\
+    int*     number_ptr = MAX2_DIFF_NUMBERS_PTR(diff_out);\
+    printf("\n <diff size: %d>: \n", (*size_ptr));\
     for (int i=0; i<*size_ptr; ++i) {\
         vfloat_t target = diff_ptr[i];\
         int number      = __mat2_get_diff_number(diff_out, target);\

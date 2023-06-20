@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-19 16:32:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-20 14:27:00
+ * @LastEditTime: 2023-06-20 15:36:57
  * @FilePath: /boring-code/src/statistical_learning/matrix2_count.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,19 +12,32 @@
 #include "matrix2_count.h"
 
 #define SPARE_ARR_INC_SIZE 4
-#define COUNT_DIFF_SIZE_PTR(diff_ptr) ((int*)(diff_ptr))
-#define COUNT_DIFF_LIST_PTR(diff_ptr) ((vfloat_t*)( &(COUNT_DIFF_SIZE_PTR(diff_ptr)[1])))
-#define COUNT_DIFF_NUMBERS_PTR(diff_ptr)  ((int*)(&(COUNT_DIFF_LIST_PTR(diff_ptr)[*COUNT_DIFF_SIZE_PTR(diff_ptr)])))
 
-static int binary_search(vfloat_t* arr, vfloat_t target, int begin, int open_end) 
+
+/**
+ * @brief 
+ * 
+ * @param arr 
+ * @param target 
+ * @param begin 
+ * @param open_end 
+ * @param new_place 
+ * @return int 
+ */
+static int binary_search(vfloat_t* arr, vfloat_t target, int begin, int open_end, int new_place) 
 {
     if (begin == open_end-1) {
-        if (target < arr[begin]) {
+        if (new_place) {
+            if (target < arr[begin]) {
+                return begin;
+            } else {
+                return -1;
+            }
+        }else if (target == arr[begin]){
             return begin;
         } else {
             return -1;
         }
-
     } else {
 
         int left_beg = begin;
@@ -36,19 +49,19 @@ static int binary_search(vfloat_t* arr, vfloat_t target, int begin, int open_end
         vfloat_t mid_value = arr[left_open_end-1];
 
         if (target < mid_value) {
-            return binary_search(arr, target, left_beg, left_open_end);
+            return binary_search(arr, target, left_beg, left_open_end, new_place);
         } else if (target > mid_value) {
-            return binary_search(arr, target, right_beg, right_open_end);
+            return binary_search(arr, target, right_beg, right_open_end, new_place);
         } else {
             // 相等
-            return -1;
+            return new_place? -1:left_open_end-1;
         }
     }
 }
 
 static int binary_search_insert(vfloat_t* arr, vfloat_t target, int begin, int open_end) 
 {
-    int pos = binary_search(arr, target, begin, open_end);
+    int pos = binary_search(arr, target, begin, open_end, 1);
 
     if (pos >=0) {
         // 移动位置。
@@ -83,8 +96,8 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
     int pool_size = SPARE_ARR_INC_SIZE;
     // 把申请了的内存初始化最大的 float 点, 为了做二分查找插入。
     
-    int* size_ptr     = COUNT_DIFF_SIZE_PTR(output);
-    vfloat_t* arr_ptr = COUNT_DIFF_LIST_PTR(output);
+    int* size_ptr     = MAX2_DIFF_SIZE_PTR(output);
+    vfloat_t* arr_ptr = MAX2_DIFF_LIST_PTR(output);
     
     for (int i=0; i<pool_size; ++i) {
 
@@ -101,8 +114,8 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
             output = (vfloat_t*)realloc(output, sizeof(int) + (pool_size+=SPARE_ARR_INC_SIZE) * sizeof(vfloat_t));
             
             // 重新申请内存后要及时更新 arr 以及 size 的地址。因为 realloc 后首地址可能会改变。
-            size_ptr = COUNT_DIFF_SIZE_PTR(output);
-            arr_ptr  = COUNT_DIFF_LIST_PTR(output);
+            size_ptr = MAX2_DIFF_SIZE_PTR(output);
+            arr_ptr  = MAX2_DIFF_LIST_PTR(output);
 
             // 添加内存后，把它初始化为 max float。
             for (int j = *size_ptr; j<pool_size; ++j) {
@@ -122,17 +135,17 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
     
     output = realloc(output, sizeof(int) + (*size_ptr) * sizeof(vfloat_t) + (*size_ptr) * sizeof(int));
 
-    size_ptr    = COUNT_DIFF_SIZE_PTR(output);
-    arr_ptr     = COUNT_DIFF_LIST_PTR(output);
-    numbers_ptr = COUNT_DIFF_NUMBERS_PTR(output);
+    size_ptr         = MAX2_DIFF_SIZE_PTR(output);
+    arr_ptr          = MAX2_DIFF_LIST_PTR(output);
+    int* numbers_ptr = MAX2_DIFF_NUMBERS_PTR(output);
 
-    memset(number_ptr, 0x0, sizeof(int) * (*size_ptr));
+    memset(numbers_ptr, 0x0, sizeof(int) * (*size_ptr));
 
     for (int i=0; i<in_size; ++i) {
-        vfoat_t target = in[i];
-        int pos        = binary_search(arr_ptr, target, 0, *size_ptr);
-        
-        numbers_ptr[pos]++;
+
+        vfloat_t target = in[i];
+        int pos         = binary_search(arr_ptr, target, 0, *size_ptr, 0);
+        if (pos >=0) numbers_ptr[pos]++;
     }
 
     // 搞完收工。
@@ -150,11 +163,11 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
 int __mat2_get_diff_number(void* diff, vfloat_t target) 
 {
 
-    int* size_ptr   = COUNT_DIFF_SIZE_PTR(diff);
-    int* diff_ptr   = COUNT_DIFF_LIST_PTR(diff);
-    int* number_ptr = COUNT_DIFF_NUMBERS_PTR(diff);
+    int* size_ptr   = MAX2_DIFF_SIZE_PTR(diff);
+    int* diff_ptr   = MAX2_DIFF_LIST_PTR(diff);
+    int* number_ptr = MAX2_DIFF_NUMBERS_PTR(diff);
 
-    int pos = binary_search(diff_ptr, target, 0, (*size_ptr));
+    int pos = binary_search(diff_ptr, target, 0, (*size_ptr), 0);
 
     if (pos >=0) return number_ptr[pos];
 
