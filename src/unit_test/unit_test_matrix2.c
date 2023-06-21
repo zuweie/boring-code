@@ -145,48 +145,55 @@ static void test_matrix_load_csv(void)
 }
 
 static void test_matrix_list_different(void) {
-    vfloat_t test_data[][2] = {
-        {1,1},
-        {1,2},
-        {1,1},
-        {1,3},
-        {1,4},
-        {1,5},
-        {1,4},
-        {1,5},
-        {2,6},
-        {2,7},
-        {2,8},
-        {2,7},
-        {2,6},
-        {2,55},
-        {2,34},
-        {2,22},
-        {2,22},
-        {2,3},
-        {1,54},
-        {1,55},
-        {1,54},
-        {1,54},
-        {1,59},
-        {1,51},
-        {7,60},
-    };
 
-    matrix2_t* mat = Mat2_create(1,1);
-    Mat2_load_on_shape(mat, test_data, sizeof(test_data)/(sizeof(vfloat_t)*2), 2);
+    const char* train_csv_file = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_train.csv";
+    matrix2_t* train_mat = Mat2_create(1,1);
+    matrix2_t* col = Mat2_create(1,1);
+
+    //Mat2_load_on_shape(mat, test_data, sizeof(test_data)/(sizeof(vfloat_t)*2), 2);
+    Mat2_load_csv(train_mat, train_csv_file);
+    MAT2_POOL_PTR(train_mat, train_mat_ptr);
+
+    for (int i=0; i<train_mat->rows; ++i) {
+        
+        for (int j=0; j<train_mat->cols; ++j) {
+
+            if (train_mat_ptr[i][j] < 63) {
+                train_mat_ptr[i][j] = 0;
+            } else if (train_mat_ptr[i][j] > 63 && train_mat_ptr[i][j] < 127) {
+                train_mat_ptr[i][j] = 1;
+            } else if (train_mat_ptr[i][j] > 127 && train_mat_ptr[i][j] < 192) {
+                train_mat_ptr[i][j] = 2;
+            } else {
+                train_mat_ptr[i][j] = 3;
+            }
+
+        }
+    }
+    
+    
+
+    // void* counting;
+    // MAT2_INSPECT_COUNTING(counting);
+    // free(counting);
+
+    // Mat2_list_difference_in_col(mat, 1, &counting);
+    // MAT2_INSPECT_COUNTING(counting);
+    // free(counting);
+
+    Mat2_slice_col_to(col, train_mat, 456);
 
     void* counting;
+    __mat2_count_element(col->pool, col->rows, &counting);
 
-    Mat2_list_difference_in_col(mat, 0, &counting);
     MAT2_INSPECT_COUNTING(counting);
+
+    //MAT2_INSPECT(col);
+
+    Mat2_destroy(train_mat);
+    Mat2_destroy(col);
     free(counting);
 
-    Mat2_list_difference_in_col(mat, 1, &counting);
-    MAT2_INSPECT_COUNTING(counting);
-    free(counting);
-
-    Mat2_destroy(mat);
     
 }
 

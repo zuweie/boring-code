@@ -2,9 +2,9 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-16 14:50:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-21 14:36:51
+ * @LastEditTime: 2023-06-21 17:39:50
  * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: 
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -104,14 +104,16 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
         pro_log += log( (float) y_number / y_total);
 
         for (int j=0; j<_X->cols; ++j) {
-            vfloat_t x_value = _X->pool[j];
-            void* counting = Pxy_counting_table_ptr[i][j];
-            int si             = MAT2_COUNTING_SIZE_PTR(counting);
+
+            vfloat_t x_value   = _X->pool[j];
+            void* counting     = Pxy_counting_table_ptr[i][j];
+            int si             = *MAT2_COUNTING_SIZE_PTR(counting);
             int x_value_number = __mat2_get_element_number(counting, x_value);
 
             // 需要做拉普拉斯平滑
             float px_y = (float)(x_value_number + lambda) / (float)(y_number + si * lambda);
             pro_log += log(px_y);
+           
         }
 
         probability_logs[i] = pro_log;
@@ -122,7 +124,7 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
     float max_prob = FLT_MIN;
     int   max_indx = 0;
     for (int k=0; k<probability_size; ++k) {
-        if (max_prob < probability_logs[k]){
+        if (max_prob > probability_logs[k]){
             max_prob = probability_logs[k];
             max_indx = k;
         }

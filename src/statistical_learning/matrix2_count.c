@@ -2,10 +2,11 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-19 16:32:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-21 10:20:26
+ * @LastEditTime: 2023-06-21 17:24:15
  * @FilePath: /boring-code/src/statistical_learning/matrix2_count.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
@@ -26,6 +27,8 @@
  */
 static int binary_search(vfloat_t* arr, vfloat_t target, int begin, int open_end, int new_place) 
 {
+    if (open_end == begin) return -1;
+    
     if (begin == open_end-1) {
         if (new_place) {
             if (target < arr[begin]) {
@@ -145,6 +148,7 @@ int __mat2_count_element(vfloat_t* in,  int in_size,  void** counting)
         vfloat_t target = in[i];
         int pos         = binary_search(arr_ptr, target, 0, *size_ptr, 0);
         if (pos >=0) numbers_ptr[pos]++;
+        //printf("test cur i %d\n", i);
     }
 
     // 搞完收工。
@@ -162,11 +166,11 @@ int __mat2_count_element(vfloat_t* in,  int in_size,  void** counting)
 int __mat2_get_element_number(void* counting, vfloat_t target)
 {
 
-    int* size_ptr   = MAT2_COUNTING_SIZE_PTR(counting);
-    int* diff_ptr   = MAT2_COUNTING_LIST_PTR(counting);
-    int* number_ptr = MAT2_COUNTING_NUMBERS_PTR(counting);
+    int* size_ptr       = MAT2_COUNTING_SIZE_PTR(counting);
+    vfloat_t* elem_ptr  = MAT2_COUNTING_LIST_PTR(counting);
+    int* number_ptr     = MAT2_COUNTING_NUMBERS_PTR(counting);
 
-    int pos = binary_search(diff_ptr, target, 0, (*size_ptr), 0);
+    int pos = binary_search(elem_ptr, target, 0, (*size_ptr), 0);
 
     if (pos >=0) return number_ptr[pos];
 

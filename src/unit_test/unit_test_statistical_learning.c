@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-21 13:29:49
+ * @LastEditTime: 2023-06-21 17:37:17
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -167,8 +167,9 @@ static void test_navie_bayes (void)
     Mat2_slice_col_to(test_label_mat, csv_mat, 0);
     Mat2_slice_cols_to(test_mat, csv_mat, 1, csv_mat->cols);
     
-    MAT2_POOL_PTR(train_mat, test_mat_ptr);
+    MAT2_POOL_PTR(test_mat, test_mat_ptr);
 
+    MAT2_INSPECT(test_label_mat);
     // 先将数据进行简单处理一下。
     for (int i=0; i<test_mat->rows; ++i) {
         for (int j=0; j<test_mat->cols; ++j) {
@@ -198,9 +199,11 @@ static void test_navie_bayes (void)
 
     for (int i=0; i<test_mat->rows; ++i) {
 
-        int label = test_label_mat->pool[i];
+        int label = (int)test_label_mat->pool[i];
 
         Mat2_slice_row_to(_X, test_mat, i);
+
+        //MAT2_INSPECT(_X);
 
         float predict;
 
@@ -208,7 +211,7 @@ static void test_navie_bayes (void)
 
         if ((int)predict == label) correct++; 
 
-        sprintf(buff, "Process: %d / %d, correct %f ...", i, test_mat->rows, (float) (correct) / (float) (test_mat->rows));
+        sprintf(buff, "Process: %d / %d, predict: %d:%d correct %f ... ", i+1, test_mat->rows, (int)predict, label, (float) (correct) / (float) (test_mat->rows));
         
         printf("%s\r", buff);
 
@@ -216,7 +219,7 @@ static void test_navie_bayes (void)
 
     }
 
-    printf(" correct %f \n", (float) (correct) / (float) (test_mat->rows));
+    printf("\n correct %f \n", (float) (correct) / (float) (test_mat->rows));
 
 
     Mat2_destroy(csv_mat);
