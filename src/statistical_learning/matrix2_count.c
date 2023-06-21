@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-19 16:32:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-20 15:36:57
+ * @LastEditTime: 2023-06-21 10:20:26
  * @FilePath: /boring-code/src/statistical_learning/matrix2_count.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -79,14 +79,13 @@ static int binary_search_insert(vfloat_t* arr, vfloat_t target, int begin, int o
  * 
  * @param mat 输入矩阵
  * @param col 要统计的列
- * @param out 输出结果,其内存布置如下：
+ * @param counting 输出结果,其内存布置如下：
  *            {int,float, float, float, float,...., int, int, int, int,}
  *            其中第一个int，为输出的不同值的个数。float...，为不同值的数值，已经经过排序。
  *            最后 int...，为每个不同值的数量。
- * @param out 输出结果的数量
  * @return int 
  */
-int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
+int __mat2_count_element(vfloat_t* in,  int in_size,  void** counting)
 {
     // 先申请内存。
     // 最终内存模型如下
@@ -96,8 +95,8 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
     int pool_size = SPARE_ARR_INC_SIZE;
     // 把申请了的内存初始化最大的 float 点, 为了做二分查找插入。
     
-    int* size_ptr     = MAX2_DIFF_SIZE_PTR(output);
-    vfloat_t* arr_ptr = MAX2_DIFF_LIST_PTR(output);
+    int* size_ptr     = MAT2_COUNTING_SIZE_PTR(output);
+    vfloat_t* arr_ptr = MAT2_COUNTING_LIST_PTR(output);
     
     for (int i=0; i<pool_size; ++i) {
 
@@ -114,8 +113,8 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
             output = (vfloat_t*)realloc(output, sizeof(int) + (pool_size+=SPARE_ARR_INC_SIZE) * sizeof(vfloat_t));
             
             // 重新申请内存后要及时更新 arr 以及 size 的地址。因为 realloc 后首地址可能会改变。
-            size_ptr = MAX2_DIFF_SIZE_PTR(output);
-            arr_ptr  = MAX2_DIFF_LIST_PTR(output);
+            size_ptr = MAT2_COUNTING_SIZE_PTR(output);
+            arr_ptr  = MAT2_COUNTING_LIST_PTR(output);
 
             // 添加内存后，把它初始化为 max float。
             for (int j = *size_ptr; j<pool_size; ++j) {
@@ -135,9 +134,9 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
     
     output = realloc(output, sizeof(int) + (*size_ptr) * sizeof(vfloat_t) + (*size_ptr) * sizeof(int));
 
-    size_ptr         = MAX2_DIFF_SIZE_PTR(output);
-    arr_ptr          = MAX2_DIFF_LIST_PTR(output);
-    int* numbers_ptr = MAX2_DIFF_NUMBERS_PTR(output);
+    size_ptr         = MAT2_COUNTING_SIZE_PTR(output);
+    arr_ptr          = MAT2_COUNTING_LIST_PTR(output);
+    int* numbers_ptr = MAT2_COUNTING_NUMBERS_PTR(output);
 
     memset(numbers_ptr, 0x0, sizeof(int) * (*size_ptr));
 
@@ -149,7 +148,7 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
     }
 
     // 搞完收工。
-    *diff = output;
+    *counting = output;
     return 0;
 }
 
@@ -160,12 +159,12 @@ int __mat2_list_different(vfloat_t* in,  int in_size,  void** diff)
  * @param target 
  * @return int 
  */
-int __mat2_get_diff_number(void* diff, vfloat_t target) 
+int __mat2_get_element_number(void* counting, vfloat_t target)
 {
 
-    int* size_ptr   = MAX2_DIFF_SIZE_PTR(diff);
-    int* diff_ptr   = MAX2_DIFF_LIST_PTR(diff);
-    int* number_ptr = MAX2_DIFF_NUMBERS_PTR(diff);
+    int* size_ptr   = MAT2_COUNTING_SIZE_PTR(counting);
+    int* diff_ptr   = MAT2_COUNTING_LIST_PTR(counting);
+    int* number_ptr = MAT2_COUNTING_NUMBERS_PTR(counting);
 
     int pos = binary_search(diff_ptr, target, 0, (*size_ptr), 0);
 

@@ -176,15 +176,15 @@ static void test_matrix_list_different(void) {
     matrix2_t* mat = Mat2_create(1,1);
     Mat2_load_on_shape(mat, test_data, sizeof(test_data)/(sizeof(vfloat_t)*2), 2);
 
-    void* diff;
+    void* counting;
 
-    Mat2_list_difference_in_col(mat, 0, &diff);
-    MAT2_INSPECT_DIFF(diff);
-    free(diff);
+    Mat2_list_difference_in_col(mat, 0, &counting);
+    MAT2_INSPECT_COUNTING(counting);
+    free(counting);
 
-    Mat2_list_difference_in_col(mat, 1, &diff);
-    MAT2_INSPECT_DIFF(diff);
-    free(diff);
+    Mat2_list_difference_in_col(mat, 1, &counting);
+    MAT2_INSPECT_COUNTING(counting);
+    free(counting);
 
     Mat2_destroy(mat);
     
