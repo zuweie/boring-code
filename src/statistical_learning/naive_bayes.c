@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-16 14:50:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-21 17:39:50
+ * @LastEditTime: 2023-06-22 07:57:59
  * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
  * @Description: 
  */
@@ -23,19 +23,19 @@
  * @param Pxy_probability 
  * @return int 结果
  */
-int navie_bayes_train(matrix2_t* train_mat, matrix2_t* train_label_mat, void** Py_counting, void** Px_y_counting_table)
+int navie_bayes_train(matrix2_t* train_mat, matrix2_t* train_label_mat, void** Py_counting, void** Px_y_counting_table, int* table_cols)
 {
     // 获取 label 的统计。
     __mat2_count_element(train_label_mat->pool, train_label_mat->rows, Py_counting);
-
     int size_eleme = *MAT2_COUNTING_SIZE_PTR(*Py_counting);
-    int* elem_ptr  = MAT2_COUNTING_LIST_PTR(*Py_counting);
+    vfloat_t* elem_ptr  = MAT2_COUNTING_LIST_PTR(*Py_counting);
     MAT2_POOL_PTR(train_label_mat, label_mat_ptr);
     MAT2_POOL_PTR(train_mat, train_mat_ptr);
 
     // 
     size_t table_size = size_eleme * train_mat->cols * sizeof(char*);
-    char* (*table)[train_mat->cols] = malloc (table_size);
+    *table_cols = train_mat->cols;
+    char* (*table)[*table_cols] = malloc (table_size);
 
     memset(table, 0x0, table_size);
     // 
@@ -121,10 +121,10 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
 
     // 最后返回概率最大的那个类别。
 
-    float max_prob = FLT_MIN;
+    float max_prob = probability_logs[0];
     int   max_indx = 0;
-    for (int k=0; k<probability_size; ++k) {
-        if (max_prob > probability_logs[k]){
+    for (int k=1; k<probability_size; ++k) {
+        if (max_prob < probability_logs[k]){
             max_prob = probability_logs[k];
             max_indx = k;
         }
@@ -138,12 +138,13 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
 int navie_bayes_release_counting(void* Py_counting, void* Pxy_count_table, int table_cols)
 {
     
-    int py_element_size = MAT2_COUNTING_SIZE_PTR(Py_counting);
+    int py_element_size = *MAT2_COUNTING_SIZE_PTR(Py_counting);
     char* (*Pxy_count_table_ptr)[table_cols] = Pxy_count_table;
 
     for (int i=0; i<py_element_size; ++i) {
         for (int j=0; j<table_cols; ++j) {
-            free(Pxy_count_table_ptr[i][j]);
+            void* counting = Pxy_count_table_ptr[i][j];
+            free(counting);
         }
     }
     free(Pxy_count_table);

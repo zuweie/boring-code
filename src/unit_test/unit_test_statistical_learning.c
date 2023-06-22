@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-21 17:37:17
+ * @LastEditTime: 2023-06-22 08:02:08
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -151,15 +151,22 @@ static void test_navie_bayes (void)
     // 先将数据进行简单处理一下。
     for (int i=0; i<train_mat->rows; ++i) {
         for (int j=0; j<train_mat->cols; ++j) {
-            if (train_mat_ptr[i][j] < 63) {
+            // if (train_mat_ptr[i][j] < 63) {
+            //     train_mat_ptr[i][j] = 0;
+            // } else if (train_mat_ptr[i][j] > 63 && train_mat_ptr[i][j] < 127) {
+            //     train_mat_ptr[i][j] = 1;
+            // } else if (train_mat_ptr[i][j] > 127 && train_mat_ptr[i][j] < 192) {
+            //     train_mat_ptr[i][j] = 2;
+            // } else {
+            //     train_mat_ptr[i][j] = 3;
+            // }
+
+            if (train_mat_ptr[i][j] < 127) {
                 train_mat_ptr[i][j] = 0;
-            } else if (train_mat_ptr[i][j] > 63 && train_mat_ptr[i][j] < 127) {
-                train_mat_ptr[i][j] = 1;
-            } else if (train_mat_ptr[i][j] > 127 && train_mat_ptr[i][j] < 192) {
-                train_mat_ptr[i][j] = 2;
             } else {
-                train_mat_ptr[i][j] = 3;
+                train_mat_ptr[i][j] = 1;
             }
+            
         }
     }
 
@@ -169,18 +176,24 @@ static void test_navie_bayes (void)
     
     MAT2_POOL_PTR(test_mat, test_mat_ptr);
 
-    MAT2_INSPECT(test_label_mat);
+    //MAT2_INSPECT(test_label_mat);
     // 先将数据进行简单处理一下。
     for (int i=0; i<test_mat->rows; ++i) {
         for (int j=0; j<test_mat->cols; ++j) {
-            if (test_mat_ptr[i][j] < 63) {
+            // if (test_mat_ptr[i][j] < 63) {
+            //     test_mat_ptr[i][j] = 0;
+            // } else if (test_mat_ptr[i][j] > 63 && test_mat_ptr[i][j] < 127) {
+            //     test_mat_ptr[i][j] = 1;
+            // } else if (test_mat_ptr[i][j] > 127 && test_mat_ptr[i][j] < 192) {
+            //     test_mat_ptr[i][j] = 2;
+            // } else {
+            //     test_mat_ptr[i][j] = 3;
+            // }
+
+            if (test_mat_ptr[i][j] < 127) {
                 test_mat_ptr[i][j] = 0;
-            } else if (test_mat_ptr[i][j] > 63 && test_mat_ptr[i][j] < 127) {
-                test_mat_ptr[i][j] = 1;
-            } else if (test_mat_ptr[i][j] > 127 && test_mat_ptr[i][j] < 192) {
-                test_mat_ptr[i][j] = 2;
             } else {
-                test_mat_ptr[i][j] = 3;
+                test_mat_ptr[i][j] = 1;
             }
         }
     }
@@ -189,17 +202,17 @@ static void test_navie_bayes (void)
 
     void* Py_counting;
     void* Pxy_counting_table;
-
-    navie_bayes_train(train_mat, train_label_mat, &Py_counting, &Pxy_counting_table);
+    int table_cols;
+    navie_bayes_train(train_mat, train_label_mat, &Py_counting, &Pxy_counting_table, &table_cols);
 
     int correct = 0;
     char buff[1024];
 
     memset(buff, 0x0, sizeof(buff));
-
+    int label;
     for (int i=0; i<test_mat->rows; ++i) {
 
-        int label = (int)test_label_mat->pool[i];
+        label = (int)test_label_mat->pool[i];
 
         Mat2_slice_row_to(_X, test_mat, i);
 
@@ -211,7 +224,7 @@ static void test_navie_bayes (void)
 
         if ((int)predict == label) correct++; 
 
-        sprintf(buff, "Process: %d / %d, predict: %d:%d correct %f ... ", i+1, test_mat->rows, (int)predict, label, (float) (correct) / (float) (test_mat->rows));
+        sprintf(buff, "Process: %d / %d, predict: %d - %d, correct %.2f ... ", i+1, test_mat->rows, (int)predict, label, ((float) (correct) / (float) (test_mat->rows))*100);
         
         printf("%s\r", buff);
 
@@ -219,8 +232,9 @@ static void test_navie_bayes (void)
 
     }
 
-    printf("\n correct %f \n", (float) (correct) / (float) (test_mat->rows));
+    printf("\n correct %.2f \n", (float) (correct) / (float) (test_mat->rows));
 
+    navie_bayes_release_counting(Py_counting, Pxy_counting_table, table_cols);
 
     Mat2_destroy(csv_mat);
     Mat2_destroy(train_mat);
@@ -228,6 +242,61 @@ static void test_navie_bayes (void)
     Mat2_destroy(test_label_mat); 
     Mat2_destroy(test_mat);
     Mat2_destroy(_X );
+}
+
+static void test_navie_bayes2(void) {
+
+    matrix2_t* train_mat       = Mat2_create(1,1);
+    matrix2_t* train_label_mat = Mat2_create(1,1);
+    matrix2_t* test_mat        = Mat2_create(1,1);
+
+
+    float train[][2] ={
+        {1, 'S'},
+        {1, 'M'},
+        {1, 'M'},
+        {1, 'S'},
+        {1, 'S'},
+        {2, 'S'},
+        {2, 'M'},
+        {2, 'M'},
+        {2, 'L'},
+        {2, 'L'},
+        {3, 'L'},
+        {3, 'M'},
+        {3, 'M'},
+        {3, 'L'},
+        {3, 'L'}
+    };
+
+    float train_label[] = {
+        -1, -1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1
+    };
+
+    float test[][2] = {
+        {2, 'S'}
+    };
+
+    Mat2_load_on_shape(train_mat, train, 15, 2);
+    Mat2_load_on_shape(train_label_mat, train_label, 15, 1);
+    Mat2_load_on_shape(test_mat, test, 1, 2);
+
+    void* Py_counting;
+    void* Pxy_counting_table;
+    int table_cols;
+    navie_bayes_train(train_mat, train_label_mat, &Py_counting, &Pxy_counting_table, &table_cols);
+
+    float predict;
+    navie_bayes_predict(test_mat, Py_counting, Pxy_counting_table, 1, &predict);
+
+    printf(" predict: %0.2f \n", predict);
+
+    navie_bayes_release_counting(Py_counting, Pxy_counting_table, table_cols);
+
+    Mat2_destroy(train_mat);
+    Mat2_destroy(train_label_mat);
+    Mat2_destroy(test_mat);
+
 }
 
 int do_statistical_learning_test (void) 
@@ -254,6 +323,11 @@ int do_statistical_learning_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navie_bayes2) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 }
 
