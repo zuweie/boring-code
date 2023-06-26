@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-16 14:50:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-26 13:23:02
+ * @LastEditTime: 2023-06-26 17:11:52
  * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
  * @Description: 
  */
@@ -205,12 +205,49 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
     }
     
 
+    // 计算协方差矩阵
+
+    for (int i=0; i<sigma_z; ++i) {
+
+        vfloat_t i_label = labels[i];
+
+        for (int j=0; j<sigma_rows; ++j) {
+
+            for (int k=0; k<sigma_cols; ++k) {
+
+                int i_label_count = label_numbers[i];
+
+                vfloat_t j_tmp_elem[i_label_count];
+                vfloat_t* j_tmp_elem_ptr = j_tmp_elem;
+
+                vfloat_t k_tmp_elem[i_label_count];
+                vfloat_t* k_tmp_elem_ptr = k_tmp_elem;
+
+                for (int l=0; l<train_mat->rows; ++l) {
+
+                    if (i_label == train_label_ptr[l][0]) {
+                        *j_tmp_elem_ptr++ = train_mat_ptr[l][j];
+                        *k_tmp_elem_ptr++ = train_mat_ptr[l][k];
+                    }
+                }
+
+                vfloat_t cov_j_k = 0.f;
+                vfloat_t mu_j = mus_ptr[i][j];
+                vfloat_t mu_k = mus_ptr[i][k];
+
+                for (int p=0; p<i_label_count; ++p) {
+                    vfloat_t _v = (j_tmp_elem[p] - mu_j) * (k_tmp_elem[p] - mu_k);
+                    cov_j_k += _v;
+                }
+                
+                sigma_tab_ptr[i][j][k] = cov_j_k / (i_label_count - 1);
+            }
+        }
+    }
+
     *mus_table   = mus_block;
     *sigma_table = sigma_block;
-
     return 0;
-
-    
 }
 
 int navie_bayes_release_counting(void* Py_counting, void* Pxy_count_table)

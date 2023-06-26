@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-26 12:20:20
+ * @LastEditTime: 2023-06-26 16:25:01
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -319,6 +319,7 @@ static void test_navies_bayes_mgd(void) {
     matrix2_t* train_mat = Mat2_create(1,1);
     matrix2_t* train_label_mat = Mat2_create(1,1);
     matrix2_t* mus_mat = Mat2_create(1,1);
+    matrix2_t* sigma_mat = Mat2_create(1,1);
 
     Mat2_load_on_shape(train_mat, train_data, 8, 3);
     Mat2_load_on_shape(train_label_mat, train_label, 8, 1);
@@ -337,10 +338,21 @@ static void test_navies_bayes_mgd(void) {
 
     MAT2_INSPECT(mus_mat);
 
+    int sigma_z = ((int*)sigma_table)[0];
+    int sigma_row = ((int*)sigma_table)[1];
+    int sigma_col = ((int*)sigma_table)[2];
+
+    vfloat_t (*sigma_table_ptr)[sigma_row][sigma_col] = &(((int*)sigma_table)[3]);
+
+    for (int i=0; i<sigma_z; ++i) {
+        Mat2_load_on_shape(sigma_mat, sigma_table_ptr[i], sigma_row, sigma_col);
+        MAT2_INSPECT(sigma_mat);
+    }
 
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
     Mat2_destroy(mus_mat);
+    Mat2_destroy(sigma_mat);
 }
 
 int do_statistical_learning_test (void) 
