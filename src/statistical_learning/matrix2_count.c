@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-19 16:32:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-22 07:59:45
+ * @LastEditTime: 2023-06-26 11:31:39
  * @FilePath: /boring-code/src/statistical_learning/matrix2_count.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -175,6 +175,25 @@ int __mat2_get_element_number(void* counting, vfloat_t target)
     if (pos >=0) return number_ptr[pos];
 
     return 0;
+
+}
+
+/**
+ * @brief 根据 label 的值反推它在 counting 的序号或者位置。
+ * 
+ * @param counting 
+ * @param target 
+ * @return int 
+ */
+int __mat2_get_elemt_pos(void* counting, vfloat_t target) 
+{
+    int* size_ptr       = MAT2_COUNTING_SIZE_PTR(counting);
+    vfloat_t* elem_ptr  = MAT2_COUNTING_LIST_PTR(counting);
+    int* number_ptr     = MAT2_COUNTING_NUMBERS_PTR(counting);
+
+    int pos = binary_search(elem_ptr, target, 0, (*size_ptr), 0);
+
+    return pos;
 
 }
 

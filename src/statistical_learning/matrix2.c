@@ -331,3 +331,7 @@ int Mat2_get_difference_number(void* diff, vfloat_t target)
     return __mat2_get_element_number(diff, target);
 }
 
+int Mat2_is_vector(matrix2_t* mat) {
+    return mat->cols == 1 || mat->rows == 1;
+}
+

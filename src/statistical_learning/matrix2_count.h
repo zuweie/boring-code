@@ -17,4 +17,5 @@
 
 int __mat2_count_element(vfloat_t* in,  int in_size,  void** counting);
 int __mat2_get_element_number(void* counting, vfloat_t target);
+int __mat2_get_elemt_pos(void* counting, vfloat_t target);
 #endif
