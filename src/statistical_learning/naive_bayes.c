@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-16 14:50:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-27 09:37:28
+ * @LastEditTime: 2023-06-27 15:33:04
  * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
  * @Description: 
  */
@@ -137,7 +137,7 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
     return 0;
 }
 
-int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat, void** mus_table, void** sigma_table)
+int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat, void** Py_counting, void** mus_table, void** sigma_table)
 {
 
     MAT2_POOL_PTR(train_mat, train_mat_ptr);
@@ -214,45 +214,54 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
         for (int j=0; j<sigma_rows; ++j) {
 
             for (int k=0; k<sigma_cols; ++k) {
+                // 因为协方差矩阵是对称矩阵，只求左上脚的数即可。
+                if (k >= j) {
 
-                int i_label_count = label_numbers[i];
+                    // 左上角进行计算。
+                    int i_label_count = label_numbers[i];
 
-                vfloat_t j_tmp_elem[i_label_count];
-                vfloat_t* j_tmp_elem_ptr = j_tmp_elem;
+                    vfloat_t j_tmp_elem[i_label_count];
+                    vfloat_t* j_tmp_elem_ptr = j_tmp_elem;
 
-                vfloat_t k_tmp_elem[i_label_count];
-                vfloat_t* k_tmp_elem_ptr = k_tmp_elem;
+                    vfloat_t k_tmp_elem[i_label_count];
+                    vfloat_t* k_tmp_elem_ptr = k_tmp_elem;
 
-                // 这里可以优化一下。
-                for (int l=0; l<train_mat->rows; ++l) {
+                    // 这里可以优化一下。
+                    for (int l=0; l<train_mat->rows; ++l) {
 
-                    if (i_label == train_label_ptr[l][0]) {
-                        *j_tmp_elem_ptr++ = train_mat_ptr[l][j];
-                        *k_tmp_elem_ptr++ = train_mat_ptr[l][k];
+                        if (i_label == train_label_ptr[l][0]) {
+                            *j_tmp_elem_ptr++ = train_mat_ptr[l][j];
+                            *k_tmp_elem_ptr++ = train_mat_ptr[l][k];
+                        }
+                    
+                        //  拿够数据就不用在拿了。
+                        if (j_tmp_elem_ptr == &j_tmp_elem[i_label_count])
+                            break;
+                    
                     }
-                    
-                    //  拿够数据就不用在拿了。
-                    if (j_tmp_elem_ptr == &j_tmp_elem[i_label_count])
-                        break;
-                    
-                }
 
-                vfloat_t cov_j_k = 0.f;
-                vfloat_t mu_j = mus_ptr[i][j];
-                vfloat_t mu_k = mus_ptr[i][k];
+                    vfloat_t cov_j_k = 0.f;
+                    vfloat_t mu_j = mus_ptr[i][j];
+                    vfloat_t mu_k = mus_ptr[i][k];
 
-                for (int p=0; p<i_label_count; ++p) {
-                    vfloat_t _v = (j_tmp_elem[p] - mu_j) * (k_tmp_elem[p] - mu_k);
-                    cov_j_k += _v;
+                    for (int p=0; p<i_label_count; ++p) {
+                        vfloat_t _v = (j_tmp_elem[p] - mu_j) * (k_tmp_elem[p] - mu_k);
+                        cov_j_k += _v;
+                    }
+
+                    // 协方差矩阵书上第5页，还必须除以一个 (Nk-1) 但是如果 Nk 为一的话，那不就错了。
+                    sigma_tab_ptr[i][j][k] = cov_j_k / (i_label_count != 1?  i_label_count - 1 : 1);
+
+                } else {
+                    sigma_tab_ptr[i][j][k] = sigma_tab_ptr[i][k][j];
                 }
-                
-                sigma_tab_ptr[i][j][k] = cov_j_k / (i_label_count != 1?  i_label_count - 1 : 1);
             }
         }
     }
 
     *mus_table   = mus_block;
     *sigma_table = sigma_block;
+    *Py_counting = label_counting;
     return 0;
 }
 
@@ -271,4 +280,22 @@ int navie_bayes_release_counting(void* Py_counting, void* Pxy_count_table)
     free(Pxy_count_table);
     free(Py_counting);
     return 0;
+}
+
+int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, void* sigma_table, vfloat_t* predict) 
+{
+    int size_label = *MAT2_COUNTING_NUMBERS_PTR(py_counting);
+
+    vfloat_t probabilities[size_label];
+
+    // 1 首先计算各种 label 的概率
+    for (int i=0; i<size_label; ++i) {
+
+        
+
+    }
+
+    // 2 找出最大概率哪个。
+
+    
 }

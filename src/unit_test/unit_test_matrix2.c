@@ -204,7 +204,7 @@ static void test_matrix_cofactor(void) {
     Mat2_arange(m1, 1, 16);
     //MAT2_INSPECT(m1);
 
-    Mat2_get_cofactor_to(m2, m1, 2, 2);
+    Mat2_get_co_to(m2, m1, 2, 2);
 
     MAT2_INSPECT(m2);
 
@@ -230,6 +230,59 @@ static void test_matrix_det(void) {
     printf("\n det: %0.2f \n", det);
 
     Mat2_destroy(m1);
+
+}
+
+static void test_matrix_adjoint(void) 
+{
+    vfloat_t m1_data[][3] = {
+        {1,2,3},
+        {4,5,6},
+        {7,8,9}
+    };
+
+    matrix2_t* m1 = Mat2_create(1,1);
+    Mat2_load_on_shape(m1, m1_data, 3,3);
+
+    matrix2_t* m2 = Mat2_create(1,1);
+
+    Mat2_get_adjoint_to(m2, m1);
+
+    MAT2_INSPECT(m2);
+
+    Mat2_destroy(m1);
+    Mat2_destroy(m2);
+
+    // respect:
+    //  <rows:3, cols:3>
+    // -3.000 6.000 -3.000
+    // -6.000 12.000 -6.000
+    // -3.000 6.000 -3.000
+}
+
+static void test_matrix_inverse(void) 
+{
+    vfloat_t m1_data[][3] = {
+        {.035, .808, -0.065},
+        {0.808, 122.917, 2.917},
+        {-0.065, 2.917, .917}
+    };
+
+    matrix2_t* m1 = Mat2_create(1,1);
+
+    Mat2_load_on_shape(m1, m1_data, 3,3);
+
+    Mat2_inverse(m1);
+
+    MAT2_INSPECT(m1);
+
+    Mat2_destroy(m1);
+
+    // respect :
+    // <rows:3, cols:3>
+    // 46.880 -0.419 4.655
+    // 0.419 -0.013 0.070
+    // 4.655 -0.070 1.642
 
 }
 
@@ -278,8 +331,18 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, " test mat det ", test_matrix_det) ) {
+    // if (NULL == CU_add_test(pSuite, " test mat det ", test_matrix_det) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_adjoint) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    // if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_inverse) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }

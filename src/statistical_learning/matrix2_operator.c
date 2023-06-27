@@ -9,10 +9,36 @@
  * @param m2 矩阵2数据内存地址,逻辑上这块内存是原数据不会被修改,但如果 *m1 的地址与 m2 的地址相同,也会修改其值。
  * @param rows2 矩阵2的行数。
  * @param cols2 矩阵2的列数。
+ * @param m3 
+ * @param rows3
+ * @param cols3
  * @return int 返回运行结果。
  */
-int __mat2_dot(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2)
+int __mat2_dot(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3)
 {
+    *rows1 = rows2;
+    *cols1 = cols3;
+    *m1 = (vfloat_t*)realloc(*m1, (*rows1) * (*cols1) * sizeof(vfloat_t));
+
+    vfloat_t (*m1_ptr)[*cols1] = *m1;
+    vfloat_t (*m2_ptr)[cols2] = m2;
+    vfloat_t (*m3_ptr)[cols3] = m3;
+
+
+    vfloat_t m3_col[rows3];
+
+    for (int i=0; i<(*rows1); ++i) {
+        for (int j=0; j<(*cols1); ++j) {
+
+            // 把 m3 某一列拿出来，与 m2 某一行进行内积。
+            for (int k=0; k<rows3; ++k)
+                m3_col[k] = m3_ptr[k][j];
+
+            m1_ptr[i][j] = __mat2_vect_dot(m2_ptr[i], m3_col, rows3);
+
+        }
+    }
+
     return 0;
 }
 
@@ -204,12 +230,12 @@ vfloat_t __mat2_determinant(vfloat_t* v1, size_t n)
     vfloat_t det = 0.f;
     vfloat_t (*v1_ptr)[n] = v1;
 
-    int sign = 1;
+    float sign = 1.f;
     for (int f=0; f<n; ++f) {
         vfloat_t* v2 = NULL;
-        int v2_n;
+        size_t v2_n;
 
-        __mat2_cofactor(&v2, &v2_n, &v2_n, v1, n, n, 0, f);
+        __mat2_co(&v2, &v2_n, &v2_n, v1, n, n, 0, f);
         // 参考 机器学习数学 84 页 2-29.
         det += sign * v1_ptr[0][f] * __mat2_determinant(v2, v2_n);
         sign = -sign;
@@ -219,18 +245,28 @@ vfloat_t __mat2_determinant(vfloat_t* v1, size_t n)
 }
 
 /**
- * @brief 计算一个矩阵的逆矩阵
+ * @brief 计算一个矩阵的逆矩阵, 结果放入m1
  * 
  * @return int 
  */
-int __mat2_inverse(vfloat_t** m1, vfloat_t* m2, size_t n)
+int __mat2_inverse(vfloat_t** m1, size_t* rows1, size_t* cols1,  vfloat_t* m2, size_t n)
 {
+
+    // 1 计算出 m2 的行列式
+    vfloat_t det = __mat2_determinant(m2, n);
+
+    // 2 计算 m2 的伴随矩阵。
+    __mat2_adjoint(m1, rows1, cols1, m2, n);
     
+    // 3 将行列式的倒数 X 伴随矩阵
+    __mat2_scalar_multiply(m1, rows1, cols1, *m1, *rows1, *cols1, 1 / det);
+
+    return 0;
 }
 
 
 /**
- * @brief 返回 m2 的代数余子式。
+ * @brief 将 m1 去除 p 行 与 q 列剩下的矩阵，放入 m2
  * 
  * @param m1 
  * @param row1 
@@ -242,7 +278,7 @@ int __mat2_inverse(vfloat_t** m1, vfloat_t* m2, size_t n)
  * @param q 
  * @return int 
  */
-int __mat2_cofactor(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int p, int q)
+int __mat2_co(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int p, int q)
 {
 
     *rows1 = rows2 - 1;
@@ -265,5 +301,44 @@ int __mat2_cofactor(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, s
         }
     }
 
+    return 0;
+}
+
+/**
+ * @brief 返回 m2 的伴随矩阵，结果放入 m1 
+ * 
+ * @param m1 m1 大小不会改变，所有不会改变内存，请确保 m1 的内存足够大。
+ * @param m2 输入矩阵
+ * @param n 阶数
+ * @return int 
+ */
+int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, int n) 
+{
+    *rows1 = n;
+    *cols1 = n;
+    *m1 = (vfloat_t*)realloc(*m1, (*rows1) * (*cols1) * sizeof(vfloat_t));
+    
+    vfloat_t (*m1_ptr)[n] = *m1;
+    vfloat_t (*m2_ptr)[n] = m2;
+    
+    vfloat_t det = 0.f;
+    vfloat_t* co_mat = NULL;
+    size_t co_n;
+    for (int i=0; i<n; ++i) {
+
+        float sign = 1.f;
+        
+        for (int j=0; j<n; ++j) {
+        
+            // 计算去除 i 行与 j 列的矩阵。
+            __mat2_co(&co_mat, &co_n, &co_n, m2, n, n, i, j);
+            // 然后计算 这个矩阵的行列式。
+            det = sign * __mat2_determinant(co_mat, co_n);
+            // 将计算结果赋值给 m1
+            m1_ptr[i][j] = det;
+            sign = -sign;
+        }
+    }
+    free(co_mat);
     return 0;
 }

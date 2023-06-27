@@ -336,9 +336,9 @@ int Mat2_is_vector(matrix2_t* mat) {
 }
 
 
-int Mat2_get_cofactor_to(matrix2_t* dest, matrix2_t* src, int p, int q)
+int Mat2_get_co_to(matrix2_t* dest, matrix2_t* src, int p, int q)
 {
-    return __mat2_cofactor(
+    return __mat2_co(
         &(dest->pool),
         &(dest->rows),
         &(dest->cols),
@@ -356,6 +356,76 @@ int Mat2_det(matrix2_t* mat, vfloat_t* out) {
     if (mat->rows == mat->cols) {
 
         *out =  __mat2_determinant(mat->pool, mat->rows);
+        return 0;
+    }
+    return -1;
+}
+
+int Mat2_get_adjoint_to(matrix2_t* dest, matrix2_t* src)
+{
+    if (src->rows == src->cols) {
+
+        __mat2_adjoint(
+            &(dest->pool),
+            &(dest->rows),
+            &(dest->cols),
+            src->pool, 
+            src->rows
+        );
+        return 0;
+    }
+    return -1;
+}
+
+/**
+ * @brief 原地 inverse
+ * 
+ * @param mat 
+ * @return int 
+ */
+int Mat2_inverse(matrix2_t* mat) {
+
+    if (mat->rows == mat->cols) {
+
+        vfloat_t* mat2 = malloc (mat->rows * mat->cols * sizeof(vfloat_t));
+        memcpy(mat2, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+
+        __mat2_inverse(
+            &(mat->pool),
+            &(mat->rows),
+            &(mat->cols),
+            mat2,
+            mat->rows
+        );
+        free(mat2);
+        return 0;
+    }
+    return -1;
+}
+
+int Mat2_dot(matrix2_t* mat1, matrix2_t* mat2)
+{
+    if (mat1->cols == mat2->rows) {
+
+        vfloat_t* m1_cpy = malloc(mat1->rows * mat1->cols * sizeof(vfloat_t));
+        size_t m1_cpy_rows = mat1->rows;
+        size_t m1_cpy_cols = mat1->cols;
+
+        memcpy(m1_cpy, mat1->pool, mat1->rows * mat1->cols * sizeof(vfloat_t));
+
+        __mat2_dot(
+            &(mat1->pool),
+            &(mat1->rows),
+            &(mat1->cols),
+            m1_cpy,
+            m1_cpy_rows,
+            m1_cpy_cols,
+            mat2->pool,
+            mat2->rows,
+            mat2->cols
+        );
+
+        free(m1_cpy);
         return 0;
     }
     return -1;
