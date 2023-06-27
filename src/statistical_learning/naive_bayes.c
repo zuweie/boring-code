@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-16 14:50:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-27 15:33:04
+ * @LastEditTime: 2023-06-27 17:41:51
  * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
  * @Description: 
  */
@@ -13,7 +13,7 @@
 #include <math.h>
 #include "naive_bayes.h"
 
-
+#define PI 3.1415926
 /**
  * @brief 统计每个列别下每种数据的数量。
  * 
@@ -284,18 +284,75 @@ int navie_bayes_release_counting(void* Py_counting, void* Pxy_count_table)
 
 int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, void* sigma_table, vfloat_t* predict) 
 {
-    int size_label = *MAT2_COUNTING_NUMBERS_PTR(py_counting);
+    matrix2_t* _X_cpy = Mat2_create_cpy(_X);
+
+    // 此处确保 _X 是列向量。
+    if (_X_cpy->rows < _X_cpy->cols) {
+        // 如果是树立向量，将其立起来。
+        Mat2_T(_X_cpy);
+    }
+
+    int size_label  = *MAT2_COUNTING_SIZE_PTR(py_counting);
+    vfloat_t* elems = MAT2_COUNTING_LIST_PTR(py_counting);
+
+    int mu_col = ((int*)mus)[1];
+    vfloat_t (*mu_ptr)[mu_col] = &(((int*)mus)[2]);
+    
+    int sigma_row = ((int*)sigma_table)[1];
+    int sigma_col = ((int*)sigma_table)[2];
+    vfloat_t (*sigma_ptr)[sigma_row][sigma_col] = &(((int*)sigma_table)[3]);
 
     vfloat_t probabilities[size_label];
 
+    matrix2_t* sigma_mat = Mat2_create(1,1);
+    matrix2_t* mu_mat    = Mat2_create(1,1);
+    matrix2_t* _X_cpy_T   = Mat2_create(1,1);
+
     // 1 首先计算各种 label 的概率
+    vfloat_t PROBABILITY = 0.f;
     for (int i=0; i<size_label; ++i) {
 
-        
+        Mat2_load_on_shape(sigma_mat, sigma_ptr[i], sigma_row, sigma_col);
+        Mat2_load_on_shape(mu_mat, mu_ptr[i], 1, mu_col);
 
+        vfloat_t det;
+        Mat2_det(sigma_mat, &det);
+
+        PROBABILITY += log(det);
+
+        Mat2_sub(_X_cpy, mu_mat);
+        Mat2_cpy(_X_cpy_T, _X_cpy);
+        Mat2_T(_X_cpy_T);
+
+        Mat2_inverse(sigma_mat);
+
+        Mat2_dot(_X_cpy_T, sigma_mat);
+        Mat2_dot(_X_cpy_T, _X_cpy);
+
+        PROBABILITY += _X_cpy_T->pool[0];
+        PROBABILITY = PROBABILITY / 2;
+
+        probabilities[i] = PROBABILITY;
     }
 
     // 2 找出最大概率哪个。
+    vfloat_t max_p = probabilities[0];
+    int max        = 0;
 
-    
+    for (int i=1; i<size_label; ++i) {
+
+        if (max_p < probabilities[i]) {
+            max_p = probabilities[i];
+            max = i;
+        }
+    }
+
+    *predict = elems[max];
+
+    Mat2_destroy(_X_cpy);
+    Mat2_destroy(sigma_mat);
+    Mat2_destroy(mu_mat);
+    Mat2_destroy(_X_cpy_T);
+
+    return 0;
 }

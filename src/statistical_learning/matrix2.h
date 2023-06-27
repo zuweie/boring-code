@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 10:14:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-27 15:49:36
+ * @LastEditTime: 2023-06-27 16:51:07
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -44,6 +44,7 @@ int Mat2_sub(matrix2_t* dest, matrix2_t* src);
 int Mat2_scalar_multiply(matrix2_t* mat, vfloat_t scalar);
 int Mat2_vect_dot(matrix2_t* mat1, matrix2_t* mat2, vfloat_t* out);
 int Mat2_dot(matrix2_t* mat1, matrix2_t* mat2);
+int Mat2_T(matrix2_t* mat);
 
 vfloat_t Mat2_get(matrix2_t* mat, size_t i, size_t j);
 int Mat2_put(matrix2_t* mat, size_t i, size_t j, vfloat_t v);

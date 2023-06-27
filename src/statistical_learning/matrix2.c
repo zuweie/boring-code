@@ -430,3 +430,23 @@ int Mat2_dot(matrix2_t* mat1, matrix2_t* mat2)
     }
     return -1;
 }
+
+int Mat2_T(matrix2_t* mat) 
+{
+    vfloat_t* m_cpy = malloc (mat->rows * mat->cols * sizeof(vfloat_t));
+    size_t cpy_rows = mat->rows;
+    size_t cpy_cols = mat->cols;
+
+    memcpy(m_cpy, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+
+    __mat2_T(
+        &(mat->pool),
+        &(mat->rows),
+        &(mat->cols),
+        m_cpy,
+        cpy_rows,
+        cpy_cols
+    );
+    free(m_cpy);
+    return 0;
+}

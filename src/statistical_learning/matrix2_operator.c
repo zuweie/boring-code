@@ -72,6 +72,18 @@ vfloat_t __mat2_vect_dot(vfloat_t* v1, vfloat_t* v2, size_t n)
  */
 int __mat2_T(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2)
 {
+    *rows1 = cols2;
+    *cols1 = rows2;
+    *m1 = (vfloat_t*) realloc (*m1, (*rows1) * (*cols1) * sizeof(vfloat_t));
+    vfloat_t (*m1_ptr)[*cols1] = *m1;
+    vfloat_t (*m2_ptr)[cols2]  = m2;
+
+    for (int i=0; i<(*rows1); ++i) {
+        for (int j=0; j<(*cols1); ++j) {
+
+            m1_ptr[i][j] = m2_ptr[j][i];
+        }
+    }
     return 0;
 }
 

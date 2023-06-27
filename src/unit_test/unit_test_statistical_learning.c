@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-26 16:25:01
+ * @LastEditTime: 2023-06-27 17:32:49
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -314,45 +314,51 @@ static void test_navies_bayes_mgd(void) {
         1,1,1,1,2,2,2,2
     };
 
-    vfloat_t test_data;
+    vfloat_t test_data[] = {
+        6, 130, 8
+    };
     
     matrix2_t* train_mat = Mat2_create(1,1);
     matrix2_t* train_label_mat = Mat2_create(1,1);
-    matrix2_t* mus_mat = Mat2_create(1,1);
-    matrix2_t* sigma_mat = Mat2_create(1,1);
+    matrix2_t* _X = Mat2_create(1,1);
 
     Mat2_load_on_shape(train_mat, train_data, 8, 3);
     Mat2_load_on_shape(train_label_mat, train_label, 8, 1);
+    Mat2_load_on_shape(_X, test_data, 1, 3);
 
     void* mus_table;
     void* sigma_table;
+    void* Py_counting;
+    navie_bayes_train_MGD_edit(train_mat, train_label_mat, &Py_counting, &mus_table, &sigma_table);
 
-    navie_bayes_train_MGD_edit(train_mat, train_label_mat, &mus_table, &sigma_table);
+    // int mus_table_row = ((int*)mus_table)[0];
+    // int mus_table_col = ((int*)mus_table)[1];
 
-    int mus_table_row = ((int*)mus_table)[0];
-    int mus_table_col = ((int*)mus_table)[1];
+    // void* mus_table_ptr   = &(((int*)mus_table)[2]);
 
-    void* mus_table_ptr   = &(((int*)mus_table)[2]);
+    // Mat2_load_on_shape(mus_mat, mus_table_ptr, mus_table_row, mus_table_col);
 
-    Mat2_load_on_shape(mus_mat, mus_table_ptr, mus_table_row, mus_table_col);
+    // MAT2_INSPECT(mus_mat);
 
-    MAT2_INSPECT(mus_mat);
+    // int sigma_z = ((int*)sigma_table)[0];
+    // int sigma_row = ((int*)sigma_table)[1];
+    // int sigma_col = ((int*)sigma_table)[2];
 
-    int sigma_z = ((int*)sigma_table)[0];
-    int sigma_row = ((int*)sigma_table)[1];
-    int sigma_col = ((int*)sigma_table)[2];
+    // vfloat_t (*sigma_table_ptr)[sigma_row][sigma_col] = &(((int*)sigma_table)[3]);
 
-    vfloat_t (*sigma_table_ptr)[sigma_row][sigma_col] = &(((int*)sigma_table)[3]);
+    // for (int i=0; i<sigma_z; ++i) {
+    //     Mat2_load_on_shape(sigma_mat, sigma_table_ptr[i], sigma_row, sigma_col);
+    //     MAT2_INSPECT(sigma_mat);
+    // }
 
-    for (int i=0; i<sigma_z; ++i) {
-        Mat2_load_on_shape(sigma_mat, sigma_table_ptr[i], sigma_row, sigma_col);
-        MAT2_INSPECT(sigma_mat);
-    }
+    vfloat_t predict;
+
+    navie_bayes_predict_MGD_edit(_X, Py_counting, mus_table, sigma_table, &predict);
+
 
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
-    Mat2_destroy(mus_mat);
-    Mat2_destroy(sigma_mat);
+    Mat2_destroy(_X);
 }
 
 int do_statistical_learning_test (void) 
