@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-16 14:50:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-26 17:11:52
+ * @LastEditTime: 2023-06-27 09:37:28
  * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
  * @Description: 
  */
@@ -223,12 +223,18 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
                 vfloat_t k_tmp_elem[i_label_count];
                 vfloat_t* k_tmp_elem_ptr = k_tmp_elem;
 
+                // 这里可以优化一下。
                 for (int l=0; l<train_mat->rows; ++l) {
 
                     if (i_label == train_label_ptr[l][0]) {
                         *j_tmp_elem_ptr++ = train_mat_ptr[l][j];
                         *k_tmp_elem_ptr++ = train_mat_ptr[l][k];
                     }
+                    
+                    //  拿够数据就不用在拿了。
+                    if (j_tmp_elem_ptr == &j_tmp_elem[i_label_count])
+                        break;
+                    
                 }
 
                 vfloat_t cov_j_k = 0.f;
@@ -240,7 +246,7 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
                     cov_j_k += _v;
                 }
                 
-                sigma_tab_ptr[i][j][k] = cov_j_k / (i_label_count - 1);
+                sigma_tab_ptr[i][j][k] = cov_j_k / (i_label_count != 1?  i_label_count - 1 : 1);
             }
         }
     }

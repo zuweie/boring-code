@@ -144,7 +144,7 @@ static void test_matrix_load_csv(void)
     Mat2_destroy(mat);
 }
 
-static void test_matrix_list_different(void) {
+static void test_matrix_counting(void) {
 
     const char* train_csv_file = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_train.csv";
     matrix2_t* train_mat = Mat2_create(1,1);
@@ -193,8 +193,44 @@ static void test_matrix_list_different(void) {
     Mat2_destroy(train_mat);
     Mat2_destroy(col);
     free(counting);
+}
 
-    
+
+static void test_matrix_cofactor(void) {
+
+    matrix2_t* m1 = Mat2_create(4,4);
+    matrix2_t* m2 = Mat2_create(1,1);
+
+    Mat2_arange(m1, 1, 16);
+    //MAT2_INSPECT(m1);
+
+    Mat2_get_cofactor_to(m2, m1, 2, 2);
+
+    MAT2_INSPECT(m2);
+
+    Mat2_destroy(m1);
+    Mat2_destroy(m2);
+
+}
+
+static void test_matrix_det(void) {
+    vfloat_t m1_data[][3] = {
+        {1, 2, 3},
+        {4, 5, 6},
+        {1, 2, 2}
+    };
+    matrix2_t* m1 = Mat2_create(1,1);
+    Mat2_load_on_shape(m1, m1_data, 3, 3);
+    MAT2_INSPECT(m1);
+
+    vfloat_t det;
+    Mat2_det(m1, &det);
+
+
+    printf("\n det: %0.2f \n", det);
+
+    Mat2_destroy(m1);
+
 }
 
 int do_matrix2_test (void) 
@@ -231,9 +267,19 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_list_different) ) {
+    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_counting) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+
+    // if (NULL == CU_add_test(pSuite, " test mat cofactor ", test_matrix_cofactor) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, " test mat det ", test_matrix_det) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-
 }

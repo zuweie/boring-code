@@ -1,5 +1,5 @@
-#include "matrix2.h"
-
+#include <stdlib.h>
+#include "matrix2_operator.h"
 /**
  * @brief 两个矩阵点积,也叫内积,结果保存在 m1 指向的内存中。
  * 
@@ -185,4 +185,85 @@ int __mat2_scalar_multiply(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t
         return 0;
    } 
    return -1;
+}
+
+
+
+/**
+ * @brief 计算方阵的行列式，使用 Laplace 展开式，递归求行列式。
+ * 
+ * @param v1 
+ * @param n
+ * @return vfloat_t 
+ */
+vfloat_t __mat2_determinant(vfloat_t* v1, size_t n) 
+{
+    // 剩下一个数字就直接返回
+    if (n == 1) return v1[0];
+
+    vfloat_t det = 0.f;
+    vfloat_t (*v1_ptr)[n] = v1;
+
+    int sign = 1;
+    for (int f=0; f<n; ++f) {
+        vfloat_t* v2 = NULL;
+        int v2_n;
+
+        __mat2_cofactor(&v2, &v2_n, &v2_n, v1, n, n, 0, f);
+        // 参考 机器学习数学 84 页 2-29.
+        det += sign * v1_ptr[0][f] * __mat2_determinant(v2, v2_n);
+        sign = -sign;
+        free(v2);
+    }
+    return det;
+}
+
+/**
+ * @brief 计算一个矩阵的逆矩阵
+ * 
+ * @return int 
+ */
+int __mat2_inverse(vfloat_t** m1, vfloat_t* m2, size_t n)
+{
+    
+}
+
+
+/**
+ * @brief 返回 m2 的代数余子式。
+ * 
+ * @param m1 
+ * @param row1 
+ * @param cols1 
+ * @param m2 
+ * @param rows2 
+ * @param cols2 
+ * @param p 
+ * @param q 
+ * @return int 
+ */
+int __mat2_cofactor(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int p, int q)
+{
+
+    *rows1 = rows2 - 1;
+    *cols1 = cols2 - 1;
+    *m1 = (vfloat_t*) realloc (*m1, (*rows1) * (*cols1) * sizeof(vfloat_t));
+
+    int m1_idx  = 0;
+    vfloat_t (*m2_ptr)[cols2]  = m2;
+
+    for (int i=0; i<rows2; ++i) {
+
+        for (int j=0; j<cols2; ++j) {
+
+            if (i != p && j != q) {
+
+                (*m1)[m1_idx++] = m2_ptr[i][j];
+
+            }
+
+        }
+    }
+
+    return 0;
 }

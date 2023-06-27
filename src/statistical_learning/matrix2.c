@@ -335,3 +335,28 @@ int Mat2_is_vector(matrix2_t* mat) {
     return mat->cols == 1 || mat->rows == 1;
 }
 
+
+int Mat2_get_cofactor_to(matrix2_t* dest, matrix2_t* src, int p, int q)
+{
+    return __mat2_cofactor(
+        &(dest->pool),
+        &(dest->rows),
+        &(dest->cols),
+        src->pool,
+        src->cols, 
+        src->cols,
+        p, 
+        q
+    );
+}
+
+
+int Mat2_det(matrix2_t* mat, vfloat_t* out) {
+
+    if (mat->rows == mat->cols) {
+
+        *out =  __mat2_determinant(mat->pool, mat->rows);
+        return 0;
+    }
+    return -1;
+}

@@ -9,7 +9,9 @@ int __mat2_add(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t
 int __mat2_sub(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2);
 int __mat2_scalar_multiply(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t scaler);
 int __mat2_T(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2);
-int __mat2_rescale(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t** m2, size_t rows2, size_t cols2, int left, int top, int right, int bottom, vfloat_t fill);
+int __mat2_rescale(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int left, int top, int right, int bottom, vfloat_t fill);
 
-
+vfloat_t __mat2_determinant(vfloat_t* v1, size_t n);
+int __mat2_inverse(vfloat_t** m1, vfloat_t* m2, size_t n);
+int __mat2_cofactor(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int p, int q);
 #endif
