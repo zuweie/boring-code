@@ -30,15 +30,13 @@ int __mat2_dot(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t
     for (int i=0; i<(*rows1); ++i) {
         for (int j=0; j<(*cols1); ++j) {
 
-            // 把 m3 某一列拿出来，与 m2 某一行进行内积。
-            for (int k=0; k<rows3; ++k)
-                m3_col[k] = m3_ptr[k][j];
+            m1_ptr[i][j] = 0.f;
 
-            m1_ptr[i][j] = __mat2_vect_dot(m2_ptr[i], m3_col, rows3);
-
+            for (int k=0; k<cols2; ++k) {
+                m1_ptr[i][j] += m2_ptr[i][k] * m3_ptr[k][j];
+            }
         }
     }
-
     return 0;
 }
 
@@ -336,9 +334,10 @@ int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, in
     vfloat_t det = 0.f;
     vfloat_t* co_mat = NULL;
     size_t co_n;
+    float sign;
     for (int i=0; i<n; ++i) {
 
-        float sign = 1.f;
+        sign = (i%2 == 0)? 1.f : -1.f;
         
         for (int j=0; j<n; ++j) {
         

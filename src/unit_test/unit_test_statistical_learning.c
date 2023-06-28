@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-27 17:32:49
+ * @LastEditTime: 2023-06-28 13:19:03
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -233,7 +233,9 @@ static void test_navie_bayes (void)
 
     printf("\n correct %.2f \n", (float) (correct) / (float) (test_mat->rows));
 
-    navie_bayes_release_counting(Py_counting, Pxy_counting_table);
+    //navie_bayes_release_counting(Py_counting, Pxy_counting_table);
+    free(Py_counting);
+    navie_bayes_release_pxy_counting_table(Pxy_counting_table);
 
     Mat2_destroy(csv_mat);
     Mat2_destroy(train_mat);
@@ -289,7 +291,9 @@ static void test_navie_bayes2(void) {
 
     printf(" predict: %0.2f \n", predict);
 
-    navie_bayes_release_counting(Py_counting, Pxy_counting_table);
+    //navie_bayes_release_counting(Py_counting, Pxy_counting_table);
+    free(Py_counting);
+    navie_bayes_release_pxy_counting_table(Pxy_counting_table);
 
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
@@ -329,7 +333,7 @@ static void test_navies_bayes_mgd(void) {
     void* mus_table;
     void* sigma_table;
     void* Py_counting;
-    navie_bayes_train_MGD_edit(train_mat, train_label_mat, &Py_counting, &mus_table, &sigma_table);
+    navie_bayes_train_MGD_edit(train_mat, train_label_mat, &Py_counting, &mus_table, &sigma_table, NULL);
 
     // int mus_table_row = ((int*)mus_table)[0];
     // int mus_table_col = ((int*)mus_table)[1];
@@ -355,10 +359,91 @@ static void test_navies_bayes_mgd(void) {
 
     navie_bayes_predict_MGD_edit(_X, Py_counting, mus_table, sigma_table, &predict);
 
+    CU_ASSERT_DOUBLE_EQUAL(predict, 1.f, 0.001f);
 
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
     Mat2_destroy(_X);
+}
+
+static void navies_bayes_training_progress (char* title, unsigned long step, unsigned long total) {
+    
+    char buffer[1024];
+    memset(buffer, 0x0, sizeof(buffer));
+    sprintf(buffer, "%s ,进度: %ld / %ld, %0.2f ", title, step, total, ((double)step / (double)total) * 100);
+    printf("%s\r", buffer);
+    fflush(stdout);
+
+}
+
+static void test_navies_bayes_mgd_big(void) 
+{
+    const char* train_csv_file = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_train.csv";
+    const char* test_csv_file  = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_test.csv";
+
+    matrix2_t* csv_mat    = Mat2_create(1,1);
+    matrix2_t* train_mat  = Mat2_create(1,1);
+    matrix2_t* train_label_mat  = Mat2_create(1,1);
+    matrix2_t* test_label_mat = Mat2_create(1,1);
+    matrix2_t* test_mat = Mat2_create(1,1);
+    matrix2_t* _X       = Mat2_create(1,1);
+
+
+    Mat2_load_csv(csv_mat, train_csv_file);
+    Mat2_slice_col_to(train_label_mat, csv_mat, 0);
+    Mat2_slice_cols_to(train_mat, csv_mat, 1, csv_mat->cols);
+
+    Mat2_load_csv(csv_mat, test_csv_file);
+    Mat2_slice_col_to(test_label_mat, csv_mat, 0);
+    Mat2_slice_cols_to(test_mat, csv_mat, 1, csv_mat->cols);
+
+    void* Py_counting;
+    void* mus_table;
+    void* sigma_table;
+    printf(" \n ---- *** training .... *** ---- \n");
+    navie_bayes_train_MGD_edit(train_mat, train_label_mat, &Py_counting, &mus_table, &sigma_table, navies_bayes_training_progress);
+
+    int correct = 0;
+    char buff[1024];
+    memset(buff, 0x0, sizeof(buff));
+    int label;
+
+    printf(" \n ---- *** predicting ... *** ---- \n");
+
+    for (int i=0; i<test_mat->rows; ++i) {
+
+        label = (int)test_label_mat->pool[i];
+
+        Mat2_slice_row_to(_X, test_mat, i);
+
+        float predict;
+
+        //navie_bayes_predict(_X, Py_counting, Pxy_counting_table, 1, &predict);
+        navie_bayes_predict_MGD_edit(_X, Py_counting, mus_table, sigma_table, &predict);
+
+        if ((int)predict == label) correct++; 
+
+        sprintf(buff, "Process: %d / %d, predict: %d - %d, correct %.2f ... ", i+1, test_mat->rows, (int)predict, label, ((float) (correct) / (float) (test_mat->rows))*100);
+        
+        printf("%s\r", buff);
+
+        fflush(stdout);
+
+    }
+
+    printf("\n correct %.2f \n", (float) (correct) / (float) (test_mat->rows));
+
+    free(Py_counting);
+    free(mus_table);
+    free(sigma_table);
+
+    Mat2_destroy(csv_mat);
+    Mat2_destroy(train_mat);
+    Mat2_destroy(train_label_mat);
+    Mat2_destroy(test_label_mat); 
+    Mat2_destroy(test_mat);
+    Mat2_destroy(_X );
+    return;
 }
 
 int do_statistical_learning_test (void) 
@@ -391,7 +476,12 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd) ) {
+    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd_big) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

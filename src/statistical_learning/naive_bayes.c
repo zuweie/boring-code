@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-16 14:50:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-27 17:41:51
+ * @LastEditTime: 2023-06-28 14:04:31
  * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
  * @Description: 
  */
@@ -27,47 +27,50 @@ int navie_bayes_counting(matrix2_t* train_mat, matrix2_t* train_label_mat, void*
 {
     // 获取 label 的统计。
     __mat2_count_element(train_label_mat->pool, train_label_mat->rows, Py_counting);
-    int size_eleme = *MAT2_COUNTING_SIZE_PTR(*Py_counting);
-    vfloat_t* elem_ptr  = MAT2_COUNTING_LIST_PTR(*Py_counting);
-    MAT2_POOL_PTR(train_label_mat, label_mat_ptr);
-    MAT2_POOL_PTR(train_mat, train_mat_ptr);
 
-    // 多申请多两个单位，用于存储横列信息。
-    size_t table_size = 2 * sizeof(int) + size_eleme * train_mat->cols * sizeof(char*);
-    void* table1 = malloc( table_size );
-    memset(table1, 0x0, table_size);
-    ((int*)table1)[0] = size_eleme;
-    ((int*)table1)[1] = train_mat->cols;
+    if (Px_y_counting_table) {
+        int size_eleme = *MAT2_COUNTING_SIZE_PTR(*Py_counting);
+        vfloat_t* elem_ptr  = MAT2_COUNTING_LIST_PTR(*Py_counting);
+        MAT2_POOL_PTR(train_label_mat, label_mat_ptr);
+        MAT2_POOL_PTR(train_mat, train_mat_ptr);
 
-    char* (*table_ptr)[train_mat->cols] = &(((int*)table1)[2]);
-    // 
+        // 多申请多两个单位，用于存储横列信息。
+        size_t table_size = 2 * sizeof(int) + size_eleme * train_mat->cols * sizeof(char*);
+        void* table1 = malloc( table_size );
+        memset(table1, 0x0, table_size);
+        ((int*)table1)[0] = size_eleme;
+        ((int*)table1)[1] = train_mat->cols;
+
+        char* (*table_ptr)[train_mat->cols] = &(((int*)table1)[2]);
+        // 
     
-    // 建立统计表。
-    vfloat_t elem_value[train_mat->rows];
-    int elem_size;
+        // 建立统计表。
+        vfloat_t elem_value[train_mat->rows];
+        int elem_size;
 
-    for (int i=0; i<size_eleme; ++i) {
-        int label = (int)elem_ptr[i];
+        for (int i=0; i<size_eleme; ++i) {
+            int label = (int)elem_ptr[i];
 
-        for (int j=0; j<train_mat->cols; ++j) {
+            for (int j=0; j<train_mat->cols; ++j) {
 
-            elem_size = 0;
+                elem_size = 0;
 
-            for (int k=0; k<train_mat->rows; ++k) {
-                //
-                int Y_label = label_mat_ptr[k][0];
+                for (int k=0; k<train_mat->rows; ++k) {
+                    //
+                    int Y_label = label_mat_ptr[k][0];
 
-                if (label == Y_label) {
-                    elem_value[elem_size++] = train_mat_ptr[k][j];
-                }
-            } 
-            void* out;
-            __mat2_count_element(elem_value, elem_size, &out);
-            table_ptr[i][j] = out;
+                    if (label == Y_label) {
+                        elem_value[elem_size++] = train_mat_ptr[k][j];
+                    }
+                } 
+                void* out;
+                __mat2_count_element(elem_value, elem_size, &out);
+                table_ptr[i][j] = out;
+            }
         }
+        *Px_y_counting_table = table1;
     }
 
-    *Px_y_counting_table = table1;
     return 0;
 }
 
@@ -137,24 +140,24 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
     return 0;
 }
 
-int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat, void** Py_counting, void** mus_table, void** sigma_table)
+int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat, void** Py_counting, void** mus_table, void** sigma_table, void (*progress)(char*, unsigned long, unsigned long))
 {
 
     MAT2_POOL_PTR(train_mat, train_mat_ptr);
     MAT2_POOL_PTR(train_label_mat, train_label_ptr);
 
-    void* label_counting; void* pxy_counting_table;
+    void* label_counting; 
 
-    navie_bayes_counting(train_mat, train_label_mat, &label_counting, &pxy_counting_table);
+    navie_bayes_counting(train_mat, train_label_mat, &label_counting, NULL);
 
     
     int label_count       = *MAT2_COUNTING_SIZE_PTR(label_counting);
     vfloat_t* labels      = MAT2_COUNTING_LIST_PTR(label_counting);
     int* label_numbers    = MAT2_COUNTING_NUMBERS_PTR(label_counting);
 
-    int pxy_rows = ((int*)pxy_counting_table)[0];
-    int pxy_cols = ((int*)pxy_counting_table)[1];
-    char* (*pxy_tab_ptr)[pxy_cols] = &(((int*)pxy_counting_table)[2]);
+    // int pxy_rows = ((int*)pxy_counting_table)[0];
+    // int pxy_cols = ((int*)pxy_counting_table)[1];
+    // char* (*pxy_tab_ptr)[pxy_cols] = &(((int*)pxy_counting_table)[2]);
     
     int mus_rows = label_count;
     int mus_cols = train_mat->cols;
@@ -185,8 +188,10 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
 
 
     // 开始计算均值。
-
+    
     // 1 第一步先计算各个元素在各自的 label 下的总数。
+    if (progress) progress("计算均值向量", 0, 0);
+
     for (int i=0; i<train_mat->rows; ++i) {
         for (int j=0; j<train_mat->cols; ++j) {
 
@@ -197,15 +202,19 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
             int l_index = __mat2_get_elemt_pos(label_counting, label);
 
             // 根据 label 序号，和第 j 个属性，获取在该 label 下 j 属性总数。
-            int value_element_total = __mat2_get_element_number(label_counting, label);
+            int value_element_total = label_numbers[l_index]; //__mat2_get_element_number(label_counting, label);
             
             // 把该 label 下 j 属性的值 / 总数，再将他们加到一起便是 均值。放入均值表中
             mus_ptr[l_index][j] += train_mat_ptr[i][j] / (vfloat_t) value_element_total;
+
+            if (progress) progress("计算均值向量", (i*train_mat->cols+j), (train_mat->rows * train_mat->cols));
+            
         }
     }
     
 
     // 计算协方差矩阵
+    if (progress) progress("计算协方差", 0, 0);
 
     for (int i=0; i<sigma_z; ++i) {
 
@@ -255,6 +264,9 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
                 } else {
                     sigma_tab_ptr[i][j][k] = sigma_tab_ptr[i][k][j];
                 }
+
+                if (progress) progress("计算协方差", i*sigma_rows*sigma_cols+j*sigma_cols+k, sigma_z*sigma_rows*sigma_cols);
+
             }
         }
     }
@@ -262,14 +274,14 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
     *mus_table   = mus_block;
     *sigma_table = sigma_block;
     *Py_counting = label_counting;
+    //navie_bayes_release_pxy_counting_table(pxy_counting_table);
     return 0;
 }
 
-int navie_bayes_release_counting(void* Py_counting, void* Pxy_count_table)
-{
-    int rows = ((int*)Pxy_count_table)[0];
-    int cols = ((int*)Pxy_count_table)[1];
-    char* (*Pxy_count_table_ptr)[cols] = &(((int*)Pxy_count_table)[2]);
+int navie_bayes_release_pxy_counting_table(void* Pxy_counting_table) {
+    int rows = ((int*)Pxy_counting_table)[0];
+    int cols = ((int*)Pxy_counting_table)[1];
+    char* (*Pxy_count_table_ptr)[cols] = &(((int*)Pxy_counting_table)[2]);
 
     for (int i=0; i<rows; ++i) {
         for (int j=0; j<cols; ++j) {
@@ -277,20 +289,19 @@ int navie_bayes_release_counting(void* Py_counting, void* Pxy_count_table)
             free(counting);
         }
     }
-    free(Pxy_count_table);
-    free(Py_counting);
+    free(Pxy_counting_table);
     return 0;
 }
 
 int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, void* sigma_table, vfloat_t* predict) 
 {
-    matrix2_t* _X_cpy = Mat2_create_cpy(_X);
+    // matrix2_t* _X_cpy = Mat2_create_cpy(_X);
 
-    // 此处确保 _X 是列向量。
-    if (_X_cpy->rows < _X_cpy->cols) {
-        // 如果是树立向量，将其立起来。
-        Mat2_T(_X_cpy);
-    }
+    // // 此处确保 _X 是列向量。
+    // if (_X_cpy->rows < _X_cpy->cols) {
+    //     // 如果是树立向量，将其立起来。
+    //     Mat2_T(_X_cpy);
+    // }
 
     int size_label  = *MAT2_COUNTING_SIZE_PTR(py_counting);
     vfloat_t* elems = MAT2_COUNTING_LIST_PTR(py_counting);
@@ -302,18 +313,32 @@ int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, vo
     int sigma_col = ((int*)sigma_table)[2];
     vfloat_t (*sigma_ptr)[sigma_row][sigma_col] = &(((int*)sigma_table)[3]);
 
-    vfloat_t probabilities[size_label];
+    // for debug 
+    // size_label = 1;
 
+    vfloat_t probabilities[size_label];
     matrix2_t* sigma_mat = Mat2_create(1,1);
     matrix2_t* mu_mat    = Mat2_create(1,1);
-    matrix2_t* _X_cpy_T   = Mat2_create(1,1);
+    matrix2_t* _X_cpy    = Mat2_create(1,1);
+    matrix2_t* _X_cpy_T  = Mat2_create(1,1);
+
+    int n = sigma_row;
 
     // 1 首先计算各种 label 的概率
-    vfloat_t PROBABILITY = 0.f;
     for (int i=0; i<size_label; ++i) {
 
+        // 每一轮的开始都要重新初始化各个 Mat !!!!!
+        vfloat_t PROBABILITY = 0.f;
+        // 初始化 
+        Mat2_cpy(_X_cpy, _X);
+
+        if (_X_cpy->rows < _X_cpy->cols) {
+            // 如果是横向量，将其立起来，变成列向量
+            Mat2_T(_X_cpy);
+        }
+
         Mat2_load_on_shape(sigma_mat, sigma_ptr[i], sigma_row, sigma_col);
-        Mat2_load_on_shape(mu_mat, mu_ptr[i], 1, mu_col);
+        Mat2_load_on_shape(mu_mat, mu_ptr[i], mu_col, 1);
 
         vfloat_t det;
         Mat2_det(sigma_mat, &det);
@@ -322,15 +347,22 @@ int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, vo
 
         Mat2_sub(_X_cpy, mu_mat);
         Mat2_cpy(_X_cpy_T, _X_cpy);
+
         Mat2_T(_X_cpy_T);
 
-        Mat2_inverse(sigma_mat);
 
+        Mat2_inverse(sigma_mat);
+        
         Mat2_dot(_X_cpy_T, sigma_mat);
+        
+
         Mat2_dot(_X_cpy_T, _X_cpy);
 
+
         PROBABILITY += _X_cpy_T->pool[0];
-        PROBABILITY = PROBABILITY / 2;
+        PROBABILITY += n*log(2*PI);
+
+        PROBABILITY = PROBABILITY * (-0.5f);
 
         probabilities[i] = PROBABILITY;
     }

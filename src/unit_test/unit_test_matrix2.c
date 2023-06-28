@@ -286,6 +286,51 @@ static void test_matrix_inverse(void)
 
 }
 
+static void test_matrix_dot(void) {
+    vfloat_t m1_data[][3] = {
+        {1,2,3},
+        //{4,5,6}
+    };
+
+    vfloat_t m2_data[][2] = {
+        {4,1},
+        {5,2},
+        {6,3}
+    };
+
+    matrix2_t* m1 = Mat2_create(1,1);
+    matrix2_t* m2 = Mat2_create(1,1);
+
+    Mat2_load_on_shape(m1, m1_data, 1, 3);
+    Mat2_load_on_shape(m2, m2_data, 3, 2);
+
+    Mat2_dot(m1, m2);
+    MAT2_INSPECT(m1);
+    Mat2_destroy(m1);
+    Mat2_destroy(m2);
+
+    // respect:
+    // 32, 14
+}
+
+static void test_matrix_T(void) 
+{
+    vfloat_t m1_data[][4] = {
+        {1,2,3,4},
+        {5,6,7,8}
+    };
+
+    matrix2_t* m1 = Mat2_create(1,1);
+    Mat2_load_on_shape(m1, m1_data, 2, 4);
+
+    Mat2_T(m1);
+
+    MAT2_INSPECT(m1);
+
+    Mat2_destroy(m1);
+}
+
+
 int do_matrix2_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -336,13 +381,24 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_adjoint) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_adjoint) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     // if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_inverse) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+
+
+    // if (NULL == CU_add_test(pSuite, " test mat dot ", test_matrix_dot) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_T) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
