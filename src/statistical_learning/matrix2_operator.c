@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 #include "matrix2_operator.h"
 /**
  * @brief 两个矩阵点积,也叫内积,结果保存在 m1 指向的内存中。
@@ -336,7 +337,7 @@ int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, in
     size_t co_n;
     float sign;
     for (int i=0; i<n; ++i) {
-
+        // 在计算代数余子式时, 其符号跟他的行号也有关系，具体为：第一行，开始的 sign 为 1，第二行，开始的 sign 为 -1， 1，-1，1 .....
         sign = (i%2 == 0)? 1.f : -1.f;
         
         for (int j=0; j<n; ++j) {
@@ -352,4 +353,156 @@ int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, in
     }
     free(co_mat);
     return 0;
+}
+
+/**
+ * @brief 矩阵的奇异值分解。
+ * 
+ * @param u 
+ * @param u_rows 
+ * @param u_cols 
+ * @param sigma 
+ * @param sigma_rows 
+ * @param sigma_cols 
+ * @param vt 
+ * @param vt_rows 
+ * @param vt_cols 
+ * @param mat 
+ * @param mat_rows 
+ * @param mat_cols 
+ * @return int 
+ */
+int __mat2_svd(vfloat_t** u, size_t* u_rows, size_t* u_cols, vfloat_t** sigma, size_t* sigma_rows, size_t* sigma_cols, vfloat_t** vt, size_t* vt_rows, size_t* vt_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols)
+{
+
+}
+
+
+/**
+ * @brief 矩阵的 QR 分解，使用的是 House holder 变化进行 QR 分解。
+ * 
+ * @param q 
+ * @param q_rows 
+ * @param q_cols 
+ * @param r 
+ * @param r_rows 
+ * @param r_cols 
+ * @param mat 
+ * @param mat_rows 
+ * @param mat_cols 
+ * @return int 
+ */
+int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t* mat_cols)
+{
+
+    
+
+}
+
+/**
+ * @brief house holder 转换，使矩阵成为上三角矩阵。使用递归算法。
+ * 
+ * @param m1 
+ * @param m2 
+ * @param n
+ * @return int 
+ */
+int __mat2_householder_transform(vfloat_t** m1,  vfloat_t* m2, int n)
+{
+    vfloat_t* pa = NULL;
+    size_t m1_rows, m1_cols;
+    vfloat_t* p      = malloc(n*n*sizeof(vfloat_t));
+    vfloat_t* p_sub  = NULL;
+    vfloat_t (*p_ptr)[n] = p;
+
+    vfloat_t* a = malloc(n*n*sizeof(vfloat_t));
+    vfloat_t* a_sub  = NULL;
+    vfloat_t (*a_ptr)[n] = a;
+
+
+    *m1 = realloc(*m1, n*n*sizeof(vfloat_t));
+    // 初始化的时候把 m2 复制给 m1
+    memcpy(*m1, m2, n*n*sizeof(vfloat_t));
+
+    int cols = n;
+    
+    for (int i=1; i<n; ++i) {
+
+        // 循环第一步把 p 弄干净。
+        memset(p_ptr, 0x0, n*n*sizeof(vfloat_t));
+        memcpy(a, (*m1), n*n*sizeof(vfloat_t));
+
+        // 按照书中 108 页
+        for (int ni=0; ni<i; ++ni) {
+            p_ptr[ni][ni] = 1.f;
+        }
+
+        // 构造 n-1 阶的 householder 矩阵。
+        a_sub = realloc(a_sub, (n-i)*(n-i)*sizeof(vfloat_t));
+        vfloat_t (*a_sub_ptr)[n-i] = a_sub;
+
+        for (int j=i; j<n; ++j) {
+            for (int k=i; k<n; ++k) {
+                a_sub_ptr[j-i][k-i] = a_ptr[j][k];
+            }
+        }
+        __mat2_householder_matrix(&p_sub, a_sub, n-i);
+
+        // 构造完 n-i 阶的 householder 矩阵，将其塞回去原来的 P 矩阵
+        vfloat_t (*p_sub_ptr)[n-i] = p_sub;
+        for (int j=i; j<n; ++j) {
+            for (int k=i; k<n; ++k) {
+                p_ptr[j][k] = p_sub_ptr[j-i][k-i];
+            }
+        }
+
+        // pa = p dot a，
+        __mat2_dot(&pa, &m1_rows, &m1_cols, p, n, n, a, n, n);
+
+        // m1 = pa dot p
+        __mat2_dot(m1, &m1_rows, &m1_cols, pa, n, n, p, n, n);
+    }
+
+    // 清理内存。
+    free(p);
+    free(p_sub);
+    free(pa);
+    free(a);
+    free(a_sub);
+    
+    return 0;
+}
+
+/**
+ * @brief 把矩阵 m 转化 householder 矩阵
+ * 
+ * @param p 
+ * @param m 
+ * @param n 
+ * @return int 
+ */
+int __mat2_householder_matrix(vfloat_t** p, vfloat_t* a, int n) 
+{
+    *p = (vfloat_t*) realloc (*p, n*n*sizeof(vfloat_t));
+    vfloat_t (*p_ptr)[n] = *p;
+    vfloat_t (*a_ptr)[n] = a;
+
+    for (int col=0; col<n; ++col) {
+
+        //1 计算每一列的长度。
+
+        vfloat_t len = 0.f;
+        for (int row=0; row<n; ++row) {
+            len += a_ptr[row][col] * a_ptr[row][col];
+
+            p_ptr[row][col] = a_ptr[row][col];
+        }
+
+        len = sqrt(len);
+
+        p_ptr[0][col] += len;
+    }
+
+    return 0;
+
 }

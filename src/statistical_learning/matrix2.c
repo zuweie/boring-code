@@ -433,6 +433,14 @@ int Mat2_dot(matrix2_t* mat1, matrix2_t* mat2)
 
 int Mat2_T(matrix2_t* mat) 
 {
+    if (mat->rows == 1 || mat->cols == 1) {
+        // 若是只有一行或者一列。直接把行列数调转即可。
+        size_t tmp = mat->rows;
+        mat->rows  = mat->cols;
+        mat->cols  = tmp;
+        return 0;
+    }
+
     vfloat_t* m_cpy = malloc (mat->rows * mat->cols * sizeof(vfloat_t));
     size_t cpy_rows = mat->rows;
     size_t cpy_cols = mat->cols;
@@ -449,4 +457,19 @@ int Mat2_T(matrix2_t* mat)
     );
     free(m_cpy);
     return 0;
+}
+
+int Mat2_householder_transform(matrix2_t* mat1, matrix2_t* mat2)
+{
+
+    if (mat2->rows != mat2->cols && mat2->rows < 2) return -1;
+
+    return __mat2_householder_transform(
+        &(mat1->pool),
+        &(mat1->rows),
+        &(mat1->cols),
+        mat2->pool,
+        mat2->rows
+    );
+    
 }

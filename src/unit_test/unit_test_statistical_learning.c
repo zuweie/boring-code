@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-28 13:19:03
+ * @LastEditTime: 2023-06-30 12:56:58
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -476,15 +476,15 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
-    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd_big) ) {
+    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd_big) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 }
 

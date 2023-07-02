@@ -1,3 +1,4 @@
+
 #ifndef __MATRIX2_OPERATOR_H__
 #define __MATRIX2_OPERATOR_H__
 
@@ -15,4 +16,7 @@ vfloat_t __mat2_determinant(vfloat_t* v1, size_t n);
 int __mat2_inverse(vfloat_t** m1, size_t* row1, size_t* cols1, vfloat_t* m2, size_t n);
 int __mat2_co(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int p, int q);
 int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, int n);
+int __mat2_svd();
+int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t* mat_cols);
+int __mat2_householder_transform(vfloat_t** m1, size_t* row1, size_t* cols1, vfloat_t* m2, int n);
 #endif
