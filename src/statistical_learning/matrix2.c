@@ -316,21 +316,6 @@ int Mat2_load_csv(matrix2_t* mat, char* file_csv)
     return 0;
 }
 
-int Mat2_list_difference_in_col(matrix2_t* mat, int col, void** out)
-{
-    matrix2_t* mat2 = Mat2_create(1,1);
-    Mat2_slice_col_to(mat2, mat, col);
-
-    __mat2_count_element(mat2->pool, mat2->rows, out);
-    Mat2_destroy(mat2);
-    return 0;
-}
-
-int Mat2_get_difference_number(void* diff, vfloat_t target) 
-{
-    return __mat2_get_element_number(diff, target);
-}
-
 int Mat2_is_vector(matrix2_t* mat) {
     return mat->cols == 1 || mat->rows == 1;
 }
@@ -459,17 +444,25 @@ int Mat2_T(matrix2_t* mat)
     return 0;
 }
 
-// int Mat2_householder_transform(matrix2_t* mat1, matrix2_t* mat2)
-// {
-
-//     if (mat2->rows != mat2->cols && mat2->rows < 2) return -1;
-
-//     return __mat2_householder_transform(
-//         &(mat1->pool),
-//         &(mat1->rows),
-//         &(mat1->cols),
-//         mat2->pool,
-//         mat2->rows
-//     );
-
-// }
+/**
+ * @brief 矩阵的 QR 分解
+ * 
+ * @param q 正交矩阵
+ * @param r 上三角矩阵
+ * @param a 输入矩阵
+ * @return int 结果
+ */
+int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a)
+{
+    return __mat2_qr(
+        &(q->pool),
+        &(q->rows),
+        &(q->cols),
+        &(r->pool),
+        &(r->rows),
+        &(r->cols),
+        a->pool,
+        a->rows,
+        a->cols
+    );
+}

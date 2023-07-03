@@ -359,7 +359,26 @@ static void test_matrix_householder_transform(void) {
 
     Mat2_dot(&pmat, m1);
     MAT2_INSPECT(&pmat);
+
+    Mat2_destroy(m1);
+    Mat2_destroy(mv);
     
+}
+
+static void test_matrix_qr(void) {
+    matrix2_t* a = Mat2_create(3,3);
+    Mat2_arange(a, 1, 9);
+
+    matrix2_t* q = Mat2_create(1,1);
+    matrix2_t* r = Mat2_create(1,1);
+
+    Mat2_qr(q, r, a);
+    MAT2_INSPECT(r);
+
+    Mat2_destroy(q);
+    Mat2_destroy(r);
+    Mat2_destroy(a);
+    return;
 }
 
 
@@ -433,7 +452,12 @@ int do_matrix2_test (void)
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
-    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_householder_transform) ) {
+    // if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_householder_transform) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_qr) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

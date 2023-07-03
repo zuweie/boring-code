@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <stdio.h>
 #include "matrix2_operator.h"
 /**
  * @brief 两个矩阵点积,也叫内积,结果保存在 m1 指向的内存中。
@@ -394,10 +393,83 @@ int __mat2_svd(vfloat_t** u, size_t* u_rows, size_t* u_cols, vfloat_t** sigma, s
  * @param mat_cols 
  * @return int 
  */
-int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t* mat_cols)
+int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols)
 {
     
+    // 取行数列数最小值作为上三角化的步数。
+
+    int n = mat_rows < mat_cols ? mat_rows : mat_cols;
+    // 
+    *q_rows = mat_rows;
+    *q_cols = mat_rows;
+    *q = (vfloat_t*)realloc(*q, (*q_rows)*(*q_cols)*sizeof(vfloat_t));
     
+    *r_rows = mat_rows;
+    *r_cols = mat_cols;
+    *r = (vfloat_t*)realloc(*r, (*r_rows) * (*r_cols) * sizeof(vfloat_t));
+    vfloat_t (*r_ptr)[mat_cols] = *r;
+
+    // p dot r 时，r 的副本。need to free
+    size_t r_cpy_rows = mat_rows;
+    size_t r_cpy_cols = mat_cols;
+    vfloat_t* r_cpy = (vfloat_t*) malloc (r_cpy_rows * r_cpy_cols * sizeof(vfloat_t));
+
+    size_t p_rows = mat_rows;
+    size_t p_cols = mat_rows;
+    // need to free
+    vfloat_t* p = (vfloat_t*) malloc( p_rows * p_cols *sizeof(vfloat_t));
+    vfloat_t (*p_ptr)[p_cols] = p;
+
+    // need to free
+    vfloat_t* h = NULL;
+    size_t h_rows, h_cols;
+    // 用于制作 householder 矩阵的反射向量 v。need to free
+    vfloat_t* v = NULL;
+
+    // 将 mat 复制给 r
+    memcpy(*r, mat, mat_rows * mat_cols * sizeof(vfloat_t));
+
+    for (int step=0; step<n; step++) {
+
+        // 每次只做 house holder 矩阵前先清空。
+        memset(p, 0x0, p_rows * p_cols *sizeof(vfloat_t));
+        
+        // 
+        for (int i=0; i<step; ++i) {
+            p_ptr[i][i] = 1.f;
+        }
+
+        // 为反射向量申请内存。
+        v = (vfloat_t*)realloc(v, ((*r_rows)-step) * sizeof(vfloat_t));
+
+        // 将 r 的列向量放入 v 
+        for (int j=0, k=step; k<(*r_rows); ++j, k++) {
+            v[j] = r_ptr[k][step];
+        }
+
+        // 根据 v 计算 householder 矩阵。
+        __mat2_householder_matrix(&h, &h_rows, &h_cols, v, (*r_rows)-step);
+        
+        // 定义 h 矩阵指针
+        vfloat_t (*h_ptr)[h_cols] = h;
+    
+        // 把 h 复制到 p 中，
+        for(int i=step; i<p_rows; ++i) {
+            for (int j=step; j<p_cols; ++j) {
+                p_ptr[i][j] = h_ptr[i-step][j-step];
+            }
+        }
+
+        // 建立一个 r 的副本
+        memcpy(r_cpy, *r, r_cpy_rows * r_cpy_cols * sizeof(vfloat_t));
+        // 把 p dot a 的结构放入 r 中。
+        __mat2_dot(r, r_rows, r_cols, p, p_rows, p_cols, r_cpy, r_cpy_rows, r_cpy_cols);
+    }
+    free(r_cpy);
+    free(p);
+    free(h);
+    free(v);
+    return 0;
 
 }
 
@@ -449,16 +521,9 @@ int __mat2_householder_matrix(vfloat_t** p, size_t* p_rows, size_t* p_cols, vflo
     size_t vvT_cols;
     
     __mat2_dot(&vvT_mat, &vvT_rows, &vvT_cols, v, n, 1, v, 1, n);
-
-    MAT2_RAW_INSPECT(vvT_mat, vvT_rows, vvT_cols);
-
     __mat2_scalar_multiply(&vvT_mat, &vvT_rows, &vvT_cols, vvT_mat, n, n, 2.f / (v_norm * v_norm));
-
-    MAT2_RAW_INSPECT(vvT_mat, vvT_rows, vvT_cols);
-
     __mat2_sub(p, p_rows, p_cols, vvT_mat, vvT_rows, vvT_cols);
 
-    MAT2_RAW_INSPECT((*p), *p_rows, *p_cols);
     free(vvT_mat);
     return 0;
 }

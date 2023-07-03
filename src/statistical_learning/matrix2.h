@@ -44,14 +44,12 @@ int Mat2_put(matrix2_t* mat, size_t i, size_t j, vfloat_t v);
 
 int Mat2_load_csv(matrix2_t* mat, char* file_csv);
 
-int Mat2_list_difference_in_col(matrix2_t* mat, int cols, void** out);
-int Mat2_get_difference_number(void* diff, vfloat_t target);
-
 int Mat2_get_co_to(matrix2_t* dest, matrix2_t* src, int p, int q);
 int Mat2_det(matrix2_t* mat, vfloat_t* out);
 int Mat2_get_adjoint_to(matrix2_t* dest, matrix2_t* src);
 int Mat2_inverse(matrix2_t* mat);
 int Mat2_is_vector(matrix2_t* mat);
+int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a);
 
 #define MAT2_POOL_PTR(mat, ptr_name) vfloat_t(*ptr_name)[(mat)->cols]=(mat)->pool
 #define MAT2_DIFF_LIST_PTR(diff_ptr) 

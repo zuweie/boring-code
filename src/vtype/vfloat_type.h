@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-04-08 14:08:25
- * @LastEditTime: 2021-04-08 16:57:50
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2023-07-03 13:44:38
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/type/float_type.h
  */
