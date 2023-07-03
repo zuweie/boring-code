@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
+#include <stdio.h>
 #include "matrix2_operator.h"
 /**
  * @brief 两个矩阵点积,也叫内积,结果保存在 m1 指向的内存中。
@@ -394,115 +396,69 @@ int __mat2_svd(vfloat_t** u, size_t* u_rows, size_t* u_cols, vfloat_t** sigma, s
  */
 int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t* mat_cols)
 {
-
+    
     
 
 }
 
 /**
- * @brief house holder 转换，使矩阵成为上三角矩阵。使用递归算法。
+ * @brief 计算一个向量的模长
  * 
- * @param m1 
- * @param m2 
- * @param n
- * @return int 
+ * @param v1 向量
+ * @param n 向量长度
+ * @return vfloat_t 
  */
-int __mat2_householder_transform(vfloat_t** m1,  vfloat_t* m2, int n)
+vfloat_t __mat2_vect_norm(vfloat_t* v1, size_t n)
 {
-    vfloat_t* pa = NULL;
-    size_t m1_rows, m1_cols;
-    vfloat_t* p      = malloc(n*n*sizeof(vfloat_t));
-    vfloat_t* p_sub  = NULL;
-    vfloat_t (*p_ptr)[n] = p;
-
-    vfloat_t* a = malloc(n*n*sizeof(vfloat_t));
-    vfloat_t* a_sub  = NULL;
-    vfloat_t (*a_ptr)[n] = a;
-
-
-    *m1 = realloc(*m1, n*n*sizeof(vfloat_t));
-    // 初始化的时候把 m2 复制给 m1
-    memcpy(*m1, m2, n*n*sizeof(vfloat_t));
-
-    int cols = n;
-    
-    for (int i=1; i<n; ++i) {
-
-        // 循环第一步把 p 弄干净。
-        memset(p_ptr, 0x0, n*n*sizeof(vfloat_t));
-        memcpy(a, (*m1), n*n*sizeof(vfloat_t));
-
-        // 按照书中 108 页
-        for (int ni=0; ni<i; ++ni) {
-            p_ptr[ni][ni] = 1.f;
-        }
-
-        // 构造 n-1 阶的 householder 矩阵。
-        a_sub = realloc(a_sub, (n-i)*(n-i)*sizeof(vfloat_t));
-        vfloat_t (*a_sub_ptr)[n-i] = a_sub;
-
-        for (int j=i; j<n; ++j) {
-            for (int k=i; k<n; ++k) {
-                a_sub_ptr[j-i][k-i] = a_ptr[j][k];
-            }
-        }
-        __mat2_householder_matrix(&p_sub, a_sub, n-i);
-
-        // 构造完 n-i 阶的 householder 矩阵，将其塞回去原来的 P 矩阵
-        vfloat_t (*p_sub_ptr)[n-i] = p_sub;
-        for (int j=i; j<n; ++j) {
-            for (int k=i; k<n; ++k) {
-                p_ptr[j][k] = p_sub_ptr[j-i][k-i];
-            }
-        }
-
-        // pa = p dot a，
-        __mat2_dot(&pa, &m1_rows, &m1_cols, p, n, n, a, n, n);
-
-        // m1 = pa dot p
-        __mat2_dot(m1, &m1_rows, &m1_cols, pa, n, n, p, n, n);
+    vfloat_t norm = 0.f;
+    for(int i=0; i<n; ++i) {
+        norm += v1[i]*v1[i];
     }
-
-    // 清理内存。
-    free(p);
-    free(p_sub);
-    free(pa);
-    free(a);
-    free(a_sub);
-    
-    return 0;
+    return sqrt(norm);
 }
 
 /**
- * @brief 把矩阵 m 转化 householder 矩阵
+ * @brief 通过反射向量 v 计算 H (householder) 矩阵
  * 
  * @param p 
  * @param m 
  * @param n 
  * @return int 
  */
-int __mat2_householder_matrix(vfloat_t** p, vfloat_t* a, int n) 
+int __mat2_householder_matrix(vfloat_t** p, size_t* p_rows, size_t* p_cols, vfloat_t* v, int n) 
 {
     *p = (vfloat_t*) realloc (*p, n*n*sizeof(vfloat_t));
+    *p_rows = n;
+    *p_cols = n;
+    memset(*p, 0x0, n*n*sizeof(vfloat_t));
     vfloat_t (*p_ptr)[n] = *p;
-    vfloat_t (*a_ptr)[n] = a;
+    
 
-    for (int col=0; col<n; ++col) {
-
-        //1 计算每一列的长度。
-
-        vfloat_t len = 0.f;
-        for (int row=0; row<n; ++row) {
-            len += a_ptr[row][col] * a_ptr[row][col];
-
-            p_ptr[row][col] = a_ptr[row][col];
-        }
-
-        len = sqrt(len);
-
-        p_ptr[0][col] += len;
+    // 把 p 转为单位向量。以及计算 向量 v 的长度。
+    for(int i=0; i<n; ++i) {
+        p_ptr[i][i] = 1.f;
     }
 
-    return 0;
+    vfloat_t x_norm = __mat2_vect_norm(v, n);
+    v[0] = v[0] + (v[0] > 0 ? x_norm : -x_norm);
 
+    vfloat_t v_norm = __mat2_vect_norm(v, n);
+
+    float_t* vvT_mat = NULL;
+    size_t vvT_rows;
+    size_t vvT_cols;
+    
+    __mat2_dot(&vvT_mat, &vvT_rows, &vvT_cols, v, n, 1, v, 1, n);
+
+    MAT2_RAW_INSPECT(vvT_mat, vvT_rows, vvT_cols);
+
+    __mat2_scalar_multiply(&vvT_mat, &vvT_rows, &vvT_cols, vvT_mat, n, n, 2.f / (v_norm * v_norm));
+
+    MAT2_RAW_INSPECT(vvT_mat, vvT_rows, vvT_cols);
+
+    __mat2_sub(p, p_rows, p_cols, vvT_mat, vvT_rows, vvT_cols);
+
+    MAT2_RAW_INSPECT((*p), *p_rows, *p_cols);
+    free(vvT_mat);
+    return 0;
 }

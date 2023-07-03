@@ -332,22 +332,33 @@ static void test_matrix_T(void)
 
 static void test_matrix_householder_transform(void) {
 
-    vfloat_t m1_data[][3] = {
-        {1,2,3},
-        {5,6,7},
-        {9,3,2}
-    };
+    // vfloat_t m1_data[][3] = {
+    //     {1,2,3},
+    //     {5,6,7},
+    //     {9,3,2}
+    // };
 
-    matrix2_t* m1 = Mat2_create(1,1);
-    matrix2_t* m2 = Mat2_create(1,1);
-    Mat2_load_on_shape(m1, m1_data, 3, 3);
+    matrix2_t* m1 = Mat2_create(3,3);
+    Mat2_arange(m1, 1, 9);
 
-    Mat2_householder_transform(m2, m1);
+    matrix2_t* mv = Mat2_create(1,1);
+    Mat2_slice_col_to(mv, m1, 0);
 
-    MAT2_INSPECT(m2);
+    MAT2_INSPECT(mv);
 
-    Mat2_destroy(m1);
-    Mat2_destroy(m2);
+    vfloat_t* p;
+    size_t rows, cols;
+    __mat2_householder_matrix(&p, &rows, &cols, mv->pool, mv->rows);
+
+    MAT2_RAW_INSPECT(p, rows, cols);
+
+    matrix2_t pmat;
+    pmat.pool = p;
+    pmat.rows = rows;
+    pmat.cols = cols;
+
+    Mat2_dot(&pmat, m1);
+    MAT2_INSPECT(&pmat);
     
 }
 

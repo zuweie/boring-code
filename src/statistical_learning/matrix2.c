@@ -459,17 +459,17 @@ int Mat2_T(matrix2_t* mat)
     return 0;
 }
 
-int Mat2_householder_transform(matrix2_t* mat1, matrix2_t* mat2)
-{
+// int Mat2_householder_transform(matrix2_t* mat1, matrix2_t* mat2)
+// {
 
-    if (mat2->rows != mat2->cols && mat2->rows < 2) return -1;
+//     if (mat2->rows != mat2->cols && mat2->rows < 2) return -1;
 
-    return __mat2_householder_transform(
-        &(mat1->pool),
-        &(mat1->rows),
-        &(mat1->cols),
-        mat2->pool,
-        mat2->rows
-    );
-    
-}
+//     return __mat2_householder_transform(
+//         &(mat1->pool),
+//         &(mat1->rows),
+//         &(mat1->cols),
+//         mat2->pool,
+//         mat2->rows
+//     );
+
+// }
