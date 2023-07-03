@@ -30,7 +30,6 @@ int __mat2_co(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t 
 int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, int n);
 int __mat2_svd();
 int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols);
-int __mat2_householder_transform(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, int n);
 int __mat2_householder_matrix(vfloat_t** p, size_t* p_rows, size_t* p_cols, vfloat_t* a, int n);
 
 #endif

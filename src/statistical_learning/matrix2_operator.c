@@ -398,12 +398,17 @@ int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t
     
     // 取行数列数最小值作为上三角化的步数。
 
-    int n = mat_rows < mat_cols ? mat_rows : mat_cols;
+    int n = (mat_rows < mat_cols ? mat_rows : mat_cols) - 1;
     // 
     *q_rows = mat_rows;
     *q_cols = mat_rows;
     *q = (vfloat_t*)realloc(*q, (*q_rows)*(*q_cols)*sizeof(vfloat_t));
+    vfloat_t (*q_ptr)[*q_cols] = *q;
     
+    size_t q_cpy_rows = mat_rows;
+    size_t q_cpy_cols = mat_rows;
+    vfloat_t* q_cpy = (vfloat_t*) malloc (q_cpy_rows * q_cpy_cols * sizeof(vfloat_t));
+
     *r_rows = mat_rows;
     *r_cols = mat_cols;
     *r = (vfloat_t*)realloc(*r, (*r_rows) * (*r_cols) * sizeof(vfloat_t));
@@ -428,6 +433,12 @@ int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t
 
     // 将 mat 复制给 r
     memcpy(*r, mat, mat_rows * mat_cols * sizeof(vfloat_t));
+
+    // 讲 q 初始化为 单位矩阵
+    memset(*q, 0x0, (*q_rows) * (*q_cols) * sizeof(vfloat_t));
+    for (int i=0; i<(*q_rows); ++i) {
+        q_ptr[i][i] = 1.f;
+    }
 
     for (int step=0; step<n; step++) {
 
@@ -464,8 +475,18 @@ int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t
         memcpy(r_cpy, *r, r_cpy_rows * r_cpy_cols * sizeof(vfloat_t));
         // 把 p dot a 的结构放入 r 中。
         __mat2_dot(r, r_rows, r_cols, p, p_rows, p_cols, r_cpy, r_cpy_rows, r_cpy_cols);
+
+        memcpy(q_cpy, *q, q_cpy_rows * q_cpy_cols * sizeof(vfloat_t));
+
+        __mat2_dot(q, q_rows, q_cols, p, p_rows, p_cols, q_cpy, q_cpy_rows, q_cpy_cols);
     }
+
+    // 以上的结构为 q-1. q 为正交矩阵，把 q 转置便得到 q
+    memcpy(q_cpy, *q, q_cpy_rows * q_cpy_cols * sizeof(vfloat_t));
+    __mat2_T(q, q_rows, q_cols, q_cpy, q_cpy_rows, q_cpy_cols);
+
     free(r_cpy);
+    free(q_cpy);
     free(p);
     free(h);
     free(v);

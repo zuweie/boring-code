@@ -366,14 +366,20 @@ static void test_matrix_householder_transform(void) {
 }
 
 static void test_matrix_qr(void) {
-    matrix2_t* a = Mat2_create(3,3);
-    Mat2_arange(a, 1, 9);
+    matrix2_t* a = Mat2_create(9,2);
+    Mat2_arange(a, 1, 18);
 
     matrix2_t* q = Mat2_create(1,1);
     matrix2_t* r = Mat2_create(1,1);
+    //matrix2_t* qr = Mat2_create(1,1);
 
     Mat2_qr(q, r, a);
     MAT2_INSPECT(r);
+    MAT2_INSPECT(q);
+
+    Mat2_dot(q, r);
+    MAT2_INSPECT(q);
+
 
     Mat2_destroy(q);
     Mat2_destroy(r);
