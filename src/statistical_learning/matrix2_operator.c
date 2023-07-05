@@ -3,7 +3,7 @@
 #include <string.h>
 #include "matrix2_operator.h"
 /**
- * @brief 两个矩阵点积,也叫内积,结果保存在 m1 指向的内存中。
+ * @brief 两个矩阵内积,结果保存在 m1 指向的内存中。
  * 
  * @param m1 矩阵1数据内存地址的指针,为什么是数据地址的指针,是因为这个矩阵的内存有可能会被重新申请。
  * @param rows1 矩阵1行数的指针,此值有可能被修改。
@@ -60,7 +60,7 @@ vfloat_t __mat2_vect_dot(vfloat_t* v1, vfloat_t* v2, size_t n)
 }
 
 /**
- * @brief 一个矩阵装置
+ * @brief 矩阵转置
  * 
  * @param m1 矩阵1的内存地址指针,接受 m2 装置后的结果。
  * @param rows1 矩阵1的行数指针
@@ -230,8 +230,8 @@ int __mat2_scalar_multiply(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t
 /**
  * @brief 计算方阵的行列式，使用 Laplace 展开式，递归求行列式。
  * 
- * @param v1 
- * @param n
+ * @param v1 输入的矩阵
+ * @param n 矩阵的阶数
  * @return vfloat_t 
  */
 vfloat_t __mat2_determinant(vfloat_t* v1, size_t n) 
@@ -258,7 +258,11 @@ vfloat_t __mat2_determinant(vfloat_t* v1, size_t n)
 
 /**
  * @brief 计算一个矩阵的逆矩阵, 结果放入m1
- * 
+ * @param m1 输出 m2 逆矩阵，参数为 NULL 或者 malloc 后的有效指针
+ * @param rows1 输出矩阵的行数
+ * @param cols1 输出矩阵的列数
+ * @param m2 输入矩阵
+ * @param n 输入矩阵的阶数
  * @return int 
  */
 int __mat2_inverse(vfloat_t** m1, size_t* rows1, size_t* cols1,  vfloat_t* m2, size_t n)
@@ -280,14 +284,14 @@ int __mat2_inverse(vfloat_t** m1, size_t* rows1, size_t* cols1,  vfloat_t* m2, s
 /**
  * @brief 将 m1 去除 p 行 与 q 列剩下的矩阵，放入 m2
  * 
- * @param m1 
- * @param row1 
- * @param cols1 
- * @param m2 
- * @param rows2 
- * @param cols2 
- * @param p 
- * @param q 
+ * @param m1 输出矩阵，参数为 NULL 或者 malloc 后的有效指针
+ * @param rows1 输出矩阵行数，参数为有效指针
+ * @param cols1 输出矩阵列数，参数为有效指针
+ * @param m2 输入矩阵
+ * @param rows2 输入矩阵的行数
+ * @param cols2 输入矩阵的列数
+ * @param p 要剔除的 P 行
+ * @param q 要剔除的 q 列
  * @return int 
  */
 int __mat2_co(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int p, int q)
@@ -319,10 +323,10 @@ int __mat2_co(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t 
 /**
  * @brief 返回 m2 的伴随矩阵，结果放入 m1 
  * 
- * @param m1 m1 大小不会改变，所有不会改变内存，请确保 m1 的内存足够大。
+ * @param m1 输出 m2 的伴随矩阵，NULL 或者 malloc 后的有效指针。
  * @param m2 输入矩阵
  * @param n 阶数
- * @return int 
+ * @return int 计算结果
  */
 int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, int n) 
 {
@@ -382,16 +386,16 @@ int __mat2_svd(vfloat_t** u, size_t* u_rows, size_t* u_cols, vfloat_t** sigma, s
 /**
  * @brief 矩阵的 QR 分解，使用的是 House holder 变化进行 QR 分解。
  * 
- * @param q 
- * @param q_rows 
- * @param q_cols 
- * @param r 
- * @param r_rows 
- * @param r_cols 
- * @param mat 
- * @param mat_rows 
- * @param mat_cols 
- * @return int 
+ * @param q 输出分解后 q 的矩阵，参数为 NULL 或者 malloc 后的有效指针
+ * @param q_rows 输出分解后 q 的行数，参数为有效指针
+ * @param q_cols 输出分解后 q 的列数，参数为有效指针
+ * @param r 输出分解后 r 的矩阵，参数为NULL 或者 malloc 后的有效指针 
+ * @param r_rows 输出分解后 r 的行数，参数为有效指针
+ * @param r_cols 输出分解后 r 的列数，参数为有效指针
+ * @param mat 输入要分解矩阵
+ * @param mat_rows 输入分解矩阵的行数
+ * @param mat_cols 输入分解矩阵的列数
+ * @return int 结果
  */
 int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols)
 {
@@ -473,7 +477,7 @@ int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t
 
         // 建立一个 r 的副本
         memcpy(r_cpy, *r, r_cpy_rows * r_cpy_cols * sizeof(vfloat_t));
-        // 把 p dot a 的结构放入 r 中。
+        // 把 p dot r 的结构放入 r 中。
         __mat2_dot(r, r_rows, r_cols, p, p_rows, p_cols, r_cpy, r_cpy_rows, r_cpy_cols);
 
         memcpy(q_cpy, *q, q_cpy_rows * q_cpy_cols * sizeof(vfloat_t));
@@ -513,9 +517,9 @@ vfloat_t __mat2_vect_norm(vfloat_t* v1, size_t n)
 /**
  * @brief 通过反射向量 v 计算 H (householder) 矩阵
  * 
- * @param p 
- * @param m 
- * @param n 
+ * @param p 输出 P（householder) 矩阵，参数为 NULL 或者 malloc 后的有效指针
+ * @param m 输出 P 矩阵的行数，参数为有效指针
+ * @param n 输出 P 矩阵的列数，参数为有效指针
  * @return int 
  */
 int __mat2_householder_matrix(vfloat_t** p, size_t* p_rows, size_t* p_cols, vfloat_t* v, int n) 
