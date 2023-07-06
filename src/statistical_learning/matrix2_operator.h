@@ -29,7 +29,12 @@ int __mat2_inverse(vfloat_t** m1, size_t* row1, size_t* cols1, vfloat_t* m2, siz
 int __mat2_co(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int p, int q);
 int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, int n);
 int __mat2_svd();
-int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols);
+int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols);
 int __mat2_householder_matrix(vfloat_t** p, size_t* p_rows, size_t* p_cols, vfloat_t* a, int n);
+int __mat2_lu_decomp(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2);
+int __mat2_solve(vfloat_t* m1, vfloat_t* y, size_t n);
+int __mat2_solve_l(vfloat_t* ul, vfloat_t* z, size_t n);
+int __mat2_solve_u(vfloat_t* ul, vfloat_t* x, size_t n);
+int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n);
 
 #endif

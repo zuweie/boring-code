@@ -454,7 +454,7 @@ int Mat2_T(matrix2_t* mat)
  */
 int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a)
 {
-    return __mat2_qr(
+    return __mat2_qr_decomp(
         &(q->pool),
         &(q->rows),
         &(q->cols),
@@ -465,4 +465,12 @@ int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a)
         a->rows,
         a->cols
     );
+}
+
+int Mat2_eigen_values(vfloat_t** eigen_values, matrix2_t* m1) 
+{
+    if (m1->rows == m1->cols) {
+        return __mat2_eigenvalues(eigen_values, m1->pool, m1->rows);
+    }
+    return -1;
 }

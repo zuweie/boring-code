@@ -1,19 +1,20 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include <string.h>
 #include "matrix2_operator.h"
 /**
- * @brief 两个矩阵内积,结果保存在 m1 指向的内存中。
+ * @brief m2 dot m3，结果保存在 m1 指向的内存中。
  * 
- * @param m1 矩阵1数据内存地址的指针,为什么是数据地址的指针,是因为这个矩阵的内存有可能会被重新申请。
- * @param rows1 矩阵1行数的指针,此值有可能被修改。
- * @param cols1 矩阵1列数的指针,此值有可能被修改。
- * @param m2 矩阵2数据内存地址,逻辑上这块内存是原数据不会被修改,但如果 *m1 的地址与 m2 的地址相同,也会修改其值。
- * @param rows2 矩阵2的行数。
- * @param cols2 矩阵2的列数。
- * @param m3 
- * @param rows3
- * @param cols3
+ * @param m1 输出矩阵，参数须为 NULL 或者 malloc 的有效指针。
+ * @param rows1 输出矩阵行数，参数须为有效指针
+ * @param cols1 输出矩阵列数，参数须为有效指针
+ * @param m2 点乘做矩阵
+ * @param rows2 矩阵行数
+ * @param cols2 矩阵列数
+ * @param m3 点乘右矩阵
+ * @param rows3 矩阵行数
+ * @param cols3 矩阵列数
  * @return int 返回运行结果。
  */
 int __mat2_dot(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3)
@@ -60,12 +61,12 @@ vfloat_t __mat2_vect_dot(vfloat_t* v1, vfloat_t* v2, size_t n)
 }
 
 /**
- * @brief 矩阵转置
+ * @brief m2 矩阵转置，输出置 m1
  * 
- * @param m1 矩阵1的内存地址指针,接受 m2 装置后的结果。
- * @param rows1 矩阵1的行数指针
- * @param cols1 矩阵2的列数指针
- * @param m2 矩阵2的内存指针,逻辑上这块内存是原数据不会被修改,但 *m1 与 m2 相同也会被修改
+ * @param m1 输出矩阵，参数须为 NULL 或者 malloc 的有效指针
+ * @param rows1 输出矩阵行数，参数须为有效指针
+ * @param cols1 输出矩阵列数，参数须为有效指针
+ * @param m2 输入矩阵
  * @param rows2 矩阵2的行数
  * @param cols2 矩阵2的列数
  * @return int 返回转置的结果
@@ -397,7 +398,7 @@ int __mat2_svd(vfloat_t** u, size_t* u_rows, size_t* u_cols, vfloat_t** sigma, s
  * @param mat_cols 输入分解矩阵的列数
  * @return int 结果
  */
-int __mat2_qr(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols)
+int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols)
 {
     
     // 取行数列数最小值作为上三角化的步数。
@@ -552,3 +553,175 @@ int __mat2_householder_matrix(vfloat_t** p, size_t* p_rows, size_t* p_cols, vflo
     free(vvT_mat);
     return 0;
 }
+
+/**
+ * @brief 将矩阵进行 LU 分解，结果存放在 m1 中。
+ * 
+ * @param m1 
+ * @param rows1 
+ * @param cols1 
+ * @param m2 
+ * @param rows2 
+ * @param cols2 
+ * @return int 
+ */
+int __mat2_lu_decomp(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2)
+{
+    *rows1 = rows2;
+    *cols1 = cols2;
+
+    // 如果 m1 与 m2 是不是同一块内存，给 m1 重新分配内存
+    if (*m1 != m2) {
+        *m1 = (vfloat_t*) realloc (*m1, (*rows1) * (*cols1) * sizeof(vfloat_t));
+        memcpy(*m1, m2, (*rows1) * (*cols1) * sizeof(vfloat_t));
+    }
+
+    vfloat_t (*m1_ptr)[*cols1] = *m1;
+
+    size_t s = rows2 < cols2 ? rows2 : cols2;
+
+    // 若 m2_ptr[i][i] == 0.f 则分解失败。
+    for (int k=0; k<s; ++k) {
+
+        vfloat_t x = 1.f / m1_ptr[k][k];
+        
+        for (int i=k+1; i<rows1; ++i) {
+            m1_ptr[i][k] = m1_ptr[i][k] * x;
+        }
+
+        for (int i=k+1; i<rows1; ++i) {
+            for (size_t j=k+1; j<cols1; ++j) {
+                m1_ptr[i][j] = m1_ptr[i][j] - m1_ptr[i][k] * m1_ptr[k][j];
+            }
+        }
+    }
+    return 0;
+
+}
+/**
+ * @brief 通过 n 阶矩阵 m1，解线性方程，结果放入 y 中。
+ * 
+ * @param m1 系数矩阵
+ * @param y 输入的Y，解出X
+ * @param n 矩阵阶数
+ * @return int 返回结果
+ */
+int __mat2_solve(vfloat_t* m1, vfloat_t* y, size_t n)
+{
+    vfloat_t* lu = NULL;
+    size_t lu_rows;
+    size_t lu_cols;
+
+    __mat2_lu_decomp(&lu, &lu_rows, &lu_cols, m1, n, n);
+
+    __mat2_solve_l(lu, y, n);
+    __mat2_solve_u(lu, y, n);
+
+    free(lu);
+
+    return 0;
+}
+
+/**
+ * @brief 
+ * 
+ * @param ul 
+ * @param z 
+ * @param n 
+ * @return int 
+ */
+int __mat2_solve_l(vfloat_t* ul, vfloat_t* z, size_t n)
+{
+    vfloat_t (*ul_ptr)[n] = ul;
+    for (int i=1; i<n; ++i) {
+        for (int j=0; j<i; ++j) {
+            z[i] = z[i] - ul_ptr[i][j] * z[j];
+        }
+    }
+    return 0;
+}
+
+/**
+ * @brief 
+ * 
+ * @param ul 
+ * @param x 
+ * @param n 
+ * @return int 
+ */
+int __mat2_solve_u(vfloat_t* ul, vfloat_t* x, size_t n)
+{
+    vfloat_t (*ul_ptr)[n];
+
+    for (int k=0; k<n; ++k ) {
+        int i = n-k-1;
+        for (int j=i+1; j<n; ++j) {
+            vfloat_t d1 = ul_ptr[i][j];
+            x[i] = x[i] - ul_ptr[i][j] * x[j];
+        }
+        vfloat_t d2 = ul_ptr[i][i];
+        x[i] = x[i] / ul_ptr[i][i];
+    }
+    return 0;
+}
+
+/**
+ * @brief 计算矩阵 m1 的特征值, 使用 QR 分解法迭代。
+ * 
+ * @param m1 
+ * @param n 
+ * @param eigen_values 
+ * @return int 
+ */
+int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n)
+{
+
+    double eps   = 1e-5;
+    int max_iter = 100;
+    int iter     = 0;
+    double diff  = 1.f;
+    
+    vfloat_t* q  = NULL;
+    size_t q_rows;
+    size_t q_cols;
+
+    vfloat_t* r = NULL;
+    size_t r_rows;
+    size_t r_cols;
+
+    vfloat_t* a = (vfloat_t*) malloc (n*n*sizeof(vfloat_t));
+    size_t a_rows;
+    size_t a_cols;
+    memcpy(a, m1, n*n*sizeof(vfloat_t));
+
+    // 保存前一次计算得到的特征值
+    *eigen_values = (vfloat_t*) malloc (n*sizeof(vfloat_t));
+
+    while (iter <= max_iter && diff > eps) {
+
+        __mat2_qr_decomp(&q, &q_rows, &q_cols, &r, &r_rows, &r_cols, a, n, n);
+
+        __mat2_dot(&a, &a_rows, &a_cols, r, r_rows, r_cols, q, q_rows, q_cols);
+
+        // 检查对角线是否有变化。
+        diff = 0.f;
+
+        for (int i=0; i<n; ++i) {
+            // a 的对角线 a[i][i] 的另外一种写法。
+            diff += fabs( a[i*n+i] - (*eigen_values)[i] );
+            // 
+            (*eigen_values)[i] = a[i*n+i];
+            //printf("iter:%d, a[i][i]: %0.3f, pre[i]: %0.3f, diff: %0.10f, diff>esp: %d \n", iter, diff, a[i*n+i], (*eigen_values)[i], (diff > eps));
+        }
+
+        iter++;
+    }
+
+    // 将特征值复制给 eigvalue
+    free(q);
+    free(r);
+    free(a);
+    return 0;
+
+}
+

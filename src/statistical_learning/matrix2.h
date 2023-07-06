@@ -50,6 +50,7 @@ int Mat2_get_adjoint_to(matrix2_t* dest, matrix2_t* src);
 int Mat2_inverse(matrix2_t* mat);
 int Mat2_is_vector(matrix2_t* mat);
 int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a);
+int Mat2_eigen_values(vfloat_t** eigen_values, matrix2_t* m1);
 
 #define MAT2_POOL_PTR(mat, ptr_name) vfloat_t(*ptr_name)[(mat)->cols]=(mat)->pool
 #define MAT2_DIFF_LIST_PTR(diff_ptr) 
