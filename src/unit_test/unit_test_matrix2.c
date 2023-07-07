@@ -2,6 +2,7 @@
 #include <CUnit/Basic.h>
 #include "statistical_learning/matrix2.h"
 #include "statistical_learning/matrix2_operator.h"
+#include "container/cn.h"
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
 static int  suite_success_init (void) 
@@ -387,31 +388,81 @@ static void test_matrix_qr(void) {
     return;
 }
 
-static void test_matrix_eigenvalues(void) {
+static void test_matrix_eig(void) 
+{
 
-    // vfloat_t a_data[][3] ={
-    //     {2,1,0},
-    //     {1,2,1},
-    //     {0,1,2}
-    // };
     matrix2_t* a = Mat2_create(5,5);
     //Mat2_load_on_shape(a, a_data, 3,3);
     Mat2_arange(a, 26, 50);
 
     MAT2_INSPECT(a);
-    
-    vfloat_t* eigvalus;
-
-    Mat2_eigen_values(&eigvalus, a);
-
-    printf("\n");
-    for (int i=0; i<a->cols; ++i)
-        printf("%e \n", eigvalus[i]);
 
     Mat2_destroy(a);
-    free(eigvalus);
-    return;
 
+    return;
+}
+
+static void test_matrix_eigenvectors(void) {
+
+    vfloat_t* values = NULL;
+
+    matrix2_t* a = Mat2_create(9,9);
+    //Mat2_load_on_shape(a, a_data, 3,3);
+    Mat2_arange(a, 100+1, 100+81);
+
+    __mat2_eigenvalues(&values, a->pool, a->rows);
+
+    printf("\n eig value: \n");
+    for (int i=0; i<a->rows; ++i) {
+
+        printf(" %e ", values[i]);
+    }
+    printf("\n");
+    vfloat_t* vector = NULL;
+    __mat2_eigenvector(&vector, a->pool, values[0], a->rows);
+
+    printf("\n vector: \n");
+    for (int i=0; i<a->rows; ++i) {
+        printf(" %e ", vector[i]);
+    }
+
+    matrix2_t* vec = Mat2_create(1,1);
+    Mat2_load_on_shape(vec, vector, a->rows, 1);
+
+    MAT2_INSPECT(vec);
+
+    Mat2_dot(a, vec);
+
+    MAT2_INSPECT(a);
+
+    printf("\n");
+    for (int i=0; i<a->rows; ++i) {
+        printf("%e/ %e = %e \n", a->pool[i], vector[i], a->pool[i] / vector[i]);
+    }
+    
+    free(values);
+    free(vector);
+    Mat2_destroy(a);
+
+
+    return;
+}
+
+static void test_matrix_solve_lu(void) {
+
+
+    vfloat_t m1[][2] = {
+        {3, 6},
+        {4, -2},
+    };
+
+    vfloat_t Y[2] = {12, 6};
+
+    __mat2_solve(m1, Y, 2);
+
+    //printf("%0.2f, %0.2f", Y[0], Y[1]);
+    CU_ASSERT_DOUBLE_EQUAL(Y[0], 2.f, 0.00001);
+    CU_ASSERT_DOUBLE_EQUAL(Y[1], 1.f, 0.00001);
 }
 
 
@@ -495,8 +546,19 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eigenvalues) ) {
+    // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eig) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+
+    if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eigenvectors) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_solve_lu) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }

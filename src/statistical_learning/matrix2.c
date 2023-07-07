@@ -467,10 +467,37 @@ int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a)
     );
 }
 
-int Mat2_eigen_values(vfloat_t** eigen_values, matrix2_t* m1) 
+
+/**
+ * @brief 计算矩阵 m1 的
+ * 
+ * @param eigen_values 
+ * @param eigen_vectors 
+ * @param n 
+ * @param m1 
+ * @return int 
+ */
+int Mat2_eig(matrix2_t** eigvalue_mat, CN eigvector_mats, matrix2_t* m1)
 {
+
     if (m1->rows == m1->cols) {
-        return __mat2_eigenvalues(eigen_values, m1->pool, m1->rows);
+
+        int n = m1->rows;
+
+        *eigvalue_mat = Mat2_create(1, n);
+        
+        __mat2_eigenvalues((*eigvalue_mat)->pool, m1->pool, n);
+
+        int i = 0;
+        for (It first=CN_first(eigvector_mats); !It_equal(first, CN_tail(eigvector_mats)); It_next(first), i++) {
+            
+            matrix2_t* vect = Mat2_create(1, n);
+            
+            __mat2_eigenvector(&(vect->pool), m1->pool, (*eigvalue_mat)->pool[i], n);
+
+            CN_add(eigvector_mats, vect);
+        }
+        return 0;
     }
     return -1;
 }

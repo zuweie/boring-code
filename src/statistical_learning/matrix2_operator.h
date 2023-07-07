@@ -18,6 +18,7 @@
 int __mat2_dot(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3);
 vfloat_t __mat2_vect_dot(vfloat_t* v1, vfloat_t* v2, size_t n);
 vfloat_t __mat2_vect_norm(vfloat_t* v1, size_t n);
+int __mat2_vect_normalize(vfloat_t* v1, size_t n);
 int __mat2_add(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2);
 int __mat2_sub(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2);
 int __mat2_scalar_multiply(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t scaler);
@@ -36,5 +37,6 @@ int __mat2_solve(vfloat_t* m1, vfloat_t* y, size_t n);
 int __mat2_solve_l(vfloat_t* ul, vfloat_t* z, size_t n);
 int __mat2_solve_u(vfloat_t* ul, vfloat_t* x, size_t n);
 int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n);
+int __mat2_eigenvector(vfloat_t** eigen_vector, vfloat_t* m1, vfloat_t eigen_value, size_t n);
 
 #endif

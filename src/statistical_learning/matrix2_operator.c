@@ -516,6 +516,21 @@ vfloat_t __mat2_vect_norm(vfloat_t* v1, size_t n)
 }
 
 /**
+ * @brief 
+ * 
+ * @param v1 
+ * @param n 
+ * @return int 
+ */
+int __mat2_vect_normalize(vfloat_t* v1, size_t n) 
+{
+    vfloat_t norm = __mat2_vect_norm(v1, n);
+    for (int i=0; i<n; ++i) {
+        v1[i] /= norm;
+    }
+    return 0;
+}
+/**
  * @brief 通过反射向量 v 计算 H (householder) 矩阵
  * 
  * @param p 输出 P（householder) 矩阵，参数为 NULL 或者 malloc 后的有效指针
@@ -585,12 +600,12 @@ int __mat2_lu_decomp(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, 
 
         vfloat_t x = 1.f / m1_ptr[k][k];
         
-        for (int i=k+1; i<rows1; ++i) {
+        for (int i=k+1; i<*rows1; ++i) {
             m1_ptr[i][k] = m1_ptr[i][k] * x;
         }
 
-        for (int i=k+1; i<rows1; ++i) {
-            for (size_t j=k+1; j<cols1; ++j) {
+        for (int i=k+1; i<*rows1; ++i) {
+            for (int j=k+1; j<*cols1; ++j) {
                 m1_ptr[i][j] = m1_ptr[i][j] - m1_ptr[i][k] * m1_ptr[k][j];
             }
         }
@@ -666,7 +681,7 @@ int __mat2_solve_u(vfloat_t* ul, vfloat_t* x, size_t n)
 }
 
 /**
- * @brief 计算矩阵 m1 的特征值, 使用 QR 分解法迭代。
+ * @brief 计算矩阵 m1 的特征值, 使用 QR 分解法迭代，没经过优化，非常慢
  * 
  * @param m1 
  * @param n 
@@ -695,7 +710,7 @@ int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n)
     memcpy(a, m1, n*n*sizeof(vfloat_t));
 
     // 保存前一次计算得到的特征值
-    *eigen_values = (vfloat_t*) malloc (n*sizeof(vfloat_t));
+    *eigen_values = (vfloat_t*) realloc (*eigen_values, n*sizeof(vfloat_t));
 
     while (iter <= max_iter && diff > eps) {
 
@@ -723,5 +738,75 @@ int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n)
     free(a);
     return 0;
 
+}
+
+/**
+ * @brief 通过解线性方程使用反幂迭代法
+ * 
+ * @param eigen_vector 
+ * @param m1 
+ * @param eigen_values 
+ * @param n 
+ * @return int 
+ */
+int __mat2_eigenvector(vfloat_t** eigen_vector, vfloat_t* a,  vfloat_t eigen_value, size_t n)
+{
+
+    double eps   = 1e-5;
+    int max_iter = 100;
+    int iter     = 0;
+    double last_diff = 0.f;
+    double diff      = 1.f;
+    vfloat_t* lu = NULL;
+    size_t lu_rows;
+    size_t lu_cols;
+
+    
+    // 为了修改原来 a 的数据。
+    vfloat_t* a_cpy = malloc (n*n*sizeof(vfloat_t));
+    size_t a_cpy_rows = n;
+    size_t a_cpy_cols = n;
+    memcpy(a_cpy, a, n * n  * sizeof(vfloat_t));
+
+    *eigen_vector = (vfloat_t*) realloc (*eigen_vector, n * sizeof(vfloat_t));
+
+    /** 1 使用的是反幂法  */
+    vfloat_t eigen_vector2[n];
+
+    for (int i=0; i<n; ++i) {
+        (*eigen_vector)[i] = 1.f;
+        // 构建以下线性方程 (A - lamada*I) x = eigen_vector
+        a_cpy[i*n+i] -= eigen_value;
+    }
+
+    __mat2_lu_decomp(&lu, &lu_rows, &lu_cols, a_cpy, n, n);
+
+    memcpy(eigen_vector2, *eigen_vector, n * sizeof(vfloat_t));
+    
+    __mat2_vect_normalize(eigen_vector2, n);
+
+    while (iter++ <= max_iter && diff > eps) {
+        
+        __mat2_solve_l(lu, eigen_vector2, n);
+        __mat2_solve_u(lu, eigen_vector2, n);
+        __mat2_vect_normalize(eigen_vector2, n);
+
+        double curr_diff = 0.f;
+        for (int i=0; i<n; ++i) {
+            curr_diff += fabs(eigen_vector2[i] - (*eigen_vector)[i]);
+            (*eigen_vector)[i] = eigen_vector2[i]; 
+        }
+
+        diff = fabs(curr_diff - last_diff);
+        last_diff = curr_diff;
+
+        //printf(" diff: %e, e0: %e, e1: %e, e2: %e, e3: %e, e4: %e \n", diff,eigen_vector2[0], eigen_vector2[1],eigen_vector2[2], eigen_vector2[3], eigen_vector2[4]);
+        //printf("(%d), diff: %e \n", iter, diff);
+    }
+    free(lu);
+
+    /** 2 使用幂法只能求取最大特征值 **/
+    free(a_cpy);
+    return 0;
 }
 
