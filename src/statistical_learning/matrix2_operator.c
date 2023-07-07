@@ -762,7 +762,7 @@ int __mat2_eigenvector(vfloat_t** eigen_vector, vfloat_t* a,  vfloat_t eigen_val
     size_t lu_cols;
 
     
-    // 为了修改原来 a 的数据。
+    // 为了不修改修改原来 a 的数据。
     vfloat_t* a_cpy = malloc (n*n*sizeof(vfloat_t));
     size_t a_cpy_rows = n;
     size_t a_cpy_cols = n;

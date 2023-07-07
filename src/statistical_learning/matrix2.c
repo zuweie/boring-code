@@ -482,20 +482,22 @@ int Mat2_eig(matrix2_t** eigvalue_mat, CN eigvector_mats, matrix2_t* m1)
 
     if (m1->rows == m1->cols) {
 
+        double esp = 1e-4;
+
         int n = m1->rows;
 
         *eigvalue_mat = Mat2_create(1, n);
         
-        __mat2_eigenvalues((*eigvalue_mat)->pool, m1->pool, n);
+        __mat2_eigenvalues(&(*eigvalue_mat)->pool, m1->pool, n);
 
         int i = 0;
         for (It first=CN_first(eigvector_mats); !It_equal(first, CN_tail(eigvector_mats)); It_next(first), i++) {
             
-            matrix2_t* vect = Mat2_create(1, n);
-            
-            __mat2_eigenvector(&(vect->pool), m1->pool, (*eigvalue_mat)->pool[i], n);
-
-            CN_add(eigvector_mats, vect);
+            if ((*eigvalue_mat)->pool[i] > esp) {
+                matrix2_t* vect = Mat2_create(1, n);
+                __mat2_eigenvector(&(vect->pool), m1->pool, (*eigvalue_mat)->pool[i], n);
+                CN_add(eigvector_mats, vect);
+            }
         }
         return 0;
     }

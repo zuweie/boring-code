@@ -465,6 +465,17 @@ static void test_matrix_solve_lu(void) {
     CU_ASSERT_DOUBLE_EQUAL(Y[1], 1.f, 0.00001);
 }
 
+static void test_matrix_eig(void) 
+{
+    CN vectors = CN_create(LIST, ptr_t);
+    matrix2_t* a = Mat2_create(9,9);
+    //Mat2_load_on_shape(a, a_data, 3,3);
+    Mat2_arange(a, 100+1, 100+81);
+    matrix2_t* eigvalues;
+    Mat2_eig(&eigvalues, vectors, a);
+    
+
+}
 
 int do_matrix2_test (void) 
 {

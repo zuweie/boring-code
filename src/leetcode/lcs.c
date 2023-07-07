@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-10-27 15:57:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-19 22:42:47
+ * @LastEditTime: 2023-07-07 17:06:25
  * @FilePath: /boring-code/src/dp/lcs.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -108,6 +108,8 @@ CN lcs_strings(const char* s1, const char* s2, int **path)
     memset(str_lcs, 0, lcs_capacity);
     CN_add(strings, str_lcs);
     combine_strings(path, len_s2+1, len_s1, len_s2, s1,  str_lcs, lcs_capacity, strings);
+    
+    CN_finalize(strings, NULL);
     return strings;
 }
 
