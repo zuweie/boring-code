@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-07-11 11:37:25
+ * @LastEditTime: 2023-07-11 13:28:26
  * @FilePath: /boring-code/src/statistical_learning/matrix2_operator.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -39,7 +39,7 @@ int __mat2_co(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t 
 int __mat2_adjoint(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, int n);
 int __mat2_svd();
 int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols, int start, int end);
-int __mat2_qr_alg(vfloat_t** a, vfloat_t** q, vfloat_t* m, size_t n);
+int __mat2_qr_alg(vfloat_t** a, size_t* a_rows, size_t* a_cols, vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t* m, size_t n);
 int __mat2_householder_matrix(vfloat_t** p, size_t* p_rows, size_t* p_cols, vfloat_t* a, int n);
 int __mat2_lu_decomp(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2);
 int __mat2_solve(vfloat_t* m1, vfloat_t* y, size_t n);

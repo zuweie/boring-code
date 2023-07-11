@@ -509,7 +509,7 @@ int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r,
  * @param n 输入阶数
  * @return int 
  */
-int __mat2_qr_alg(vfloat_t** a, vfloat_t** q, vfloat_t* m, size_t n)
+int __mat2_qr_alg(vfloat_t** a, size_t* a_rows, size_t* a_cols, vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t* m, size_t n)
 {
 
     double eps   = 1e-5;
@@ -518,21 +518,22 @@ int __mat2_qr_alg(vfloat_t** a, vfloat_t** q, vfloat_t* m, size_t n)
     double diff  = 1.f;
     
     vfloat_t* q1  = NULL;
-    size_t q1_rows;
-    size_t q1_cols;
+    size_t q1_rows = 0;
+    size_t q1_cols = 0;
 
     vfloat_t* r1 = NULL;
-    size_t r1_rows;
-    size_t r1_cols;
+    size_t r1_rows = 0;
+    size_t r1_cols = 0;
 
-    vfloat_t* a = (vfloat_t*) realloc (*a, n*n*sizeof(vfloat_t));
-    size_t a_rows;
-    size_t a_cols;
-    memcpy(a, m, n*n*sizeof(vfloat_t));
+    *a = (vfloat_t*) realloc (*a, n*n*sizeof(vfloat_t));
+    *a_rows = n;
+    *a_cols = n;
+    memcpy(*a, m, n*n*sizeof(vfloat_t));
 
-    vfloat_t* q = (vfloat_t*)realloc(*q, n*n*sizeof(vfloat_t));
-    size_t q_rows;
-    size_t q_cols;
+    *q = (vfloat_t*)realloc(*q, n*n*sizeof(vfloat_t));
+    *q_rows = n;
+    *q_cols = n;
+
     memset(*q, 0x0, n*n*sizeof(vfloat_t));
 
     for (int i=0; i<n; ++i) {
@@ -540,22 +541,32 @@ int __mat2_qr_alg(vfloat_t** a, vfloat_t** q, vfloat_t* m, size_t n)
     }
 
     vfloat_t* q_cpy = (vfloat_t*)malloc(n * n *sizeof(vfloat_t));
-    size_t q_cpy_rows;
-    size_t q_cpy_cols;
+    size_t q_cpy_rows = n;
+    size_t q_cpy_cols = n;
 
     vfloat_t last_diag[n];
+    memset(last_diag, 0x0, sizeof(last_diag));
 
     //TODO: 此处将来要做优化，将 a 优化为上海森堡矩阵，
 
     while (iter <= max_iter && diff > eps) {
 
-        __mat2_qr_decomp(&q1, &q1_rows, &q1_cols, &r1, &r1_rows, &r1_cols, a, n, n, 0, n);
+        // Ak-1 = Qk-1 dot Rk-1
+        __mat2_qr_decomp(&q1, &q1_rows, &q1_cols, &r1, &r1_rows, &r1_cols, *a, n, n, 0, n);
+
+        // MAT2_RAW_INSPECT(*a, *a_rows, *a_cols);
+        // MAT2_RAW_INSPECT(q1, q1_rows, q1_cols);
+        // MAT2_RAW_INSPECT(r1, r1_rows, r1_cols);
 
         memcpy(q_cpy, *q, n*n*sizeof(vfloat_t));
 
+        // Q = Q0 dot Q1 dot Q2 dot Q3 .... Qk
         __mat2_dot(q, q_rows, q_cols, q1, q1_rows, q1_cols, q_cpy, q_cpy_rows, q_cpy_cols);
 
-        __mat2_dot(&a, &a_rows, &a_cols, r1, r1_rows, r1_cols, q1, q1_rows, q1_cols);
+        // Ak = Rk-1 dot Qk-1
+        __mat2_dot(a, a_rows, a_cols, r1, r1_rows, r1_cols, q1, q1_rows, q1_cols);
+        // MAT2_RAW_INSPECT(*a, *a_rows, *a_cols);
+
 
         // 检查对角线是否有变化。
         diff = 0.f;
@@ -773,9 +784,14 @@ int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n)
 {
 
     vfloat_t* q = NULL;
-    vfloat_t* a = NULL;
+    size_t q_rows;
+    size_t q_cols;
 
-    __mat2_qr_alg(&a, &q, m1, n);
+    vfloat_t* a = NULL;
+    size_t a_rows;
+    size_t a_cols;
+
+    __mat2_qr_alg(&a, &a_rows, &a_cols, &q, &q_rows, &q_cols, m1, n);
 
     *eigen_values = realloc (*eigen_values, n * sizeof(vfloat_t));
     
@@ -784,9 +800,9 @@ int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n)
         (*eigen_values)[i] = a[i*n+i];
 
     }
-    // q 没什么用， 把它释放了。
+    // q a 没什么用， 把它释放了。
+    free(a);
     free(q);
-    return 0;
     // double eps   = 1e-5;
     // int max_iter = 100;
     // int iter     = 0;

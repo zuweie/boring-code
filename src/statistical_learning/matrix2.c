@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "matrix2_operator.h"
 #include "matrix2_count.h"
 #include "matrix2.h"
@@ -320,6 +321,27 @@ int Mat2_is_vector(matrix2_t* mat) {
     return mat->cols == 1 || mat->rows == 1;
 }
 
+int Mat2_is_symmetric(matrix2_t* mat) {
+
+    if (mat->rows == mat->cols) {
+        
+        double esp = 1e-5;
+        int n = mat->rows;
+        
+        MAT2_POOL_PTR(mat, mat_ptr);
+
+        for (int i=0; i<n; ++i) {
+            for (int j=i+1; j<n; ++j) {
+                // 对角线的不用比
+                if (fabs(mat_ptr[i][j] - mat_ptr[j][i]) > esp) return 0;
+            }
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
 
 int Mat2_get_co_to(matrix2_t* dest, matrix2_t* src, int p, int q)
 {
@@ -479,38 +501,64 @@ int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a)
  * @param m1 
  * @return int 
  */
-int Mat2_eig(matrix2_t** eigvalue_mat, CN eigvector_mats, matrix2_t* m1)
+int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1)
 {
 
     if (m1->rows == m1->cols) {
 
-        double esp = 1e-4;
+        // 如果是对称矩阵，直接使用 QR 算法，对角化矩阵，得到特征值，及特征向量。
+        if (1 || Mat2_is_symmetric(m1)) {
 
-        int n = m1->rows;
+            int n = m1->rows;
 
-        *eigvalue_mat = Mat2_create(1, n);
-        
-        __mat2_eigenvalues(&(*eigvalue_mat)->pool, m1->pool, n);
+            vfloat_t* a = NULL;
+            size_t a_rows;
+            size_t a_cols;
 
-        //int i = 0;
-        // for (It first=CN_first(eigvector_mats); !It_equal(first, CN_tail(eigvector_mats)); It_next(first), i++) {
-            
-        //     if ((*eigvalue_mat)->pool[i] > esp) {
-        //         matrix2_t* vect = Mat2_create(1, n);
-        //         __mat2_eigenvector(&(vect->pool), m1->pool, (*eigvalue_mat)->pool[i], n);
-        //         CN_add(eigvector_mats, vect);
-        //     }
-        //     i++;
-        // }
+            __mat2_qr_alg(&a, &a_rows, &a_cols, &(eigvectors_mat->pool), &(eigvectors_mat->rows), &(eigvectors_mat->cols), m1->pool, m1->rows);
 
-        for (int i=0; i<(*eigvalue_mat)->cols; ++i) {
-            if ((*eigvalue_mat)->pool[i] > esp) {
-                matrix2_t* vect = Mat2_create(1, n);
-                __mat2_eigenvector(&(vect->pool), m1->pool, (*eigvalue_mat)->pool[i], n);
-                CN_add(eigvector_mats, vect);
+            // 组装特征值。
+            eigvalue_mat->pool = realloc(eigvalue_mat->pool, n * sizeof(vfloat_t));
+            eigvalue_mat->rows = 1;
+            eigvalue_mat->cols = n;
+
+            for (int i=0; i<n; ++i) {
+                eigvalue_mat->pool[i] = a[i*n+i];
             }
+            free(a);
+
+        } else {
+            // 否则的话只能通过特征值一个个计算特征向量。
+            double esp = 1e-4;
+
+            int n = m1->rows;
+
+            //*eigvalue_mat = Mat2_create(1, n);
+
+            __mat2_eigenvalues(&(eigvalue_mat->pool), m1->pool, n);
+            eigvalue_mat->rows = 1;
+            eigvalue_mat->cols = n;
+
+            eigvectors_mat->pool = realloc(eigvectors_mat->pool, n*n*sizeof(vfloat_t));
+            eigvectors_mat->rows = n;
+            eigvectors_mat->cols = n;
+
+            MAT2_POOL_PTR(eigvectors_mat, eigvectors_mat_ptr);
+
+            vfloat_t* vec = NULL;
+
+            for (int i=0; i<eigvalue_mat->cols; ++i) {
+                
+                __mat2_eigenvector(&vec, m1->pool, eigvalue_mat->pool[i], n);
+
+                memcpy(eigvectors_mat_ptr[i], vec, n*sizeof(vfloat_t));
+            }
+            Mat2_T(eigvectors_mat);
+            free(vec);
+            return 0;
         }
-        return 0;
+
+
     }
     return -1;
 }

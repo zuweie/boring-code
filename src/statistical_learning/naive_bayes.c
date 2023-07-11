@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-16 14:50:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-28 14:04:31
+ * @LastEditTime: 2023-07-11 15:50:54
  * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
  * @Description: 
  */
@@ -293,6 +293,16 @@ int navie_bayes_release_pxy_counting_table(void* Pxy_counting_table) {
     return 0;
 }
 
+/**
+ * @brief 
+ * 
+ * @param _X 
+ * @param py_counting 
+ * @param mus 
+ * @param sigma_table 
+ * @param predict 
+ * @return int 
+ */
 int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, void* sigma_table, vfloat_t* predict) 
 {
     // matrix2_t* _X_cpy = Mat2_create_cpy(_X);
@@ -387,4 +397,19 @@ int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, vo
     Mat2_destroy(_X_cpy_T);
 
     return 0;
+}
+
+/**
+ * @brief 
+ * 
+ * @param _X 
+ * @param py_counting 
+ * @param mus 
+ * @param sigma_table 
+ * @param predict 
+ * @return int 
+ */
+int navie_bayes_predict_MGD2_edit(matrix2_t* _X, void* py_counting, void* mus, void* sigma_table, vfloat_t* predict)
+{
+
 }

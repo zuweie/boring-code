@@ -461,39 +461,32 @@ static void test_matrix_solve_lu(void) {
 
 static void test_matrix_eig(void) 
 {
-    CN vectors = CN_create(LIST, ptr_t);
     matrix2_t* a = Mat2_create(1,1);
-    //Mat2_load_on_shape(a, a_data, 3,3);
-    //Mat2_arange(a, 100+1, 100+81);
+
+    // vfloat_t a_data[][3] = {
+    //     {6, -3, 5},
+    //     {-1,4,-5},
+    //     {-3, 3, -4}
+    // };
 
     vfloat_t a_data[][3] = {
         {6, -3, 5},
-        {-1,4,-5},
-        {-3, 3, -4}
+        {-3,4,-5},
+        {5, -5, -4}
     };
+
+
     Mat2_load_on_shape(a, a_data, 3, 3);
 
-    // vfloat_t a_data[][2] = {
-    //     {0, -1},
-    //     {1, 0}
-    // };
-
-    // Mat2_load_on_shape(a, a_data, 2, 2);
-
-
-    matrix2_t* eigvalues;
-    Mat2_eig(&eigvalues, vectors, a);
+    matrix2_t* eigvalues  = Mat2_create(1,1);
+    matrix2_t* eigvectors = Mat2_create(1,1);
+    Mat2_eig(eigvalues, eigvectors, a);
 
     MAT2_INSPECT(eigvalues);
-
-    for (It first=CN_first(vectors); !It_equal(first, CN_tail(vectors)); It_next(first)) {
-        matrix2_t* eig_vectors = It_ptr(first);
-        MAT2_INSPECT(eig_vectors);
-        Mat2_destroy(eig_vectors);
-    }
-    CN_finalize(vectors, NULL);
+    MAT2_INSPECT(eigvectors);
+    
     Mat2_destroy(eigvalues);
-
+    Mat2_destroy(eigvectors);
     return;
 }
 
