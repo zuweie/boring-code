@@ -507,7 +507,7 @@ int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1)
     if (m1->rows == m1->cols) {
 
         // 如果是对称矩阵，直接使用 QR 算法，对角化矩阵，得到特征值，及特征向量。
-        if (1 || Mat2_is_symmetric(m1)) {
+        if (Mat2_is_symmetric(m1)) {
 
             int n = m1->rows;
 
@@ -525,6 +525,9 @@ int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1)
             for (int i=0; i<n; ++i) {
                 eigvalue_mat->pool[i] = a[i*n+i];
             }
+
+            printf("\nraw a:\n");
+            MAT2_RAW_INSPECT(a, a_rows, a_cols);
             free(a);
 
         } else {

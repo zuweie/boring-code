@@ -480,14 +480,42 @@ static void test_matrix_eig(void)
 
     matrix2_t* eigvalues  = Mat2_create(1,1);
     matrix2_t* eigvectors = Mat2_create(1,1);
+
+    matrix2_t* vector = Mat2_create(1,1);
+
+    matrix2_t* vd     = Mat2_create(1,1);
+
+    Mat2_cpy(vd, a);
+
     Mat2_eig(eigvalues, eigvectors, a);
 
+    Mat2_slice_col_to(vector, eigvectors, 2);
+    //Mat2_slice_row_to(vector, eigvectors, 0);
+
+    Mat2_dot(vd, vector);
+
     MAT2_INSPECT(eigvalues);
+
     MAT2_INSPECT(eigvectors);
+
+    MAT2_INSPECT(vector);
+
+    printf("\n");
+    for (int i=0; i<vd->rows; ++i) {
+        printf("lamada[%d] : %f \n", i, vd->pool[i] / vector->pool[i]);
+    }
+
     
     Mat2_destroy(eigvalues);
     Mat2_destroy(eigvectors);
     return;
+
+
+    //11.3617 -7.2927 1.9310
+
+    // 0.7076 0.2661 0.6546
+    // -0.5710 -0.3303 0.7516
+    // 0.4162 -0.9056 -0.0818
 }
 
 int do_matrix2_test (void) 

@@ -512,7 +512,7 @@ int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r,
 int __mat2_qr_alg(vfloat_t** a, size_t* a_rows, size_t* a_cols, vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t* m, size_t n)
 {
 
-    double eps   = 1e-5;
+    double eps   = 1e-6;
     int max_iter = 100;
     int iter     = 0;
     double diff  = 1.f;
@@ -544,6 +544,11 @@ int __mat2_qr_alg(vfloat_t** a, size_t* a_rows, size_t* a_cols, vfloat_t** q, si
     size_t q_cpy_rows = n;
     size_t q_cpy_cols = n;
 
+    vfloat_t* q1_T = (vfloat_t*) malloc (n*n*sizeof(vfloat_t));
+    size_t q1_T_rows = n;
+    size_t q1_T_cols = n;
+
+
     vfloat_t last_diag[n];
     memset(last_diag, 0x0, sizeof(last_diag));
 
@@ -554,19 +559,15 @@ int __mat2_qr_alg(vfloat_t** a, size_t* a_rows, size_t* a_cols, vfloat_t** q, si
         // Ak-1 = Qk-1 dot Rk-1
         __mat2_qr_decomp(&q1, &q1_rows, &q1_cols, &r1, &r1_rows, &r1_cols, *a, n, n, 0, n);
 
-        // MAT2_RAW_INSPECT(*a, *a_rows, *a_cols);
-        // MAT2_RAW_INSPECT(q1, q1_rows, q1_cols);
-        // MAT2_RAW_INSPECT(r1, r1_rows, r1_cols);
-
         memcpy(q_cpy, *q, n*n*sizeof(vfloat_t));
 
-        // Q = Q0 dot Q1 dot Q2 dot Q3 .... Qk
-        __mat2_dot(q, q_rows, q_cols, q1, q1_rows, q1_cols, q_cpy, q_cpy_rows, q_cpy_cols);
+        __mat2_T(&q1_T, &q1_T_rows, &q1_T_cols, q1, q1_rows, q1_cols);
+        
+        __mat2_dot(q, q_rows, q_cols, q1_T, q1_T_rows, q1_T_cols, q_cpy, q_cpy_rows, q_cpy_cols);
 
         // Ak = Rk-1 dot Qk-1
         __mat2_dot(a, a_rows, a_cols, r1, r1_rows, r1_cols, q1, q1_rows, q1_cols);
         // MAT2_RAW_INSPECT(*a, *a_rows, *a_cols);
-
 
         // 检查对角线是否有变化。
         diff = 0.f;
@@ -582,10 +583,14 @@ int __mat2_qr_alg(vfloat_t** a, size_t* a_rows, size_t* a_cols, vfloat_t** q, si
         iter++;
     }
 
+    memcpy(q_cpy, *q, n*n*sizeof(vfloat_t));
+    __mat2_T(q, q_rows, q_cols, q_cpy, q_cpy_rows, q_cpy_cols);
+
     // 将特征值复制给 eigvalue
     free(q1);
     free(r1);
     free(q_cpy);
+    free(q1_T);
 
     return 0;
 
