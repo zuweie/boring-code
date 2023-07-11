@@ -367,6 +367,13 @@ static void test_matrix_householder_transform(void) {
 }
 
 static void test_matrix_qr(void) {
+
+    vfloat_t a_data[][3] = {
+        {6, -3, 5},
+        {-1, 4, -5},
+        {-3, 3, 4}
+    };
+
     matrix2_t* a = Mat2_create(9,2);
     Mat2_arange(a, 1, 18);
 
@@ -388,19 +395,6 @@ static void test_matrix_qr(void) {
     return;
 }
 
-static void test_matrix_eig(void) 
-{
-
-    matrix2_t* a = Mat2_create(5,5);
-    //Mat2_load_on_shape(a, a_data, 3,3);
-    Mat2_arange(a, 26, 50);
-
-    MAT2_INSPECT(a);
-
-    Mat2_destroy(a);
-
-    return;
-}
 
 static void test_matrix_eigenvectors(void) {
 
@@ -468,13 +462,39 @@ static void test_matrix_solve_lu(void) {
 static void test_matrix_eig(void) 
 {
     CN vectors = CN_create(LIST, ptr_t);
-    matrix2_t* a = Mat2_create(9,9);
+    matrix2_t* a = Mat2_create(1,1);
     //Mat2_load_on_shape(a, a_data, 3,3);
-    Mat2_arange(a, 100+1, 100+81);
+    //Mat2_arange(a, 100+1, 100+81);
+
+    vfloat_t a_data[][3] = {
+        {6, -3, 5},
+        {-1,4,-5},
+        {-3, 3, -4}
+    };
+    Mat2_load_on_shape(a, a_data, 3, 3);
+
+    // vfloat_t a_data[][2] = {
+    //     {0, -1},
+    //     {1, 0}
+    // };
+
+    // Mat2_load_on_shape(a, a_data, 2, 2);
+
+
     matrix2_t* eigvalues;
     Mat2_eig(&eigvalues, vectors, a);
-    
 
+    MAT2_INSPECT(eigvalues);
+
+    for (It first=CN_first(vectors); !It_equal(first, CN_tail(vectors)); It_next(first)) {
+        matrix2_t* eig_vectors = It_ptr(first);
+        MAT2_INSPECT(eig_vectors);
+        Mat2_destroy(eig_vectors);
+    }
+    CN_finalize(vectors, NULL);
+    Mat2_destroy(eigvalues);
+
+    return;
 }
 
 int do_matrix2_test (void) 
@@ -557,16 +577,16 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eig) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-
-    if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eigenvectors) ) {
+    if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eig) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+
+    // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eigenvectors) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_solve_lu) ) {
     //     CU_cleanup_registry();

@@ -398,12 +398,13 @@ int __mat2_svd(vfloat_t** u, size_t* u_rows, size_t* u_cols, vfloat_t** sigma, s
  * @param mat_cols 输入分解矩阵的列数
  * @return int 结果
  */
-int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols)
+int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r, size_t* r_rows, size_t* r_cols, vfloat_t* mat, size_t mat_rows, size_t mat_cols, int start, int end)
 {
     
     // 取行数列数最小值作为上三角化的步数。
 
-    int n = (mat_rows < mat_cols ? mat_rows : mat_cols) - 1;
+    int max_n = (mat_rows < mat_cols ? mat_rows : mat_cols) - 1;
+    int n = end < max_n ? end : max_n;
     // 
     *q_rows = mat_rows;
     *q_cols = mat_rows;
@@ -445,7 +446,7 @@ int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r,
         q_ptr[i][i] = 1.f;
     }
 
-    for (int step=0; step<n; step++) {
+    for (int step=start; step<n; step++) {
 
         // 每次只做 house holder 矩阵前先清空。
         memset(p, 0x0, p_rows * p_cols *sizeof(vfloat_t));
@@ -495,6 +496,86 @@ int __mat2_qr_decomp(vfloat_t** q, size_t* q_rows, size_t* q_cols, vfloat_t** r,
     free(p);
     free(h);
     free(v);
+    return 0;
+
+}
+
+/**
+ * @brief QR 算法，通过不断的交叉点乘 Q dot R 与 R dot Q 得到上三角，或者对角矩阵（当 m 为对称实矩阵时）。通常用于计算矩阵的特征值。
+ * 
+ * @param a 输出的上三角或者对角矩阵
+ * @param q 正交矩阵 q
+ * @param m 输入矩阵
+ * @param n 输入阶数
+ * @return int 
+ */
+int __mat2_qr_alg(vfloat_t** a, vfloat_t** q, vfloat_t* m, size_t n)
+{
+
+    double eps   = 1e-5;
+    int max_iter = 100;
+    int iter     = 0;
+    double diff  = 1.f;
+    
+    vfloat_t* q1  = NULL;
+    size_t q1_rows;
+    size_t q1_cols;
+
+    vfloat_t* r1 = NULL;
+    size_t r1_rows;
+    size_t r1_cols;
+
+    vfloat_t* a = (vfloat_t*) realloc (*a, n*n*sizeof(vfloat_t));
+    size_t a_rows;
+    size_t a_cols;
+    memcpy(a, m, n*n*sizeof(vfloat_t));
+
+    vfloat_t* q = (vfloat_t*)realloc(*q, n*n*sizeof(vfloat_t));
+    size_t q_rows;
+    size_t q_cols;
+    memset(*q, 0x0, n*n*sizeof(vfloat_t));
+
+    for (int i=0; i<n; ++i) {
+        (*q)[i*n+i] = 1.f;
+    }
+
+    vfloat_t* q_cpy = (vfloat_t*)malloc(n * n *sizeof(vfloat_t));
+    size_t q_cpy_rows;
+    size_t q_cpy_cols;
+
+    vfloat_t last_diag[n];
+
+    //TODO: 此处将来要做优化，将 a 优化为上海森堡矩阵，
+
+    while (iter <= max_iter && diff > eps) {
+
+        __mat2_qr_decomp(&q1, &q1_rows, &q1_cols, &r1, &r1_rows, &r1_cols, a, n, n, 0, n);
+
+        memcpy(q_cpy, *q, n*n*sizeof(vfloat_t));
+
+        __mat2_dot(q, q_rows, q_cols, q1, q1_rows, q1_cols, q_cpy, q_cpy_rows, q_cpy_cols);
+
+        __mat2_dot(&a, &a_rows, &a_cols, r1, r1_rows, r1_cols, q1, q1_rows, q1_cols);
+
+        // 检查对角线是否有变化。
+        diff = 0.f;
+
+        for (int i=0; i<n; ++i) {
+            // a 的对角线 a[i][i] 的另外一种写法。
+            diff += fabs( (*a)[i*n+i] - last_diag[i] );
+            // 
+            last_diag[i] = (*a)[i*n+i];
+            //printf("iter:%d, a[i][i]: %0.3f, pre[i]: %0.3f, diff: %0.10f, diff>esp: %d \n", iter, diff, a[i*n+i], (*eigen_values)[i], (diff > eps));
+        }
+        
+        iter++;
+    }
+
+    // 将特征值复制给 eigvalue
+    free(q1);
+    free(r1);
+    free(q_cpy);
+
     return 0;
 
 }
@@ -691,57 +772,72 @@ int __mat2_solve_u(vfloat_t* ul, vfloat_t* x, size_t n)
 int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n)
 {
 
-    double eps   = 1e-5;
-    int max_iter = 100;
-    int iter     = 0;
-    double diff  = 1.f;
+    vfloat_t* q = NULL;
+    vfloat_t* a = NULL;
+
+    __mat2_qr_alg(&a, &q, m1, n);
+
+    *eigen_values = realloc (*eigen_values, n * sizeof(vfloat_t));
     
-    vfloat_t* q  = NULL;
-    size_t q_rows;
-    size_t q_cols;
+    for (int i=0; i<n; ++i) {
 
-    vfloat_t* r = NULL;
-    size_t r_rows;
-    size_t r_cols;
+        (*eigen_values)[i] = a[i*n+i];
 
-    vfloat_t* a = (vfloat_t*) malloc (n*n*sizeof(vfloat_t));
-    size_t a_rows;
-    size_t a_cols;
-    memcpy(a, m1, n*n*sizeof(vfloat_t));
-
-    // 保存前一次计算得到的特征值
-    *eigen_values = (vfloat_t*) realloc (*eigen_values, n*sizeof(vfloat_t));
-
-    while (iter <= max_iter && diff > eps) {
-
-        __mat2_qr_decomp(&q, &q_rows, &q_cols, &r, &r_rows, &r_cols, a, n, n);
-
-        __mat2_dot(&a, &a_rows, &a_cols, r, r_rows, r_cols, q, q_rows, q_cols);
-
-        // 检查对角线是否有变化。
-        diff = 0.f;
-
-        for (int i=0; i<n; ++i) {
-            // a 的对角线 a[i][i] 的另外一种写法。
-            diff += fabs( a[i*n+i] - (*eigen_values)[i] );
-            // 
-            (*eigen_values)[i] = a[i*n+i];
-            //printf("iter:%d, a[i][i]: %0.3f, pre[i]: %0.3f, diff: %0.10f, diff>esp: %d \n", iter, diff, a[i*n+i], (*eigen_values)[i], (diff > eps));
-        }
-
-        iter++;
     }
-
-    // 将特征值复制给 eigvalue
+    // q 没什么用， 把它释放了。
     free(q);
-    free(r);
-    free(a);
+    return 0;
+    // double eps   = 1e-5;
+    // int max_iter = 100;
+    // int iter     = 0;
+    // double diff  = 1.f;
+    
+    // vfloat_t* q  = NULL;
+    // size_t q_rows;
+    // size_t q_cols;
+
+    // vfloat_t* r = NULL;
+    // size_t r_rows;
+    // size_t r_cols;
+
+    // vfloat_t* a = (vfloat_t*) malloc (n*n*sizeof(vfloat_t));
+    // size_t a_rows;
+    // size_t a_cols;
+    // memcpy(a, m1, n*n*sizeof(vfloat_t));
+
+    // // 保存前一次计算得到的特征值
+    // *eigen_values = (vfloat_t*) realloc (*eigen_values, n*sizeof(vfloat_t));
+
+    // while (iter <= max_iter && diff > eps) {
+
+    //     __mat2_qr_decomp(&q, &q_rows, &q_cols, &r, &r_rows, &r_cols, a, n, n, 0, n);
+
+    //     __mat2_dot(&a, &a_rows, &a_cols, r, r_rows, r_cols, q, q_rows, q_cols);
+
+    //     // 检查对角线是否有变化。
+    //     diff = 0.f;
+
+    //     for (int i=0; i<n; ++i) {
+    //         // a 的对角线 a[i][i] 的另外一种写法。
+    //         diff += fabs( a[i*n+i] - (*eigen_values)[i] );
+    //         // 
+    //         (*eigen_values)[i] = a[i*n+i];
+    //         //printf("iter:%d, a[i][i]: %0.3f, pre[i]: %0.3f, diff: %0.10f, diff>esp: %d \n", iter, diff, a[i*n+i], (*eigen_values)[i], (diff > eps));
+    //     }
+
+    //     iter++;
+    // }
+
+    // // 将特征值复制给 eigvalue
+    // free(q);
+    // free(r);
+    // free(a);
     return 0;
 
 }
 
 /**
- * @brief 通过解线性方程使用反幂迭代法
+ * @brief 通过单个特征值，使用反幂迭代法，计算得到一个单位化的特征向量。
  * 
  * @param eigen_vector 
  * @param m1 
