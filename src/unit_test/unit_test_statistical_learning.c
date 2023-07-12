@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-30 12:56:58
+ * @LastEditTime: 2023-07-12 11:13:51
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -335,32 +335,59 @@ static void test_navies_bayes_mgd(void) {
     void* Py_counting;
     navie_bayes_train_MGD_edit(train_mat, train_label_mat, &Py_counting, &mus_table, &sigma_table, NULL);
 
-    // int mus_table_row = ((int*)mus_table)[0];
-    // int mus_table_col = ((int*)mus_table)[1];
-
-    // void* mus_table_ptr   = &(((int*)mus_table)[2]);
-
-    // Mat2_load_on_shape(mus_mat, mus_table_ptr, mus_table_row, mus_table_col);
-
-    // MAT2_INSPECT(mus_mat);
-
-    // int sigma_z = ((int*)sigma_table)[0];
-    // int sigma_row = ((int*)sigma_table)[1];
-    // int sigma_col = ((int*)sigma_table)[2];
-
-    // vfloat_t (*sigma_table_ptr)[sigma_row][sigma_col] = &(((int*)sigma_table)[3]);
-
-    // for (int i=0; i<sigma_z; ++i) {
-    //     Mat2_load_on_shape(sigma_mat, sigma_table_ptr[i], sigma_row, sigma_col);
-    //     MAT2_INSPECT(sigma_mat);
-    // }
-
     vfloat_t predict;
 
     navie_bayes_predict_MGD_edit(_X, Py_counting, mus_table, sigma_table, &predict);
 
     CU_ASSERT_DOUBLE_EQUAL(predict, 1.f, 0.001f);
+    free(Py_counting);
+    Mat2_destroy(train_mat);
+    Mat2_destroy(train_label_mat);
+    Mat2_destroy(_X);
+}
 
+
+static void test_navies_bayes_mgd2(void) 
+{
+    vfloat_t train_data[][3] = {
+        {6, 180, 12},
+        {5.92, 190, 11},
+        {5.58, 170, 12},
+        {5.92, 165, 10},
+        {5, 100, 6},
+        {5.5, 150, 8},
+        {5.42, 130, 7},
+        {5.75, 150, 9}
+    };
+
+    vfloat_t train_label[] = {
+        1,1,1,1,2,2,2,2
+    };
+
+    vfloat_t test_data[] = {
+        6, 130, 8
+    };
+    
+    matrix2_t* train_mat = Mat2_create(1,1);
+    matrix2_t* train_label_mat = Mat2_create(1,1);
+    matrix2_t* _X = Mat2_create(1,1);
+
+    Mat2_load_on_shape(train_mat, train_data, 8, 3);
+    Mat2_load_on_shape(train_label_mat, train_label, 8, 1);
+    Mat2_load_on_shape(_X, test_data, 1, 3);
+
+    void* mus_table;
+    void* sigma_table;
+    void* Py_counting;
+    navie_bayes_train_MGD_edit(train_mat, train_label_mat, &Py_counting, &mus_table, &sigma_table, NULL);
+
+    vfloat_t predict;
+
+    navie_bayes_predict_MGD2_edit(_X, Py_counting, mus_table, sigma_table, &predict);
+
+    CU_ASSERT_DOUBLE_EQUAL(predict, 1.f, 0.001f);
+    
+    free(Py_counting);
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
     Mat2_destroy(_X);
@@ -476,15 +503,20 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd_big) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+
+    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd2) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
 }
 

@@ -20,9 +20,12 @@ int Mat2_destroy(matrix2_t* mat);
 int Mat2_arange(matrix2_t* mat, vfloat_t from, vfloat_t to);
 int Mat2_load_on_shape(matrix2_t* mat, vfloat_t* data, size_t rows, size_t cols);
 
+int Mat2_is_vector(matrix2_t* mat);
+int Mat2_is_symmetric(matrix2_t* mat);
+int Mat2_is_same_shape(matrix2_t* m1, matrix2_t* m2);
+
 int Mat2_fill(matrix2_t* mat, vfloat_t v);
 int Mat2_cpy(matrix2_t* dest, matrix2_t* src);
-//int Mat2_rescale_to(matrix2_t* dest, matrix2_t* src, int left, int top, int right, int bottom, vfloat_t fill);
 int Mat2_slice_row_to(matrix2_t* dest, matrix2_t* src, int row_idx);
 int Mat2_slice_rows_to(matrix2_t* dest, matrix2_t* src, int begin, int open_end);
 int Mat2_slice_col_to(matrix2_t* dest, matrix2_t* src, int col_idx);
@@ -47,8 +50,7 @@ int Mat2_get_co_to(matrix2_t* dest, matrix2_t* src, int p, int q);
 int Mat2_det(matrix2_t* mat, vfloat_t* out);
 int Mat2_get_adjoint_to(matrix2_t* dest, matrix2_t* src);
 int Mat2_inverse(matrix2_t* mat);
-int Mat2_is_vector(matrix2_t* mat);
-int Mat2_is_symmetric(matrix2_t* mat);
+
 
 int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a);
 int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1);

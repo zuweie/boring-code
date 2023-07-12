@@ -321,6 +321,11 @@ int Mat2_is_vector(matrix2_t* mat) {
     return mat->cols == 1 || mat->rows == 1;
 }
 
+int Mat2_is_same_shape(matrix2_t* m1, matrix2_t* m2)
+{
+    return m1->rows == m2->rows && m1->cols == m2->cols;
+}
+
 int Mat2_is_symmetric(matrix2_t* mat) {
 
     if (mat->rows == mat->cols) {
@@ -526,8 +531,8 @@ int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1)
                 eigvalue_mat->pool[i] = a[i*n+i];
             }
 
-            printf("\nraw a:\n");
-            MAT2_RAW_INSPECT(a, a_rows, a_cols);
+            // printf("\nraw a:\n");
+            // MAT2_RAW_INSPECT(a, a_rows, a_cols);
             free(a);
 
         } else {

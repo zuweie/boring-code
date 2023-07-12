@@ -1,11 +1,4 @@
-/*
- * @Author: zuweie jojoe.wei@gmail.com
- * @Date: 2023-06-16 14:50:03
- * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-07-11 15:50:54
- * @FilePath: /boring-code/src/statistical_learning/naive_bayes.c
- * @Description: 
- */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -400,7 +393,7 @@ int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, vo
 }
 
 /**
- * @brief 
+ * @brief 计算多维高斯分布。使用 QR 分解协方差矩阵。
  * 
  * @param _X 
  * @param py_counting 
@@ -411,5 +404,101 @@ int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, vo
  */
 int navie_bayes_predict_MGD2_edit(matrix2_t* _X, void* py_counting, void* mus, void* sigma_table, vfloat_t* predict)
 {
+    int size_label  = *MAT2_COUNTING_SIZE_PTR(py_counting);
+    vfloat_t* elems = MAT2_COUNTING_LIST_PTR(py_counting);
+
+    int mu_col = ((int*)mus)[1];
+    vfloat_t (*mu_ptr)[mu_col] = &(((int*)mus)[2]);
+    
+    int sigma_row = ((int*)sigma_table)[1];
+    int sigma_col = ((int*)sigma_table)[2];
+    vfloat_t (*sigma_ptr)[sigma_row][sigma_col] = &(((int*)sigma_table)[3]);
+
+    matrix2_t* sigma_mat = Mat2_create(1,1);
+    matrix2_t* w_mat     = Mat2_create(1,1);
+    matrix2_t* u_mat     = Mat2_create(1,1);
+    matrix2_t* mu_mat    = Mat2_create(1,1);
+
+    matrix2_t* _X_cpy    = Mat2_create(1,1);
+    matrix2_t* _X_cpy_T  = Mat2_create(1,1);
+
+    vfloat_t probabilities[size_label];
+    int n = sigma_row;
+    // 1 计算各种 label 的概率。
+    for (int i=0; i<size_label; ++i) {
+
+        vfloat_t PROBABILITY = 0.f;
+
+
+        Mat2_cpy(_X_cpy, _X);
+
+        if (_X_cpy->rows > _X_cpy->cols) {
+            // 如果是列向量，将其立起来，变成行向量
+            Mat2_T(_X_cpy);
+        }
+
+        Mat2_load_on_shape(sigma_mat, sigma_ptr[i], sigma_row, sigma_col);
+        Mat2_load_on_shape(mu_mat, mu_ptr[i], 1, mu_col);
+
+        
+        Mat2_sub(_X_cpy, mu_mat);
+
+        // 求 sigma 的反矩阵
+        Mat2_inverse(sigma_mat);
+
+        // 分解 sigma_mat
+        Mat2_eig(w_mat, u_mat, sigma_mat);
+
+        Mat2_dot(_X_cpy, u_mat);
+        
+        Mat2_cpy(_X_cpy_T, _X_cpy);
+
+        Mat2_T(_X_cpy_T);
+
+        for (int j=0; j<w_mat->cols; ++j) {
+            _X_cpy->pool[j] *= w_mat->pool[j];
+        }
+
+        Mat2_dot(_X_cpy, _X_cpy_T);
+
+        double det_sigma = 1.f;
+
+        for (int k=0; k<w_mat->cols; ++k) {
+            det_sigma *= 1.f / w_mat->pool[k];
+        }
+
+        PROBABILITY += log(det_sigma);
+        PROBABILITY += _X_cpy->pool[0];
+        PROBABILITY += n*log(2*PI);
+        PROBABILITY *= (-0.5f);
+
+        probabilities[i] = PROBABILITY;
+
+    }
+    
+    // 2 找出最大可能哪一个
+    vfloat_t max_p = probabilities[0];
+    int      max   = 0;
+
+    for (int i=1; i<size_label; ++i) {
+
+        if (max_p < probabilities[i]) {
+            max_p = probabilities[i];
+            max = i;
+        }
+    }
+
+    *predict = elems[max];
+
+    // 3 清空内存
+    Mat2_destroy(sigma_mat);
+    Mat2_destroy(w_mat);     
+    Mat2_destroy(u_mat);     
+    Mat2_destroy(mu_mat);
+
+    Mat2_destroy(_X_cpy);
+    Mat2_destroy(_X_cpy_T);
+
+    return 0;
 
 }
