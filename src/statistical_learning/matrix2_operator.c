@@ -808,51 +808,7 @@ int __mat2_eigenvalues(vfloat_t** eigen_values, vfloat_t* m1, size_t n)
     // q a 没什么用， 把它释放了。
     free(a);
     free(q);
-    // double eps   = 1e-5;
-    // int max_iter = 100;
-    // int iter     = 0;
-    // double diff  = 1.f;
-    
-    // vfloat_t* q  = NULL;
-    // size_t q_rows;
-    // size_t q_cols;
 
-    // vfloat_t* r = NULL;
-    // size_t r_rows;
-    // size_t r_cols;
-
-    // vfloat_t* a = (vfloat_t*) malloc (n*n*sizeof(vfloat_t));
-    // size_t a_rows;
-    // size_t a_cols;
-    // memcpy(a, m1, n*n*sizeof(vfloat_t));
-
-    // // 保存前一次计算得到的特征值
-    // *eigen_values = (vfloat_t*) realloc (*eigen_values, n*sizeof(vfloat_t));
-
-    // while (iter <= max_iter && diff > eps) {
-
-    //     __mat2_qr_decomp(&q, &q_rows, &q_cols, &r, &r_rows, &r_cols, a, n, n, 0, n);
-
-    //     __mat2_dot(&a, &a_rows, &a_cols, r, r_rows, r_cols, q, q_rows, q_cols);
-
-    //     // 检查对角线是否有变化。
-    //     diff = 0.f;
-
-    //     for (int i=0; i<n; ++i) {
-    //         // a 的对角线 a[i][i] 的另外一种写法。
-    //         diff += fabs( a[i*n+i] - (*eigen_values)[i] );
-    //         // 
-    //         (*eigen_values)[i] = a[i*n+i];
-    //         //printf("iter:%d, a[i][i]: %0.3f, pre[i]: %0.3f, diff: %0.10f, diff>esp: %d \n", iter, diff, a[i*n+i], (*eigen_values)[i], (diff > eps));
-    //     }
-
-    //     iter++;
-    // }
-
-    // // 将特征值复制给 eigvalue
-    // free(q);
-    // free(r);
-    // free(a);
     return 0;
 
 }
