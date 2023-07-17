@@ -1,13 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
-<<<<<<< HEAD
- * @LastEditTime: 2023-06-15 13:21:25
+ * @LastEditTime: 2023-07-14 12:26:53
  * @LastEditors: zuweie jojoe.wei@gmail.com
-=======
- * @LastEditTime: 2023-06-14 12:09:03
- * @LastEditors: zuweie jojoe.wei@gmail.com
->>>>>>> origin/main
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
  */

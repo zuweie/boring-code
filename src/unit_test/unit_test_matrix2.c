@@ -395,6 +395,31 @@ static void test_matrix_qr(void) {
     return;
 }
 
+static void test_matrix_qr_decompe(void) 
+{
+    matrix2_t* a = Mat2_create(10, 4);
+    Mat2_arange(a, 1, 1000);
+    //Mat2_fill(a, 100);
+
+    MAT2_INSPECT(a);
+
+    vfloat_t* q = NULL;
+    size_t q_rows;
+    size_t q_cols;
+
+    vfloat_t* r = NULL;
+    size_t r_rows;
+    size_t r_cols;
+
+    __mat2_qr_decomp(&q, &q_rows, &q_cols, &r, &r_rows, &r_cols, a->pool, a->rows, a->cols, 0, 3);
+
+    MAT2_RAW_INSPECT(q, q_rows, q_cols);
+    MAT2_RAW_INSPECT(r, r_rows, r_cols);
+
+    return;
+
+}
+
 
 static void test_matrix_eigenvectors(void) {
 
@@ -598,10 +623,10 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eig) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eig) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 
     // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eigenvectors) ) {
@@ -613,4 +638,9 @@ int do_matrix2_test (void)
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+
+    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_qr_decompe) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
