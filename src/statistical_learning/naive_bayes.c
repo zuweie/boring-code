@@ -4,6 +4,7 @@
 #include <string.h>
 #include <float.h>
 #include <math.h>
+#include "counting.h"
 #include "naive_bayes.h"
 
 #define PI 3.1415926
@@ -19,49 +20,53 @@
 int navie_bayes_counting(matrix2_t* train_mat, matrix2_t* train_label_mat, void** Py_counting, void** Px_y_counting_table)
 {
     // 获取 label 的统计。
-    __mat2_count_element(train_label_mat->pool, train_label_mat->rows, Py_counting);
+    //__mat2_count_element(train_label_mat->pool, train_label_mat->rows, Py_counting);
+    counting_Y(train_label_mat, Py_counting);
 
     if (Px_y_counting_table) {
-        int size_eleme = *MAT2_COUNTING_SIZE_PTR(*Py_counting);
-        vfloat_t* elem_ptr  = MAT2_COUNTING_LIST_PTR(*Py_counting);
-        MAT2_POOL_PTR(train_label_mat, label_mat_ptr);
-        MAT2_POOL_PTR(train_mat, train_mat_ptr);
 
-        // 多申请多两个单位，用于存储横列信息。
-        size_t table_size = 2 * sizeof(int) + size_eleme * train_mat->cols * sizeof(char*);
-        void* table1 = malloc( table_size );
-        memset(table1, 0x0, table_size);
-        ((int*)table1)[0] = size_eleme;
-        ((int*)table1)[1] = train_mat->cols;
+        counting_XY(train_label_mat, train_mat, Px_y_counting_table);
 
-        char* (*table_ptr)[train_mat->cols] = &(((int*)table1)[2]);
-        // 
+        // int size_eleme = *MAT2_COUNTING_SIZE_PTR(*Py_counting);
+        // vfloat_t* elem_ptr  = MAT2_COUNTING_LIST_PTR(*Py_counting);
+        // MAT2_POOL_PTR(train_label_mat, label_mat_ptr);
+        // MAT2_POOL_PTR(train_mat, train_mat_ptr);
+
+        // // 多申请多两个单位，用于存储横列信息。
+        // size_t table_size = 2 * sizeof(int) + size_eleme * train_mat->cols * sizeof(char*);
+        // void* table1 = malloc( table_size );
+        // memset(table1, 0x0, table_size);
+        // ((int*)table1)[0] = size_eleme;
+        // ((int*)table1)[1] = train_mat->cols;
+
+        // char* (*table_ptr)[train_mat->cols] = &(((int*)table1)[2]);
+        // // 
     
-        // 建立统计表。
-        vfloat_t elem_value[train_mat->rows];
-        int elem_size;
+        // // 建立统计表。
+        // vfloat_t elem_value[train_mat->rows];
+        // int elem_size;
 
-        for (int i=0; i<size_eleme; ++i) {
-            int label = (int)elem_ptr[i];
+        // for (int i=0; i<size_eleme; ++i) {
+        //     int label = (int)elem_ptr[i];
 
-            for (int j=0; j<train_mat->cols; ++j) {
+        //     for (int j=0; j<train_mat->cols; ++j) {
 
-                elem_size = 0;
+        //         elem_size = 0;
 
-                for (int k=0; k<train_mat->rows; ++k) {
-                    //
-                    int Y_label = label_mat_ptr[k][0];
+        //         for (int k=0; k<train_mat->rows; ++k) {
+        //             //
+        //             int Y_label = label_mat_ptr[k][0];
 
-                    if (label == Y_label) {
-                        elem_value[elem_size++] = train_mat_ptr[k][j];
-                    }
-                } 
-                void* out;
-                __mat2_count_element(elem_value, elem_size, &out);
-                table_ptr[i][j] = out;
-            }
-        }
-        *Px_y_counting_table = table1;
+        //             if (label == Y_label) {
+        //                 elem_value[elem_size++] = train_mat_ptr[k][j];
+        //             }
+        //         } 
+        //         void* out;
+        //         __mat2_count_element(elem_value, elem_size, &out);
+        //         table_ptr[i][j] = out;
+        //     }
+        // }
+        // *Px_y_counting_table = table1;
     }
 
     return 0;
@@ -77,9 +82,9 @@ int navie_bayes_counting(matrix2_t* train_mat, matrix2_t* train_label_mat, void*
  */
 int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_table, int lambda, vfloat_t* predict)
 {
-    int       Py_counting_size        = *MAT2_COUNTING_SIZE_PTR(Py_counting);
-    int*      Py_counting_numbers_ptr = MAT2_COUNTING_NUMBERS_PTR(Py_counting);
-    vfloat_t* Py_element_ptr          = MAT2_COUNTING_LIST_PTR(Py_counting);
+    int       Py_counting_size        = CTY_size(Py_counting);//*MAT2_COUNTING_SIZE_PTR(Py_counting);
+    int*      Py_counting_numbers_ptr = CTY_elems_number_ptr(Py_counting);//MAT2_COUNTING_NUMBERS_PTR(Py_counting);
+    vfloat_t* Py_element_ptr          = CTY_elems_ptr(Py_counting);//MAT2_COUNTING_LIST_PTR(Py_counting);
 
     int y_total = 0;
 
@@ -87,7 +92,7 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
         y_total += Py_counting_numbers_ptr[i];
     }
 
-    int probability_size = *MAT2_COUNTING_SIZE_PTR(Py_counting);
+    int probability_size = CTY_size(Py_counting);//*MAT2_COUNTING_SIZE_PTR(Py_counting);
 
     float probability_logs[probability_size];
     char* (*Pxy_counting_table_ptr)[_X->cols] = &(((int*)Pxy_counting_table)[2]);
@@ -97,7 +102,7 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
         vfloat_t y_label = Py_element_ptr[i];
 
         // 计算 _X 在每个 lable 中可能的概率
-        int y_number = __mat2_get_element_number(Py_counting, y_label);
+        int y_number = counting_get_elem_number(Py_counting, y_label);//__mat2_get_element_number(Py_counting, y_label);
 
         pro_log += log( (float) y_number / y_total);
 
@@ -105,8 +110,8 @@ int navie_bayes_predict(matrix2_t* _X, void* Py_counting, void* Pxy_counting_tab
 
             vfloat_t x_value   = _X->pool[j];
             void* counting     = Pxy_counting_table_ptr[i][j];
-            int si             = *MAT2_COUNTING_SIZE_PTR(counting);
-            int x_value_number = __mat2_get_element_number(counting, x_value);
+            int si             = CTY_size(counting);//*MAT2_COUNTING_SIZE_PTR(counting);
+            int x_value_number = counting_get_elem_number(counting, x_value);//__mat2_get_element_number(counting, x_value);
 
             // 需要做拉普拉斯平滑
             float px_y = (float)(x_value_number + lambda) / (float)(y_number + si * lambda);
@@ -144,7 +149,7 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
     navie_bayes_counting(train_mat, train_label_mat, &label_counting, NULL);
 
     
-    int label_count       = *MAT2_COUNTING_SIZE_PTR(label_counting);
+    int label_count       = //*MAT2_COUNTING_SIZE_PTR(label_counting);
     vfloat_t* labels      = MAT2_COUNTING_LIST_PTR(label_counting);
     int* label_numbers    = MAT2_COUNTING_NUMBERS_PTR(label_counting);
 

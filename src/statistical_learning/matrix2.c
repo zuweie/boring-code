@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include "matrix2_operator.h"
-#include "matrix2_count.h"
 #include "matrix2.h"
 
 matrix2_t* Mat2_create(size_t rows, size_t cols)

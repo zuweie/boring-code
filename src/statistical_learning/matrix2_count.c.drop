@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-19 16:32:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-06-26 11:31:39
+ * @LastEditTime: 2023-07-18 11:37:07
  * @FilePath: /boring-code/src/statistical_learning/matrix2_count.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -98,8 +98,8 @@ int __mat2_count_element(vfloat_t* in,  int in_size,  void** counting)
     int pool_size = SPARE_ARR_INC_SIZE;
     // 把申请了的内存初始化最大的 float 点, 为了做二分查找插入。
     
-    int* size_ptr     = MAT2_COUNTING_SIZE_PTR(output);
-    vfloat_t* arr_ptr = MAT2_COUNTING_LIST_PTR(output);
+    int*      size_ptr = MAT2_COUNTING_SIZE_PTR(output);
+    vfloat_t* arr_ptr  = MAT2_COUNTING_LIST_PTR(output);
     
     for (int i=0; i<pool_size; ++i) {
 

@@ -2,6 +2,7 @@
 #include <CUnit/Basic.h>
 #include "statistical_learning/matrix2.h"
 #include "statistical_learning/matrix2_operator.h"
+#include "statistical_learning/counting.h"
 #include "container/cn.h"
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
@@ -185,9 +186,10 @@ static void test_matrix_counting(void) {
     Mat2_slice_col_to(col, train_mat, 456);
 
     void* counting;
-    __mat2_count_element(col->pool, col->rows, &counting);
+    //__mat2_count_element(col->pool, col->rows, &counting);
+    counting_Y(col, &counting);
 
-    MAT2_INSPECT_COUNTING(counting);
+    INSPECT_COUNTING(counting);
 
     //MAT2_INSPECT(col);
 

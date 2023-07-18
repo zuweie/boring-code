@@ -67,12 +67,12 @@ set (SOURCE
     src/machine_learning/decision_tree.c
     src/statistical_learning/matrix2.c
     src/statistical_learning/matrix2_operator.c
-    src/statistical_learning/matrix2_count.c
     src/statistical_learning/perceptron.c
     src/statistical_learning/knn.c
     src/statistical_learning/naive_bayes.c
     src/statistical_learning/svm.c
     src/statistical_learning/decision_tree.c
+    src/statistical_learning/counting.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c

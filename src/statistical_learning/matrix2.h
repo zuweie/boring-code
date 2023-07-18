@@ -1,7 +1,14 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2023-06-15 16:10:10
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2023-07-18 16:27:59
+ * @FilePath: /boring-code/src/statistical_learning/matrix2.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef __MATRIX2_H__
 #define __MATRIX2_H__
 #include <stdlib.h>
-#include "matrix2_count.h"
 #include "matrix2_operator.h"
 #include "vtype/vfloat_type.h"
 
@@ -70,19 +77,6 @@ int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1);
         } \
         printf("\n");\
     } \
-})
-
-#define MAT2_INSPECT_COUNTING(counting)\
-({\
-    int*     size_ptr   = MAT2_COUNTING_SIZE_PTR(counting);\
-    vfloat_t* diff_ptr  = MAT2_COUNTING_LIST_PTR(counting);\
-    int*     number_ptr = MAT2_COUNTING_NUMBERS_PTR(counting);\
-    printf("\n <diff size: %d>: \n", (*size_ptr));\
-    for (int i=0; i<*size_ptr; ++i) {\
-        vfloat_t target = diff_ptr[i];\
-        int number      = __mat2_get_element_number(counting, target);\
-        printf("<%f: %d>\n", target, number);\
-    }\
 })
 
 #endif
