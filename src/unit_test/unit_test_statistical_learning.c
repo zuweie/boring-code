@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-07-12 11:13:51
+ * @LastEditTime: 2023-07-19 15:01:35
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,6 +13,7 @@
 #include "statistical_learning/perceptron.h"
 #include "statistical_learning/knn.h"
 #include "statistical_learning/naive_bayes.h"
+#include "statistical_learning/counting.h"
 
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
@@ -137,7 +138,7 @@ static void test_navie_bayes (void)
     matrix2_t* csv_mat    = Mat2_create(1,1);
     matrix2_t* train_mat  = Mat2_create(1,1);
     matrix2_t* train_label_mat  = Mat2_create(1,1);
-    matrix2_t* test_label_mat = Mat2_create(1,1);
+    matrix2_t* test_label_mat   = Mat2_create(1,1);
     matrix2_t* test_mat = Mat2_create(1,1);
     matrix2_t* _X       = Mat2_create(1,1);
 
@@ -231,11 +232,15 @@ static void test_navie_bayes (void)
 
     }
 
-    printf("\n correct %.2f \n", (float) (correct) / (float) (test_mat->rows));
+    //printf("\n correct %.2f \n", (float) (correct) / (float) (test_mat->rows));
 
-    //navie_bayes_release_counting(Py_counting, Pxy_counting_table);
+    double correctly = (float) (correct) / (float) (test_mat->rows);
+
+    CU_ASSERT( (correctly * 100) > 84.f );
+    
+
     free(Py_counting);
-    navie_bayes_release_pxy_counting_table(Pxy_counting_table);
+    counting_free_XY_table(Pxy_counting_table);
 
     Mat2_destroy(csv_mat);
     Mat2_destroy(train_mat);
@@ -289,11 +294,12 @@ static void test_navie_bayes2(void) {
     float predict;
     navie_bayes_predict(test_mat, Py_counting, Pxy_counting_table, 1, &predict);
 
-    printf(" predict: %0.2f \n", predict);
-
+    //printf(" predict: %0.2f \n", predict);
+    CU_ASSERT_DOUBLE_EQUAL(predict, -1, 1e-5);
     //navie_bayes_release_counting(Py_counting, Pxy_counting_table);
     free(Py_counting);
-    navie_bayes_release_pxy_counting_table(Pxy_counting_table);
+    //navie_bayes_release_pxy_counting_table(Pxy_counting_table);
+    counting_free_XY_table(Pxy_counting_table);
 
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
@@ -339,7 +345,8 @@ static void test_navies_bayes_mgd(void) {
 
     navie_bayes_predict_MGD_edit(_X, Py_counting, mus_table, sigma_table, &predict);
 
-    CU_ASSERT_DOUBLE_EQUAL(predict, 1.f, 0.001f);
+    CU_ASSERT_DOUBLE_EQUAL(predict, 1.f, 1e-5);
+
     free(Py_counting);
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
@@ -385,7 +392,7 @@ static void test_navies_bayes_mgd2(void)
 
     navie_bayes_predict_MGD2_edit(_X, Py_counting, mus_table, sigma_table, &predict);
 
-    CU_ASSERT_DOUBLE_EQUAL(predict, 1.f, 0.001f);
+    CU_ASSERT_DOUBLE_EQUAL(predict, 1.f, 1e-5);
     
     free(Py_counting);
     Mat2_destroy(train_mat);

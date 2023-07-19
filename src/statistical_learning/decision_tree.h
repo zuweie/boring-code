@@ -16,7 +16,7 @@ int decision_tree_classify_train(matrix2_t* data, matrix2_t* label, dct_node_t* 
 int decision_tree_regression_train(matrix2_t* data, matrix2_t* label, dct_node_t* _tree);
 
 int decision_tree_classify_predict(dct_node_t* _tree, vfloat_t* predict);
-int decision_tree_regression_train(dct_node_t* _tree, vfloat_t* predict);
+int decision_tree_regression_predict(dct_node_t* _tree, vfloat_t* predict);
 
 int decision_tree_release_dct(dct_node_t* _tree);
 

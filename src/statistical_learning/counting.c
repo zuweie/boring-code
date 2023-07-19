@@ -1,3 +1,6 @@
+#include <float.h>
+#include <math.h>
+#include <string.h>
 #include "counting.h"
 
 #define SPARE_ARR_INC_SIZE 64
@@ -74,9 +77,9 @@ static int binary_search_insert(vfloat_t* arr, vfloat_t target, int begin, int o
  *            最后 int...，为每个不同值的数量。
  * @return int 
  */
-int counting_Y(matrix2_t* _Y, void** counting_Y)
+int counting_Y(matrix2_t* _Y, void** countingY)
 {
-    if (Mat2_is_vector(_Y)) {
+    if ( Mat2_is_vector(_Y) ) {
         // 先申请内存。
         // 最终内存模型如下
         // {int,float, float, float, float,...., int, int, int, int,}
@@ -85,7 +88,7 @@ int counting_Y(matrix2_t* _Y, void** counting_Y)
         int pool_size = SPARE_ARR_INC_SIZE;
         // 把申请了的内存初始化最大的 float 点, 为了做二分查找插入。
     
-        int*      size_ptr = CTY_size_ptr(output)
+        int*      size_ptr = CTY_size_ptr(output);
         vfloat_t* arr_ptr  = CTY_elems_ptr(output);
     
         for (int i=0; i<pool_size; ++i) {
@@ -101,27 +104,51 @@ int counting_Y(matrix2_t* _Y, void** counting_Y)
             // 在二分查找插入前会确保 数组足够大。
             if (*size_ptr == pool_size) {
 
-            // 满了需要添加内存
-            output = (vfloat_t*)realloc(output, sizeof(int) + (pool_size+=SPARE_ARR_INC_SIZE) * sizeof(vfloat_t));
+                // 满了需要添加内存
+                output = (vfloat_t*)realloc(output, sizeof(int) + (pool_size+=SPARE_ARR_INC_SIZE) * sizeof(vfloat_t));
             
-            // 重新申请内存后要及时更新 arr 以及 size 的地址。因为 realloc 后首地址可能会改变。
-            size_ptr = CTY_size_ptr(output);//MAT2_COUNTING_SIZE_PTR(output);
-            arr_ptr  = CTY_elems_ptr(output);//MAT2_COUNTING_LIST_PTR(output);
+                // 重新申请内存后要及时更新 arr 以及 size 的地址。因为 realloc 后首地址可能会改变。
+                size_ptr = CTY_size_ptr(output);//MAT2_COUNTING_SIZE_PTR(output);
+                arr_ptr  = CTY_elems_ptr(output);//MAT2_COUNTING_LIST_PTR(output);
 
-            // 添加内存后，把它初始化为 max float。
-            for (int j = *size_ptr; j<pool_size; ++j) {
-                arr_ptr[j] = FLT_MAX;
+                // 添加内存后，把它初始化为 max float。
+                for (int j = *size_ptr; j<pool_size; ++j) {
+                    arr_ptr[j] = FLT_MAX;
+                }
             }
-        }
-        
-        // 二分查找并且插入。成功返回插入位置。否则返回 -1
-        int pos = binary_search_insert(arr_ptr, _Y->pool[i], 0, pool_size);
 
-        // 成功插入数值加一
-        if (pos >= 0) (*size_ptr)++;
+            // 二分查找并且插入。成功返回插入位置。否则返回 -1
+            int pos = binary_search_insert(arr_ptr, _Y->pool[i], 0, pool_size);
+
+            // 成功插入数值加一
+            if (pos >= 0) (*size_ptr)++;
+        }
+
+        // 再次扩大内存放入每个值对应的 numbers 
+        output = realloc(output, sizeof(int) + (*size_ptr) * sizeof(vfloat_t) + (*size_ptr) * sizeof(int));
+
+        int cty_size     = CTY_size(output);//MAT2_COUNTING_SIZE_PTR(output);
+        arr_ptr          = CTY_elems_ptr(output);//MAT2_COUNTING_LIST_PTR(output);
+        int* numbers_ptr = CTY_elems_number_ptr(output); // MAT2_COUNTING_NUMBERS_PTR(output);
+
+        memset(numbers_ptr, 0x0, sizeof(int) * cty_size);
+
+        for (int i=0; i<arr_size; ++i) {
+
+            vfloat_t target = _Y->pool[i];
+            int pos         = binary_search(arr_ptr, target, 0, cty_size, 0);
+            if (pos >=0) numbers_ptr[pos]++;
+            //printf("test cur i %d\n", i);
+        }
+        // 最后输出
+        *countingY = output;
+        return 0;
     }
     return -1;
 }
+
+
+// }
 
 int counting_get_elem_number(void* counting, vfloat_t target)
 {
@@ -129,11 +156,22 @@ int counting_get_elem_number(void* counting, vfloat_t target)
     vfloat_t* elem_ptr  = CTY_elems_ptr(counting);
     int* number_ptr     = CTY_elems_number_ptr(counting);
 
-    int pos = binary_search(elem_ptr, target, 0, (*size_ptr), 0);
+    int pos = binary_search(elem_ptr, target, 0, size, 0);
 
     if (pos >=0) return number_ptr[pos];
 
     return 0;
+}
+
+int counting_get_elem_pos(void* counting, vfloat_t target)
+{
+    int size            = CTY_size(counting);//MAT2_COUNTING_SIZE_PTR(counting);
+    vfloat_t* elem_ptr  = CTY_elems_ptr(counting);//MAT2_COUNTING_LIST_PTR(counting);
+    int* number_ptr     = CTY_elems_number_ptr(counting);//MAT2_COUNTING_NUMBERS_PTR(counting);
+
+    int pos = binary_search(elem_ptr, target, 0, size, 0);
+
+    return pos;
 }
 
 int counting_XY(matrix2_t* _Y, matrix2_t* _X, void** counting_table)
@@ -155,7 +193,7 @@ int counting_XY(matrix2_t* _Y, matrix2_t* _X, void** counting_table)
     ((int*)table1)[0] = cty_size;
     ((int*)table1)[1] = _X->cols;
 
-    char* (*table_ptr)[train_mat->cols] = CTXY_counting_ptr(table1); //&(((int*)table1)[2]);
+    char* (*table_ptr)[_X->cols] = CTXY_counting_ptr(table1); //&(((int*)table1)[2]);
     // 
     
     // 建立统计表。
@@ -163,7 +201,7 @@ int counting_XY(matrix2_t* _Y, matrix2_t* _X, void** counting_table)
     int elem_size;
 
     for (int i=0; i<cty_size; ++i) {
-        float_t cty_elem = cty_elem_ptr[i];
+        vfloat_t cty_elem = cty_elem_ptr[i];
 
         for (int j=0; j<_X->cols; ++j) {
 
@@ -171,9 +209,9 @@ int counting_XY(matrix2_t* _Y, matrix2_t* _X, void** counting_table)
 
             for (int k=0; k<_X->rows; ++k) {
                 //
-                float_t _y_elem = _Y_ptr[k][0];
+                vfloat_t _y_elem = _Y_ptr[k][0];
 
-                if (cty_elem == _y_elem) {
+                if (fabs(cty_elem -_y_elem) < 1e-5) {
                     elem_value[elem_size++] = _X_ptr[k][j];
                 }
             } 
@@ -185,9 +223,24 @@ int counting_XY(matrix2_t* _Y, matrix2_t* _X, void** counting_table)
         }
     }
 
-    *Px_y_counting_table = table1;
+    *counting_table = table1;
     Mat2_destroy(countingY_mat);
 
     return 0;
 }
 
+int counting_free_XY_table(void** countingXY_table)
+{
+    int rows = CTXY_row(countingXY_table);
+    int cols = CTXY_col(countingXY_table);
+    char* (*Pxy_count_table_ptr)[cols] = CTXY_counting_ptr(countingXY_table);
+
+    for (int i=0; i<rows; ++i) {
+        for (int j=0; j<cols; ++j) {
+            void* counting = Pxy_count_table_ptr[i][j];
+            free(counting);
+        }
+    }
+    free(countingXY_table);
+    return 0;
+}

@@ -14,7 +14,6 @@ int decision_tree_classify_train(matrix2_t* data, matrix2_t* label, dct_node_t* 
     // 2 用增益值最大的作为节点。
 
     void* Py_counting = NULL;
-    __mat2_count_elemnt(label->pool, label->rows, *Py_counting);
 
 
 }

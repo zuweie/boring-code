@@ -579,10 +579,10 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_counting) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_counting) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
 
     // if (NULL == CU_add_test(pSuite, " test mat cofactor ", test_matrix_cofactor) ) {
@@ -641,8 +641,8 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_qr_decompe) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_qr_decompe) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 }

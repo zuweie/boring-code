@@ -149,9 +149,9 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
     navie_bayes_counting(train_mat, train_label_mat, &label_counting, NULL);
 
     
-    int label_count       = //*MAT2_COUNTING_SIZE_PTR(label_counting);
-    vfloat_t* labels      = MAT2_COUNTING_LIST_PTR(label_counting);
-    int* label_numbers    = MAT2_COUNTING_NUMBERS_PTR(label_counting);
+    int label_count       = CTY_size(label_counting); //*MAT2_COUNTING_SIZE_PTR(label_counting);
+    vfloat_t* labels      = CTY_elems_ptr(label_counting);//MAT2_COUNTING_LIST_PTR(label_counting);
+    int* label_numbers    = CTY_elems_number_ptr(label_counting);// MAT2_COUNTING_NUMBERS_PTR(label_counting);
 
     // int pxy_rows = ((int*)pxy_counting_table)[0];
     // int pxy_cols = ((int*)pxy_counting_table)[1];
@@ -197,7 +197,7 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
             vfloat_t label = train_label_ptr[i][0];
             
             // 根据 label 获取 label 在 label_counting 中序号。
-            int l_index = __mat2_get_elemt_pos(label_counting, label);
+            int l_index = counting_get_elem_pos(label_counting, label);//__mat2_get_elemt_pos(label_counting, label);
 
             // 根据 label 序号，和第 j 个属性，获取在该 label 下 j 属性总数。
             int value_element_total = label_numbers[l_index]; //__mat2_get_element_number(label_counting, label);
@@ -276,20 +276,20 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
     return 0;
 }
 
-int navie_bayes_release_pxy_counting_table(void* Pxy_counting_table) {
-    int rows = ((int*)Pxy_counting_table)[0];
-    int cols = ((int*)Pxy_counting_table)[1];
-    char* (*Pxy_count_table_ptr)[cols] = &(((int*)Pxy_counting_table)[2]);
+// int navie_bayes_release_pxy_counting_table(void* Pxy_counting_table) {
+//     int rows = ((int*)Pxy_counting_table)[0];
+//     int cols = ((int*)Pxy_counting_table)[1];
+//     char* (*Pxy_count_table_ptr)[cols] = &(((int*)Pxy_counting_table)[2]);
 
-    for (int i=0; i<rows; ++i) {
-        for (int j=0; j<cols; ++j) {
-            void* counting = Pxy_count_table_ptr[i][j];
-            free(counting);
-        }
-    }
-    free(Pxy_counting_table);
-    return 0;
-}
+//     for (int i=0; i<rows; ++i) {
+//         for (int j=0; j<cols; ++j) {
+//             void* counting = Pxy_count_table_ptr[i][j];
+//             free(counting);
+//         }
+//     }
+//     free(Pxy_counting_table);
+//     return 0;
+// }
 
 /**
  * @brief 
@@ -311,8 +311,8 @@ int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, vo
     //     Mat2_T(_X_cpy);
     // }
 
-    int size_label  = *MAT2_COUNTING_SIZE_PTR(py_counting);
-    vfloat_t* elems = MAT2_COUNTING_LIST_PTR(py_counting);
+    int size_label  = CTY_size(py_counting);//*MAT2_COUNTING_SIZE_PTR(py_counting);
+    vfloat_t* elems = CTY_elems_ptr(py_counting); // MAT2_COUNTING_LIST_PTR(py_counting);
 
     int mu_col = ((int*)mus)[1];
     vfloat_t (*mu_ptr)[mu_col] = &(((int*)mus)[2]);
@@ -409,8 +409,8 @@ int navie_bayes_predict_MGD_edit(matrix2_t* _X, void* py_counting, void* mus, vo
  */
 int navie_bayes_predict_MGD2_edit(matrix2_t* _X, void* py_counting, void* mus, void* sigma_table, vfloat_t* predict)
 {
-    int size_label  = *MAT2_COUNTING_SIZE_PTR(py_counting);
-    vfloat_t* elems = MAT2_COUNTING_LIST_PTR(py_counting);
+    int size_label  = CTY_size(py_counting);       //*MAT2_COUNTING_SIZE_PTR(py_counting);
+    vfloat_t* elems = CTY_elems_ptr(py_counting);  // MAT2_COUNTING_LIST_PTR(py_counting);
 
     int mu_col = ((int*)mus)[1];
     vfloat_t (*mu_ptr)[mu_col] = &(((int*)mus)[2]);
