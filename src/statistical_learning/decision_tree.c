@@ -159,25 +159,85 @@ static double __calculate_A_gain(matrix2_t* _Xi, matrix2_t* label)
     return GAIN;
 }
 
-static int __build_classification_tree(matrix2_t* data, matrix2_t* label, cart_node_t* _tree) 
+/**
+ * @brief 尝试找出最佳的分离属性
+ * 
+ * @param data 
+ * @param label 
+ * @param candidate_node 剩下可以选择的node
+ * @param candidate_node_size 
+ * @return int 
+ */
+static int __find_best_split(matrix2_t* data, matrix2_t* label, int* candidate_nodes, int* candidate_node_size, int* out_index, int* out_gain)
 {
 
-    // TODO: 1 遍历每一个熟悉，找出最时候的的分点。
+    matrix2_t* _Xi = Mat2_create(1,1);
+
+    float gains[*candidate_node_size];
+
+    for(int i=0; i<*candidate_node_size; ++i) {
+        int index = candidate_nodes[i];
+
+        Mat2_slice_col_to(data, _Xi, index);
+
+        gains[i] = __calculate_A_gain(_Xi, label);
+    }
+
+    
+    // 找到最大的哪个信息增益的 index
+    int max_index  = 0;
+    float max_gain = gains[0];
+
+    for (int j=1; j<*candidate_node_size; ++j) {
+        if (max_gain < gains[j]) {
+            max_gain = gains[j];
+            max_index = j;
+        }
+    }
+
+    // 找到最大那个 index 后把那个 index 从 candidate_nodes 中删除。
+
+    for(int i=max_index+1; i<*candidate_node_size; ++i) {
+        candidate_nodes[i-1] = candidate_nodes[i];
+    }
+    (*candidate_node_size)--;
+
+    *out_index = max_index;
+    *out_gain  = max_gain;
+    return 0;
+}
+
+static int __build_classification_tree(matrix2_t* data, matrix2_t* label, cart_node_t* node, int* candidate_nodes, int* candidate_node_size, double esp) 
+{
+
+    // 
+    if (*candidate_node_size > 0) {
+        //
+    } else if (*candidate_node_size == 1) {
+        // 
+    } else {
+
+    }
+    void* counting = NULL;
+    counting_Y(label, &counting);
+
+    if (CTY_size(counting) == 1) {
+
+    }
  
     matrix2_t* Xi = Mat2_create(1,1);
 
-    for (int i=0; i<data->cols; ++i) {
+    double gains[data->rows];
+
+    for (int i=0; i<data->rows; ++i) {
 
         // 截取每一个属性
         Mat2_slice_col_to(Xi, data, i);
-        
-        
-        
-
-        
-
-
+        // 计算每一列的信息增益。
+       gains[i] = __calculate_A_gain(Xi, label);
     }
+
+    
 
 }
 
