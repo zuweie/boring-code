@@ -37,7 +37,7 @@ static double __calculate_gini(matrix2_t* label_on_val)
  * @param label 
  * @return double 
  */
-static double __calculate_A_gini_index(matrix2_t* _Xi, matrix2_t label) 
+static double __calculate_A_gini_index(matrix2_t* _Xi, matrix2_t* label) 
 {
 
     void* counting = NULL;
@@ -89,8 +89,6 @@ static double __calculate_A_gini_index(matrix2_t* _Xi, matrix2_t label)
 
 }
 
-
-static 
 /**
  * @brief 计算信息增益
  * 
@@ -129,7 +127,7 @@ static double __calculate_A_gain(matrix2_t* _Xi, matrix2_t* label)
     matrix2_t* label_on_vals[val_type_size];
     int        label_on_vals_index[val_type_size];
 
-    memset(label_on_vals 0x0, sizeof(label_on_vals) );  
+    memset(label_on_vals, 0x0, sizeof(label_on_vals) );  
     memset(label_on_vals_index, 0x0, sizeof(label_on_vals_index) );
 
     for (int i=0; i<_Xi_size; ++i) {
@@ -161,7 +159,7 @@ static double __calculate_A_gain(matrix2_t* _Xi, matrix2_t* label)
     return GAIN;
 }
 
-static int __build_classification_tree(matrix2_t* data, matrix2_t* label, cart_node_t* _tree, double (*calculate_func)(matrix2_t*, matrix2_t*)) 
+static int __build_classification_tree(matrix2_t* data, matrix2_t* label, cart_node_t* _tree) 
 {
 
     // TODO: 1 遍历每一个熟悉，找出最时候的的分点。
@@ -173,7 +171,8 @@ static int __build_classification_tree(matrix2_t* data, matrix2_t* label, cart_n
         // 截取每一个属性
         Mat2_slice_col_to(Xi, data, i);
         
-        // 然后摸出它每一个属性点，然后使用二元法(即把这列属性的值换成 0、1，包含这个某个值的做 1， 不包涵的做 0)测试所有属性，找到最佳的属性分割点。
+        
+        
 
         
 
