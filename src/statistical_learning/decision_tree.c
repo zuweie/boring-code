@@ -1,5 +1,6 @@
 #include <math.h>
 #include <string.h>
+#include <float.h>
 #include "counting.h"
 #include "decision_tree.h"
 
@@ -141,7 +142,7 @@ static double __calculate_A_gain(matrix2_t* _Xi, matrix2_t* label)
             }
 
             int lov_index = label_on_vals_index[pos];
-            label_on_vals[pos]->pool = label->pool[i];
+            label_on_vals[pos]->pool[i] = label->pool[i];
             label_on_vals_index[pos]++;
         }
     }
@@ -168,8 +169,9 @@ static double __calculate_A_gain(matrix2_t* _Xi, matrix2_t* label)
  * @param candidate_node_size 
  * @return int 
  */
-static int __find_best_split(matrix2_t* data, matrix2_t* label, int* candidate_nodes, int* candidate_node_size, int* out_index, int* out_gain)
+static int __find_best_split(matrix2_t* data, matrix2_t* label, int* candidate_nodes, int* candidate_node_size, int* out_index, float* out_gain)
 {
+
 
     matrix2_t* _Xi = Mat2_create(1,1);
 
@@ -204,41 +206,112 @@ static int __find_best_split(matrix2_t* data, matrix2_t* label, int* candidate_n
 
     *out_index = max_index;
     *out_gain  = max_gain;
+    Mat2_destroy(_Xi);
+
     return 0;
 }
-
-static int __build_classification_tree(matrix2_t* data, matrix2_t* label, cart_node_t* node, int* candidate_nodes, int* candidate_node_size, double esp) 
+static int __build_classification_leaf(cart_node_t** node_ref, vfloat_t _predict) 
 {
+    *node_ref = malloc(sizeof(cart_node_t));
+    (*node_ref)->sub_counting = NULL;
+    (*node_ref)->sub_nodes    = NULL;
+    (*node_ref)->_predict     = _predict;
+    (*node_ref)->_xi          = -1;
+    return 0;
+}
+/**
+ * @brief 递归建造决策树
+ * 
+ * @param data 
+ * @param label 
+ * @param node 
+ * @param candidate_nodes 
+ * @param candidate_node_size 
+ * @param esp 
+ * @return int 
+ */
+static int __build_classification_node(matrix2_t* data, matrix2_t* label, cart_node_t** node_ref, int* candidate_nodes, int* candidate_node_size, double esp_gain, int least_data) 
+{
+    // 若没有任何属性可以分割聊，或者剩下的数据量小于最少的数据量，例如小于10条数据，
+    // 那么就直检测 label 的类别，选最多的那个类别当作叶子节点的值。
 
-    // 
-    if (*candidate_node_size > 0) {
-        //
-    } else if (*candidate_node_size == 1) {
-        // 
+    void* label_counting = NULL;
+    counting_Y(label, &label_counting);
+
+    if (*candidate_node_size == 0 
+    || data->rows <= least_data
+    || CTY_size(label_counting) == 1) {
+
+        // *node_ref = malloc(sizeof(cart_node_t));
+        // (*node_ref)->sub_counting = NULL;
+        // (*node_ref)->sub_nodes = NULL;
+        // (*node_ref)->_predict = counting_get_most_elem(counting);
+        // (*node_ref)->_xi = -1;
+        //return 0;
+        __build_classification_leaf(node_ref, counting_get_most_elem(label_counting));
     } else {
 
+        // 测试每个属性，或者最大信息增益的属性组成节点，分割数据，然后迭代到下一个节点去。
+        int out_index;
+        float out_gain;
+        __find_best_split(data, label, candidate_nodes, candidate_node_size, &out_index, &out_gain);
+
+        if (out_gain < esp_gain) {
+
+            // 最大的 gain 也小于 esp, 那么马上将其变成叶子节点。
+            __build_classification_leaf(node_ref, counting_get_most_elem(label_counting));
+
+        } else {
+
+            // 分割数据。然后递归调用此函数。
+           
+            matrix2_t* _Xi = Mat2_create(1,1);
+            Mat2_slice_col_to(_Xi, data, out_index);
+
+
+            void* xi_data_counting = NULL;
+            counting_Y(data, xi_data_counting);
+
+            matrix2_t* sub_datas[CTY_size(xi_data_counting)];
+            matrix2_t* sub_labels[CTY_size(xi_data_counting)];
+            int sub_index[CTY_size(xi_data_counting)];
+
+            memset(sub_datas, 0x0, CTY_size(xi_data_counting) * sizeof(matrix2_t*));
+            memset(sub_labels, 0x0, CTY_size(xi_data_counting) * sizeof(matrix2_t*));
+
+            MAT2_POOL_PTR(data, data_ptr);
+
+            for(int i=0; i<data->rows; ++i) {
+
+                vfloat_t target = data_ptr[i][out_index];
+                int pos = counting_get_elem_pos(xi_data_counting, target);
+
+                // 若没有这个矩阵，
+                if (sub_datas[pos] == NULL)   
+                    sub_datas[pos]  = Mat2_create(CTY_elems_number_ptr(xi_data_counting)[pos], data->cols);
+
+                if (sub_labels[pos] == NULL)  
+                    sub_labels[pos] = Mat2_create(CTY_elems_number_ptr(xi_data_counting)[pos], label->cols);
+
+
+
+                
+            }
+
+
+            // cart_node_t** sub_nodes = malloc(CTY_size(data_counting) * sizeof(cart_node_t*));
+            // memset(sub_nodes, 0x0, CTY_size(data_counting) * sizeof(cart_node_t*));
+
+            // *node_ref = malloc(sizeof(cart_node_t));
+            // (*node_ref)->sub_counting = data_counting;
+            // (*node_ref)->sub_nodes = sub_nodes;
+            // (*node_ref)->_xi = out_index;
+
+            
+
+        }
+        
     }
-    void* counting = NULL;
-    counting_Y(label, &counting);
-
-    if (CTY_size(counting) == 1) {
-
-    }
- 
-    matrix2_t* Xi = Mat2_create(1,1);
-
-    double gains[data->rows];
-
-    for (int i=0; i<data->rows; ++i) {
-
-        // 截取每一个属性
-        Mat2_slice_col_to(Xi, data, i);
-        // 计算每一列的信息增益。
-       gains[i] = __calculate_A_gain(Xi, label);
-    }
-
-    
-
 }
 
 /**

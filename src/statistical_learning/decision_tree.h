@@ -7,8 +7,9 @@ typedef struct _cart_node cart_node_t;
 
 struct _cart_node
 {
-    cart_node_t* sub_nodes;
-    int nodes_size;
+    cart_node_t** sub_nodes;
+    void* sub_counting;
+
     vfloat_t _predict;
     int _xi; 
 };

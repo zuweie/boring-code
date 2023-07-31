@@ -174,6 +174,26 @@ int counting_get_elem_pos(void* counting, vfloat_t target)
     return pos;
 }
 
+vfloat_t counting_get_most_elem(void* counting)
+{
+    int       cty_size             = CTY_size(counting);
+    vfloat_t* cty_elems_ptr        = CTY_elems_ptr(counting);
+    int*      cty_elems_number_ptr = CTY_elems_number_ptr(counting);
+
+    int most_number     = cty_elems_number_ptr[0];
+    vfloat_t most_elem  = cty_elems_ptr[0];
+
+    for (int i=1; i<cty_size; ++i) {
+
+        if (most_number < cty_elems_number_ptr[i]) {
+            most_number = cty_elems_number_ptr[i];
+            most_elem   = cty_elems_ptr[i];
+        }
+    }
+   
+    return most_elem;
+}
+
 int counting_XY(matrix2_t* _Y, matrix2_t* _X, void** counting_table)
 {
     matrix2_t* countingY_mat = Mat2_create(1,1);
@@ -243,4 +263,64 @@ int counting_free_XY_table(void** countingXY_table)
     }
     free(countingXY_table);
     return 0;
+}
+
+/**
+ * @brief 根据数据集 _X 中某一列的值来分组。
+ * 
+ * @param _X 
+ * @param _y 
+ * @param group_by 
+ * @param group_X 
+ * @param group_y 
+ * @param group_size 
+ * @return int 
+ */
+int counting_XY_group_by_Xi(matrix2_t* _X, matrix2_t* _y, int group_by, matrix2_t** group_X, matrix2_t** group_y, int* group_size) 
+{
+
+    matrix2_t* _Xi = Mat2_create(1,1);
+    Mat2_slice_col_to(_Xi, _X, group_by);
+
+    void* _Xi_counting = NULL;
+
+    counting_Y(_Xi, _Xi_counting);
+
+    *group_size = CTY_size(_Xi_counting);
+
+    matrix2_t** _X_groups = malloc( CTY_size(_Xi_counting) * sizeof (matrix2_t*) );
+    matrix2_t** _y_groups = malloc( CTY_size(_Xi_counting) * sizeof (matrix2_t*) );
+    int groups_index[CTY_size(_Xi_counting)];
+
+    memset(groups_index, 0x0, sizeof(groups_index));
+
+
+    for (int i=0; i<CTY_size(_Xi_counting); ++i) {
+        _X_groups[i] = Mat2_create(CTY_elems_number_ptr(_Xi_counting)[i], _X->cols);
+        _y_groups[i] = Mat2_create(CTY_elems_number_ptr(_Xi_counting)[i], _y->cols);
+    }
+
+    MAT2_POOL_PTR(_X, _X_ptr);
+    MAT2_POOL_PTR(_y, _y_ptr);
+
+
+
+    for (int i=0; i<_X->rows; ++i) {
+
+        vfloat_t target = _Xi->pool[i];
+        int pos = counting_get_elem_pos(_Xi_counting, target);
+
+        MAT2_POOL_PTR(_X_groups[pos], _X_groups_pos_ptr);
+        memcpy(_X_groups_pos_ptr[groups_index[pos]], _X_ptr[i], sizeof(vfloat_t) * _X->cols);
+
+        MAT2_POOL_PTR(_y_groups[pos], _y_group_pos_ptr);
+        memcpy(_y_group_pos_ptr[groups_index[pos]], _y_ptr[i], sizeof(vfloat_t) * _y->cols);
+    }
+
+    *group_X = _X_groups;
+    *group_y = _y_groups;
+    free(_Xi_counting);
+    Mat2_destroy(_Xi);
+    return 0;
+
 }
