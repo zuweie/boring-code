@@ -29,11 +29,11 @@
 int counting_Y(matrix2_t* _y, void** countingY);
 int counting_get_elem_number(void* counting, vfloat_t target);
 int counting_get_elem_pos(void* counting, vfloat_t target);
-vfloat_t counting_get_most_elem(void* counting);
+vfloat_t counting_max_frequency(void* counting);
 
 int counting_XY(matrix2_t* _y, matrix2_t* _X, void** countingXY_table);
 int counting_free_XY_table(void** countingXY_table);
 
-int counting_XY_group_by_Xi(matrix2_t* _X, matrix2_t* _y, int group_by, matrix2_t*** group_X, matrix2_t*** group_y, int* group_size)
+int counting_XY_group_by_x(matrix2_t* _X, matrix2_t* _y, int group_by, matrix2_t** group_X, matrix2_t** group_y, int* group_size);
 
 #endif

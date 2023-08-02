@@ -1,6 +1,7 @@
 #include <math.h>
 #include <string.h>
 #include <float.h>
+#include <stdio.h>
 #include "counting.h"
 #include "decision_tree.h"
 
@@ -45,7 +46,7 @@ static double __calculate_A_gini_index(matrix2_t* _Xi, matrix2_t* label)
     counting_Y(_Xi, &counting);
 
     int val_type_size       = CTY_size(counting);
-    int val_type_number_ptr = CTY_elems_number_ptr(counting);
+    int* val_type_number_ptr = CTY_elems_number_ptr(counting);
 
     int _Xi_size      = MAT2_ELEM_SIZE(_Xi);
 
@@ -78,7 +79,7 @@ static double __calculate_A_gini_index(matrix2_t* _Xi, matrix2_t* label)
 
     double GINI_INDEX = 0.f;
 
-    for (int j=0; j<val_type_size; ++i) 
+    for (int j=0; j<val_type_size; ++j) 
     {
         GINI_INDEX += ((double)val_type_number_ptr[j] / (double)_Xi_size) * __calculate_gini(label_on_vals[j]);
 
@@ -102,7 +103,7 @@ static double __calculate_entropy(matrix2_t* label_on_val)
     void* counting = NULL;
     counting_Y(label_on_val, &counting);
     int cty_size             = CTY_size(counting);
-    int cty_elems_number_ptr = CTY_elems_number_ptr(counting);
+    int* cty_elems_number_ptr = CTY_elems_number_ptr(counting);
     int label_size           = MAT2_ELEM_SIZE(label_on_val);
 
     double entropy = 0.f;
@@ -115,15 +116,15 @@ static double __calculate_entropy(matrix2_t* label_on_val)
     return entropy;
 }
 
-static double __calculate_A_gain(matrix2_t* _Xi, matrix2_t* label)
+static double __calculate_A_gain(matrix2_t* _Xj, matrix2_t* label)
 {
     void* counting = NULL;
-    counting_Y(_Xi, &counting);
+    counting_Y(_Xj, &counting);
 
     int val_type_size        = CTY_size(counting);
     int* val_type_number_ptr = CTY_elems_number_ptr(counting);
 
-    int _Xi_size = MAT2_ELEM_SIZE(_Xi);
+    int _Xj_size = MAT2_ELEM_SIZE(_Xj);
 
     matrix2_t* label_on_vals[val_type_size];
     int        label_on_vals_index[val_type_size];
@@ -131,18 +132,18 @@ static double __calculate_A_gain(matrix2_t* _Xi, matrix2_t* label)
     memset(label_on_vals, 0x0, sizeof(label_on_vals) );  
     memset(label_on_vals_index, 0x0, sizeof(label_on_vals_index) );
 
-    for (int i=0; i<_Xi_size; ++i) {
+    for (int i=0; i<_Xj_size; ++i) {
 
-        vfloat_t _Xi_val = _Xi->pool[i];
+        vfloat_t _Xj_val = _Xj->pool[i];
 
-        int pos = counting_get_elem_pos(counting, _Xi_val);
+        int pos = counting_get_elem_pos(counting, _Xj_val);
         if (pos >= 0) {
             if (label_on_vals[pos] == NULL) {
                 label_on_vals[pos] = Mat2_create(val_type_number_ptr[pos], 1);
             }
 
             int lov_index = label_on_vals_index[pos];
-            label_on_vals[pos]->pool[i] = label->pool[i];
+            label_on_vals[pos]->pool[lov_index] = label->pool[i];
             label_on_vals_index[pos]++;
         }
     }
@@ -152,7 +153,7 @@ static double __calculate_A_gain(matrix2_t* _Xi, matrix2_t* label)
 
     for (int j=0; j<val_type_size; ++j) {
 
-        GAIN -= ((double)val_type_number_ptr[j] / (double)_Xi_size) * __calculate_entropy(label_on_vals[j]);
+        GAIN -= ((double)val_type_number_ptr[j] / (double)_Xj_size) * __calculate_entropy(label_on_vals[j]);
         
         Mat2_destroy(label_on_vals[j]);
     }
@@ -173,16 +174,16 @@ static int __find_best_split(matrix2_t* data, matrix2_t* label, int* candidate_n
 {
 
 
-    matrix2_t* _Xi = Mat2_create(1,1);
+    matrix2_t* _Xj = Mat2_create(1,1);
 
     float gains[*candidate_node_size];
 
     for(int i=0; i<*candidate_node_size; ++i) {
         int index = candidate_nodes[i];
 
-        Mat2_slice_col_to(data, _Xi, index);
+        Mat2_slice_col_to(_Xj, data, index);
 
-        gains[i] = __calculate_A_gain(_Xi, label);
+        gains[i] = __calculate_A_gain(_Xj, label);
     }
 
     
@@ -206,19 +207,25 @@ static int __find_best_split(matrix2_t* data, matrix2_t* label, int* candidate_n
 
     *out_index = max_index;
     *out_gain  = max_gain;
-    Mat2_destroy(_Xi);
+    Mat2_destroy(_Xj);
 
     return 0;
 }
 static int __build_classification_leaf(cart_node_t** node_ref, vfloat_t _predict) 
 {
     *node_ref = malloc(sizeof(cart_node_t));
-    (*node_ref)->sub_counting = NULL;
-    (*node_ref)->sub_nodes    = NULL;
-    (*node_ref)->_predict     = _predict;
-    (*node_ref)->_xi          = -1;
+    (*node_ref)->router      = NULL;
+    (*node_ref)->sub_nodes   = NULL;
+    (*node_ref)->_predict    = _predict;
+    (*node_ref)->attr_index  = -1;
     return 0;
 }
+
+static int __is_leaf(cart_node_t* node) 
+{
+    return node->sub_nodes == NULL || node->router == NULL || node->attr_index == -1;
+}
+
 /**
  * @brief 递归建造决策树
  * 
@@ -230,89 +237,115 @@ static int __build_classification_leaf(cart_node_t** node_ref, vfloat_t _predict
  * @param esp 
  * @return int 
  */
-static int __build_classification_node(matrix2_t* data, matrix2_t* label, cart_node_t** node_ref, int* candidate_nodes, int* candidate_node_size, double esp_gain, int least_data) 
+static int __build_classification_node(matrix2_t* data, matrix2_t* label, cart_node_t** node_ref, int* candidate_nodes, int* candidate_node_size, double gain_esp, int data_least, void (*progress)(char*, unsigned long, unsigned long)) 
 {
     // 若没有任何属性可以分割聊，或者剩下的数据量小于最少的数据量，例如小于10条数据，
     // 那么就直检测 label 的类别，选最多的那个类别当作叶子节点的值。
+
+    if (progress) progress("创建节点中...", *candidate_node_size, 0);
 
     void* label_counting = NULL;
     counting_Y(label, &label_counting);
 
     if (*candidate_node_size == 0 
-    || data->rows <= least_data
+    || data->rows <= data_least
     || CTY_size(label_counting) == 1) {
 
-        // *node_ref = malloc(sizeof(cart_node_t));
-        // (*node_ref)->sub_counting = NULL;
-        // (*node_ref)->sub_nodes = NULL;
-        // (*node_ref)->_predict = counting_get_most_elem(counting);
-        // (*node_ref)->_xi = -1;
-        //return 0;
-        __build_classification_leaf(node_ref, counting_get_most_elem(label_counting));
+        /** 满足建造叶子的条件马上建造叶子 */
+        __build_classification_leaf(node_ref, counting_max_frequency(label_counting));
+
     } else {
 
         // 测试每个属性，或者最大信息增益的属性组成节点，分割数据，然后迭代到下一个节点去。
-        int out_index;
+        int   out_index;
         float out_gain;
+        
         __find_best_split(data, label, candidate_nodes, candidate_node_size, &out_index, &out_gain);
 
-        if (out_gain < esp_gain) {
+       
+
+        if (out_gain < gain_esp) {
 
             // 最大的 gain 也小于 esp, 那么马上将其变成叶子节点。
-            __build_classification_leaf(node_ref, counting_get_most_elem(label_counting));
+            __build_classification_leaf(node_ref, counting_max_frequency(label_counting));
 
         } else {
 
             // 分割数据。然后递归调用此函数。
-           
-            matrix2_t* _Xi = Mat2_create(1,1);
-            Mat2_slice_col_to(_Xi, data, out_index);
+            void* router = NULL;
+            matrix2_t* _xj = Mat2_create(1,1);
+            Mat2_slice_col_to(_xj, data, out_index);
 
+            counting_Y(_xj, &router);
 
-            void* xi_data_counting = NULL;
-            counting_Y(data, xi_data_counting);
+            int group_size;
+            matrix2_t** group_x;
+            matrix2_t** group_y;
 
-            matrix2_t* sub_datas[CTY_size(xi_data_counting)];
-            matrix2_t* sub_labels[CTY_size(xi_data_counting)];
-            int sub_index[CTY_size(xi_data_counting)];
+            counting_XY_group_by_x(data, label, out_index, &group_x, &group_y, &group_size);
 
-            memset(sub_datas, 0x0, CTY_size(xi_data_counting) * sizeof(matrix2_t*));
-            memset(sub_labels, 0x0, CTY_size(xi_data_counting) * sizeof(matrix2_t*));
+            *node_ref = malloc(sizeof(cart_node_t)); 
 
-            MAT2_POOL_PTR(data, data_ptr);
+            // 多申请一个空位用于做遍历的止点   
+            (*node_ref)->sub_nodes = malloc((group_size+1) * sizeof(cart_node_t*));
+            (*node_ref)->_predict = 0.f;
+            (*node_ref)->router = router;
+            (*node_ref)->attr_index = out_index;
 
-            for(int i=0; i<data->rows; ++i) {
+            memset((*node_ref)->sub_nodes, 0x0, (group_size+1) * sizeof(cart_node_t*));
 
-                vfloat_t target = data_ptr[i][out_index];
-                int pos = counting_get_elem_pos(xi_data_counting, target);
+            for (int i=0; i<group_size; ++i) {
+                matrix2_t* sub_data  = group_x[i];
+                matrix2_t* sub_label = group_y[i];
 
-                // 若没有这个矩阵，
-                if (sub_datas[pos] == NULL)   
-                    sub_datas[pos]  = Mat2_create(CTY_elems_number_ptr(xi_data_counting)[pos], data->cols);
+                __build_classification_node(sub_data, sub_label, &((*node_ref)->sub_nodes[i]), candidate_nodes, candidate_node_size, gain_esp, data_least, progress);
 
-                if (sub_labels[pos] == NULL)  
-                    sub_labels[pos] = Mat2_create(CTY_elems_number_ptr(xi_data_counting)[pos], label->cols);
+                // 用完了就释放矩阵。
+                Mat2_destroy(sub_data);
+                Mat2_destroy(sub_label);
 
-
-
-                
             }
 
-
-            // cart_node_t** sub_nodes = malloc(CTY_size(data_counting) * sizeof(cart_node_t*));
-            // memset(sub_nodes, 0x0, CTY_size(data_counting) * sizeof(cart_node_t*));
-
-            // *node_ref = malloc(sizeof(cart_node_t));
-            // (*node_ref)->sub_counting = data_counting;
-            // (*node_ref)->sub_nodes = sub_nodes;
-            // (*node_ref)->_xi = out_index;
-
-            
-
+            free(group_x);
+            free(group_y);
         }
-        
     }
+    free(label_counting);
+    return 0;
 }
+
+static int __do_classification_predict(matrix2_t* _X, cart_node_t* _tree, vfloat_t* predict) 
+{
+    if (__is_leaf(_tree)) {
+        *predict = _tree->_predict;
+    } else {
+
+        vfloat_t target = _X->pool[_tree->attr_index];
+
+        int router      = counting_get_elem_pos(_tree->router, target);
+        if (router == -1)
+            printf("testing.. target: %lf, attr:%d,  router:%d \n", target, _tree->attr_index, router);
+
+        return __do_classification_predict(_X, _tree->sub_nodes[router], predict);
+
+    }
+
+    return 0;
+}
+
+
+static int __do_release_node(cart_node_t* _tree)
+{
+    if (!__is_leaf(_tree) ){
+        free(_tree->router);
+        for (int i=0;_tree->sub_nodes[i] != NULL; ++i) {
+            __do_release_node(_tree->sub_nodes[i]);
+        }
+    }
+    free(_tree);
+    return 0;
+}
+
 
 /**
  * @brief 使用 CART 算法训练决策树。 
@@ -322,13 +355,54 @@ static int __build_classification_node(matrix2_t* data, matrix2_t* label, cart_n
  * @param _tree 输出的决策树的根节点。
  * @return int 返回结果。
  */
-int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, cart_node_t** _tree)
+cart_node_t* decision_tree_classification_train(matrix2_t* data, matrix2_t* label, void (*progress)(char*, unsigned long, unsigned long))
 {
     // TODO:
     // 1 计算每个种类的信息增益。
     // 2 用增益值最大的作为节点。
 
-    void* Py_counting = NULL;
+    // 信息增益小于 1e-3 就结叶
+    double gain_esp   = 1e-4;
+    // 数据量小于数据量 1/1000 否则
+    int    data_least = 1;
 
+    cart_node_t* root = NULL;
+
+    int candidate_nodes[data->cols];
+
+    for (int i=0; i<data->cols; ++i) 
+        candidate_nodes[i] = i;
+
+    int candidate_node_size = data->cols;
+    
+    __build_classification_node(data, label, &root, candidate_nodes, &candidate_node_size, gain_esp, data_least, progress);
+
+    return root;
     
 }
+
+
+/**
+ * @brief 做预测
+ * 
+ * @param _x 
+ * @param _tree 
+ * @param predict 
+ * @return int 
+ */
+int decision_tree_classification_predict(matrix2_t* _X, cart_node_t* _tree, vfloat_t* predict)
+{
+    return __do_classification_predict(_X, _tree, predict);
+}
+
+/**
+ * @brief 释放 decision tree
+ * 
+ * @param _tree 
+ * @return int 
+ */
+int decision_tree_release(cart_node_t* _tree)
+{
+    return __do_release_node(_tree);
+}
+

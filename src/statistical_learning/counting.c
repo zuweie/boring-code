@@ -174,7 +174,7 @@ int counting_get_elem_pos(void* counting, vfloat_t target)
     return pos;
 }
 
-vfloat_t counting_get_most_elem(void* counting)
+vfloat_t counting_max_frequency(void* counting)
 {
     int       cty_size             = CTY_size(counting);
     vfloat_t* cty_elems_ptr        = CTY_elems_ptr(counting);
@@ -276,7 +276,7 @@ int counting_free_XY_table(void** countingXY_table)
  * @param group_size 
  * @return int 
  */
-int counting_XY_group_by_Xi(matrix2_t* _X, matrix2_t* _y, int group_by, matrix2_t** group_X, matrix2_t** group_y, int* group_size) 
+int counting_XY_group_by_x(matrix2_t* _X, matrix2_t* _y, int group_by, matrix2_t** group_X, matrix2_t** group_y, int* group_size) 
 {
 
     matrix2_t* _Xi = Mat2_create(1,1);
@@ -284,7 +284,7 @@ int counting_XY_group_by_Xi(matrix2_t* _X, matrix2_t* _y, int group_by, matrix2_
 
     void* _Xi_counting = NULL;
 
-    counting_Y(_Xi, _Xi_counting);
+    counting_Y(_Xi, &_Xi_counting);
 
     *group_size = CTY_size(_Xi_counting);
 
@@ -315,6 +315,8 @@ int counting_XY_group_by_Xi(matrix2_t* _X, matrix2_t* _y, int group_by, matrix2_
 
         MAT2_POOL_PTR(_y_groups[pos], _y_group_pos_ptr);
         memcpy(_y_group_pos_ptr[groups_index[pos]], _y_ptr[i], sizeof(vfloat_t) * _y->cols);
+
+        groups_index[pos]++;
     }
 
     *group_X = _X_groups;

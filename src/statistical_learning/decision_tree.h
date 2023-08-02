@@ -8,19 +8,21 @@ typedef struct _cart_node cart_node_t;
 struct _cart_node
 {
     cart_node_t** sub_nodes;
-    void* sub_counting;
-
     vfloat_t _predict;
-    int _xi; 
+    void* router;
+    int attr_index;
 };
 
 
-int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, cart_node_t** _tree);
+cart_node_t* decision_tree_classification_train(matrix2_t* data, matrix2_t* label, void (*progress)(char*, unsigned long, unsigned long));
+
 int decision_tree_regression_train(matrix2_t* data, matrix2_t* label, cart_node_t** _tree);
 
-int decision_tree_classification_predict(cart_node_t* _tree, vfloat_t* predict);
+int decision_tree_classification_predict(matrix2_t* _x, cart_node_t* _tree, vfloat_t* predict);
+
 int decision_tree_regression_predict(cart_node_t* _tree, vfloat_t* predict);
 
-int decision_tree_release_dct(cart_node_t* _tree);
+int decision_tree_release(cart_node_t* _tree);
+
 
 #endif

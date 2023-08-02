@@ -545,6 +545,46 @@ static void test_matrix_eig(void)
     // 0.4162 -0.9056 -0.0818
 }
 
+static void test_matrix_group_x(void) 
+{
+    vfloat_t x_data[][3] = {
+        {1,5,6},
+        {2,3,4},
+        {9,3,2},
+        {3,2,4},
+        {9,2,2},
+        {2,5,6}
+    };
+
+    vfloat_t y_data[] = {
+        {1,2,3,4,5,6}
+    };
+
+    matrix2_t* _X = Mat2_create(1,1);
+    matrix2_t* _y = Mat2_create(1,1);
+
+    Mat2_load_on_shape(_X, x_data, 6, 3);
+    Mat2_load_on_shape(_y, y_data, 6, 1);
+
+    int group_size = 0;
+    matrix2_t** group_x;
+    matrix2_t** group_y;
+
+    MAT2_INSPECT(_X);
+    MAT2_INSPECT(_y);
+
+    counting_XY_group_by_x(_X, _y, 1, &group_x, &group_y, &group_size);
+
+    for (int i=0; i<group_size; ++i) {
+
+        matrix2_t* gx = group_x[i];
+        matrix2_t* gy = group_y[i];
+
+        MAT2_INSPECT(gx);
+        MAT2_INSPECT(gy);
+    }
+}
+
 int do_matrix2_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -579,10 +619,10 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_counting) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_counting) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 
     // if (NULL == CU_add_test(pSuite, " test mat cofactor ", test_matrix_cofactor) ) {
@@ -645,4 +685,9 @@ int do_matrix2_test (void)
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+
+    if (NULL == CU_add_test(pSuite, " test group x ", test_matrix_group_x) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }

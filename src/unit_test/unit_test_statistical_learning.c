@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-07-19 15:01:35
+ * @LastEditTime: 2023-08-02 12:09:39
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,6 +13,7 @@
 #include "statistical_learning/perceptron.h"
 #include "statistical_learning/knn.h"
 #include "statistical_learning/naive_bayes.h"
+#include "statistical_learning/decision_tree.h"
 #include "statistical_learning/counting.h"
 
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
@@ -431,6 +432,7 @@ static void test_navies_bayes_mgd_big(void)
     Mat2_slice_col_to(test_label_mat, csv_mat, 0);
     Mat2_slice_cols_to(test_mat, csv_mat, 1, csv_mat->cols);
 
+    
     void* Py_counting;
     void* mus_table;
     void* sigma_table;
@@ -480,6 +482,178 @@ static void test_navies_bayes_mgd_big(void)
     return;
 }
 
+static void decision_tree_training_progress (char* title, unsigned long step, unsigned long total) 
+{
+    char buffer[1024];
+    memset(buffer, 0x0, sizeof(buffer));
+    //sprintf(buffer, "%s ,进度: %ld / %ld, %0.2f ", title, step, total, ((double)step / (double)total) * 100);
+    sprintf(buffer, "%s, 进度: %ld ", title, step);
+    printf("%s\r", buffer);
+    fflush(stdout);
+}
+
+static void test_decision_tree_large (void) 
+{
+    const char* train_csv_file = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_train.csv";
+    const char* test_csv_file  = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_test.csv";
+
+    matrix2_t* csv_mat    = Mat2_create(1,1);
+    matrix2_t* train_mat  = Mat2_create(1,1);
+    matrix2_t* train_label_mat  = Mat2_create(1,1);
+    matrix2_t* test_label_mat = Mat2_create(1,1);
+    matrix2_t* test_mat = Mat2_create(1,1);
+    matrix2_t* _X       = Mat2_create(1,1);
+
+
+    Mat2_load_csv(csv_mat, train_csv_file);
+    Mat2_slice_col_to(train_label_mat, csv_mat, 0);
+    Mat2_slice_cols_to(train_mat, csv_mat, 1, csv_mat->cols);
+
+    Mat2_load_csv(csv_mat, test_csv_file);
+    Mat2_slice_col_to(test_label_mat, csv_mat, 0);
+    Mat2_slice_cols_to(test_mat, csv_mat, 1, csv_mat->cols);
+
+    // 将数据进行简单处理一下, 把 0 到 255 的数统一改为 1 或者零。
+    MAT2_POOL_PTR(train_mat, train_mat_ptr);
+    for (int i=0; i<train_mat->rows; ++i) {
+        for (int j=0; j<train_mat->cols; ++j) {
+
+            // if (train_mat_ptr[i][j] < 63) {
+            //     train_mat_ptr[i][j] = 0;
+            // } else if (train_mat_ptr[i][j] > 63 && train_mat_ptr[i][j] < 127) {
+            //     train_mat_ptr[i][j] = 1;
+            // } else if (train_mat_ptr[i][j] > 127 && train_mat_ptr[i][j] < 192) {
+            //     train_mat_ptr[i][j] = 2;
+            // } else {
+            //     train_mat_ptr[i][j] = 3;
+            // }
+
+            if (train_mat_ptr[i][j] < 127) {
+                train_mat_ptr[i][j] = 0;
+            } else {
+                train_mat_ptr[i][j] = 1;
+            }
+            
+        }
+    }
+
+    MAT2_POOL_PTR(test_mat, test_mat_ptr);
+
+    //MAT2_INSPECT(test_label_mat);
+    // 将数据进行简单处理一下, 把 0 到 255 的数统一改为 1 或者零。
+    for (int i=0; i<test_mat->rows; ++i) {
+        for (int j=0; j<test_mat->cols; ++j) {
+            // if (test_mat_ptr[i][j] < 63) {
+            //     test_mat_ptr[i][j] = 0;
+            // } else if (test_mat_ptr[i][j] > 63 && test_mat_ptr[i][j] < 127) {
+            //     test_mat_ptr[i][j] = 1;
+            // } else if (test_mat_ptr[i][j] > 127 && test_mat_ptr[i][j] < 192) {
+            //     test_mat_ptr[i][j] = 2;
+            // } else {
+            //     test_mat_ptr[i][j] = 3;
+            // }
+
+            if (test_mat_ptr[i][j] < 127) {
+                test_mat_ptr[i][j] = 0;
+            } else {
+                test_mat_ptr[i][j] = 1;
+            }
+        }
+    }
+
+
+    printf(" \n ---- *** training .... *** ---- \n");
+    //train_mat->rows = 20;
+    //train_label_mat->rows = 20;
+    cart_node_t* tree = decision_tree_classification_train(train_mat, train_label_mat, decision_tree_training_progress);
+
+    printf(" \n ---- *** predicting ... *** ---- \n");
+
+    int correct;
+    int label;
+    char buff[1024];
+    memset(buff, 0x0, sizeof(buff));
+    int test_number = 100;
+    for (int i=0; i<test_number; ++i) {
+
+        int label = (int)test_label_mat->pool[i];
+
+        Mat2_slice_row_to(_X, test_mat, i);
+
+        float predict;
+
+        //navie_bayes_predict_MGD_edit(_X, Py_counting, mus_table, sigma_table, &predict);
+        decision_tree_classification_predict(_X, tree, &predict);
+
+        if ((int)predict == label) correct++; 
+
+        sprintf(buff, "Process: %d / %d, predict: %d - %d, correct %.2f ... ", i+1, test_number, (int)predict, label, ((float) (correct) / (float) (test_number))*100);
+        
+        printf("%s\r", buff);
+
+        fflush(stdout);
+    }
+    
+}
+
+static void test_decision_tree_simple (void) 
+{
+    
+    vfloat_t train_data[][4] = {
+        {'y', 'n', 'n', 1},
+        {'y', 'n', 'n', 2},
+        {'y', 'y', 'n', 2},
+        {'y', 'y', 'y', 1},
+        {'y', 'n', 'n', 1},
+        {'m', 'n', 'n', 1}, 
+        {'m', 'n', 'n', 2},
+        {'m', 'y', 'y', 2},
+        {'m', 'n', 'y', 3},
+        {'m', 'n', 'y', 3},
+        {'o', 'n', 'y', 3},
+        {'o', 'n', 'y', 2},
+        {'o', 'y', 'n', 2}, 
+        {'o', 'y', 'n', 3},
+        {'o', 'n', 'n', 1}
+    }; 
+    vfloat_t train_label[] = {
+        0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0
+    };
+
+    vfloat_t test_data1[4] = {
+        'o', 'y', 'y', 1
+    };
+
+    vfloat_t test_data2[4] = {
+        'y', 'n', 'n', 1
+    };
+
+    matrix2_t* train_mat       = Mat2_create(1,1);
+    matrix2_t* train_label_mat = Mat2_create(1,1);
+    matrix2_t* test_mat        = Mat2_create(1,1);
+    vfloat_t predict;
+
+    Mat2_load_on_shape(train_mat, train_data, 15, 4);
+    Mat2_load_on_shape(train_label_mat, train_label, 15, 1);
+    Mat2_load_on_shape(test_mat, test_data1, 1, 4);
+
+    cart_node_t* tree = decision_tree_classification_train(train_mat, train_label_mat, NULL);
+    decision_tree_classification_predict(test_mat, tree, &predict);
+    printf("\n test data 1 predict: %lf, \n", predict);
+    
+
+    Mat2_load_on_shape(test_mat, test_data2, 1, 4);
+    decision_tree_classification_predict(test_mat, tree, &predict);
+    printf(" test data 2 predict: %lf, \n", predict);
+
+    Mat2_destroy(train_mat);
+    Mat2_destroy(train_label_mat);
+    Mat2_destroy(test_mat);
+    decision_tree_release(tree);
+
+
+}
+
 int do_statistical_learning_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -520,10 +694,21 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd2) ) {
+    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd2) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test classification decision tree", test_decision_tree_large) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+
+    // if (NULL == CU_add_test(pSuite, "test classification decision tree simple ", test_decision_tree_simple) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 }
 
