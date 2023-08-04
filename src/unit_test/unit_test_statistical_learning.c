@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-08-02 12:09:39
+ * @LastEditTime: 2023-08-03 20:49:26
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -487,7 +487,11 @@ static void decision_tree_training_progress (char* title, unsigned long step, un
     char buffer[1024];
     memset(buffer, 0x0, sizeof(buffer));
     //sprintf(buffer, "%s ,进度: %ld / %ld, %0.2f ", title, step, total, ((double)step / (double)total) * 100);
-    sprintf(buffer, "%s, 进度: %ld ", title, step);
+    if(total==0)
+        sprintf(buffer, "%s, 进度: %ld ", title, step);
+    else 
+        sprintf(buffer, "%s, 进度: %ld, 属性点/值：%ld ", title,  step, total);
+
     printf("%s\r", buffer);
     fflush(stdout);
 }
@@ -568,7 +572,7 @@ static void test_decision_tree_large (void)
     cart_node_t* tree = decision_tree_classification_train(train_mat, train_label_mat, decision_tree_training_progress);
 
     printf(" \n ---- *** predicting ... *** ---- \n");
-
+    //MAT2_INSPECT(test_label_mat);
     int correct;
     int label;
     char buff[1024];
@@ -576,7 +580,7 @@ static void test_decision_tree_large (void)
     int test_number = 100;
     for (int i=0; i<test_number; ++i) {
 
-        int label = (int)test_label_mat->pool[i];
+        label = (int)test_label_mat->pool[i];
 
         Mat2_slice_row_to(_X, test_mat, i);
 
@@ -593,6 +597,13 @@ static void test_decision_tree_large (void)
 
         fflush(stdout);
     }
+    Mat2_destroy(csv_mat ); 
+    Mat2_destroy(train_mat);
+    Mat2_destroy(train_label_mat);
+    Mat2_destroy(test_label_mat); 
+    Mat2_destroy(test_mat); 
+    Mat2_destroy(_X);
+    decision_tree_release(tree);
     
 }
 
@@ -650,8 +661,55 @@ static void test_decision_tree_simple (void)
     Mat2_destroy(train_label_mat);
     Mat2_destroy(test_mat);
     decision_tree_release(tree);
+}
 
+static void test_decision_tree_simple2(void) {
+        vfloat_t train_data[][5] = {
+        {'y', 'l', 'n', 'n', 'f'},
+        {'y', 'l', 'y', 'n', 'g'},
+        {'y', 'm', 'y', 'n', 'g'},
+        {'y', 'm', 'y', 'y', 'g'},
+        {'y', 'h', 'y', 'y', 'g'},
+        {'y', 'm', 'n', 'y', 'g'}, 
+        {'m', 'l', 'y', 'y', 'e'},
+        {'m', 'h', 'y', 'y', 'g'},
+        {'m', 'l', 'n', 'y', 'g'},
+        {'m', 'm', 'y', 'y', 'f'},
+        {'m', 'h', 'y', 'y', 'e'},
+        {'m', 'm', 'n', 'n', 'g'},
+        {'o', 'l', 'n', 'n', 'g'}, 
+        {'o', 'l', 'y', 'y', 'e'},
+        {'o', 'l', 'y', 'n', 'e'},
+        {'o', 'm', 'n', 'y', 'g'},
+        {'o', 'l', 'n', 'n', 'e'},
+        {'o', 'h', 'n', 'y', 'f'},
+        {'o', 'h', 'y', 'y', 'e'}
+    }; 
+    vfloat_t train_label[] = {
+       'n','n','y','y','y','n','y','y','n','n','y','n','n','y','y','n','n','n','y'
+    };
 
+    vfloat_t test_data1[] = {
+        'm','h','y','n','f'
+    };
+
+    matrix2_t* train_mat       = Mat2_create(1,1);
+    matrix2_t* train_label_mat = Mat2_create(1,1);
+    matrix2_t* test_mat        = Mat2_create(1,1);
+    vfloat_t predict;
+    
+    Mat2_load_on_shape(train_mat, train_data, 19, 5);
+    Mat2_load_on_shape(train_label_mat, train_label, 19, 1);
+    Mat2_load_on_shape(test_mat, test_data1, 1, 5);
+
+    cart_node_t* tree = decision_tree_classification_train(train_mat, train_label_mat, NULL);
+    decision_tree_classification_predict(test_mat, tree, &predict);
+    printf("\n test data 1 predict: %c, \n", (char)predict);
+
+    Mat2_destroy(train_mat);
+    Mat2_destroy(train_label_mat);
+    Mat2_destroy(test_mat);
+    decision_tree_release(tree);
 }
 
 int do_statistical_learning_test (void) 
@@ -706,6 +764,11 @@ int do_statistical_learning_test (void)
 
 
     // if (NULL == CU_add_test(pSuite, "test classification decision tree simple ", test_decision_tree_simple) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, "test classification decision tree simple 2", test_decision_tree_simple2) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }

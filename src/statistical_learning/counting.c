@@ -266,7 +266,7 @@ int counting_free_XY_table(void** countingXY_table)
 }
 
 /**
- * @brief 根据数据集 _X 中某一列的值来分组。
+ * @brief 根据数据集 _X 中某一列的值来分组。还要按照元素个数的多少来排序，多的放前面。
  * 
  * @param _X 
  * @param _y 
@@ -302,8 +302,6 @@ int counting_XY_group_by_x(matrix2_t* _X, matrix2_t* _y, int group_by, matrix2_t
 
     MAT2_POOL_PTR(_X, _X_ptr);
     MAT2_POOL_PTR(_y, _y_ptr);
-
-
 
     for (int i=0; i<_X->rows; ++i) {
 
