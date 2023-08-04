@@ -1,7 +1,6 @@
 #include <math.h>
 #include <string.h>
 #include <float.h>
-#include <stdio.h>
 #include "counting.h"
 #include "decision_tree.h"
 
@@ -174,7 +173,6 @@ static int __find_best_split(matrix2_t* sub_data, matrix2_t* sub_label, int* Ags
 {
     matrix2_t* _Xj = Mat2_create(1,1);
 
-    //float gains[*Ags_size];
     double A_gain   = FLT_MIN;
     int    Ag       = 0;
     int    Ag_index = 0;
@@ -194,18 +192,6 @@ static int __find_best_split(matrix2_t* sub_data, matrix2_t* sub_label, int* Ags
 
     }
 
-    
-    // 找到最大的哪个信息增益的 index
-    // int    Ag_index = 0;
-    // double max_gain = gains[0];
-
-    // for (int j=1; j<*Ags_size; ++j) {
-    //     if (max_gain < gains[j]) {
-    //         max_gain = gains[j];
-    //         Ag_index = j;
-    //     }
-    // }
-
     Mat2_destroy(_Xj);
 
     if (A_gain > esp) {
@@ -220,8 +206,6 @@ static int __find_best_split(matrix2_t* sub_data, matrix2_t* sub_label, int* Ags
             Ags[i-1] = Ags[i];
         }
         (*Ags_size)--;
-        
-        printf("out_Ag: %d, out_gain: %lf \n", *out_Ag, *out_gain);
 
         return 0;
 
@@ -260,7 +244,7 @@ static int __build_classification_node(matrix2_t* data, matrix2_t* label, cart_n
     // 若没有任何属性可以分割聊，或者剩下的数据量小于最少的数据量，例如小于10条数据，
     // 那么就直检测 label 的类别，选最多的那个类别当作叶子节点的值。
 
-    //if (progress) progress("248.创建节点", Ags_size, data->rows);
+    if (progress) progress("248.创建节点", Ags_size, data->rows);
 
     void* label_counting = NULL;
     counting_Y(label, &label_counting);
@@ -400,7 +384,7 @@ cart_node_t* decision_tree_classification_train(matrix2_t* data, matrix2_t* labe
     // 信息增益小于 1e-1 就结叶
     double gain_esp   = 1e-1;
     // 数据量小于数据量 1/1000 否则
-    int    data_least = 1;
+    int    data_least = 100;
 
     cart_node_t* root = NULL;
 
