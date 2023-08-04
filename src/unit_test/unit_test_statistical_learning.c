@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-08-03 20:49:26
+ * @LastEditTime: 2023-08-04 13:25:22
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -490,10 +490,10 @@ static void decision_tree_training_progress (char* title, unsigned long step, un
     if(total==0)
         sprintf(buffer, "%s, 进度: %ld ", title, step);
     else 
-        sprintf(buffer, "%s, 进度: %ld, 属性点/值：%ld ", title,  step, total);
+        sprintf(buffer, "%s, 剩余节点: %ld, 剩余数据：%ld ", title,  step, total);
 
-    printf("%s\r", buffer);
-    fflush(stdout);
+    printf("%s\n", buffer);
+    //fflush(stdout);
 }
 
 static void test_decision_tree_large (void) 
@@ -577,7 +577,7 @@ static void test_decision_tree_large (void)
     int label;
     char buff[1024];
     memset(buff, 0x0, sizeof(buff));
-    int test_number = 100;
+    int test_number = test_label_mat->rows;
     for (int i=0; i<test_number; ++i) {
 
         label = (int)test_label_mat->pool[i];
@@ -597,6 +597,7 @@ static void test_decision_tree_large (void)
 
         fflush(stdout);
     }
+    
     Mat2_destroy(csv_mat ); 
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
