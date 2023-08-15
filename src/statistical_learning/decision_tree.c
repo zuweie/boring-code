@@ -288,6 +288,7 @@ static int __build_classification_node(matrix2_t* data, matrix2_t* label, cart_n
             matrix2_t** group_x;
             matrix2_t** group_y;
 
+            // TODO: 做一个优化，当选取出来的东东只有一个 group，则屏蔽这个 Ag 选择下一个 Ag。
             counting_XY_group_by_x(data, label, out_Ag, &group_x, &group_y, &group_size);
 
             //if (progress) progress("295.创建节点中...", Ags_size, data->rows);   
