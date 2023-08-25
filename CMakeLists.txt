@@ -64,7 +64,6 @@ set (SOURCE
     src/machine_learning/svm/svm_model.c
     src/machine_learning/svm/svm_kernel_function.c
     src/machine_learning/neural_network.c
-    src/machine_learning/decision_tree.c
     src/statistical_learning/matrix2.c
     src/statistical_learning/matrix2_operator.c
     src/statistical_learning/perceptron.c
@@ -72,6 +71,9 @@ set (SOURCE
     src/statistical_learning/naive_bayes.c
     src/statistical_learning/svm.c
     src/statistical_learning/decision_tree.c
+    src/statistical_learning/adaboost.c
+    src/statistical_learning/em.c
+    src/statistical_learning/svm.c
     src/statistical_learning/counting.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c

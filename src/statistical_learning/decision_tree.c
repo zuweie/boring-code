@@ -239,7 +239,7 @@ static int __is_leaf(dct_node_t* node)
  * @param esp 
  * @return int 
  */
-static int __build_classification_node(matrix2_t* data, matrix2_t* label, dct_node_t** node_ref, int* Ags, int Ags_size, double gain_esp, int data_least, void (*progress)(char*, unsigned long, unsigned long)) 
+static int __build_classification_node(matrix2_t* data, matrix2_t* label,  dct_node_t** node_ref, int* Ags, int Ags_size, int level_label, int* tree_level, double gain_esp, int least_limit, int level_limit, void (*progress)(char*, unsigned long, unsigned long)) 
 {
     // 若没有任何属性可以分割聊，或者剩下的数据量小于最少的数据量，例如小于10条数据，
     // 那么就直检测 label 的类别，选最多的那个类别当作叶子节点的值。
@@ -247,10 +247,20 @@ static int __build_classification_node(matrix2_t* data, matrix2_t* label, dct_no
     if (progress) progress("248.创建节点", Ags_size, data->rows);
 
     void* label_counting = NULL;
+
     counting_Y(label, &label_counting);
 
-    if (Ags_size == 0 
-    || data->rows <= data_least
+    if (*tree_level < level_label) 
+        *tree_level = level_label;
+
+    /* 以下条件结束生成：
+        1 首选节点为空，
+        2 数据量小于最少的数据要求。
+        3 树的层数大于最大限制。
+    */
+    if (Ags_size   == 0 
+    || data->rows  <= least_limit
+    || level_label >= level_limit
     || CTY_size(label_counting) == 1) {
 
         /** 满足建造叶子的条件马上建造叶子 */
@@ -295,9 +305,9 @@ static int __build_classification_node(matrix2_t* data, matrix2_t* label, dct_no
 
             *node_ref = malloc(sizeof(dct_node_t)); 
             // 多申请一个空位用于做遍历的止点   
-            (*node_ref)->sub_nodes = malloc((group_size+1) * sizeof(dct_node_t*));
-            (*node_ref)->_predict = 0.f;
-            (*node_ref)->router = router;
+            (*node_ref)->sub_nodes  = malloc((group_size+1) * sizeof(dct_node_t*));
+            (*node_ref)->_predict   = 0.f;
+            (*node_ref)->router     = router;
             (*node_ref)->attr_index = out_Ag;
             memset((*node_ref)->sub_nodes, 0x0, (group_size+1) * sizeof(dct_node_t*));
 
@@ -314,7 +324,18 @@ static int __build_classification_node(matrix2_t* data, matrix2_t* label, dct_no
                 matrix2_t* sub_data  = group_x[i];
                 matrix2_t* sub_label = group_y[i];
 
-                __build_classification_node(sub_data, sub_label, &((*node_ref)->sub_nodes[i]), Ags_group[i], Ags_size, gain_esp, data_least, progress);
+                __build_classification_node( \
+                    sub_data, sub_label, \
+                    &((*node_ref)->sub_nodes[i]), \
+                    Ags_group[i], \
+                    Ags_size, \
+                    (level_label+1), \
+                    tree_level,  \
+                    gain_esp, \
+                    least_limit, \
+                    level_limit, \
+                    progress \
+                );
 
                 // 用完了就释放矩阵。
                 Mat2_destroy(sub_data);
@@ -336,8 +357,6 @@ static int __do_classification_predict(matrix2_t* _X, dct_node_t* _tree, vfloat_
     } else {
 
         vfloat_t target = _X->pool[_tree->attr_index];
-        vfloat_t* elems_ptr = CTY_elems_ptr(_tree->router);
-
         int router = counting_get_elem_pos(_tree->router, target);
         
         if(router == -1) {
@@ -376,16 +395,16 @@ static int __do_release_node(dct_node_t* _tree)
  * @param _tree 输出的决策树的根节点。
  * @return int 返回结果。
  */
-int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, dc_tree_t* tree, void (*progress)(char*, unsigned long, unsigned long));
+int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, dc_tree_t* tree, dct_term_t* term, void (*progress)(char*, unsigned long, unsigned long))
 {
     // TODO:
     // 1 计算每个种类的信息增益。
     // 2 用增益值最大的作为节点。
 
     // 信息增益小于 1e-1 就结叶
-    double gain_esp   = 1e-1;
+    //double gain_esp   = 1e-1;
     // 数据量小于数据量 1/1000 否则
-    int    data_least = 100;
+    //int    data_least = 100;
 
     //cart_node_t* root = NULL;
 
@@ -395,9 +414,11 @@ int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, dc_tre
         Ags[i] = i;
 
     int Ags_size = data->cols;
-    
-    __build_classification_node(data, label, &(tree->root), Ags, Ags_size, tree->gain_esp, tree->data_least, progress);
 
+    tree->level     = 0;
+    tree->root      = NULL;
+    int level_label = 1;
+    __build_classification_node(data, label, &(tree->root), Ags, Ags_size, level_label, &tree->level, term->gain_esp, term->least_limit, term->level_limit, progress);
     return 0;
     
 }
@@ -413,7 +434,7 @@ int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, dc_tre
  */
 int decision_tree_classification_predict(matrix2_t* _X, dc_tree_t* _tree, vfloat_t* predict)
 {
-    return __do_classification_predict(_X, _tree, predict);
+    return __do_classification_predict(_X, _tree->root, predict);
 }
 
 /**
@@ -424,6 +445,6 @@ int decision_tree_classification_predict(matrix2_t* _X, dc_tree_t* _tree, vfloat
  */
 int decision_tree_release(dc_tree_t* _tree)
 {
-    return __do_release_node(_tree->node);
+    return __do_release_node(_tree->root);
 }
 

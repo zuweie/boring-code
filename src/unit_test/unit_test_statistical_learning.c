@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-08-04 16:30:45
+ * @LastEditTime: 2023-08-25 10:43:12
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -569,7 +569,13 @@ static void test_decision_tree_large (void)
     printf(" \n ---- *** training .... *** ---- \n");
     //train_mat->rows = 20;
     //train_label_mat->rows = 20;
-    cart_node_t* tree = decision_tree_classification_train(train_mat, train_label_mat, decision_tree_training_progress);
+    dc_tree_t tree;
+    dct_term_t term = {
+        .gain_esp = 0.1,
+        .least_limit = 1000,
+        .level_limit = 15
+    };
+    decision_tree_classification_train(train_mat, train_label_mat, &tree, &term, decision_tree_training_progress);
 
     printf(" \n ---- *** predicting ... *** ---- \n");
     //MAT2_INSPECT(test_label_mat);
@@ -587,7 +593,7 @@ static void test_decision_tree_large (void)
         float predict;
 
         //navie_bayes_predict_MGD_edit(_X, Py_counting, mus_table, sigma_table, &predict);
-        decision_tree_classification_predict(_X, tree, &predict);
+        decision_tree_classification_predict(_X, &tree, &predict);
 
         if ((int)predict == label) correct++; 
 
@@ -604,7 +610,7 @@ static void test_decision_tree_large (void)
     Mat2_destroy(test_label_mat); 
     Mat2_destroy(test_mat); 
     Mat2_destroy(_X);
-    decision_tree_release(tree);
+    decision_tree_release(&tree);
     
 }
 
@@ -649,19 +655,26 @@ static void test_decision_tree_simple (void)
     Mat2_load_on_shape(train_label_mat, train_label, 15, 1);
     Mat2_load_on_shape(test_mat, test_data1, 1, 4);
 
-    cart_node_t* tree = decision_tree_classification_train(train_mat, train_label_mat, NULL);
-    decision_tree_classification_predict(test_mat, tree, &predict);
+    dc_tree_t tree;
+    dct_term_t term = {
+        .gain_esp = 0.1,
+        .least_limit = 1,
+        .level_limit = 1e+20,
+    };
+
+    decision_tree_classification_train(train_mat, train_label_mat, &tree, &term, NULL);
+    decision_tree_classification_predict(test_mat, &tree, &predict);
     printf("\n test data 1 predict: %lf, \n", predict);
     
 
     Mat2_load_on_shape(test_mat, test_data2, 1, 4);
-    decision_tree_classification_predict(test_mat, tree, &predict);
+    decision_tree_classification_predict(test_mat, &tree, &predict);
     printf(" test data 2 predict: %lf, \n", predict);
 
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
     Mat2_destroy(test_mat);
-    decision_tree_release(tree);
+    decision_tree_release(&tree);
 }
 
 static void test_decision_tree_simple2(void) {
@@ -703,14 +716,22 @@ static void test_decision_tree_simple2(void) {
     Mat2_load_on_shape(train_label_mat, train_label, 19, 1);
     Mat2_load_on_shape(test_mat, test_data1, 1, 5);
 
-    cart_node_t* tree = decision_tree_classification_train(train_mat, train_label_mat, NULL);
-    decision_tree_classification_predict(test_mat, tree, &predict);
+
+    dc_tree_t tree;
+    dct_term_t term = {
+
+        .gain_esp = 0.1,
+        .least_limit = 1,
+        .level_limit = 1e+10,
+    };
+    decision_tree_classification_train(train_mat, train_label_mat, &tree, &term, NULL);
+    decision_tree_classification_predict(test_mat, &tree, &predict);
     printf("\n test data 1 predict: %c, \n", (char)predict);
 
     Mat2_destroy(train_mat);
     Mat2_destroy(train_label_mat);
     Mat2_destroy(test_mat);
-    decision_tree_release(tree);
+    decision_tree_release(&tree);
 }
 
 int do_statistical_learning_test (void) 

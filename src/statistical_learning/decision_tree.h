@@ -13,17 +13,23 @@ struct _dct_node
     int attr_index;
 };
 
+typedef struct _dct_term {
+
+    double gain_esp;
+    int    least_limit;
+    int    level_limit;
+
+} dct_term_t;
+
 typedef struct _dc_tree {
     dct_node_t* root;
-    double gain_esp;
-    int    data_least; 
-    int    level_limit;
+    int         level;
 } dc_tree_t;
 
 
 
 
-int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, dc_tree_t* tree, void (*progress)(char*, unsigned long, unsigned long));
+int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, dc_tree_t* tree, dct_term_t* trem, void (*progress)(char*, unsigned long, unsigned long));
 
 // int decision_tree_regression_train(matrix2_t* data, matrix2_t* label, cart_node_t** _tree);
 
