@@ -1,7 +1,7 @@
 #include "adaboost.h"
 
 /**
- * @brief adaboost tree 使用的是分类树
+ * @brief adaboost tree 使用的是分类树，what the fuck! 搞不懂怎么弄这个破玩意啊。
  * 
  * @param train_data 训练的数据
  * @param train_label {-1, 1} 的标签数据
@@ -13,11 +13,21 @@
  */
 int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, dct_term_t* term, double* alpahs,  dc_tree_t** trees)
 {
-
+    // 准备好参数 W
     int N = train_label->rows;
+    double W_mat[M][N];
 
-    matrix2_t* W = Mat2_create(train_label)
+
+    for (int j=0; j<N; ++j){
+        W_mat[0][j] = 1 / (double) N;
+    }
     
+
+    for (int i=0; i<M; ++i) {
+        
+
+
+    }
 
 }
 
