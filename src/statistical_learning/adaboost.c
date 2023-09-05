@@ -1,4 +1,32 @@
+#include "counting.h"
 #include "adaboost.h"
+
+/**
+ * @brief 计算误差率以及生成 Gx 的弱分类器
+ * 
+ * @param train_data 
+ * @param train_label 
+ * @param e 
+ * @param gx 
+ * @return int 
+ */
+int calculate_gx_e(matrix2_t* train_data, matrix2_t* train_label, double W[], double* e, adaboost_gx_t* gx)
+{
+    int N = train_data->rows;
+
+    matrix2_t* Xi = Mat2_create(1,1);
+    
+    for (int i=0; i<train_data->cols; i++) {
+
+        void* counting = NULL;
+        Mat2_slice_col_to(Xi, train_data, i);
+        
+
+
+        
+    }
+    
+}
 
 /**
  * @brief adaboost tree 使用的是分类树，what the fuck! 搞不懂怎么弄这个破玩意啊。
@@ -11,23 +39,27 @@
  * @param trees 返回弱分类树列表
  * @return int 
  */
-int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, dct_term_t* term, double* alpahs,  dc_tree_t** trees)
+int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, double* alpahs,  adaboost_gx_t* tree)
 {
     // 准备好参数 W
     int N = train_label->rows;
-    double W_mat[M][N];
+    double W[N];
 
 
     for (int j=0; j<N; ++j){
-        W_mat[0][j] = 1 / (double) N;
+        W_mat[j] = 1 / (double) N;
     }
     
 
+    // 计算每一个 alpha 以及 Gx。
     for (int i=0; i<M; ++i) {
         
-
+        
 
     }
+
+
+    return 0;
 
 }
 
