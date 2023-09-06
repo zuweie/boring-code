@@ -471,6 +471,26 @@ int Mat2_T(matrix2_t* mat)
 }
 
 /**
+ * @brief 融合两个矩阵，结果存放在 ma1 中
+ * 
+ * @param mat1 
+ * @param mat2 
+ * @return int 
+ */
+int Mat2_merge(matrix2_t* mat1, matrix2_t* mat2)
+{
+    // 列数要相同才能合并。
+    if (mat1->cols == mat2->cols) {
+        // 先扩充一下内存。
+        mat1->pool = realloc(mat1->pool, (mat1->rows + mat2->rows) * mat1->cols * sizeof(vfloat_t));
+        MAT2_POOL_PTR(mat1, m1_ptr);
+        memcpy(m1_ptr[mat1->rows], mat2->pool, (mat2->rows * mat2->cols * sizeof(vfloat_t)));
+        return 0;
+    }
+    return -1;
+}
+
+/**
  * @brief 矩阵的 QR 分解
  * 
  * @param q 正交矩阵

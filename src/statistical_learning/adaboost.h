@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-08-15 14:51:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-05 11:25:26
+ * @LastEditTime: 2023-09-06 11:15:16
  * @FilePath: /boring-code/src/statistical_learning/adaboost.h
  * @Description: 因为 decision_tree 那个 C 文件已经做了分类树，那么这个 adaboost_tree 就做回归树吧
  */
@@ -13,8 +13,9 @@
 
 typedef struct {
 
-    int attr_index;
-    vfloat_t binary_value;
+    int split_index;
+    vfloat_t binal_value;
+    vfloat_t expect_label;
 
 } adaboost_gx_t
 
