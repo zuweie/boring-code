@@ -1,4 +1,5 @@
 #include <float.h>
+#include <math.h>
 #include "counting.h"
 #include "adaboost.h"
 
@@ -42,7 +43,7 @@ static int calculate_gain_D(matrix2_t* _Y, double* gain)
  * @param best_split 
  * @return int int 
  */
-static int int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, vfloat_t* best_split) 
+static int int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, vfloat_t* best_split, vfloat_t* predict_label) 
 {
     int group_size;
     matrix2_t** group_X;
@@ -82,8 +83,15 @@ static int int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, v
             double gain_d_a = (((double) sub_d1->rows / (double) D) * gain_d1) + (  ((double)sub_d1->rows / (double) D) * gain_d2 );
 
             if (gain_d_a < *gain ) {
+                
+                void* counting = NULL;
+                counting_Y(sub_d1, &counting);
+
                 *gain = gain_d_a;
                 *best_split = sub_d1->pool[0];
+                // 返回 sub_d1 中最多那个类别。
+                *predict_label = counting_max_frequency(counting);
+                free(counting);
             }
             Mat2_destroy(sub_d2);
         }
@@ -105,7 +113,7 @@ static int int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, v
 }
 
 /**
- * @brief 计算误差率以及生成 Gx 的弱分类器
+ * @brief 计算弱分类器的误差，取最小的误差e，然后计算 Gx 的系数 alpha，并且吧 参数数组 W 进行更新。
  * 
  * @param train_data 
  * @param train_label 
@@ -113,17 +121,40 @@ static int int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, v
  * @param gx 
  * @return int 
  */
-static int calculate_gx_e(matrix2_t* train_data, matrix2_t* train_label, double W[], double* e, adaboost_gx_t* gx)
+static int calculate_gx_e_alpha_w(matrix2_t* train_data, matrix2_t* train_label, double W[], double* e, double* alpha, adaboost_gx_t* gx)
 {
-    int N = train_data->rows;
+    int N = train_data->cols;
+    int R = train_data->rows;
+    MAT2_POOL_PTR(train_data, train_data_ptr);
 
-    matrix2_t* Xi = Mat2_create(1,1);
-    
-    for (int i=0; i<train_data->cols; i++) {
+    *e = FLT_MAX;
+    double E = 0.f;
+    int best_gx_index = -1;
 
-        void* counting = NULL;
-        Mat2_slice_col_to(Xi, train_data, i);
+    for (int i=0; i<N; ++i) {
+
+        adaboost_gx_t Gx = gx[i];
+
+        for (int j=0; j<R; ++j) {
+            // 统计统计错误率
+            if ( (train_data_ptr[j][i] == Gx.best_split && train_label->pool[j] != Gx.predict_label ) || 
+            (train_data_ptr[j][i] != Gx.best_split && train_label->pool[j] == Gx.predict_label)) {
+                E += W[i];
+            } 
+        }
+
+        if (*e < E) {
+            *e = E;
+            best_gx_index = i;
+        }
+        
     }
+
+    // 更新新的 W。
+    *alpha = 0.5 * log( (1-*e) / (*e) );
+
+    
+
 }
 
 /**
@@ -139,17 +170,29 @@ static int calculate_gx_e(matrix2_t* train_data, matrix2_t* train_label, double 
  */
 int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, double* alpahs,  adaboost_gx_t* tree)
 {
-    // 准备好参数 W
+    // 先生成所有弱 Gx。
+    adaboost_gx_t Gx[train_data->cols];
+    matrix2_t* Xi = Mat2_create(1,1);
+
+    for (int i=0; i<train_data->cols; ++i) {
+        Mat2_slice_col_to(Xi, train_data, i);
+        double gain;
+        Gx[i].split_A = i;
+
+        calculate_gain_D_A(Xi, train_label, &gain, &Gx[i].best_split, &Gx[i].expect_label);
+    }
+
+    // TODO: 计算数据所有列的 Gain 系数。
     int N = train_label->rows;
     double W[N];
 
-
+    // 初始化带权系数。
     for (int j=0; j<N; ++j){
-        W_mat[j] = 1 / (double) N;
+        W[j] = 1 / (double) N;
     }
     
-
     // 计算每一个 alpha 以及 Gx。
+    // 遍历每一个 Gx 挑选合适的作为强选择器的组建。
     for (int i=0; i<M; ++i) {
         
         
