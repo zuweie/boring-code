@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-08-15 14:51:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-07 11:26:43
+ * @LastEditTime: 2023-09-08 13:58:59
  * @FilePath: /boring-code/src/statistical_learning/adaboost.h
  * @Description: 因为 decision_tree 那个 C 文件已经做了分类树，那么这个 adaboost_tree 就做回归树吧
  */
@@ -12,14 +12,12 @@
 #include "matrix2.h"
 
 typedef struct {
-
     int split_A;
     vfloat_t best_split;
-    vfloat_t predict_label;
+    vfloat_t predict;
+} adaboost_gx_t;
 
-} adaboost_gx_t
-
-int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, double* alpahs,  adaboost_gx_t[] tree);
-int adaboost_tree_predict(vfloat_t* predict);
+int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, double** alpahs_out,  adaboost_gx_t** Gx_out);
+int adaboost_tree_predict(matrix2_t* _Input, int M, adaboost_gx_t* Gxs, double* alphas, vfloat_t* predict);
 
 #endif

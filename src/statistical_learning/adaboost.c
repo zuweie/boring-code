@@ -43,12 +43,11 @@ static int calculate_gain_D(matrix2_t* _Y, double* gain)
  * @param best_split 
  * @return int int 
  */
-static int int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, vfloat_t* best_split, vfloat_t* predict_label) 
+static int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, vfloat_t* best_split, vfloat_t* predict_label) 
 {
     int group_size;
     matrix2_t** group_X;
     matrix2_t** group_Y;
-    double gain = 0.f;
     int D = _Y->rows;
 
     counting_XY_group_by_x(_Xi, _Y, 0, &group_X, &group_Y, &group_size);
@@ -112,6 +111,9 @@ static int int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, v
     return 0;
 }
 
+
+
+
 /**
  * @brief 计算弱分类器的误差，取最小的误差e，然后计算 Gx 的系数 alpha，并且吧 参数数组 W 进行更新。
  * 
@@ -121,40 +123,55 @@ static int int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, v
  * @param gx 
  * @return int 
  */
-static int calculate_gx_e_alpha_w(matrix2_t* train_data, matrix2_t* train_label, double W[], double* e, double* alpha, adaboost_gx_t* gx)
+static int calculate_gx_e_alpha_w(matrix2_t* train_data, matrix2_t* train_label, adaboost_gx_t* gx, double W[], double* alpha, int* Gx_index)
 {
-    int N = train_data->cols;
-    int R = train_data->rows;
+    int C = train_data->cols;
+    int N = train_data->rows;
     MAT2_POOL_PTR(train_data, train_data_ptr);
 
-    *e = FLT_MAX;
+    double e = FLT_MAX;
     double E = 0.f;
     int best_gx_index = -1;
+    adaboost_gx_t Gx;
+    // 遍历每一个弱选择器 Gx，结合 W 最终选出最适合的 Gx。
+    for (int i=0; i<C; ++i) {
 
-    for (int i=0; i<N; ++i) {
+        Gx = gx[i];
 
-        adaboost_gx_t Gx = gx[i];
-
-        for (int j=0; j<R; ++j) {
+        for (int j=0; j<N; ++j) {
             // 统计统计错误率
-            if ( (train_data_ptr[j][i] == Gx.best_split && train_label->pool[j] != Gx.predict_label ) || 
-            (train_data_ptr[j][i] != Gx.best_split && train_label->pool[j] == Gx.predict_label)) {
-                E += W[i];
+            if ( (train_data_ptr[j][i] == Gx.best_split && train_label->pool[j] != Gx.predict ) || 
+            (train_data_ptr[j][i] != Gx.best_split && train_label->pool[j] == Gx.predict)) {
+                E += W[j];
             } 
         }
 
-        if (*e < E) {
-            *e = E;
+        if (e < E) {
+            e = E;
             best_gx_index = i;
         }
         
     }
 
     // 更新新的 W。
-    *alpha = 0.5 * log( (1-*e) / (*e) );
+    *alpha = 0.5 * log( (1-e) / (e) );
 
-    
+    // 计算规范化因子 Z
+    double Z = 0.f;
+    Gx = gx[best_gx_index];
 
+    double yGx = 0.f;
+    for (int k=0; k<N; ++k) {
+        yGx =  train_label->pool[k] * (train_data_ptr[k][Gx.split_A] == Gx.best_split ? Gx.predict : -(Gx.predict));
+        Z += W[k] * exp(-(*alpha) * yGx);
+    }
+
+    // 更新 W 为下一轮迭代做准备。
+    for (int l=0; l<N; ++l) {
+        yGx =  train_label->pool[l] * (train_data_ptr[l][Gx.split_A] == Gx.best_split ? Gx.predict : -(Gx.predict));
+        W[l] = W[l] / Z * exp(-(*alpha) * yGx );
+    }
+    return 0;
 }
 
 /**
@@ -168,18 +185,21 @@ static int calculate_gx_e_alpha_w(matrix2_t* train_data, matrix2_t* train_label,
  * @param trees 返回弱分类树列表
  * @return int 
  */
-int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, double* alpahs,  adaboost_gx_t* tree)
+int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, double** alpahs_out,  adaboost_gx_t** Gx_out)
 {
+
+    *Gx_out     = malloc (M * sizeof(adaboost_gx_t));
+    *alpahs_out = malloc (M * sizeof(double));
     // 先生成所有弱 Gx。
-    adaboost_gx_t Gx[train_data->cols];
+    adaboost_gx_t Gxs[train_data->cols];
     matrix2_t* Xi = Mat2_create(1,1);
 
     for (int i=0; i<train_data->cols; ++i) {
         Mat2_slice_col_to(Xi, train_data, i);
         double gain;
-        Gx[i].split_A = i;
+        Gxs[i].split_A = i;
 
-        calculate_gain_D_A(Xi, train_label, &gain, &Gx[i].best_split, &Gx[i].expect_label);
+        calculate_gain_D_A(Xi, train_label, &gain, &Gxs[i].best_split, &Gxs[i].predict);
     }
 
     // TODO: 计算数据所有列的 Gain 系数。
@@ -193,10 +213,13 @@ int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, do
     
     // 计算每一个 alpha 以及 Gx。
     // 遍历每一个 Gx 挑选合适的作为强选择器的组建。
-    for (int i=0; i<M; ++i) {
-        
-        
+    int best_gx_index;
+    double alpha;
 
+    for (int i=0; i<M; ++i) {
+        calculate_gx_e_alpha_w(train_data, train_label, Gxs, W, &alpha, &best_gx_index);
+        (*Gx_out)[i]     = Gxs[best_gx_index];
+        (*alpahs_out)[i] = alpha;
     }
 
 
@@ -204,7 +227,21 @@ int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, do
 
 }
 
-int adaboost_tree_predict(vfloat_t* predict)
+int adaboost_tree_predict(matrix2_t* _Input, int M, adaboost_gx_t* Gxs, double* alphas, vfloat_t* predict)
 {
 
+    double sign = 0.f;
+
+    for (int i=0; i<M; ++i) {
+
+        sign += alphas[i] * (_Input->pool[Gxs[i].split_A] == Gxs[i].best_split ? Gxs[i].predict : -Gxs[i].predict);
+
+    }
+
+    *predict = sign > 0 ? 1 : -1;
+
+    return 0;
+
 }
+
+

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-08-25 10:43:12
+ * @LastEditTime: 2023-09-08 13:49:56
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,6 +14,7 @@
 #include "statistical_learning/knn.h"
 #include "statistical_learning/naive_bayes.h"
 #include "statistical_learning/decision_tree.h"
+#include "statistical_learning/adaboost.h"
 #include "statistical_learning/counting.h"
 
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
@@ -734,6 +735,60 @@ static void test_decision_tree_simple2(void) {
     decision_tree_release(&tree);
 }
 
+static void test_adaboost_tree_simple(void) {
+    vfloat_t train_data[][5] = {
+        {'y', 'l', 'n', 'n', 'f'},
+        {'y', 'l', 'y', 'n', 'g'},
+        {'y', 'm', 'y', 'n', 'g'},
+        {'y', 'm', 'y', 'y', 'g'},
+        {'y', 'h', 'y', 'y', 'g'},
+        {'y', 'm', 'n', 'y', 'g'}, 
+        {'m', 'l', 'y', 'y', 'e'},
+        {'m', 'h', 'y', 'y', 'g'},
+        {'m', 'l', 'n', 'y', 'g'},
+        {'m', 'm', 'y', 'y', 'f'},
+        {'m', 'h', 'y', 'y', 'e'},
+        {'m', 'm', 'n', 'n', 'g'},
+        {'o', 'l', 'n', 'n', 'g'}, 
+        {'o', 'l', 'y', 'y', 'e'},
+        {'o', 'l', 'y', 'n', 'e'},
+        {'o', 'm', 'n', 'y', 'g'},
+        {'o', 'l', 'n', 'n', 'e'},
+        {'o', 'h', 'n', 'y', 'f'},
+        {'o', 'h', 'y', 'y', 'e'}
+    }; 
+
+    vfloat_t train_label[] = {
+        1, 1, -1, -1, -1, 1, -1,-1, 1, 1, -1, 1, 1, -1, -1, 1, 1, 1, -1
+    };
+
+    vfloat_t test_data1[] = {
+        'm','h','y','n','f'
+    };
+
+    matrix2_t* train_mat       = Mat2_create(1,1);
+    matrix2_t* train_label_mat = Mat2_create(1,1);
+    matrix2_t* test_mat        = Mat2_create(1,1);
+
+    Mat2_load_on_shape(train_mat, train_data, 19, 5);
+    Mat2_load_on_shape(train_label_mat, train_label, 19, 1);
+    Mat2_load_on_shape(test_mat, test_data1, 1, 5);
+
+    double* alphas_out;
+    adaboost_gx_t* Gx_out;
+    vfloat_t predict;
+
+    adaboost_tree_train(train_mat, train_label_mat, 5, &alphas_out,  &Gx_out);
+    adaboost_tree_predict(test_mat, 5, Gx_out, alphas_out, &predict);
+
+    Mat2_destroy(train_mat);
+    Mat2_destroy(train_label_mat);
+    Mat2_destroy(test_mat);
+    free(alphas_out);
+    free(Gx_out);
+    return;
+}
+
 int do_statistical_learning_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -795,5 +850,9 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
+    if (NULL == CU_add_test(pSuite, "test classification decision tree simple 2", test_adaboost_tree_simple) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
 
