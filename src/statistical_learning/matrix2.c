@@ -485,6 +485,7 @@ int Mat2_merge(matrix2_t* mat1, matrix2_t* mat2)
         mat1->pool = realloc(mat1->pool, (mat1->rows + mat2->rows) * mat1->cols * sizeof(vfloat_t));
         MAT2_POOL_PTR(mat1, m1_ptr);
         memcpy(m1_ptr[mat1->rows], mat2->pool, (mat2->rows * mat2->cols * sizeof(vfloat_t)));
+        mat1->rows = mat1->rows + mat2->rows;
         return 0;
     }
     return -1;

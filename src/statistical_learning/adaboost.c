@@ -60,10 +60,10 @@ static int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, vfloa
         // 计算所有的
         for (int i=0; i<group_size; ++i) {
 
-            int sub_d1_index  = 1;
+            int sub_d1_index  = i;
             matrix2_t* sub_d1 = group_Y[sub_d1_index];
             
-            int sub_d2_index = i==0? 1:i;
+            int sub_d2_index = i==0? 1:0;
             matrix2_t* sub_d2 = Mat2_create_cpy(group_Y[sub_d2_index]);
 
             // 将 i 以外的所有的向量合并。
@@ -87,7 +87,8 @@ static int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, vfloa
                 counting_Y(sub_d1, &counting);
 
                 *gain = gain_d_a;
-                *best_split = sub_d1->pool[0];
+                // 因为已经分组了，group_X 中所欲的 x 的值都一样。
+                *best_split = group_X[i]->pool[0];
                 // 返回 sub_d1 中最多那个类别。
                 *predict_label = counting_max_frequency(counting);
                 free(counting);
@@ -130,14 +131,14 @@ static int calculate_gx_e_alpha_w(matrix2_t* train_data, matrix2_t* train_label,
     MAT2_POOL_PTR(train_data, train_data_ptr);
 
     double e = FLT_MAX;
-    double E = 0.f;
+    double E;
     int best_gx_index = -1;
     adaboost_gx_t Gx;
     // 遍历每一个弱选择器 Gx，结合 W 最终选出最适合的 Gx。
     for (int i=0; i<C; ++i) {
 
         Gx = gx[i];
-
+        E = 0.f;
         for (int j=0; j<N; ++j) {
             // 统计统计错误率
             if ( (train_data_ptr[j][i] == Gx.best_split && train_label->pool[j] != Gx.predict ) || 
@@ -146,7 +147,7 @@ static int calculate_gx_e_alpha_w(matrix2_t* train_data, matrix2_t* train_label,
             } 
         }
 
-        if (e < E) {
+        if (E < e) {
             e = E;
             best_gx_index = i;
         }
@@ -171,6 +172,9 @@ static int calculate_gx_e_alpha_w(matrix2_t* train_data, matrix2_t* train_label,
         yGx =  train_label->pool[l] * (train_data_ptr[l][Gx.split_A] == Gx.best_split ? Gx.predict : -(Gx.predict));
         W[l] = W[l] / Z * exp(-(*alpha) * yGx );
     }
+    
+    *Gx_index = best_gx_index;
+
     return 0;
 }
 
@@ -185,7 +189,7 @@ static int calculate_gx_e_alpha_w(matrix2_t* train_data, matrix2_t* train_label,
  * @param trees 返回弱分类树列表
  * @return int 
  */
-int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, double** alpahs_out,  adaboost_gx_t** Gx_out)
+int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, double** alpahs_out,  adaboost_gx_t** Gx_out, void (*progress)(const char*, unsigned long, unsigned long))
 {
 
     *Gx_out     = malloc (M * sizeof(adaboost_gx_t));
@@ -195,6 +199,10 @@ int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, do
     matrix2_t* Xi = Mat2_create(1,1);
 
     for (int i=0; i<train_data->cols; ++i) {
+
+        if (progress) 
+            progress("计算 Gx 中... ", i+1, train_data->cols);
+
         Mat2_slice_col_to(Xi, train_data, i);
         double gain;
         Gxs[i].split_A = i;
@@ -217,6 +225,10 @@ int adaboost_tree_train(matrix2_t* train_data, matrix2_t* train_label, int M, do
     double alpha;
 
     for (int i=0; i<M; ++i) {
+
+        if (progress)
+            progress("计算 M * Gx 中...", i+1, M);
+
         calculate_gx_e_alpha_w(train_data, train_label, Gxs, W, &alpha, &best_gx_index);
         (*Gx_out)[i]     = Gxs[best_gx_index];
         (*alpahs_out)[i] = alpha;
@@ -234,8 +246,8 @@ int adaboost_tree_predict(matrix2_t* _Input, int M, adaboost_gx_t* Gxs, double* 
 
     for (int i=0; i<M; ++i) {
 
-        sign += alphas[i] * (_Input->pool[Gxs[i].split_A] == Gxs[i].best_split ? Gxs[i].predict : -Gxs[i].predict);
-
+        double result = alphas[i] * (_Input->pool[Gxs[i].split_A] == Gxs[i].best_split ? Gxs[i].predict : -Gxs[i].predict);
+        sign += result;
     }
 
     *predict = sign > 0 ? 1 : -1;

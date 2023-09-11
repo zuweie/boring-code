@@ -584,6 +584,49 @@ static void test_matrix_group_x(void)
         MAT2_INSPECT(gy);
     }
 }
+static void test_matrix2_merge(void) {
+
+    vfloat_t x_data[][3] = {
+        {1,5,6},
+        {2,3,4},
+        {9,3,2},
+        {3,2,4},
+        {9,2,2},
+        {2,5,6}
+    };
+
+    vfloat_t y_data[][3] = {
+        {1,5,6},
+        {2,3,4},
+        {9,3,2},
+    };
+
+    vfloat_t z_data[][3] = {
+        {3,2,4},
+        {9,2,2},
+        {2,5,6}
+    };
+
+    matrix2_t* m1 = Mat2_create(1,1);
+    matrix2_t* m2 = Mat2_create(1,1);
+    matrix2_t* m3 = Mat2_create(1,1);
+
+    Mat2_load_on_shape(m1, x_data, 6, 3);
+    Mat2_load_on_shape(m2, y_data, 3, 3);
+    Mat2_load_on_shape(m3, z_data, 3, 3);
+
+    Mat2_merge(m1, m2);
+    MAT2_INSPECT(m1);
+
+    Mat2_merge(m1, m3);
+    MAT2_INSPECT(m1);
+
+    Mat2_destroy(m1);
+    Mat2_destroy(m2);
+    Mat2_destroy(m3);
+
+
+}
 
 int do_matrix2_test (void) 
 {
@@ -686,7 +729,12 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, " test group x ", test_matrix_group_x) ) {
+    // if (NULL == CU_add_test(pSuite, " test group x ", test_matrix_group_x) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, " test group x ", test_matrix2_merge) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
