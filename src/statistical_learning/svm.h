@@ -2,8 +2,9 @@
 #define __SVM_H__
 
 #include "matrix2.h"
+
 typedef enum {
-    c_scv,
+    c_svc,
     nu_svc,
     one_class,
     e_svr
