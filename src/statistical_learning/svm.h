@@ -29,6 +29,9 @@ typedef struct {
     // Beta 的导数计算终止条件。
     double eps;
 
+    // 最大的迭代次数。
+    int max_iter;
+
 } svm_params_t;
 
 typedef vfloat_t (*Kernel_func)(vfloat_t*, vfloat_t*, int, double, double, double);

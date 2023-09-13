@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-13 14:14:40
+ * @LastEditTime: 2023-09-13 14:38:30
  * @FilePath: /boring-code/src/statistical_learning/svm.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -193,17 +193,9 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
 {
     // 通用的计算公式：f(Beta) = 1/2 BetaT dot Q bate + pT dot Beta (3-148)
     // Deta f(Beta) = Q dot Beta + P (3-149)
-    
     // 在 Q 为对称矩阵的时候，以上的 微分公式才能成立。
 
     // TODO: 1 根据 SVM 类型，初始化 Beta、Q、P 的矩阵或者向量。
-    
-    
-
-    // TODO: 3 根据 SVM 类型，算出 Beta 的差分值，然后更新公式 (1.2)
-
-    
-    matrix2_t* BeatT = Mat2_create(1,1);
     matrix2_t* Beta  = Mat2_create(1,1);
     matrix2_t* Q     = Mat2_create(1,1);
     matrix2_t* P     = Mat2_create(1,1);
@@ -211,6 +203,11 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     
     // 初始化 Beta、Q、P
     svm_initialize(Beta, Q, P, train_data, train_label, svm_type, K, k_params);
+
+    // 按照公式 (3-149) 给 G 赋值。
+    Mat2_cpy(G, Q);
+    Mat2_dot(G, Beta);
+    Mat2_add(G, P);
 
     Selct_working_set_func S;
 
@@ -221,10 +218,17 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     }
 
     // TODO: 2 根据 SVM 类型，选出要优化的两个 Beta, 然后计算两个 beta 的 detal 值，直到那个什么 两个 beta 的和小于阀值
+    int out_i;
+    int out_j;
+    int iter = 0;
+    while ( !S(G, Beta, train_label, svm_params, &out_i, &out_j) || iter++ > svm_params->max_iter) {
 
-    while (S())
+    }
     
     
+    
+
+    // TODO: 3 根据 SVM 类型，算出 Beta 的差分值，然后更新公式 (1.2)
 
     // 释放内存
     Mat2_destroy(BeatT);
