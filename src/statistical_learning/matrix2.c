@@ -491,6 +491,16 @@ int Mat2_merge(matrix2_t* mat1, matrix2_t* mat2)
     return -1;
 }
 
+int Mat2_reshape(matrix2_t* mat, size_t new_rows, size_t new_cols)
+{
+    if (new_rows * new_cols > mat->rows * mat->cols) {
+        mat->pool = realloc(mat->pool, new_rows * new_cols * sizeof(vfloat_t));
+    } 
+    mat->rows = new_rows;
+    mat->cols = new_cols;
+    return 0;
+}
+
 /**
  * @brief 矩阵的 QR 分解
  * 

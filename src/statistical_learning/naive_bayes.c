@@ -256,7 +256,7 @@ int navie_bayes_train_MGD_edit(matrix2_t* train_mat, matrix2_t* train_label_mat,
                         cov_j_k += _v;
                     }
 
-                    // 协方差矩阵书上第5页，还必须除以一个 (Nk-1) 但是如果 Nk 为一的话，那不就错了。
+                    // 协方差矩阵书上第5页，还必须除以一个 (Nk-1) 但是如果 Nk 为一的话，就错了。
                     sigma_tab_ptr[i][j][k] = cov_j_k / (i_label_count != 1?  i_label_count - 1 : 1);
 
                 } else {
