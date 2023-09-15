@@ -307,6 +307,7 @@ int calc_rho(solver_t* solver, double* rho, double* r){
 
     *rho = nr_free > 0 ? sum_yG / nr_free : (ub + lb) * 0.5;
     *r = 0;
+    return 0;
 }
 
 // 计算偏移量
@@ -361,7 +362,7 @@ int calc_rho_nu_sum(solver_t* solver, double* rho, double* r)
 
     *rho = (r1 - r2) * 0.5f;
     *r   = (r1 + r2) * 0.5f;
-
+    return 0;
 }
 
 // 以下四种核函数的实现。

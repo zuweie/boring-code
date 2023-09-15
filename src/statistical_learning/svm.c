@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-14 14:12:14
+ * @LastEditTime: 2023-09-15 14:55:27
  * @FilePath: /boring-code/src/statistical_learning/svm.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -187,7 +187,7 @@ static int __working_set_2(matrix2_t* G, matrix2_t* Beta, matrix2_t* _Y, svm_par
 }
 
 
-static int solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_t* _Y, svm_params_t* svm_params, Selct_working_set_func S)  
+static int __solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_t* _Y, svm_params_t* svm_params, Selct_working_set_func S, double* rho, double* r)  
 {
     double old_beta_i, old_beta_j, beta_i, beta_j, delta_beta_i, delta_beta_j;
     int out_i, out_j;
@@ -209,22 +209,132 @@ static int solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_t*
 
         if (_Y->pool[out_i] == _Y->pool[out_j]) {
             // Zi == Zj 的情况
-            double qv    = Q_ptr[out_i][out_i] - Q_ptr[out_j][out_j] - 2 * Q_ptr[out_i][out_j];
-            double delta = G->pool[out_i] - G->pool[out_j] /  (fabs(qv) > 0 ? qv : FLT_EPSILON); // 这里房子 QV 出现零的情况，若出现0，则除以一个很小的数字
+            // 式子 30163 的分母
+            double q     = Q_ptr[out_i][out_i] + Q_ptr[out_j][out_j] - 2 * Q_ptr[out_i][out_j];
+            // 这里房子 QV 出现零的情况，若出现0，则除以一个很小的数字, 
+            double delta = (G->pool[out_i] - G->pool[out_j])  /  (fabs(q) > FLT_EPSILON ? q : FLT_EPSILON); 
+
+            // 式子 3-165 为 Beta_i_new + Beta_j_new = beta_i-delta + beta_j+delta
+            // 于是 3-165 为以下写法。
             double sum = beta_i + beta_j;
+            
+            beta_i -= delta;
+            beta_j += delta;
 
+            // 至此已经初步完成了 beta 的更新计算。下一步需要计算出 beta 的限制。
 
+            if (sum > C_i && beta_i >= C_i) {
+                // I 区域
+                beta_i = C_i;
+                beta_j = sum - C_i;
+            } else if (sum <= C_i && beta_j < 0) {
+                // II 区域
+                beta_j = 0; 
+                beta_i = sum;
+            }
+
+            if (sum > C_j && beta_j > C_j) {
+                // III 区域
+                beta_j = C_j;
+                beta_i = sum - C_j;
+            } else if (sum <= C_j && beta_i < 0){
+                // IV 区域
+                beta_i = 0;
+                beta_j = sum;
+            }
 
 
         } else {
             // Zi ！= Zj 的情况
 
+            double q     = Q_ptr[out_i][out_i] + Q_ptr[out_j][out_j] + 2 * Q_ptr[out_i][out_j];
+            double delta = (-G->pool[out_i] - G->pool[out_j]) / (fabs(q) > FLT_EPSILON? q : FLT_EPSILON);
+            double diff  = beta_i - beta_j;
+            beta_i += delta;
+            beta_j += delta;
+
+            if (diff  > C_i - C_j && beta_i >= C_i) {
+                // I 区域
+                beta_i = C_i;
+                beta_j = C_i - diff;
+            } else if (diff <= C_i - C_j && beta_j >= C_j ) {
+                // II 区域
+                beta_j = C_j;
+                beta_i = C_j + diff;
+            }
+
+            if (diff > 0 && beta_j < 0) {
+                // III 区域
+                beta_j = 0;
+                beta_i = diff;
+            } else if (diff <= 0 && beta_i < 0) {
+                // 区域 IV
+                beta_i = 0; 
+                beta_j = diff;
+            }
+
+        }
+
+        // 计算完成后，更新 Beta 矩阵
+
+        Beta->pool[out_i] = beta_i;
+        Beta->pool[out_j] = beta_j;
+
+        delta_beta_i = beta_i - old_beta_i;
+        delta_beta_j = beta_j - old_beta_j;
+
+        // 更新 G
+        for(int k=0; k<G->rows; ++k) {
+            G->pool[k] += (Q_ptr[k][out_i] * delta_beta_i + Q_ptr[k][out_j] * delta_beta_j);
+        }
+        
+    } // end while
+
+
+    //
+    return 0;
+}
+
+/**
+ * @brief 计算偏移量的
+ * 
+ * @param _Y 
+ * @param G 
+ * @param rho 
+ * @param r 
+ * @return int 
+ */
+static int __calculate_rho(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, svm_params_t* svm_params, double* rho, double* r)
+{
+    int nr = 0;
+    double nr_sum = 0.f;
+    double ub = FLT_MAX, lb = -FLT_MAX;
+
+    for (int i=0; i<Beta->rows; ++i) {
+
+        double yG = _Y->pool[i] * G->pool[i];
+        if (Beta->pool[i] == 0.f) {
+            // beta == 0
+            if ()
+        } else if (Beta->pool[i] == svm_params->C[_Y->pool[i] > 0]) {
+            // beta == c
+
+        } else {
+            // 0 < beta < c
+            nr++;
+            nr_sum += yG;
         }
 
     }
+    
+    *rho = nr > 0 ? nr_sum / (double) nr : 
+
 }
 
+static int __calculate_rho_nu_svm(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, double* rho, double* r) 
+{
 
+}
 /**
  * @brief SVM 训练过程，使用广义 SMO 计算支持向量。
  * 
@@ -235,7 +345,7 @@ static int solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_t*
  * @param alpha 
  * @return int 
  */
-int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, svm_params_t* svm_params, Kernel_func K, k_params_t* k_params, matrix2_t* alpha)
+int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, svm_params_t* svm_params, Kernel_func K, k_params_t* k_params, matrix2_t** alphas, double* rho, double* r)
 {
     // 通用的计算公式：f(Beta) = 1/2 BetaT dot Q bate + pT dot Beta (3-148)
     // Deta f(Beta) = Q dot Beta + P (3-149)
@@ -253,24 +363,18 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     Selct_working_set_func S = \
         ((svm_type == c_svc || svm_type ==  epsilon_svr || svm_type == one_class) ? __working_set_1 : __working_set_2) ;
 
-    // TODO: 2 根据 SVM 类型，选出要优化的两个 Beta, 然后计算两个 beta 的 detal 值，直到那个什么 两个 beta 的和小于阀值
-    int out_i;
-    int out_j;
-    int iter = 0;
-    while ( !S(G, Beta, train_label, svm_params, &out_i, &out_j) || iter++ > svm_params->max_iter) {
+    // TODO: 2,3 根据 SVM 类型，选出要优化的两个 Beta, 然后计算两个 beta 的 detal 值，直到那个什么 两个 beta 的和小于阀值
+    __solve_generic(G, Beta, Q, train_label, svm_params, S);
 
-    }
-    
-    
-    
-
-    // TODO: 3 根据 SVM 类型，算出 Beta 的差分值，然后更新公式 (1.2)
+    // 计算完毕将 Beta 的值返回。
+    *alphas = Beta;
 
     // 释放内存
-    Mat2_destroy(Beta);
     Mat2_destroy(Q);
     Mat2_destroy(P);
+    Mat2_destroy(G);
+
     return 0;
 }
 
-int svm_predict(matrix2_t* _Input, matrix2_t* alpha, vfloat_t* predict);
+int svm_predict(matrix2_t* _Input, matrix2_t* alphas, vfloat_t* predict);
