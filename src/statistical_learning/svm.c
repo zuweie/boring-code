@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-15 14:55:27
+ * @LastEditTime: 2023-09-15 17:25:29
  * @FilePath: /boring-code/src/statistical_learning/svm.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -187,7 +187,7 @@ static int __working_set_2(matrix2_t* G, matrix2_t* Beta, matrix2_t* _Y, svm_par
 }
 
 
-static int __solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_t* _Y, svm_params_t* svm_params, Selct_working_set_func S, double* rho, double* r)  
+static int __solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_t* _Y, svm_params_t* svm_params, Selct_working_set_func S, Calculate_rho C, double* rho, double* r)  
 {
     double old_beta_i, old_beta_j, beta_i, beta_j, delta_beta_i, delta_beta_j;
     int out_i, out_j;
@@ -290,7 +290,9 @@ static int __solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_
         
     } // end while
 
-
+    // 计算 rho 与 r。
+    C(_Y, G, Beta, svm_params, rho, r);
+     
     //
     return 0;
 }
@@ -315,9 +317,19 @@ static int __calculate_rho(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, svm_par
         double yG = _Y->pool[i] * G->pool[i];
         if (Beta->pool[i] == 0.f) {
             // beta == 0
-            if ()
+            if (_Y->pool[i] )
+                ub = ub > yG ? yG : ub; // min
+            else
+                lb = lb < yG ? yG : lb; // max
+            
+
         } else if (Beta->pool[i] == svm_params->C[_Y->pool[i] > 0]) {
             // beta == c
+            
+            if (_Y->pool[i] < 0) 
+                ub = ub > yG ? yG : ub;
+            else 
+                lb = lb < yG ? yG : lb;
 
         } else {
             // 0 < beta < c
@@ -327,13 +339,57 @@ static int __calculate_rho(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, svm_par
 
     }
     
-    *rho = nr > 0 ? nr_sum / (double) nr : 
+    *rho = nr > 0 ? nr_sum / (double) nr : (ub + lb) * 0.5f;
+    *r   = 0;
+    return 0;
+}   
 
-}
-
-static int __calculate_rho_nu_svm(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, double* rho, double* r) 
+static int __calculate_rho_nu_svm(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, svm_params_t* svm_params, double* rho, double* r) 
 {
+    int nr1 = 0, nr2 = 0;
+    double ub1 = FLT_MAX,  ub2 = FLT_MAX;
+    double lb1 = -FLT_MAX, lb2 = -FLT_MAX;
+    double nr_sum_1 = 0.f, nr_sum_2 = 0.f;
+    double r1, r2;
 
+    for (int i=0; i<Beta->rows, ++i) {
+
+        double G_i = G->pool[i];
+        if (_Y->pool[i] > 0.f) {
+
+            if (Beta->pool[i] == 0.f) {
+                ub1 = ub1 > G_i ? G_i : ub1;
+            } else if (Beta->pool[i] == svm_params->C[_Y->pool[i]>0]) {
+                lb1 = lb1 < G_i ? G_i : lb1;
+            } else {
+                nr1 ++;
+                nr_sum_1 += G_i;
+            }
+
+        } else {
+
+            if (Beta->pool[i] == 0.f) {
+
+                ub2 = ub2 > G_i ? G_i : ub2;
+
+            } else if (Beta->pool[i] == svm_params->C[_Y->pool[i]>0]) {
+                
+                lb2 = lb2 < G_i ? G_i : lb2;
+
+            } else {
+                nr2 ++;
+                nr_sum_2 += G_i;
+            }
+
+        }
+    }
+
+    r1 = nr1 > 0 ? nr_sum_1 / (double) nr1 : (ub1 + lb1) * 0.5f;
+    r2 = nr2 > 0 ? nr_sum_2 / (double) nr2 : (ub2 + lb2) * 0.5f;
+
+    *rho = (r1 - r2) * 0.5f;
+    *r   = (r1 + r2) * 0.5f;
+    return 0
 }
 /**
  * @brief SVM 训练过程，使用广义 SMO 计算支持向量。
@@ -360,15 +416,19 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     // 初始化 Beta、Q、P
     __initialize(Beta, Q, P, G, train_data, train_label, svm_type, K, k_params);
 
+    // 根据 svm 的类型选择 working_set 函数
     Selct_working_set_func S = \
         ((svm_type == c_svc || svm_type ==  epsilon_svr || svm_type == one_class) ? __working_set_1 : __working_set_2) ;
 
+    // 根据 svm 类型选择 calculate rho 计算函数。
+    Calculate_rho C = \
+         ((svm_type == c_svc || svm_type ==  epsilon_svr || svm_type == one_class) ? __calculate_rho : __calculate_rho_nu_svm);
+
     // TODO: 2,3 根据 SVM 类型，选出要优化的两个 Beta, 然后计算两个 beta 的 detal 值，直到那个什么 两个 beta 的和小于阀值
-    __solve_generic(G, Beta, Q, train_label, svm_params, S);
+    __solve_generic(G, Beta, Q, train_label, svm_params, S, C, rho, r);
 
     // 计算完毕将 Beta 的值返回。
     *alphas = Beta;
-
     // 释放内存
     Mat2_destroy(Q);
     Mat2_destroy(P);
@@ -377,4 +437,7 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     return 0;
 }
 
-int svm_predict(matrix2_t* _Input, matrix2_t* alphas, vfloat_t* predict);
+int svm_predict(matrix2_t* _Input, matrix2_t* alphas, double rho, double r, svm_type_t svm_type, vfloat_t* predict)
+{
+
+}
