@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-17 13:22:16
+ * @LastEditTime: 2023-09-17 15:49:33
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,6 +17,7 @@
 #include "statistical_learning/adaboost.h"
 #include "statistical_learning/counting.h"
 #include "statistical_learning/svm.h"
+#include "statistical_learning/svm_kernel_func.h"
 
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
@@ -1042,7 +1043,47 @@ static void test_svm_simple (void)
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
     };
 
+    static vfloat_t sample_data[4] = {
+        6.7f, 3.1f, 4.7f, 1.5f
+    };
+
+    matrix2_t* train_mat = Mat2_create(1,1);
+    matrix2_t* label_mat = Mat2_create(1,1);
+    matrix2_t* test_mat = Mat2_create(1,1);
+    vfloat_t predict;
+
+    Mat2_load_on_shape(train_mat, X_data, 60, 4);
+    Mat2_load_on_shape(label_mat, Y_data, 60, 1);
+    Mat2_load_on_shape(test_mat,  sample_data, 1, 4);
+
+    vfloat_t predict;
+    svm_model_t model;
+    svm_params_t svm_params;
+    svm_model_t svm_model;
+    k_params_t k_params;
     
+
+    // 初始化 参数
+    svm_params.C[0] = 10;
+    svm_params.C[1] = 10;
+    svm_params.eps  = 1e-3;
+    svm_params.max_iter = 100000;
+
+    k_params.p1 = 8.0f;
+    k_params.p2 = 0.f;
+    k_params.p3 = 0.f;
+    
+    svm_train(train_mat, label_mat, c_svc, &svm_params, kernel_function_rbf, &k_params, &svm_model);
+    svm_predict(test_mat, &svm_model, &predict);
+
+    printf(" predict: %lf, ",predict);
+
+    svm_model_release(&svm_model);
+    Mat2_destroy(train_mat);
+    Mat2_destroy(label_mat);
+    Mat2_destroy(test_mat);
+
+    return 0;
 
 }
 

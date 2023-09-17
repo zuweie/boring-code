@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-17 13:25:50
+ * @LastEditTime: 2023-09-17 15:49:19
  * @FilePath: /boring-code/src/statistical_learning/svm.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -401,7 +401,7 @@ static int __calculate_rho_nu_svm(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, 
  * @param alpha 
  * @return int 
  */
-int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, svm_params_t* svm_params, Kernel_func K, k_params_t* k_params, matrix2_t** alphas, double* rho, double* r)
+int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, svm_params_t* svm_params, Kernel_func K, k_params_t* k_params, svm_model_t* model)
 {
     // 通用的计算公式：f(Beta) = 1/2 BetaT dot Q bate + pT dot Beta (3-148)
     // Deta f(Beta) = Q dot Beta + P (3-149)
@@ -425,10 +425,22 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
          ((svm_type == c_svc || svm_type ==  epsilon_svr || svm_type == one_class) ? __calculate_rho : __calculate_rho_nu_svm);
 
     // TODO: 2,3 根据 SVM 类型，选出要优化的两个 Beta, 然后计算两个 beta 的 detal 值，直到那个什么 两个 beta 的和小于阀值
-    __solve_generic(G, Beta, Q, train_label, svm_params, S, C, rho, r);
+    double rho, r;
+    __solve_generic(G, Beta, Q, train_label, svm_params, S, C, &rho, &r);
 
     // 计算完毕将 Beta 的值返回。
-    *alphas = Beta;
+    //*alphas = Beta;
+
+    // 计算完毕，有用的信息提取。
+    model->alpahs = Beta;
+    model->_X     = train_data;
+    model->_Y     = train_label;
+    model->K      = K;
+    model->k_params = k_params;
+    model->rho    = rho;
+    model->r      = r;
+    model->svm_type = svm_type;
+
     // 释放内存
     Mat2_destroy(Q);
     Mat2_destroy(P);
@@ -437,12 +449,15 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     return 0;
 }
 
-int svm_predict(matrix2_t* _Input, matrix2_t* _X, matrix2_t* _Y,  matrix2_t* alpahs, double rho, double r, svm_type_t svm_type, vfloat_t* predict)
+int svm_predict(matrix2_t* _Input, svm_model_t* model, vfloat_t* predict)
 {
-    if ()
+    if (model->svm_type == c_svc) {
+        svm_predict_c_svc(_Input, model->_X, model->_Y, model->alphas, model->rho, model->K, model->k_params, predict);
+    }
+    return 0;
 }
 
-int svm_predict_svm(matrix2_t* _Input, matrix2_t* _X, matrix2_t* _Y, matrix2_t* alphas, double rho, Kernel_func K, k_params_t* k_params, vfloat_t* predict)
+int svm_predict_c_svc(matrix2_t* _Input, matrix2_t* _X, matrix2_t* _Y, matrix2_t* alphas, double rho, Kernel_func K, k_params_t* k_params, vfloat_t* predict)
 {
     
     double sign = 0.f;
@@ -466,4 +481,9 @@ int svm_predict_svm(matrix2_t* _Input, matrix2_t* _X, matrix2_t* _Y, matrix2_t* 
 
     *predict = sign > 0 ? 1 : -1;
     return 0;
+}
+
+int svm_model_release(svm_model_t* model) 
+{
+    Mat2_destroy(model->alpahs);
 }
