@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-11 14:08:32
+ * @LastEditTime: 2023-09-17 13:22:16
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,6 +16,7 @@
 #include "statistical_learning/decision_tree.h"
 #include "statistical_learning/adaboost.h"
 #include "statistical_learning/counting.h"
+#include "statistical_learning/svm.h"
 
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
@@ -810,6 +811,7 @@ static void adaboost_tree_training_progress (char* title, unsigned long step, un
     printf("%s\r", buffer);
     fflush(stdout);
 }
+
 static void test_adaboost_tree_large(void) 
 {
     const char* train_csv_file = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_train.csv";
@@ -935,6 +937,120 @@ static void test_adaboost_tree_large(void)
     return;
 }
 
+static void test_svm_simple (void) 
+{
+
+    vfloat_t X_data[][4] ={
+    /************* S *************/
+        {5.1f, 3.5f, 1.4f, 0.2f}, 
+        {4.9f, 3.0f, 1.4f, 0.2f}, 
+        {4.7f, 3.2f, 1.3f, 0.2f},
+
+        {4.6f, 3.1f, 1.5f, 0.2f}, 
+        {5.0f, 3.6f, 1.4f, 0.2f}, 
+        {5.4f, 3.9f, 1.7f, 0.4f},
+
+        {4.6f, 3.4f, 1.4f, 0.3f}, 
+        {5.0f, 3.4f, 1.5f, 0.2f}, 
+        {4.4f, 2.9f, 1.4f, 0.2f},
+
+        {4.9f, 3.1f, 1.5f, 0.1f}, 
+        {5.4f, 3.4f, 1.5f, 0.2f}, 
+        {4.8f, 3.4f, 1.6f, 0.2f},
+
+        {4.8f, 3.0f, 1.4f, 0.1f}, 
+        {4.3f, 3.0f, 1.1f, 0.1f}, 
+        {5.8f, 4.0f, 1.2f, 0.2f},
+
+        {5.7f, 4.4f, 1.5f, 0.4f}, 
+        {5.4f, 3.9f, 1.3f, 0.4f}, 
+        {5.1f, 3.5f, 1.4f, 0.3f},
+
+        {5.7f, 3.8f, 1.7f, 0.3f}, 
+        {5.1f, 3.8f, 1.5f, 0.3f},
+    /************* v ************/
+        {7.0f, 3.2f, 4.7f, 1.4f}, 
+        {6.4f, 3.2f, 4.5f, 1.5f}, 
+        {6.9f, 3.1f, 4.9f, 1.5f},
+
+        {5.5f, 2.3f, 4.0f, 1.3f}, 
+        {6.5f, 2.8f, 4.6f, 1.5f}, 
+        {5.7f, 2.8f, 4.5f, 1.3f}, 
+
+        {6.3f, 3.3f, 4.7f, 1.6f}, 
+        {4.9f, 2.4f, 3.3f, 1.0f}, 
+        {6.6f, 2.9f, 4.6f, 1.3f},
+
+        {5.2f, 2.7f, 3.9f, 1.4f}, 
+        {5.0f, 2.0f, 3.5f, 1.0f}, 
+        {5.9f, 3.0f, 4.2f, 1.5f}, 
+
+        {6.0f, 2.2f, 4.0f, 1.0f}, 
+        {6.1f, 2.9f, 4.7f, 1.4f}, 
+        {5.6f, 2.9f, 3.6f, 1.3f}, 
+
+        {6.7f, 3.1f, 4.4f, 1.4f}, 
+        {5.6f, 3.0f, 4.5f, 1.5f}, 
+        {5.8f, 2.7f, 4.1f, 1.0f},
+
+        {6.2f, 2.2f, 4.5f, 1.5f}, 
+        {5.6f, 2.5f, 3.9f, 1.1f},
+    /*********** R **************/
+        {6.3f, 3.3f, 6.0f, 2.5f}, 
+        {5.8f, 2.7f, 5.1f, 1.9f}, 
+        {7.1f, 3.0f, 5.9f, 2.1f},
+
+        {6.3f, 2.9f, 5.6f, 1.8f}, 
+        {6.5f, 3.0f, 5.8f, 2.2f}, 
+        {7.6f, 3.0f, 6.6f, 2.1f},
+
+        {4.9f, 2.5f, 4.5f, 1.7f}, 
+        {7.3f, 2.9f, 6.3f, 1.8f}, 
+        {6.7f, 2.5f, 5.8f, 1.8f}, 
+
+        {7.2f, 3.6f, 6.1f, 2.5f}, 
+        {6.5f, 3.2f, 5.1f, 2.0f}, 
+        {6.4f, 2.7f, 5.3f, 1.9f}, 
+
+        {6.8f, 3.0f, 5.5f, 2.1f}, 
+        {5.7f, 2.5f, 5.0f, 2.0f}, 
+        {5.8f, 2.8f, 5.1f, 2.4f},
+
+        {6.4f, 3.2f, 5.3f, 2.3f}, 
+        {6.5f, 3.0f, 5.5f, 1.8f}, 
+        {7.7f, 3.8f, 6.7f, 2.2f}, 
+        
+        {7.7f, 2.6f, 6.9f, 2.3f}, 
+        {6.0f, 2.2f, 5.0f, 1.5f} 
+    };
+
+    // static vfloat_t Y_data[]= {
+    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 
+    //     'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S',
+    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
+    //     'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 
+    //     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+    //     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+    // };
+
+    static vfloat_t Y_data[]= {
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+    };
+
+    
+
+}
+
+static void test_svm_large(void) 
+{
+    
+}
+
 int do_statistical_learning_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -1001,9 +1117,15 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test adaboost tree large", test_adaboost_tree_large) ) {
+    // if (NULL == CU_add_test(pSuite, "test adaboost tree large", test_adaboost_tree_large) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test adaboost tree large", test_svm_simple) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
 }
 

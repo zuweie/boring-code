@@ -37,7 +37,7 @@ typedef struct {
 typedef vfloat_t (*Kernel_func)(vfloat_t*, vfloat_t*, int, double, double, double);
 typedef int (*Selct_working_set_func)(matrix2_t*, matrix2_t*, matrix2_t*, svm_params_t*, int*, int* );
 typedef int (*Calculate_rho)(matrix2_t*, matrix2_t*, matrix2_t*, svm_params_t*, double*, double*);
-int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, double esp, Kernel_func K, k_params_t* k_params, matrix2_t* alpha);
+int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, svm_params_t* svm_params, Kernel_func K, k_params_t* k_params, matrix2_t** alphas, double* rho, double* r)
 int svm_predict(matrix2_t* _Input, matrix2_t* alpha, vfloat_t* predict);
 
 #endif

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-15 17:25:29
+ * @LastEditTime: 2023-09-17 13:25:50
  * @FilePath: /boring-code/src/statistical_learning/svm.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -437,7 +437,33 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     return 0;
 }
 
-int svm_predict(matrix2_t* _Input, matrix2_t* alphas, double rho, double r, svm_type_t svm_type, vfloat_t* predict)
+int svm_predict(matrix2_t* _Input, matrix2_t* _X, matrix2_t* _Y,  matrix2_t* alpahs, double rho, double r, svm_type_t svm_type, vfloat_t* predict)
 {
+    if ()
+}
 
+int svm_predict_svm(matrix2_t* _Input, matrix2_t* _X, matrix2_t* _Y, matrix2_t* alphas, double rho, Kernel_func K, k_params_t* k_params, vfloat_t* predict)
+{
+    
+    double sign = 0.f;
+    MAT2_POOL_PTR(_X, X_ptr);
+
+    for (int i=0; i<alphas->rows; ++i) {
+        
+        // alpha 大于零的 _X 才能做支持向量。
+        
+        if (alphas->pool[i] > 0) {
+
+            // 公式 3-52 
+            vfloat_t alpah = alphas->pool[i];
+            vfloat_t y     = _Y->pool[i];
+            sign += alpah * y * K(_Input->pool, X_ptr[i], _X->cols, k_params->p1, k_params->p2, k_params->p3);
+        }
+
+    }
+    
+    sign += rho;
+
+    *predict = sign > 0 ? 1 : -1;
+    return 0;
 }
