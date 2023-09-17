@@ -74,6 +74,7 @@ set (SOURCE
     src/statistical_learning/adaboost.c
     src/statistical_learning/em.c
     src/statistical_learning/svm.c
+    src/statistical_learning/svm_kernel_func.c
     src/statistical_learning/counting.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c

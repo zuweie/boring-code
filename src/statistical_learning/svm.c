@@ -2,11 +2,11 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-17 15:49:19
+ * @LastEditTime: 2023-09-17 16:21:13
  * @FilePath: /boring-code/src/statistical_learning/svm.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-
+#include <math.h>
 #include <float.h>
 #include "svm.h"
 
@@ -212,7 +212,7 @@ static int __solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_
             // 式子 30163 的分母
             double q     = Q_ptr[out_i][out_i] + Q_ptr[out_j][out_j] - 2 * Q_ptr[out_i][out_j];
             // 这里房子 QV 出现零的情况，若出现0，则除以一个很小的数字, 
-            double delta = (G->pool[out_i] - G->pool[out_j])  /  (fabs(q) > FLT_EPSILON ? q : FLT_EPSILON); 
+            double delta = (G->pool[out_i] - G->pool[out_j])  /  ( fabs(q) > FLT_EPSILON ? q : FLT_EPSILON); 
 
             // 式子 3-165 为 Beta_i_new + Beta_j_new = beta_i-delta + beta_j+delta
             // 于是 3-165 为以下写法。
@@ -248,7 +248,7 @@ static int __solve_generic(matrix2_t* G, matrix2_t* Beta, matrix2_t* Q, matrix2_
             // Zi ！= Zj 的情况
 
             double q     = Q_ptr[out_i][out_i] + Q_ptr[out_j][out_j] + 2 * Q_ptr[out_i][out_j];
-            double delta = (-G->pool[out_i] - G->pool[out_j]) / (fabs(q) > FLT_EPSILON? q : FLT_EPSILON);
+            double delta = (-G->pool[out_i] - G->pool[out_j]) / ( fabs(q) > FLT_EPSILON? q : FLT_EPSILON);
             double diff  = beta_i - beta_j;
             beta_i += delta;
             beta_j += delta;
@@ -352,7 +352,7 @@ static int __calculate_rho_nu_svm(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, 
     double nr_sum_1 = 0.f, nr_sum_2 = 0.f;
     double r1, r2;
 
-    for (int i=0; i<Beta->rows, ++i) {
+    for (int i=0; i<Beta->rows; ++i) {
 
         double G_i = G->pool[i];
         if (_Y->pool[i] > 0.f) {
@@ -389,7 +389,33 @@ static int __calculate_rho_nu_svm(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, 
 
     *rho = (r1 - r2) * 0.5f;
     *r   = (r1 + r2) * 0.5f;
-    return 0
+    return 0;
+}
+
+static int svm_predict_c_svc(matrix2_t* _Input, matrix2_t* _X, matrix2_t* _Y, matrix2_t* alphas, double rho, Kernel_func K, k_params_t* k_params, vfloat_t* predict)
+{
+    
+    double sign = 0.f;
+    MAT2_POOL_PTR(_X, X_ptr);
+
+    for (int i=0; i<alphas->rows; ++i) {
+        
+        // alpha 大于零的 _X 才能做支持向量。
+        
+        if (alphas->pool[i] > 0) {
+
+            // 公式 3-52 
+            vfloat_t alpah = alphas->pool[i];
+            vfloat_t y     = _Y->pool[i];
+            sign += alpah * y * K(_Input->pool, X_ptr[i], _X->cols, k_params->p1, k_params->p2, k_params->p3);
+        }
+
+    }
+    
+    sign += rho;
+
+    *predict = sign > 0 ? 1 : -1;
+    return 0;
 }
 /**
  * @brief SVM 训练过程，使用广义 SMO 计算支持向量。
@@ -432,7 +458,7 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     //*alphas = Beta;
 
     // 计算完毕，有用的信息提取。
-    model->alpahs = Beta;
+    model->alphas = Beta;
     model->_X     = train_data;
     model->_Y     = train_label;
     model->K      = K;
@@ -449,6 +475,8 @@ int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type
     return 0;
 }
 
+
+
 int svm_predict(matrix2_t* _Input, svm_model_t* model, vfloat_t* predict)
 {
     if (model->svm_type == c_svc) {
@@ -457,33 +485,9 @@ int svm_predict(matrix2_t* _Input, svm_model_t* model, vfloat_t* predict)
     return 0;
 }
 
-int svm_predict_c_svc(matrix2_t* _Input, matrix2_t* _X, matrix2_t* _Y, matrix2_t* alphas, double rho, Kernel_func K, k_params_t* k_params, vfloat_t* predict)
-{
-    
-    double sign = 0.f;
-    MAT2_POOL_PTR(_X, X_ptr);
 
-    for (int i=0; i<alphas->rows; ++i) {
-        
-        // alpha 大于零的 _X 才能做支持向量。
-        
-        if (alphas->pool[i] > 0) {
-
-            // 公式 3-52 
-            vfloat_t alpah = alphas->pool[i];
-            vfloat_t y     = _Y->pool[i];
-            sign += alpah * y * K(_Input->pool, X_ptr[i], _X->cols, k_params->p1, k_params->p2, k_params->p3);
-        }
-
-    }
-    
-    sign += rho;
-
-    *predict = sign > 0 ? 1 : -1;
-    return 0;
-}
 
 int svm_model_release(svm_model_t* model) 
 {
-    Mat2_destroy(model->alpahs);
+    Mat2_destroy(model->alphas);
 }

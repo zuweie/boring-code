@@ -1,3 +1,4 @@
+#include <math.h>
 #include "svm_kernel_func.h"
 
 /**
@@ -11,7 +12,7 @@
  * @param p2 使得接口统一
  * @return double 
  */
-double kernel_function_rbf(vfloat_t* v1, vfloat_t* v2, int size_v, double _garmmer, double p1, double p1)
+double kernel_function_rbf(vfloat_t* v1, vfloat_t* v2, int size_v, double _garmmer, double p1, double p2)
 {
     double dis_q = 0.f;
 

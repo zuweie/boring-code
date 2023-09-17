@@ -3,6 +3,14 @@
 
 #include "matrix2.h"
 
+typedef struct _k_params k_params_t;
+typedef struct _svm_model svm_model_t;
+typedef struct _svm_params svm_params_t;
+
+typedef double (*Kernel_func)(vfloat_t*, vfloat_t*, int, double, double, double);
+typedef int (*Selct_working_set_func)(matrix2_t*, matrix2_t*, matrix2_t*, svm_params_t*, int*, int* );
+typedef int (*Calculate_rho)(matrix2_t*, matrix2_t*, matrix2_t*, svm_params_t*, double*, double*);
+
 typedef enum {
 
     c_svc,
@@ -13,17 +21,17 @@ typedef enum {
 
 }svm_type_t;
 
-typedef struct {
+struct _k_params {
 
     double p1;
     double p2;
     double p3;
 
-} k_params_t;
+};
 
-typedef struct {
+struct _svm_model{
 
-    matrix2_t* alpahs;
+    matrix2_t* alphas;
     matrix2_t* _X;
     matrix2_t* _Y;
     
@@ -35,9 +43,9 @@ typedef struct {
     double rho;
     double r;
 
-} svm_model_t;
+};
 
-typedef struct {
+struct _svm_params {
 
     // 两个类的惩罚参数，正常来说两个类的惩罚参数应该是一样的。
     // C[0] 为 -1 类，C[1] 为 1 类。
@@ -49,11 +57,9 @@ typedef struct {
     // 最大的迭代次数。
     int max_iter;
 
-} svm_params_t;
+};
 
-typedef double (*Kernel_func)(vfloat_t*, vfloat_t*, int, double, double, double);
-typedef int (*Selct_working_set_func)(matrix2_t*, matrix2_t*, matrix2_t*, svm_params_t*, int*, int* );
-typedef int (*Calculate_rho)(matrix2_t*, matrix2_t*, matrix2_t*, svm_params_t*, double*, double*);
+
 
 int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, svm_params_t* svm_params, Kernel_func K, k_params_t* k_params, svm_model_t* model);
 int svm_predict(matrix2_t* _Input, svm_model_t* model, vfloat_t* predict);

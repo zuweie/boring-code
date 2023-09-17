@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-17 15:49:33
+ * @LastEditTime: 2023-09-17 16:25:34
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1035,10 +1035,10 @@ static void test_svm_simple (void)
     // };
 
     static vfloat_t Y_data[]= {
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
     };
@@ -1050,7 +1050,6 @@ static void test_svm_simple (void)
     matrix2_t* train_mat = Mat2_create(1,1);
     matrix2_t* label_mat = Mat2_create(1,1);
     matrix2_t* test_mat = Mat2_create(1,1);
-    vfloat_t predict;
 
     Mat2_load_on_shape(train_mat, X_data, 60, 4);
     Mat2_load_on_shape(label_mat, Y_data, 60, 1);
@@ -1083,7 +1082,7 @@ static void test_svm_simple (void)
     Mat2_destroy(label_mat);
     Mat2_destroy(test_mat);
 
-    return 0;
+    return ;
 
 }
 
