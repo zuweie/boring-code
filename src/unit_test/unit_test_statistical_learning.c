@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-17 16:25:34
+ * @LastEditTime: 2023-09-18 12:53:34
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1072,7 +1072,8 @@ static void test_svm_simple (void)
     k_params.p2 = 0.f;
     k_params.p3 = 0.f;
     
-    svm_train(train_mat, label_mat, c_svc, &svm_params, kernel_function_rbf, &k_params, &svm_model);
+    printf("start svm training...\n ");
+    svm_train(train_mat, label_mat, c_svc, &svm_params, kernel_function_rbf, &k_params, &svm_model, NULL);
     svm_predict(test_mat, &svm_model, &predict);
 
     printf(" predict: %lf, ",predict);
@@ -1086,9 +1087,161 @@ static void test_svm_simple (void)
 
 }
 
+static void svm_training_progress (char* title, unsigned long step, unsigned long total) 
+{
+    char buffer[1024];
+    memset(buffer, 0x0, sizeof(buffer));
+    // if(total==0)
+    //     sprintf(buffer, "%s, 进度: %ld ", title, step);
+    // else 
+    //     sprintf(buffer, "%s, 剩余节点: %ld, 剩余数据：%ld ", title,  step, total);
+
+    //printf("%s\n", buffer);
+
+    sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf ", title, step, total, (double) step / (double) total );
+    printf("%s\r", buffer);
+    fflush(stdout);
+}
+
 static void test_svm_large(void) 
 {
+    const char* train_csv_file = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_train.csv";
+    const char* test_csv_file  = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/mnist/mnist_test.csv";
+
+    matrix2_t* csv_mat    = Mat2_create(1,1);
+    matrix2_t* train_mat  = Mat2_create(1,1);
+    matrix2_t* train_label_mat  = Mat2_create(1,1);
+    matrix2_t* test_label_mat = Mat2_create(1,1);
+    matrix2_t* test_mat = Mat2_create(1,1);
+    matrix2_t* _X       = Mat2_create(1,1);
+
+
+    Mat2_load_csv(csv_mat, train_csv_file);
+    Mat2_slice_col_to(train_label_mat, csv_mat, 0);
+    Mat2_slice_cols_to(train_mat, csv_mat, 1, csv_mat->cols);
+
+    Mat2_load_csv(csv_mat, test_csv_file);
+    Mat2_slice_col_to(test_label_mat, csv_mat, 0);
+    Mat2_slice_cols_to(test_mat, csv_mat, 1, csv_mat->cols);
+
+    MAT2_POOL_PTR(train_mat, train_mat_ptr);
+    for (int i=0; i<train_mat->rows; ++i) {
+        for (int j=0; j<train_mat->cols; ++j) {
+
+            if (train_mat_ptr[i][j] < 127) {
+                train_mat_ptr[i][j] = 0;
+            } else {
+                train_mat_ptr[i][j] = 1;
+            }
+            
+        }
+    }   
+
+    MAT2_POOL_PTR(train_label_mat, train_label_mat_ptr);
+
+    for (int i=0; i<train_label_mat->rows; ++i) {
+        for (int j=0; j<train_label_mat->cols; ++j) {
+
+            if (train_label_mat_ptr[i][j] == (vfloat_t)(0)) {
+                train_label_mat_ptr[i][j] = 1;
+            } else {
+                train_label_mat_ptr[i][j] = -1;
+            }
+            
+        }
+    }   
+
+    // MAT2_INSPECT(train_label_mat);
+    // return;
+
+    MAT2_POOL_PTR(test_mat, test_mat_ptr);
+    for (int i=0; i<test_mat->rows; ++i) {
+        for (int j=0; j<test_mat->cols; ++j) {
+            if (test_mat_ptr[i][j] < 127) {
+                test_mat_ptr[i][j] = 0;
+            } else {
+                test_mat_ptr[i][j] = 1;
+            }
+        }
+    }
+
+    MAT2_POOL_PTR(test_label_mat, test_label_mat_ptr);
+
+    for (int i=0; i<test_label_mat->rows; ++i) {
+        for (int j=0; j<test_label_mat->cols; ++j) {
+            if (test_label_mat_ptr[i][j] == (vfloat_t)(0)) {
+                test_label_mat_ptr[i][j] = 1;
+            } else {
+                test_label_mat_ptr[i][j] = -1;
+            }
+        }
+    }
+
+
+    printf("\n ---- *** training ... *** ----\n");
+    //adaboost_tree_train(train_mat, train_label_mat, M, &alphas_out,  &Gx_out, adaboost_tree_training_progress);
+    svm_model_t model;
+    svm_params_t svm_params;
+    svm_model_t svm_model;
+    k_params_t k_params;
     
+
+    // 初始化 参数
+    svm_params.C[0] = 10;
+    svm_params.C[1] = 10;
+    svm_params.eps  = 1;
+    svm_params.max_iter = 1e+5;
+
+    k_params.p1 = 8.0f;
+    k_params.p2 = 0.f;
+    k_params.p3 = 0.f;
+
+    //svm_train(train_mat, train_label_mat, c_svc, )
+
+    svm_train(train_mat, train_label_mat, c_svc, &svm_params, kernel_function_rbf, &k_params, &svm_model, svm_training_progress);
+
+    printf(" \n ---- *** predicting ... *** ---- \n");
+    //MAT2_INSPECT(test_label_mat);
+    int correct = 0;
+    int label;
+    char buff[1024];
+    memset(buff, 0x0, sizeof(buff));
+    int test_number = test_label_mat->rows;
+
+    for (int i=0; i<test_number; ++i) {
+
+        label = (int)test_label_mat->pool[i];
+
+        Mat2_slice_row_to(_X, test_mat, i);
+
+        vfloat_t predict;
+
+        //adaboost_tree_predict(_X, M, Gx_out, alphas_out, &predict);
+        svm_predict(_X, &svm_model, &predict);
+
+        if ((int)predict == label) 
+            correct++; 
+
+        sprintf(buff, "Process: %d / %d, predict: %d - %d, correct %.2f ... ", i+1, test_number, (int)predict, label, ((float) (correct) / (float) (test_number))*100);
+        
+        printf("%s\r", buff);
+
+        fflush(stdout);
+
+        //printf("correct: %ld \n", correct);
+    }
+
+    svm_model_release(&svm_model);
+
+    Mat2_destroy(csv_mat);
+    Mat2_destroy(train_mat);
+    Mat2_destroy(train_label_mat);
+    Mat2_destroy(test_label_mat); 
+    Mat2_destroy(test_mat);
+    Mat2_destroy(_X );
+
+    return;
+
 }
 
 int do_statistical_learning_test (void) 
@@ -1162,7 +1315,12 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test adaboost tree large", test_svm_simple) ) {
+    // if (NULL == CU_add_test(pSuite, "svm test simple", test_svm_simple) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "svm test large", test_svm_large) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -6,6 +6,7 @@
 typedef struct _k_params k_params_t;
 typedef struct _svm_model svm_model_t;
 typedef struct _svm_params svm_params_t;
+typedef struct _svm_running_time_Q Q_t;
 
 typedef double (*Kernel_func)(vfloat_t*, vfloat_t*, int, double, double, double);
 typedef int (*Selct_working_set_func)(matrix2_t*, matrix2_t*, matrix2_t*, svm_params_t*, int*, int* );
@@ -45,6 +46,13 @@ struct _svm_model{
 
 };
 
+struct _svm_running_time_Q {
+    matrix2_t* _X;
+    matrix2_t* _Y;
+    Kernel_func K;
+    k_params_t* k_params;
+};
+
 struct _svm_params {
 
     // 两个类的惩罚参数，正常来说两个类的惩罚参数应该是一样的。
@@ -61,7 +69,7 @@ struct _svm_params {
 
 
 
-int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, svm_params_t* svm_params, Kernel_func K, k_params_t* k_params, svm_model_t* model);
+int svm_train(matrix2_t* train_data, matrix2_t* train_label, svm_type_t svm_type, svm_params_t* svm_params, Kernel_func K, k_params_t* k_params, svm_model_t* model, void (*progress)(const char*, unsigned long, unsigned long));
 int svm_predict(matrix2_t* _Input, svm_model_t* model, vfloat_t* predict);
 int svm_model_release(svm_model_t* model);
 
