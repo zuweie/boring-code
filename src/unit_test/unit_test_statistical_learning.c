@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-18 12:53:34
+ * @LastEditTime: 2023-09-18 14:18:28
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1089,6 +1089,7 @@ static void test_svm_simple (void)
 
 static void svm_training_progress (char* title, unsigned long step, unsigned long total) 
 {
+    //return;
     char buffer[1024];
     memset(buffer, 0x0, sizeof(buffer));
     // if(total==0)
@@ -1187,12 +1188,12 @@ static void test_svm_large(void)
     
 
     // 初始化 参数
-    svm_params.C[0] = 10;
-    svm_params.C[1] = 10;
-    svm_params.eps  = 1;
+    svm_params.C[0] = 100;
+    svm_params.C[1] = 100;
+    svm_params.eps  = 0.1;
     svm_params.max_iter = 1e+5;
 
-    k_params.p1 = 8.0f;
+    k_params.p1 = .01f;
     k_params.p2 = 0.f;
     k_params.p3 = 0.f;
 
@@ -1315,15 +1316,15 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
-    // if (NULL == CU_add_test(pSuite, "svm test simple", test_svm_simple) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    if (NULL == CU_add_test(pSuite, "svm test large", test_svm_large) ) {
+    if (NULL == CU_add_test(pSuite, "svm test simple", test_svm_simple) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    // if (NULL == CU_add_test(pSuite, "svm test large", test_svm_large) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
 }
 

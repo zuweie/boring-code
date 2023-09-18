@@ -2,18 +2,18 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-18 12:40:24
+ * @LastEditTime: 2023-09-18 14:21:17
  * @FilePath: /boring-code/src/statistical_learning/svm.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include <math.h>
 #include <float.h>
+//#include <stdio.h>
 #include "svm.h"
 
 static double __access_Q(Q_t* Q, int i, int j) 
 {
     MAT2_POOL_PTR(Q->_X, X_ptr);
-
     return Q->_Y->pool[i] * Q->_Y->pool[j] * Q->K(X_ptr[i], X_ptr[j], Q->_X->cols,Q->k_params->p1, Q->k_params->p2, Q->k_params->p3);
 }
 
@@ -141,6 +141,7 @@ static int __working_set_1(matrix2_t* G, matrix2_t* Beta, matrix2_t* _Y, svm_par
 
     *out_i = out_max_i;
     *out_j = out_max_j;
+    //printf("gmaxi + gmaxj: %lf\n", (Gmax_i + Gmax_j));
     return Gmax_i + Gmax_j < svm_params->eps;
 }
 
@@ -317,10 +318,9 @@ static int __solve_generic(matrix2_t* G, matrix2_t* Beta, /*matrix2_t* Q,*/ Q_t*
         // for(int k=0; k<G->rows; ++k) {
         //     G->pool[k] += (Q_ptr[k][out_i] * delta_beta_i + Q_ptr[k][out_j] * delta_beta_j);
         // }
-
+        //printf("deltai: %lf, deltaj: %lf \n", delta_beta_i, delta_beta_j);
         for(int k=0; k<G->rows; ++k) {
             G->pool[k] += (__access_Q(Q, k, out_i) * delta_beta_i + __access_Q(Q, k, out_j) * delta_beta_j);
-
         }
         
     } // end while
