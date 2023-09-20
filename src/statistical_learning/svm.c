@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-18 14:21:17
+ * @LastEditTime: 2023-09-20 11:00:57
  * @FilePath: /boring-code/src/statistical_learning/svm.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -211,7 +211,7 @@ static int __working_set_2(matrix2_t* G, matrix2_t* Beta, matrix2_t* _Y, svm_par
 }
 
 
-static int __solve_generic(matrix2_t* G, matrix2_t* Beta, /*matrix2_t* Q,*/ Q_t* Q, matrix2_t* _Y, svm_params_t* svm_params, Selct_working_set_func S, Calculate_rho C, double* rho, double* r, void (*progress)(const char*, unsigned long, unsigned long))  
+static int __solve_generic(matrix2_t* G, matrix2_t* Beta, /*matrix2_t* Q,*/ Q_t* Q, matrix2_t* _Y, svm_params_t* svm_params, Selct_working_set_func Select, Calculate_rho Cal_rho, double* rho, double* r, void (*progress)(const char*, unsigned long, unsigned long))  
 {
     double old_beta_i, old_beta_j, beta_i, beta_j, delta_beta_i, delta_beta_j;
     int out_i, out_j;
@@ -222,7 +222,7 @@ static int __solve_generic(matrix2_t* G, matrix2_t* Beta, /*matrix2_t* Q,*/ Q_t*
     
     // 找到要做导数两个两个 beta_i、beta_j
 
-    while (!S(G, Beta, _Y, svm_params, &out_i, &out_j) && ++iter < svm_params->max_iter) {
+    while (!Select(G, Beta, _Y, svm_params, &out_i, &out_j) && ++iter < svm_params->max_iter) {
         
         if (progress)
             progress("SMO 计算两个可用的 Beta...", iter, svm_params->max_iter);
@@ -236,10 +236,10 @@ static int __solve_generic(matrix2_t* G, matrix2_t* Beta, /*matrix2_t* Q,*/ Q_t*
 
         if (_Y->pool[out_i] == _Y->pool[out_j]) {
             // Zi == Zj 的情况
-            // 式子 30163 的分母
+            // 式子 3-163 的分母
             // double q = Q_ptr[out_i][out_i] + Q_ptr[out_j][out_j] - 2 * Q_ptr[out_i][out_j];
             double q     =  __access_Q(Q, out_i, out_i) + __access_Q(Q, out_j, out_j) - 2 * __access_Q(Q, out_i, out_j);
-            // 这里房子 QV 出现零的情况，若出现0，则除以一个很小的数字, 
+            // 这里防止 q 出现零的情况，若出现0，则除以一个很小的数字, 
             double delta = (G->pool[out_i] - G->pool[out_j])  /  ( fabs(q) > FLT_EPSILON ? q : FLT_EPSILON); 
 
             // 式子 3-165 为 Beta_i_new + Beta_j_new = beta_i-delta + beta_j+delta
@@ -326,7 +326,7 @@ static int __solve_generic(matrix2_t* G, matrix2_t* Beta, /*matrix2_t* Q,*/ Q_t*
     } // end while
 
     // 计算 rho 与 r。
-    C(_Y, G, Beta, svm_params, rho, r);
+    Cal_rho(_Y, G, Beta, svm_params, rho, r);
      
     //
     return 0;
@@ -427,18 +427,27 @@ static int __calculate_rho_nu_svm(matrix2_t* _Y, matrix2_t* G, matrix2_t* Beta, 
     return 0;
 }
 
+static int __generate_c_svc_model(matrix2_t* Beta, matrix2_t* _X, matrix2_t* _Y, Kernel_func K, k_params_t* k_params, double rho, double r, svm_type_t svm_type, svm_model_t* model)
+{
+    // 计算完毕，有用的信息提取。
+
+    // 这里可以优化，生成一个数组，只取大于 0 的 alphas。留作以后再去优化。
+    model->alphas = Beta;
+    model->_X     = _X;
+    model->_Y     = _Y;
+    model->K      = K;
+    model->k_params = k_params;
+    model->rho    = rho;
+    model->r      = r;
+    model->svm_type = svm_type;
+
+    return 0;
+}
+
 static int __generate_model(matrix2_t* Beta, matrix2_t* _X, matrix2_t* _Y, Kernel_func K, k_params_t* k_params, double rho, double r, svm_type_t svm_type, svm_model_t* model)
 {
     if (svm_type == c_svc) {
-        // 计算完毕，有用的信息提取。
-        model->alphas = Beta;
-        model->_X     = _X;
-        model->_Y     = _Y;
-        model->K      = K;
-        model->k_params = k_params;
-        model->rho    = rho;
-        model->r      = r;
-        model->svm_type = svm_type;
+        return __generate_c_svc_model(Beta, _X, _Y, K, k_params, rho, r, svm_type, model);
     }
     return 0;
 }
