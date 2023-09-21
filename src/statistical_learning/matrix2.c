@@ -414,6 +414,21 @@ int Mat2_inverse(matrix2_t* mat) {
     return -1;
 }
 
+int Mat2_hadamard_product(matrix2_t* mat1, matrix2_t* mat2)
+{
+    int mat1_size = mat1->rows * mat1->cols;
+    int mat2_size = mat2->rows * mat2->cols;
+
+    if (mat1_size == mat2_size) {
+        for (int i=0; i<mat1_size; ++i) {
+            mat1->pool[i] *= mat2->pool[i];
+        }
+        return 0;
+    }
+    return -1;
+} 
+
+
 int Mat2_dot(matrix2_t* mat1, matrix2_t* mat2)
 {
     if (mat1->cols == mat2->rows) {
@@ -528,7 +543,7 @@ int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a)
 
 
 /**
- * @brief 计算矩阵 m1 的
+ * @brief 计算矩阵 m1 的特征向量
  * 
  * @param eigen_values 
  * @param eigen_vectors 
@@ -599,4 +614,46 @@ int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1)
 
     }
     return -1;
+}
+
+/**
+ * @brief 计算 mat 的所有元素
+ * 
+ * @param mat 
+ * @param axis 
+ * @return double 
+ */
+int Mat2_sum(matrix2_t* mat, int axis)
+{
+    double sum = 0.f;
+    MAT2_POOL_PTR(mat, mat_ptr);
+
+    if (axis == 0) {
+
+        for (int i=1; i<mat->rows; ++i) {
+            for (int j=0; j<mat->cols; ++j) {
+                mat_ptr[0][j] += mat_ptr[i][j];
+
+            }
+        }
+
+        mat->rows = 1;
+        
+    } else if (axis == 1){
+
+        for (int j=1; j<mat->cols; ++j) {
+            for (int i=0; i<mat->rows; ++i) {
+                mat_ptr[i][0] += mat_ptr[i][j];
+            }
+        }
+
+        for (int k=1; k<mat->rows; ++k) {
+
+            mat->pool[k] = mat_ptr[k][0];
+
+        }
+        mat->cols = 1;
+
+    }
+    return 0;
 }

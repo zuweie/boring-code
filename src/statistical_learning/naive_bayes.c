@@ -460,9 +460,11 @@ int navie_bayes_predict_MGD2_edit(matrix2_t* _X, void* py_counting, void* mus, v
 
         Mat2_T(_X_cpy_T);
 
-        for (int j=0; j<w_mat->cols; ++j) {
-            _X_cpy->pool[j] *= w_mat->pool[j];
-        }
+        Mat2_hadamard_product(_X_cpy, w_mat);
+        
+        // for (int j=0; j<w_mat->cols; ++j) {
+        //     _X_cpy->pool[j] *= w_mat->pool[j];
+        // }
 
         Mat2_dot(_X_cpy, _X_cpy_T);
 

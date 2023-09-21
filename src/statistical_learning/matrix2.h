@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-12 10:51:41
+ * @LastEditTime: 2023-09-21 15:14:24
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -59,12 +59,12 @@ int Mat2_get_co_to(matrix2_t* dest, matrix2_t* src, int p, int q);
 int Mat2_det(matrix2_t* mat, vfloat_t* out);
 int Mat2_get_adjoint_to(matrix2_t* dest, matrix2_t* src);
 int Mat2_inverse(matrix2_t* mat);
-
+int Mat2_hadamard_product(matrix2_t* mat1, matrix2_t* mat2);
 
 int Mat2_qr(matrix2_t* q, matrix2_t* r, matrix2_t* a);
 int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1);
 
-
+int Mat2_sum(matrix2_t* mat, int axis);
 
 #define MAT2_POOL_PTR(mat, ptr_name) vfloat_t(*ptr_name)[(mat)->cols]=(mat)->pool
 #define MAT2_DIFF_LIST_PTR(diff_ptr) 
