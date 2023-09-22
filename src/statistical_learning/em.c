@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-08-15 14:48:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-22 13:12:13
+ * @LastEditTime: 2023-09-22 17:50:31
  * @FilePath: /boring-code/src/statistical_learning/em.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,15 +10,26 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <float.h>
 #include "em.h"
+
+static int __init_apK_data(matrix2_t* apK)
+{
+    //srand((unsigned) time (NULL));
+
+    for (int i=0; i<apK->rows * apK->cols; ++i) {
+        apK->pool[i] = (double)rand() / RAND_MAX;
+    }
+    return 0;
+}
 
 static int __init_mu_data(matrix2_t* mu) 
 {
-    Mat2_fill(mu, 0.f);
+    //Mat2_fill(mu, 0.f);
     srand((unsigned) time (NULL));
 
     for (int i=0; i<mu->rows * mu->cols; ++i) {
-        mu->pool[i] = (double) rand() / RAND_MAX;
+        mu->pool[i] = 0.5;//(double) rand() / RAND_MAX;
     }
     return 0;
 }
@@ -41,7 +52,7 @@ static int __init_sigma_data(matrix2_t* sigma)
     srand((unsigned) time (NULL));
 
     for (int i=0; i<sigma->rows; ++i) {
-        sigma_ptr[i][i] = (double) rand() / RAND_MAX;
+        sigma_ptr[i][i] = 0.99f;//(double) rand() / RAND_MAX;
     }
     return 0;
 }
@@ -85,14 +96,87 @@ static double __calculate_apK(matrix2_t* _Xi, matrix2_t* sigma, double alpha)
 
     pK += log(alpha);
     pK -= 0.5 * log(det_sigma);
-    pK -= _Xi->pool[0];
+    pK -= 0.5 * _Xi->pool[0];
 
     Mat2_destroy(w_mat);
     Mat2_destroy(u_mat);
     Mat2_destroy(_Xi_T);
     Mat2_destroy(inverse_sigma);
+    
+    double ret = exp(pK);
+    //printf("ret: %lf \n", ret);
+    return ret;
+}
 
-    return exp(pK);
+/**
+ * @brief 使用原始的算法试试。
+ * 
+ * @param _Xi 
+ * @param sigma 
+ * @param alpha 
+ */
+static double __calculate_apK_2(matrix2_t* _Xi, matrix2_t* mu,  matrix2_t* sigma, double alpha) 
+{
+    // 此处的 _Xi mu, sigma 对象不能被改变，因为在外面还要用到 
+    matrix2_t* _Xi_cpy = Mat2_create_cpy(_Xi); 
+    matrix2_t* _Xi_T   = Mat2_create(1,1);
+    matrix2_t* mu_cpy  = Mat2_create_cpy(mu);
+    matrix2_t* sigma_cpy = Mat2_create_cpy(sigma);
+
+    int d = _Xi_cpy->cols;
+
+    vfloat_t det_sigma;
+    Mat2_det(sigma_cpy, &det_sigma);
+    Mat2_inverse(sigma_cpy);
+
+    Mat2_T(mu_cpy);
+    Mat2_sub(_Xi_cpy, mu_cpy);
+    
+    Mat2_cpy(_Xi_T, _Xi_cpy);
+    Mat2_T(_Xi_T);
+
+    Mat2_dot(_Xi_cpy, sigma_cpy);
+
+
+    Mat2_dot(_Xi_cpy, _Xi_T);
+
+    double pk = 0.f;
+    pk += log(alpha);
+    //pk -= 0.5f * d * log(2*3.1415926);
+    pk -= 0.5f * log(det_sigma);
+    pk -= 0.5f * _Xi_cpy->pool[0];
+
+    double ret = exp(pk);
+    //printf("<alpha: %lf, det_sigm: %lf, xi[0]: %lf, pk: %lf, ret: %lf> \n", alpha, det_sigma, _Xi->pool[0], pk, ret);
+    //printf("ret: %lf ", ret);
+
+    Mat2_destroy(_Xi_T);
+    Mat2_destroy(mu_cpy);
+    Mat2_destroy(sigma_cpy);
+    Mat2_destroy(_Xi_cpy);
+
+
+    return ret;
+}
+
+/**
+ * @brief 计算所有 apk 加在一起的值。
+ * 
+ * @param K 
+ * @param apKs 
+ * @return double 
+ */
+static double __calculate_lnapK_sum(int K, matrix2_t** apKs) 
+{
+    double sum = 0.f;
+    for (int i=0; i<K; ++i) {
+        matrix2_t* apk = apKs[i];
+
+        for (int j=0; j<apk->rows*apk->cols; ++j) {
+            sum += log(apk->pool[j]);
+        }
+    }
+    return sum;
 }
 
 //  计算 期望 步。
@@ -106,12 +190,13 @@ static double __calculate_apK(matrix2_t* _Xi, matrix2_t* sigma, double alpha)
  * @param apK 
  * @return int 
  */
-static int __e_step(matrix2_t* _X, int K, double* alphas, matrix2_t** sigmas, matrix2_t** apKs)
+static int __e_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matrix2_t** sigmas, matrix2_t** apKs)
 {
     matrix2_t* _Xi = Mat2_create(1,1);
     double alpha;
     matrix2_t* sigma;
     matrix2_t* apK;
+    matrix2_t* mu;
 
     for (int i=0; i<_X->rows; ++i) {
 
@@ -121,10 +206,12 @@ static int __e_step(matrix2_t* _X, int K, double* alphas, matrix2_t** sigmas, ma
         for (int j=0; j<K; ++j) {
             
             alpha  = alphas[j];
+            mu     = mus[j];
             sigma  = sigmas[j];
             apK    = apKs[j];
 
-            apK->pool[i] = __calculate_apK(_Xi, sigma, alpha);
+            //apK->pool[i] = __calculate_apK(_Xi, sigma, alpha);
+            apK->pool[i] = __calculate_apK_2(_Xi, mu, sigma, alpha);
             p += apK->pool[i];
         }
 
@@ -168,9 +255,7 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
         //int n = apK_cpy->rows;
         Mat2_sum(apK_cpy, 0);
         sum_apk = apK_cpy->pool[0];
-
-
-
+        
         // TODO: 1 各个模型的 alpah 
         alphas[i] =  sum_apk / apK->rows;
         // end 1
@@ -182,7 +267,7 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
         MAT2_POOL_PTR(mu, mu_ptr);
 
         for (int m=0; m<mu->rows; ++m) {
-            for (int l=0; l<mu->rows; ++l) {
+            for (int l=0; l<mu->cols; ++l) {
                 mu_ptr[m][l] *= apK->pool[m];
             }
         }
@@ -249,38 +334,58 @@ int EM_train(matrix2_t* _X, int K, int Max_iter, double eps, double** alphas, ma
     matrix2_t** __apKs     = (matrix2_t**)malloc (K * sizeof(matrix2_t*));
     matrix2_t** __mus      = (matrix2_t**)malloc (K * sizeof(matrix2_t*));
     matrix2_t** __sigmas   = (matrix2_t**) malloc (K * sizeof(matrix2_t*));
+   
+
     double*    __alphas    = (double*) malloc (K * sizeof(double));
 
 
     for (int i=0; i<K; ++i) {
         __mus[i]    = Mat2_create(_X->cols, 1);
-        //Mat2_fill(__mus[i], 0.8);
-
-        __init_mu_data(__mus[i]);
-
-        //MAT2_INSPECT(__mus[i]);
+        //__init_mu_data(__mus[i]);
 
         __sigmas[i] = Mat2_create(_X->cols, _X->cols);
-        __init_sigma_data(__sigmas[i]);
+        //__init_sigma_data(__sigmas[i]);
 
         //MAT2_INSPECT(__sigmas[i]);
 
         __apKs[i]   = Mat2_create(_X->rows, 1);
+        __init_apK_data(__apKs[i]);
+
         __alphas[i] = 1.f / (double) K;      
     }
 
     int iter = 0;
-    while ( ++iter <= Max_iter)
-    {
-        if (progress)
-            progress("E step ... ", iter, Max_iter);
+    double sum_diff = FLT_MAX;
+    double last_sum = 0.f;
 
-        __e_step(_X, K, __alphas, __sigmas, __apKs);
+    while ( ++iter <= Max_iter && sum_diff  > eps)
+    {
+        // if (progress)
+        //     progress("E step ... ", iter, Max_iter);
+
+        // __e_step(_X, K, __alphas, __mus, __sigmas, __apKs);
+
+        // if (progress)
+        //     progress("M step ... ", iter, Max_iter);
+
+        // __m_step(_X, K, __alphas, __mus, __sigmas, __apKs);
 
         if (progress)
             progress("M step ... ", iter, Max_iter);
 
         __m_step(_X, K, __alphas, __mus, __sigmas, __apKs);
+
+        if (progress)
+            progress("E step ... ", iter, Max_iter);
+
+        __e_step(_X, K, __alphas, __mus, __sigmas, __apKs);
+
+        // double apks_sum = __calculate_lnapK_sum(K, __apKs);
+
+        // sum_diff = fabs(apks_sum - last_sum);
+
+        // last_sum = apks_sum;
+       
     }
     // 输出结果。
     *alphas = __alphas;

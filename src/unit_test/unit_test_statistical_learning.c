@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-22 13:00:30
+ * @LastEditTime: 2023-09-22 17:50:55
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1264,7 +1264,7 @@ static void test_em (void)
 
     int K = 2;
     int max_iter = 500;
-    double eps   = 1e-3;
+    double eps   = 1e-5;
 
     double* alphas;
     matrix2_t** mus;
@@ -1274,12 +1274,13 @@ static void test_em (void)
     
     printf("\n");
     for (int i=0; i<K; ++i) {
-        printf("---- K %d: ----\n");
+        printf("---- K %d: ----\n", i);
         printf("alpha<%d>: %lf \n", i, alphas[i]);
         printf("mu<%d>: \n", i);
         MAT2_INSPECT(mus[i]);
         printf("sigma<%d>: \n", i);
         MAT2_INSPECT(sigmas[i]);
+        printf("\n");
     }
     
     return;
