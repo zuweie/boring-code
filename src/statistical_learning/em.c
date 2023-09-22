@@ -2,12 +2,49 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-08-15 14:48:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-21 16:41:53
+ * @LastEditTime: 2023-09-22 13:12:13
  * @FilePath: /boring-code/src/statistical_learning/em.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 #include "em.h"
 
+static int __init_mu_data(matrix2_t* mu) 
+{
+    Mat2_fill(mu, 0.f);
+    srand((unsigned) time (NULL));
+
+    for (int i=0; i<mu->rows * mu->cols; ++i) {
+        mu->pool[i] = (double) rand() / RAND_MAX;
+    }
+    return 0;
+}
+
+/**
+ * @brief 
+ * 
+ * @param sigma_data 
+ * @param size 
+ * @return int 
+ */
+static int __init_sigma_data(matrix2_t* sigma) 
+{
+    //memset(sigma_data, 0, size*size*sizeof(vfloat_t));
+
+    Mat2_fill(sigma, 0.f);
+
+    MAT2_POOL_PTR(sigma, sigma_ptr);
+
+    srand((unsigned) time (NULL));
+
+    for (int i=0; i<sigma->rows; ++i) {
+        sigma_ptr[i][i] = (double) rand() / RAND_MAX;
+    }
+    return 0;
+}
 /**
  * @brief 书本中 9-82 式, 计算第 K 模型下第 i 条数据的后验证概率。
  * 
@@ -92,8 +129,8 @@ static int __e_step(matrix2_t* _X, int K, double* alphas, matrix2_t** sigmas, ma
         }
 
         // 归一化。
-        for (int j=0; j<K; ++K) {
-            apK = apKs[j];
+        for (int l=0; l<K; ++l) {
+            apK = apKs[l];
             apK->pool[i] /= p;
         }
     }
@@ -121,7 +158,7 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
     matrix2_t* _Xi     = Mat2_create(1,1);
     matrix2_t* _Xi_T   = Mat2_create(1,1);
     double sum_apk     = 0.f;
-    for (int i=0; i<K; ++K) {
+    for (int i=0; i<K; ++i) {
 
         matrix2_t* apK   = apKs[i];
         matrix2_t* mu    = mus[i];
@@ -150,11 +187,11 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
             }
         }
         
-        Mat2_sum(mu_ptr, 0);
+        Mat2_sum(mu, 0);
         
-        Mat2_scalar_multiply(mu_ptr,  1 / sum_apk);
+        Mat2_scalar_multiply(mu,  1 / sum_apk);
 
-        Mat2_T(mu_ptr);
+        Mat2_T(mu);
 
         // end 2
 
@@ -168,7 +205,7 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
 
             Mat2_T(_Xi);
 
-            Mat2_sub(_Xi, mu_ptr);
+            Mat2_sub(_Xi, mu);
 
             Mat2_cpy(_Xi_T, _Xi);
             
@@ -206,34 +243,49 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
  * @param sigemas 
  * @return int 
  */
-int EM_train(matrix2_t* _X, int K, int Max_iter, double eps, double** alphas, matrix2_t** mus, matrix2_t** sigmas)
+int EM_train(matrix2_t* _X, int K, int Max_iter, double eps, double** alphas, matrix2_t** mus, matrix2_t** sigmas, void (*progress)(const char*, unsigned long, unsigned long))
 {
     // TODO : 非常简单，就是不断的进行 E 步 与 M 的轮流计算，获取高斯分布的那几个关键的参数。nu sigma，与 alpha。
-    matrix2_t** apKs   = malloc (K * sizeof(matrix2_t*));
-    *mus               = malloc (K * sizeof(matrix2_t*));
-    *sigmas            = malloc (K * sizeof(matrix2_t*));
-    *alphas     = malloc (K * sizeof(double));
+    matrix2_t** __apKs     = (matrix2_t**)malloc (K * sizeof(matrix2_t*));
+    matrix2_t** __mus      = (matrix2_t**)malloc (K * sizeof(matrix2_t*));
+    matrix2_t** __sigmas   = (matrix2_t**) malloc (K * sizeof(matrix2_t*));
+    double*    __alphas    = (double*) malloc (K * sizeof(double));
 
-    for (int i=0; i<K; ++K) {
-        mus[i]    = Mat2_create(_X->cols, 1);
-        Mat2_fill(mus[i], 0.8);
 
-        sigmas[i] = Mat2_create(_X->cols, _X->cols);
-        Mat2_fill(sigmas[i], 0.25);
+    for (int i=0; i<K; ++i) {
+        __mus[i]    = Mat2_create(_X->cols, 1);
+        //Mat2_fill(__mus[i], 0.8);
 
-        apKs[i]   = Mat2_create(_X->rows, 1);
-        (*alphas)[i] = 1.f / (double) K;      
+        __init_mu_data(__mus[i]);
+
+        //MAT2_INSPECT(__mus[i]);
+
+        __sigmas[i] = Mat2_create(_X->cols, _X->cols);
+        __init_sigma_data(__sigmas[i]);
+
+        //MAT2_INSPECT(__sigmas[i]);
+
+        __apKs[i]   = Mat2_create(_X->rows, 1);
+        __alphas[i] = 1.f / (double) K;      
     }
 
     int iter = 0;
-    while ( iter ++ < Max_iter)
+    while ( ++iter <= Max_iter)
     {
-        __e_step(_X, K, *alphas, sigmas, apKs);
+        if (progress)
+            progress("E step ... ", iter, Max_iter);
 
-        __m_step(_X, K, *alphas, mus, sigmas, apKs);
+        __e_step(_X, K, __alphas, __sigmas, __apKs);
+
+        if (progress)
+            progress("M step ... ", iter, Max_iter);
+
+        __m_step(_X, K, __alphas, __mus, __sigmas, __apKs);
     }
-
+    // 输出结果。
+    *alphas = __alphas;
+    *mus    = __mus;
+    *sigmas = __sigmas;
     return 0;
-    
 }
 

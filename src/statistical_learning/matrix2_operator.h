@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-07-14 11:33:09
+ * @LastEditTime: 2023-09-22 12:31:11
  * @FilePath: /boring-code/src/statistical_learning/matrix2_operator.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,9 +15,9 @@
 #define MAT2_RAW_INSPECT(pmat, rows, cols) \
 ({ \
     printf("\n raw mat Inspect:\n <rows:%ld, cols:%ld>\n", (rows), (cols)); \
-    for (int i=0; i<(rows); ++i) { \
-        for (int j=0; j<(cols); ++j) { \
-            printf("%0.5f ", (pmat)[i*(cols) + j]); \
+    for (int __mat2_raw_inspect_i=0; __mat2_raw_inspect_i<(rows); ++__mat2_raw_inspect_i) { \
+        for (int __mat2_raw_inspect_j=0; __mat2_raw_inspect_j<(cols); ++__mat2_raw_inspect_j) { \
+            printf("%0.5f ", (pmat)[__mat2_raw_inspect_i*(cols) + __mat2_raw_inspect_j]); \
         } \
         printf("\n");\
     } \

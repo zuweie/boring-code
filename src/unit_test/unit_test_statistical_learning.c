@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-18 14:18:28
+ * @LastEditTime: 2023-09-22 13:00:30
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -18,6 +18,7 @@
 #include "statistical_learning/counting.h"
 #include "statistical_learning/svm.h"
 #include "statistical_learning/svm_kernel_func.h"
+#include "statistical_learning/em.h"
 
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
@@ -1242,8 +1243,48 @@ static void test_svm_large(void)
     Mat2_destroy(_X );
 
     return;
-
 }
+
+static void em_training_progress (char* title, unsigned long step, unsigned long total) 
+{
+    //return;
+    char buffer[1024];
+    memset(buffer, 0x0, sizeof(buffer));
+    sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf ", title, step, total, (double) step / (double) total );
+    printf("%s\r", buffer);
+    fflush(stdout);
+}
+
+static void test_em (void) 
+{
+    // 这里要找一堆 4 维数据。使用 K =2 个模型。
+    const char* train_csv_file = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/em_test_data.csv";
+    matrix2_t* train_mat  = Mat2_create(1,1);   
+    Mat2_load_csv(train_mat, train_csv_file);
+
+    int K = 2;
+    int max_iter = 500;
+    double eps   = 1e-3;
+
+    double* alphas;
+    matrix2_t** mus;
+    matrix2_t** sigmas;
+
+    EM_train(train_mat, K, max_iter, eps, &alphas, &mus, &sigmas, em_training_progress);
+    
+    printf("\n");
+    for (int i=0; i<K; ++i) {
+        printf("---- K %d: ----\n");
+        printf("alpha<%d>: %lf \n", i, alphas[i]);
+        printf("mu<%d>: \n", i);
+        MAT2_INSPECT(mus[i]);
+        printf("sigma<%d>: \n", i);
+        MAT2_INSPECT(sigmas[i]);
+    }
+    
+    return;
+}   
+
 
 int do_statistical_learning_test (void) 
 {
@@ -1316,15 +1357,19 @@ int do_statistical_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "svm test simple", test_svm_simple) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "svm test simple", test_svm_simple) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     // if (NULL == CU_add_test(pSuite, "svm test large", test_svm_large) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
 
+    if (NULL == CU_add_test(pSuite, "svm test em", test_em) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }
 

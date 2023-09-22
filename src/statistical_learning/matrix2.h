@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-21 15:14:24
+ * @LastEditTime: 2023-09-22 12:29:50
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -74,9 +74,9 @@ int Mat2_sum(matrix2_t* mat, int axis);
 #define MAT2_INSPECT(pmat) \
 ({ \
     printf("\n <rows:%ld, cols:%ld>\n", (pmat)->rows, (pmat)->cols); \
-    for (int i=0; i<(pmat)->rows; ++i) { \
-        for (int j=0; j<(pmat)->cols; ++j) { \
-            printf("%0.4f ", (pmat)->pool[i*(pmat)->cols + j]); \
+    for (int __mat2_inspect_i=0; __mat2_inspect_i<(pmat)->rows; ++__mat2_inspect_i) { \
+        for (int __mat2_inspect_j=0; __mat2_inspect_j<(pmat)->cols; ++__mat2_inspect_j) { \
+            printf("%0.4f ", (pmat)->pool[__mat2_inspect_i*(pmat)->cols + __mat2_inspect_j]); \
         } \
         printf("\n");\
     } \
