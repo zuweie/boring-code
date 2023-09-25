@@ -613,7 +613,7 @@ vfloat_t __mat2_vect_norm(vfloat_t* v1, size_t n)
 }
 
 /**
- * @brief 
+ * @brief 归一化向量各个分量
  * 
  * @param v1 
  * @param n 

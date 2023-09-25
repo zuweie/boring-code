@@ -657,3 +657,9 @@ int Mat2_sum(matrix2_t* mat, int axis)
     }
     return 0;
 }
+
+// 
+double Mat2_norm(matrix2_t* mat)
+{
+    return __mat2_vect_norm(mat->pool, mat->rows * mat->cols);
+}

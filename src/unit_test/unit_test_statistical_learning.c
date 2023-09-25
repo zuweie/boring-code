@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-22 17:50:55
+ * @LastEditTime: 2023-09-25 11:40:10
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1245,12 +1245,12 @@ static void test_svm_large(void)
     return;
 }
 
-static void em_training_progress (char* title, unsigned long step, unsigned long total) 
+static void em_training_progress (char* title, double epsilon, unsigned long step, unsigned long total) 
 {
     //return;
     char buffer[1024];
     memset(buffer, 0x0, sizeof(buffer));
-    sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf ", title, step, total, (double) step / (double) total );
+    sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf, espilon: %0.5f ",  title, epsilon, step, total, (double) step / (double) total, epsilon);
     printf("%s\r", buffer);
     fflush(stdout);
 }
@@ -1263,14 +1263,14 @@ static void test_em (void)
     Mat2_load_csv(train_mat, train_csv_file);
 
     int K = 2;
-    int max_iter = 500;
-    double eps   = 1e-5;
+    int max_iter = 10000;
+    double epsilon  = 1e-4;
 
     double* alphas;
     matrix2_t** mus;
     matrix2_t** sigmas;
 
-    EM_train(train_mat, K, max_iter, eps, &alphas, &mus, &sigmas, em_training_progress);
+    EM_train(train_mat, K, max_iter, epsilon, &alphas, &mus, &sigmas, em_training_progress);
     
     printf("\n");
     for (int i=0; i<K; ++i) {
@@ -1282,7 +1282,7 @@ static void test_em (void)
         MAT2_INSPECT(sigmas[i]);
         printf("\n");
     }
-    
+    EM_recycle(K, alphas, mus, sigmas);
     return;
 }   
 

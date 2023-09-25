@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-08-15 14:48:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-22 17:50:31
+ * @LastEditTime: 2023-09-25 11:22:46
  * @FilePath: /boring-code/src/statistical_learning/em.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -159,25 +159,6 @@ static double __calculate_apK_2(matrix2_t* _Xi, matrix2_t* mu,  matrix2_t* sigma
     return ret;
 }
 
-/**
- * @brief 计算所有 apk 加在一起的值。
- * 
- * @param K 
- * @param apKs 
- * @return double 
- */
-static double __calculate_lnapK_sum(int K, matrix2_t** apKs) 
-{
-    double sum = 0.f;
-    for (int i=0; i<K; ++i) {
-        matrix2_t* apk = apKs[i];
-
-        for (int j=0; j<apk->rows*apk->cols; ++j) {
-            sum += log(apk->pool[j]);
-        }
-    }
-    return sum;
-}
 
 //  计算 期望 步。
 /**
@@ -328,7 +309,7 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
  * @param sigemas 
  * @return int 
  */
-int EM_train(matrix2_t* _X, int K, int Max_iter, double eps, double** alphas, matrix2_t** mus, matrix2_t** sigmas, void (*progress)(const char*, unsigned long, unsigned long))
+int EM_train(matrix2_t* _X, int K, int Max_iter, double epsilon, double** alphas, matrix2_t** mus, matrix2_t** sigmas, void (*progress)(const char*, double, unsigned long, unsigned long))
 {
     // TODO : 非常简单，就是不断的进行 E 步 与 M 的轮流计算，获取高斯分布的那几个关键的参数。nu sigma，与 alpha。
     matrix2_t** __apKs     = (matrix2_t**)malloc (K * sizeof(matrix2_t*));
@@ -338,6 +319,7 @@ int EM_train(matrix2_t* _X, int K, int Max_iter, double eps, double** alphas, ma
 
     double*    __alphas    = (double*) malloc (K * sizeof(double));
 
+    double last_apks_norm[K];
 
     for (int i=0; i<K; ++i) {
         __mus[i]    = Mat2_create(_X->cols, 1);
@@ -351,46 +333,64 @@ int EM_train(matrix2_t* _X, int K, int Max_iter, double eps, double** alphas, ma
         __apKs[i]   = Mat2_create(_X->rows, 1);
         __init_apK_data(__apKs[i]);
 
-        __alphas[i] = 1.f / (double) K;      
+        __alphas[i] = 1.f / (double) K;     
+
+        last_apks_norm[i] = FLT_MAX; 
     }
 
     int iter = 0;
     double sum_diff = FLT_MAX;
+    double curr_norm = 0.f;
     double last_sum = 0.f;
 
-    while ( ++iter <= Max_iter && sum_diff  > eps)
-    {
-        // if (progress)
-        //     progress("E step ... ", iter, Max_iter);
+    // 用于记录每次迭代后的 apk 的模长度，当长度不在变化，那么表明 apk 不再有变化于是收敛了。
 
-        // __e_step(_X, K, __alphas, __mus, __sigmas, __apKs);
 
-        // if (progress)
-        //     progress("M step ... ", iter, Max_iter);
-
-        // __m_step(_X, K, __alphas, __mus, __sigmas, __apKs);
+    while ( ++iter <= Max_iter && sum_diff  > epsilon) {
 
         if (progress)
-            progress("M step ... ", iter, Max_iter);
+            progress("M step ... ", 0.f, iter, Max_iter);
 
         __m_step(_X, K, __alphas, __mus, __sigmas, __apKs);
 
         if (progress)
-            progress("E step ... ", iter, Max_iter);
+            progress("E step ... ", 0.f, iter, Max_iter);
 
         __e_step(_X, K, __alphas, __mus, __sigmas, __apKs);
 
-        // double apks_sum = __calculate_lnapK_sum(K, __apKs);
+        // __apks 被更新后，即可计算它的模长度，看看跟上一轮有没有变化，有变化即可继续优化。
+        sum_diff = 0.f;
 
-        // sum_diff = fabs(apks_sum - last_sum);
+        for (int i=0; i<K; ++i) {
+            
+            curr_norm = Mat2_norm(__apKs[i]);
+            sum_diff += fabs( curr_norm - last_apks_norm[i] );
+            last_apks_norm[i] = curr_norm;
 
-        // last_sum = apks_sum;
-       
+        }
+        if (progress)
+            progress(" epsilon ... ", sum_diff, iter, Max_iter);
     }
     // 输出结果。
     *alphas = __alphas;
     *mus    = __mus;
     *sigmas = __sigmas;
+    return 0;
+}
+
+int EM_recycle(int K, double** alphas, matrix2_t** mus, matrix2_t** sigmas)
+{
+    for (int i=0; i<K; ++i) {
+        matrix2_t* m = mus[i];
+        Mat2_destroy(m);
+
+        matrix2_t* s = sigmas[i];
+        Mat2_destroy(s);
+    }
+
+    free(alphas);
+    free(mus);
+    free(sigmas);
     return 0;
 }
 
