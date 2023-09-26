@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-08-15 14:48:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-25 11:22:46
+ * @LastEditTime: 2023-09-26 08:03:39
  * @FilePath: /boring-code/src/statistical_learning/em.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -118,42 +118,42 @@ static double __calculate_apK(matrix2_t* _Xi, matrix2_t* sigma, double alpha)
 static double __calculate_apK_2(matrix2_t* _Xi, matrix2_t* mu,  matrix2_t* sigma, double alpha) 
 {
     // 此处的 _Xi mu, sigma 对象不能被改变，因为在外面还要用到 
-    matrix2_t* _Xi_cpy = Mat2_create_cpy(_Xi); 
+    // matrix2_t* _Xi_cpy = Mat2_create_cpy(_Xi); 
     matrix2_t* _Xi_T   = Mat2_create(1,1);
-    matrix2_t* mu_cpy  = Mat2_create_cpy(mu);
-    matrix2_t* sigma_cpy = Mat2_create_cpy(sigma);
+    // matrix2_t* mu_cpy  = Mat2_create_cpy(mu);
+    // matrix2_t* sigma_cpy = Mat2_create_cpy(sigma);
 
-    int d = _Xi_cpy->cols;
+    int d = _Xi->cols;
 
     vfloat_t det_sigma;
-    Mat2_det(sigma_cpy, &det_sigma);
-    Mat2_inverse(sigma_cpy);
+    Mat2_det(sigma, &det_sigma);
+    Mat2_inverse(sigma);
 
-    Mat2_T(mu_cpy);
-    Mat2_sub(_Xi_cpy, mu_cpy);
+    Mat2_T(mu);
+    Mat2_sub(_Xi, mu);
     
-    Mat2_cpy(_Xi_T, _Xi_cpy);
+    Mat2_cpy(_Xi_T, _Xi);
     Mat2_T(_Xi_T);
 
-    Mat2_dot(_Xi_cpy, sigma_cpy);
+    Mat2_dot(_Xi, sigma);
 
 
-    Mat2_dot(_Xi_cpy, _Xi_T);
+    Mat2_dot(_Xi, _Xi_T);
 
     double pk = 0.f;
     pk += log(alpha);
     //pk -= 0.5f * d * log(2*3.1415926);
     pk -= 0.5f * log(det_sigma);
-    pk -= 0.5f * _Xi_cpy->pool[0];
+    pk -= 0.5f * _Xi->pool[0];
 
     double ret = exp(pk);
     //printf("<alpha: %lf, det_sigm: %lf, xi[0]: %lf, pk: %lf, ret: %lf> \n", alpha, det_sigma, _Xi->pool[0], pk, ret);
     //printf("ret: %lf ", ret);
 
     Mat2_destroy(_Xi_T);
-    Mat2_destroy(mu_cpy);
-    Mat2_destroy(sigma_cpy);
-    Mat2_destroy(_Xi_cpy);
+    // Mat2_destroy(mu_cpy);
+    // Mat2_destroy(sigma_cpy);
+    // Mat2_destroy(_Xi_cpy);
 
 
     return ret;
@@ -173,23 +173,26 @@ static double __calculate_apK_2(matrix2_t* _Xi, matrix2_t* mu,  matrix2_t* sigma
  */
 static int __e_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matrix2_t** sigmas, matrix2_t** apKs)
 {
-    matrix2_t* _Xi = Mat2_create(1,1);
-    double alpha;
-    matrix2_t* sigma;
+    matrix2_t* _Xi   = Mat2_create(1,1);
+    matrix2_t* sigma = Mat2_create(1,1);
+    matrix2_t* mu    = Mat2_create(1,1);
     matrix2_t* apK;
-    matrix2_t* mu;
+    double alpha;
 
     for (int i=0; i<_X->rows; ++i) {
 
-        Mat2_slice_row_to(_Xi, _X, i);
+       
         double p = 0.f;
 
         for (int j=0; j<K; ++j) {
-            
+
+            Mat2_slice_row_to(_Xi, _X, i);
+
             alpha  = alphas[j];
-            mu     = mus[j];
-            sigma  = sigmas[j];
             apK    = apKs[j];
+
+            Mat2_cpy(mu, mus[j]);
+            Mat2_cpy(sigma, sigmas[j]);
 
             //apK->pool[i] = __calculate_apK(_Xi, sigma, alpha);
             apK->pool[i] = __calculate_apK_2(_Xi, mu, sigma, alpha);
@@ -202,9 +205,10 @@ static int __e_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
             apK->pool[i] /= p;
         }
     }
+
     Mat2_destroy(_Xi);
-
-
+    Mat2_destroy(mu);
+    Mat2_destroy(sigma);
     return 0;
 }
 
