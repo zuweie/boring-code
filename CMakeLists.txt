@@ -57,6 +57,7 @@ set (SOURCE
     src/ultra_array/ultra_router.c
     src/ultra_array/ultra_data_chunk.c
     src/ultra_array/ultra_padding.c
+    src/ultra_array/x_array.c
     src/machine_learning/linear_regression.c
     src/machine_learning/logistic_regression.c
     src/machine_learning/svm/support_vector_machines.c

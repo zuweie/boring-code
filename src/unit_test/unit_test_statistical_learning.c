@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-25 11:40:10
+ * @LastEditTime: 2023-09-26 08:51:01
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1250,7 +1250,9 @@ static void em_training_progress (char* title, double epsilon, unsigned long ste
     //return;
     char buffer[1024];
     memset(buffer, 0x0, sizeof(buffer));
-    sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf, espilon: %0.5f ",  title, epsilon, step, total, (double) step / (double) total, epsilon);
+    //sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf, espilon: %0.5f ",  title, step, total, (double) step / (double) total, epsilon);
+    sprintf(buffer, "%s, step: %ld , total: %ld, espilon: %0.5f ",  title, step, total, epsilon);
+
     printf("%s\r", buffer);
     fflush(stdout);
 }
@@ -1264,7 +1266,7 @@ static void test_em (void)
 
     int K = 2;
     int max_iter = 10000;
-    double epsilon  = 1e-4;
+    double epsilon  = 1e-5;
 
     double* alphas;
     matrix2_t** mus;

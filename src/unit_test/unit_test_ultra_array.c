@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2022-10-14 13:09:38
+ * @LastEditTime: 2023-10-12 16:01:48
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -13,6 +13,7 @@
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_data_chunk.h"
 #include "ultra_array/ultra_padding.h"
+#include "ultra_array/x_array.h"
 
 #define PRINTF_SHAPE_AXIS(shape, axis_n) \
     ({ \
@@ -702,6 +703,42 @@ static void test_ua_pool_size(void)
 
 }
 
+static void test_xarr_arange(void) {
+    x_array_t* arr = xarray_create(3, 8, 9, 4);
+    xarray_arange(arr, 1, 8*9*4 + 1);
+    printf("\n\n");
+    xarray_display(arr);
+    xarray_recycle(arr);
+}
+
+static void test_xarr_slice(void) 
+{ 
+    x_array_t* arr = xarray_create(3, 8, 9, 4);
+    xarray_arange(arr, 1, 8*9*4 + 1);
+    printf("\n\n");
+    xarray_display(arr);
+    x_array_t* slice_arr = xarray_slice(arr, 1, 4, 3, 6, 2, 3 );
+    printf("\n\n");
+    xarray_display(slice_arr);
+    xarray_recycle(arr);
+    xarray_recycle(slice_arr);
+
+}
+
+static void test_xarr_padding(void) 
+{
+    x_array_t* arr = xarray_create(3, 2, 3, 4);
+    xarray_arange(arr, 1, 2*3*4 + 1);
+    xarray_display(arr);
+
+    x_array_t* padding_arr = xarray_padding(arr, 0.01f, 1, 1, 1, 2, 1, 3);
+    printf("\n\n");
+    xarray_display(padding_arr);
+    xarray_recycle(arr);
+    xarray_recycle(padding_arr);
+
+}
+
 int do_ultra_array_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -749,10 +786,10 @@ int do_ultra_array_test (void)
     }
     #endif
 
-    if (NULL == CU_add_test(pSuite, "test ultra array slice ", test_slice) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test ultra array slice ", test_slice) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     #if 0
     if (NULL == CU_add_test(pSuite, "test ultra array fission2 ", test_fission2) ) {
@@ -815,4 +852,19 @@ int do_ultra_array_test (void)
         return CU_get_error();
     }
     #endif
+
+    // if (NULL == CU_add_test(pSuite, "test x array arange ", test_xarr_arange) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, "test x slice ", test_xarr_slice) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test x slice ", test_xarr_padding) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }

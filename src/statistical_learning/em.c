@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-08-15 14:48:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-26 08:03:39
+ * @LastEditTime: 2023-09-26 08:42:34
  * @FilePath: /boring-code/src/statistical_learning/em.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -142,7 +142,7 @@ static double __calculate_apK_2(matrix2_t* _Xi, matrix2_t* mu,  matrix2_t* sigma
 
     double pk = 0.f;
     pk += log(alpha);
-    //pk -= 0.5f * d * log(2*3.1415926);
+    pk -= 0.5f * d * log(2*3.1415926);
     pk -= 0.5f * log(det_sigma);
     pk -= 0.5f * _Xi->pool[0];
 
