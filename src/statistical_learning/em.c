@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-08-15 14:48:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-26 08:42:34
+ * @LastEditTime: 2023-11-14 09:20:11
  * @FilePath: /boring-code/src/statistical_learning/em.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -230,6 +230,7 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
     matrix2_t* _Xi     = Mat2_create(1,1);
     matrix2_t* _Xi_T   = Mat2_create(1,1);
     double sum_apk     = 0.f;
+    
     for (int i=0; i<K; ++i) {
 
         matrix2_t* apK   = apKs[i];
@@ -246,7 +247,13 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
         // end 1
 
 
-        // TODO： 2 各个模型中的 mu 
+        // TODO： 2 各个模型中的 mu
+        // 这里书中《opencv》的198页，式 9-68 求协方差矩阵的写法可能有误
+        // 原书中所写的是
+        // \sum{Ezk(xi-\mu^(t)(Ezk-\mu^(t))} / \sum{Ezk}
+        // 这相当于直接使用了，刚刚计算好的 \mu 但是，在李航的 《统计学习中》是使用旧的 \mu
+        // 也就是 \mu^(t-1)
+        
         Mat2_cpy(mu, _X);
 
         MAT2_POOL_PTR(mu, mu_ptr);
@@ -267,6 +274,7 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
 
 
         // TODO： 3 各个模型中 sigma 计算 sigma
+    
         Mat2_fill(sigma, 0.f);
 
         for (int r=0; r<_X->rows; ++r) {
@@ -298,6 +306,93 @@ static int __m_step(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matri
     Mat2_destroy(_Xi_T); 
 
     return 0;
+}
+
+static int __m_step2(matrix2_t* _X, int K, double* alphas, matrix2_t** mus, matrix2_t** sigmas, matrix2_t** apKs)
+{
+    matrix2_t* apK_cpy = Mat2_create(1,1);
+    matrix2_t* _Xi     = Mat2_create(1,1);
+    matrix2_t* _Xi_T   = Mat2_create(1,1);
+    double sum_apk     = 0.f;
+    
+    for (int i=0; i<K; ++i) {
+
+        matrix2_t* apK   = apKs[i];
+        matrix2_t* mu    = mus[i];
+        matrix2_t* sigma = sigmas[i];
+        
+        Mat2_cpy(apK_cpy, apKs[i]);
+        //int n = apK_cpy->rows;
+        Mat2_sum(apK_cpy, 0);
+        sum_apk = apK_cpy->pool[0];
+        
+        // TODO: 1 各个模型的 alpah 
+        alphas[i] =  sum_apk / apK->rows;
+        // end 1
+
+
+        // TODO： 2 各个模型中的 mu
+        // 这里书中《opencv》的198页，式 9-68 求协方差矩阵的写法可能有误
+        // 原书中所写的是
+        // \sum{Ezk(xi-\mu^(t)(Ezk-\mu^(t))} / \sum{Ezk}
+        // 这相当于直接使用了，刚刚计算好的 \mu 但是，在李航的 《统计学习中》是使用旧的 \mu
+        // 也就是 \mu^(t-1)
+
+        // 现在该一下，先算高斯分布中 \Sigma，协方差矩阵。因为要用到旧的 \mu，然后再算新的 \mu
+        
+
+        // TODO：3 计算高斯分布中的 sigma
+        Mat2_fill(sigma, 0.f);
+
+        for (int r=0; r<_X->rows; ++r) {
+
+            Mat2_slice_row_to(_Xi, _X, r);
+
+            Mat2_T(_Xi);
+
+            Mat2_sub(_Xi, mu);
+
+            Mat2_cpy(_Xi_T, _Xi);
+            
+            Mat2_T(_Xi_T);
+
+            Mat2_dot(_Xi, _Xi_T);
+
+            Mat2_scalar_multiply(_Xi, apK->pool[r]);
+            
+            Mat2_add(sigma, _Xi);
+        }
+
+        Mat2_scalar_multiply(sigma, 1 / sum_apk);
+        // end 3
+
+        // TODO：2 计算高斯分布中的均值向量 \mu
+        Mat2_cpy(mu, _X);
+
+        MAT2_POOL_PTR(mu, mu_ptr);
+
+        for (int m=0; m<mu->rows; ++m) {
+            for (int l=0; l<mu->cols; ++l) {
+                mu_ptr[m][l] *= apK->pool[m];
+            }
+        }
+        
+        Mat2_sum(mu, 0);
+        
+        Mat2_scalar_multiply(mu,  1 / sum_apk);
+
+        Mat2_T(mu);
+
+        // end 2
+    
+    }
+
+    Mat2_destroy(apK_cpy); 
+    Mat2_destroy(_Xi);    
+    Mat2_destroy(_Xi_T); 
+
+    return 0;
+
 }
 
 // EM 的训练。
@@ -355,7 +450,7 @@ int EM_train(matrix2_t* _X, int K, int Max_iter, double epsilon, double** alphas
         if (progress)
             progress("M step ... ", 0.f, iter, Max_iter);
 
-        __m_step(_X, K, __alphas, __mus, __sigmas, __apKs);
+        __m_step2(_X, K, __alphas, __mus, __sigmas, __apKs);
 
         if (progress)
             progress("E step ... ", 0.f, iter, Max_iter);

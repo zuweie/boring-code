@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-02-01 13:25:23
- * @LastEditTime: 2023-10-12 16:01:48
+ * @LastEditTime: 2023-10-12 16:20:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_ultra_array.c
@@ -731,7 +731,7 @@ static void test_xarr_padding(void)
     xarray_arange(arr, 1, 2*3*4 + 1);
     xarray_display(arr);
 
-    x_array_t* padding_arr = xarray_padding(arr, 0.01f, 1, 1, 1, 2, 1, 3);
+    x_array_t* padding_arr = xarray_padding(arr, 0.0f, 1, 1, 1, 2, 1, 3);
     printf("\n\n");
     xarray_display(padding_arr);
     xarray_recycle(arr);

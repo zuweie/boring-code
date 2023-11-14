@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-26 08:51:01
+ * @LastEditTime: 2023-11-14 10:08:19
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1259,14 +1259,14 @@ static void em_training_progress (char* title, double epsilon, unsigned long ste
 
 static void test_em (void) 
 {
-    // 这里要找一堆 4 维数据。使用 K =2 个模型。
+    // 这里要找一堆 4 维数据。使用 K = 2 个模型。
     const char* train_csv_file = "/Users/zuweie/code/c-projects/boring-code/build/../src/unit_test/em_test_data.csv";
     matrix2_t* train_mat  = Mat2_create(1,1);   
     Mat2_load_csv(train_mat, train_csv_file);
 
     int K = 2;
-    int max_iter = 10000;
-    double epsilon  = 1e-5;
+    int max_iter = 1000;
+    double epsilon  = 1e-4;
 
     double* alphas;
     matrix2_t** mus;
