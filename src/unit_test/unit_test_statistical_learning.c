@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-11-20 10:24:17
+ * @LastEditTime: 2023-11-20 12:14:49
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -575,7 +575,7 @@ static void test_decision_tree_large (void)
     //train_label_mat->rows = 20;
     dc_tree_t tree;
     dct_term_t term = {
-        .gain_esp = 0.1,
+        .gain_eps = 0.1,
         .least_limit = 1000,
         .level_limit = 15
     };
@@ -661,7 +661,7 @@ static void test_decision_tree_simple (void)
 
     dc_tree_t tree;
     dct_term_t term = {
-        .gain_esp = 0.1,
+        .gain_eps = 0.1,
         .least_limit = 1,
         .level_limit = 1e+20,
     };
@@ -724,7 +724,7 @@ static void test_decision_tree_simple2(void) {
     dc_tree_t tree;
     dct_term_t term = {
 
-        .gain_esp = 0.1,
+        .gain_eps = 0.1,
         .least_limit = 1,
         .level_limit = 1e+10,
     };
@@ -1250,8 +1250,8 @@ static void em_training_progress (char* title, double epsilon, unsigned long ste
     //return;
     char buffer[1024];
     memset(buffer, 0x0, sizeof(buffer));
-    //sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf, espilon: %0.5f ",  title, step, total, (double) step / (double) total, epsilon);
-    sprintf(buffer, "%s, step: %ld , total: %ld, espilon: %0.5f ",  title, step, total, epsilon);
+    //sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf, epsilon: %0.5f ",  title, step, total, (double) step / (double) total, epsilon);
+    sprintf(buffer, "%s, step: %ld , total: %ld, epsilon: %0.5f ",  title, step, total, epsilon);
 
     printf("%s\r", buffer);
     fflush(stdout);

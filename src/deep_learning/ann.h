@@ -5,7 +5,17 @@
 #include "matrix2/matrix2.h"
 
 
-int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layers, int hidden_layers_number, int (*active)(matrix2_t* _X,vfloat_t* params), int (*d_active)(matrix2_t* _X, vfloat_t* params), matrix2_t** out_Wbs);
+typedef struct {
+
+    double epsilon;
+    int (*active)(matrix2_t*, double* );
+    int (*d_active)(matrix2_t* double* );
+    double* active_params;
+    double* d_active_params;
+
+} ann_param_t;
+
+int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layers, int hidden_layers_number, ann_param_t* ann_params, matrix2_t** out_Wbs);
 int ann_predict(matrix2_t* _Input, matrix2_t* Wbs, int hidden_layers_number, vfloat_t* predict);
 int ann_recycle(matrix2_t* Wbs);
 

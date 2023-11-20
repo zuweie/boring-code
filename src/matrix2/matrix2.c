@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <math.h>
 #include "matrix2_operator.h"
 #include "matrix2.h"
@@ -103,6 +104,17 @@ int Mat2_fill(matrix2_t* mat, vfloat_t v)
     for (size_t i=0; i<size_mat; ++i) {
         mat->pool[i] = v;
     }
+}
+
+int Mat2_fill_random(matrix2_t* mat, double from, double to)
+{
+    srand(time(0));
+    size_t mat_size = mat->rows * mat->cols;
+
+    for (size_t i=0; i<mat_size; ++i)
+        mat->pool = from + (to - from) * (((double) rand()) / RAND_MAX);
+
+    return 0;
 }
 
 int Mat2_vect_dot(matrix2_t* mat1, matrix2_t* mat2, vfloat_t* out)
@@ -329,7 +341,7 @@ int Mat2_is_symmetric(matrix2_t* mat) {
 
     if (mat->rows == mat->cols) {
         
-        double esp = 1e-5;
+        double eps = 1e-5;
         int n = mat->rows;
         
         MAT2_POOL_PTR(mat, mat_ptr);
@@ -337,7 +349,7 @@ int Mat2_is_symmetric(matrix2_t* mat) {
         for (int i=0; i<n; ++i) {
             for (int j=i+1; j<n; ++j) {
                 // 对角线的不用比
-                if (fabs(mat_ptr[i][j] - mat_ptr[j][i]) > esp) return 0;
+                if (fabs(mat_ptr[i][j] - mat_ptr[j][i]) > eps) return 0;
             }
         }
         return 1;
@@ -582,7 +594,7 @@ int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1)
 
         } else {
             // 否则的话只能通过特征值一个个计算特征向量。
-            double esp = 1e-4;
+            //double eps = 1e-4;
 
             int n = m1->rows;
 

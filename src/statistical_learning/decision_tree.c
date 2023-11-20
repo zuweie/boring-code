@@ -169,7 +169,7 @@ static double __calculate_A_gain(matrix2_t* _Xj, matrix2_t* label)
  * @param candidate_node_size 
  * @return int 
  */
-static int __find_best_split(matrix2_t* sub_data, matrix2_t* sub_label, int* Ags, int* Ags_size, double esp, int* out_Ag, double* out_gain)
+static int __find_best_split(matrix2_t* sub_data, matrix2_t* sub_label, int* Ags, int* Ags_size, double eps, int* out_Ag, double* out_gain)
 {
     matrix2_t* _Xj = Mat2_create(1,1);
 
@@ -194,7 +194,7 @@ static int __find_best_split(matrix2_t* sub_data, matrix2_t* sub_label, int* Ags
 
     Mat2_destroy(_Xj);
 
-    if (A_gain > esp) {
+    if (A_gain > eps) {
 
         // 找到最佳的 Ag 后，把它的 index 从 Ags 数组中删除。
 
@@ -236,10 +236,10 @@ static int __is_leaf(dct_node_t* node)
  * @param node 
  * @param candidate_nodes 
  * @param candidate_node_size 
- * @param esp 
+ * @param eps 
  * @return int 
  */
-static int __build_classification_node(matrix2_t* data, matrix2_t* label,  dct_node_t** node_ref, int* Ags, int Ags_size, int level_label, int* tree_level, double gain_esp, int least_limit, int level_limit, void (*progress)(char*, unsigned long, unsigned long)) 
+static int __build_classification_node(matrix2_t* data, matrix2_t* label,  dct_node_t** node_ref, int* Ags, int Ags_size, int level_label, int* tree_level, double gain_eps, int least_limit, int level_limit, void (*progress)(char*, unsigned long, unsigned long)) 
 {
     // 若没有任何属性可以分割聊，或者剩下的数据量小于最少的数据量，例如小于10条数据，
     // 那么就直检测 label 的类别，选最多的那个类别当作叶子节点的值。
@@ -276,9 +276,9 @@ static int __build_classification_node(matrix2_t* data, matrix2_t* label,  dct_n
         int   out_Ag;
         double out_gain;
         
-        if (__find_best_split(data, label, Ags, &Ags_size, gain_esp,  &out_Ag, &out_gain) < 0) {
+        if (__find_best_split(data, label, Ags, &Ags_size, gain_eps,  &out_Ag, &out_gain) < 0) {
 
-            // 最大的 gain 也小于 esp, 那么马上将其变成叶子节点。
+            // 最大的 gain 也小于 eps, 那么马上将其变成叶子节点。
             vfloat_t predict = counting_max_frequency(label_counting);
 
             //if (progress) progress("276.创建叶节点...", Ags_size, predict);  
@@ -402,7 +402,7 @@ int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, dc_tre
     // 2 用增益值最大的作为节点。
 
     // 信息增益小于 1e-1 就结叶
-    //double gain_esp   = 1e-1;
+    //double gain_eps   = 1e-1;
     // 数据量小于数据量 1/1000 否则
     //int    data_least = 100;
 
@@ -418,7 +418,7 @@ int decision_tree_classification_train(matrix2_t* data, matrix2_t* label, dc_tre
     tree->level     = 0;
     tree->root      = NULL;
     int level_label = 1;
-    __build_classification_node(data, label, &(tree->root), Ags, Ags_size, level_label, &tree->level, term->gain_esp, term->least_limit, term->level_limit, progress);
+    __build_classification_node(data, label, &(tree->root), Ags, Ags_size, level_label, &tree->level, term->gain_eps, term->least_limit, term->level_limit, progress);
     return 0;
     
 }
