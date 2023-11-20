@@ -29,6 +29,7 @@ set (SOURCE
     src/unit_test/unit_test_leetcode.c
     src/unit_test/unit_test_matrix2.c
     src/unit_test/unit_test_statistical_learning.c
+    src/unit_test/unit_test_deep_learning.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__vector.c
@@ -65,8 +66,8 @@ set (SOURCE
     src/machine_learning/svm/svm_model.c
     src/machine_learning/svm/svm_kernel_function.c
     src/machine_learning/neural_network.c
-    src/statistical_learning/matrix2.c
-    src/statistical_learning/matrix2_operator.c
+    src/matrix2/matrix2.c
+    src/matrix2/matrix2_operator.c
     src/statistical_learning/perceptron.c
     src/statistical_learning/knn.c
     src/statistical_learning/naive_bayes.c
@@ -77,6 +78,7 @@ set (SOURCE
     src/statistical_learning/svm.c
     src/statistical_learning/svm_kernel_func.c
     src/statistical_learning/counting.c
+    src/deep_learning/ann.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c

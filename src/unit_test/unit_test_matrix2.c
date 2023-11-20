@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <CUnit/Basic.h>
-#include "statistical_learning/matrix2.h"
-#include "statistical_learning/matrix2_operator.h"
+#include "matrix2/matrix2.h"
+#include "matrix2/matrix2_operator.h"
 #include "statistical_learning/counting.h"
 #include "container/cn.h"
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));

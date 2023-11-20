@@ -1,7 +1,7 @@
 #ifndef __COUNTING_H__
 #define __COUNTING_H__
 
-#include "matrix2.h"
+#include "matrix2/matrix2.h"
 
 #define CTY_size_ptr(countingY_ptr) ((int*)(countingY_ptr))
 #define CTY_size(countingY_ptr) (*CTY_size_ptr(countingY_ptr))

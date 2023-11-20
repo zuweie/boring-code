@@ -1,7 +1,15 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2023-07-17 10:39:33
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2023-11-20 10:22:30
+ * @FilePath: /boring-code/src/statistical_learning/decision_tree.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef __DECISION_TREE_H__
 #define __DECISION_TREE_H__
 #include "vtype/vfloat_type.h"
-#include "matrix2.h"
+#include "matrix2/matrix2.h"
 
 typedef struct _dct_node dct_node_t;
 

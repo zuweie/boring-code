@@ -2,14 +2,14 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-11-14 10:08:19
+ * @LastEditTime: 2023-11-20 10:24:17
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include <stdio.h>
 #include <string.h>
 #include <CUnit/Basic.h>
-#include "statistical_learning/matrix2.h"
+#include "matrix2/matrix2.h"
 #include "statistical_learning/perceptron.h"
 #include "statistical_learning/knn.h"
 #include "statistical_learning/naive_bayes.h"
@@ -1266,7 +1266,7 @@ static void test_em (void)
 
     int K = 2;
     int max_iter = 1000;
-    double epsilon  = 1e-4;
+    double epsilon  = 1e-5;
 
     double* alphas;
     matrix2_t** mus;

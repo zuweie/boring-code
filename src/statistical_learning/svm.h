@@ -1,7 +1,7 @@
 #ifndef __SVM_H__
 #define __SVM_H__
 
-#include "matrix2.h"
+#include "matrix2/matrix2.h"
 
 typedef struct _k_params k_params_t;
 typedef struct _svm_model svm_model_t;
