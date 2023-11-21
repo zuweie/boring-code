@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-09-22 12:31:11
+ * @LastEditTime: 2023-11-21 15:56:15
  * @FilePath: /boring-code/src/statistical_learning/matrix2_operator.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -24,6 +24,7 @@
 })
 
 int __mat2_dot(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3);
+int __mat2_hadamard_product(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3);
 vfloat_t __mat2_vect_dot(vfloat_t* v1, vfloat_t* v2, size_t n);
 vfloat_t __mat2_vect_norm(vfloat_t* v1, size_t n);
 int __mat2_vect_normalize(vfloat_t* v1, size_t n);
@@ -31,7 +32,10 @@ int __mat2_add(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t
 int __mat2_sub(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2);
 int __mat2_scalar_multiply(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t scaler);
 int __mat2_T(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2);
+int __mat2_merge_rows(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t row2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3);
+int __mat2_merge_cols(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t row2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3);
 int __mat2_rescale(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int left, int top, int right, int bottom, vfloat_t fill);
+
 
 vfloat_t __mat2_determinant(vfloat_t* v1, size_t n);
 int __mat2_inverse(vfloat_t** m1, size_t* row1, size_t* cols1, vfloat_t* m2, size_t n);

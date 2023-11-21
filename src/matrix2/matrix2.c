@@ -428,14 +428,28 @@ int Mat2_inverse(matrix2_t* mat) {
 
 int Mat2_hadamard_product(matrix2_t* mat1, matrix2_t* mat2)
 {
-    int mat1_size = mat1->rows * mat1->cols;
-    int mat2_size = mat2->rows * mat2->cols;
+    // int mat1_size = mat1->rows * mat1->cols;
+    // int mat2_size = mat2->rows * mat2->cols;
 
-    if (mat1_size == mat2_size) {
-        for (int i=0; i<mat1_size; ++i) {
-            mat1->pool[i] *= mat2->pool[i];
-        }
-        return 0;
+    // if (mat1_size == mat2_size) {
+    //     for (int i=0; i<mat1_size; ++i) {
+    //         mat1->pool[i] *= mat2->pool[i];
+    //     }
+    //     return 0;
+    // }
+
+    if (mat1->rows == mat2->rows && mat1->cols == mat2->cols) {
+        return __mat2_hadamard_product(
+            &(mat1->pool),
+            &(mat1->rows),
+            &(mat1->cols),
+            m1->pool,
+            m1->rows,
+            m1->cols,
+            mat2->pool,
+            mat2->rows,
+            mat2->cols
+        );
     }
     return -1;
 } 
@@ -498,21 +512,75 @@ int Mat2_T(matrix2_t* mat)
 }
 
 /**
- * @brief 融合两个矩阵，结果存放在 ma1 中
+ * @brief 融合两个矩阵，结果存放在 ma1 中多生成的行中
  * 
  * @param mat1 
  * @param mat2 
  * @return int 
  */
-int Mat2_merge(matrix2_t* mat1, matrix2_t* mat2)
+int Mat2_merge_rows(matrix2_t* mat1, matrix2_t* mat2)
 {
     // 列数要相同才能合并。
     if (mat1->cols == mat2->cols) {
-        // 先扩充一下内存。
-        mat1->pool = realloc(mat1->pool, (mat1->rows + mat2->rows) * mat1->cols * sizeof(vfloat_t));
-        MAT2_POOL_PTR(mat1, m1_ptr);
-        memcpy(m1_ptr[mat1->rows], mat2->pool, (mat2->rows * mat2->cols * sizeof(vfloat_t)));
-        mat1->rows = mat1->rows + mat2->rows;
+        // // 先扩充一下内存。
+        // mat1->pool = realloc(mat1->pool, (mat1->rows + mat2->rows) * mat1->cols * sizeof(vfloat_t));
+        // MAT2_POOL_PTR(mat1, m1_ptr);
+        // memcpy(m1_ptr[mat1->rows], mat2->pool, (mat2->rows * mat2->cols * sizeof(vfloat_t)));
+        // mat1->rows = mat1->rows + mat2->rows;
+        // return 0;
+        vfloat_t* m_cpy = malloc (mat1->rows * mat1->cols * sizeof(vfloat_t));
+        size_t cpy_rows = mat1->rows;
+        size_t cpy_cols = mat1->cols;
+
+        memcpy(m_cpy, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+
+        __mat2_merge_rows(
+            &(mat1->pool),
+            &(mat1->rows),
+            &(mat1->cols),
+            m_cpy,
+            cpy_rows,
+            cpy_cols,
+            mat2->pool,
+            mat2->rows,
+            mat2->cols
+        );
+
+        free(m_cpy);
+        return 0;
+    }
+    return -1;
+}
+
+/**
+ * @brief 合并两个矩阵，把 mat2 合并到 mat1 多生成的列中
+ * 
+ * @param mat1 
+ * @param mat2 
+ * @return int 
+ */
+int Mat2_merge_cols(matrix2_t* mat1, matrix2_t* mat2) 
+{
+    if (mat1->rows == mat2->rows) {
+
+        vfloat_t* m_cpy = malloc (mat1->rows * mat1->cols * sizeof(vfloat_t));
+        size_t cpy_rows = mat1->rows;
+        size_t cpy_cols = mat1->cols;
+
+        memcpy(m_cpy, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+
+        __mat2_merge_cols(
+            &(mat1->pool),
+            &(mat1->rows),
+            &(mat1->cols),
+            m_cpy,
+            cpy_rows,
+            cpy_cols,
+            mat2->pool,
+            mat2->rows,
+            mat2->cols
+        );
+        free(m_cpy);
         return 0;
     }
     return -1;

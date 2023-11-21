@@ -43,6 +43,46 @@ int __mat2_dot(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t
     return 0;
 }
 
+
+/**
+ * @brief m2 hadamard m3, 点积
+ * 
+ * @param m1 
+ * @param rows1 
+ * @param cols1 
+ * @param m2 
+ * @param rows2 
+ * @param cols2 
+ * @param m3 
+ * @param rows3 
+ * @param cols3 
+ * @return int 
+ */
+int __mat2_hadamard_product(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3)
+{
+    if ((*rows1) * (*cols1) < rows2 * cols2) {
+
+        *m1 = (vfloat_t*) realloc (*m1, rows2 * cols2 * sizeof(vfloat_t));
+    }
+
+    *rows1 = rows2;
+    *cols1 = cols2;
+
+    vfloat_t (*m1_ptr)[*cols1] = *m1;
+    vfloat_t (*m2_ptr)[cols2]  = m2;
+    vfloat_t (*m3_ptr)[cols3]  = m3;
+
+    for (int i=0; i<(*rows1); ++i) {
+        for (int j=0; j<(*cols1), ++j) {
+            m1_ptr[i][j] = m2_ptr[i][j] * m3_ptr[i][j];
+        }
+    }
+
+    return 0;
+    
+}
+
+
 /**
  * @brief 两个向量内积
  * 
@@ -84,6 +124,61 @@ int __mat2_T(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t r
 
             m1_ptr[i][j] = m2_ptr[j][i];
         }
+    }
+    return 0;
+}
+
+int __mat2_merge_rows(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t row2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3)
+{
+
+    size_t o_rows = *rows1;
+    int padding_bottom = rows3;
+    __mat2_rescale(
+        m1,
+        rows1,
+        cols1,
+        m2,
+        row2,
+        cols2,
+        0,
+        0,
+        0,
+        padding_bottom;
+        0.f
+    );
+    
+    vfloat_t (*m1_ptr)[*cols1] = *m1;
+    vfloat_t (*m3_ptr)[cols3]  = m3;
+
+    for (int i=o_rows, int j=0; i<*rows1; ++i, ++j) {
+        memcpy(m1_ptr[i], m3_ptr[j], *cols1 * sizeof(vfloat_t));
+    }
+    return 0;
+}
+
+int __mat2_merge_cols(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t row2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3)
+{
+    size_t o_cols = *cols1;
+    int padding_right = cols3;
+    __mat2_rescale(
+        m1,
+        rows1,
+        cols1,
+        m2, 
+        rows2,
+        cols2,
+        0, 
+        0, 
+        padding_right,
+        0,
+        0.f
+    );
+
+    vfloat_t (*m1_ptr)[*cols1] = *m1;
+    vfloat_t (*m3_ptr)[cols3] = m3;
+
+    for (int i=0; i<*rows1; ++i) {
+        memcpy(&(m1_ptr[i][o_cols]), m3_ptr[i], cols3 * sizeof(vfloat_t));
     }
     return 0;
 }
