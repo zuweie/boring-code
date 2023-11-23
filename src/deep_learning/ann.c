@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-11-20 09:28:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-11-21 15:04:21
+ * @LastEditTime: 2023-11-23 15:42:23
  * @FilePath: /boring-code/src/deep_learning/ann.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -30,46 +30,50 @@ static double vec_diff(matrix2_t* m1, matrix2_t* m2)
 int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers, int hidden_layers_number, ann_param_t* ann_params, matrix2_t** out_Wbs, void (*progress)(unsigned long, unsigned long))
 {
     // 这是计算得到的 y^.
-    matrix2_t* _Yi  = Mat2_create(ann_params->bathc, label->cols);
-    // z 是 W dot x + b 未经过激活函数的输出
+    matrix2_t* _Yi     = Mat2_create(1,1);
+    // z 是 W dot x + b 未经过激活函数的净输出
     matrix2_t* _z;
-    // u 是经过 active (x) 后的输出
-    matrix2_t* _u  = Mat2_create(1,1);
-    // delta W 矩阵, L 对 W 的导数
-    matrix2_t* delta_W = Mat2_create(1,1);
-    // delta b 矩阵，L 对 b 的导数
-    matrix2_t* delta_b = Mat2_create(1,1);
-    // delta z
-    matrix2_t* delta_z;
+    // input 是每层神经网络的输入。
+    matrix2_t* _input   = Mat2_create(1,1);
+    // delta LW 矩阵, L 对 W 的导数
+    matrix2_t* delta_LW = Mat2_create(1,1);
+    // delta Lb 矩阵，L 对 b 的导数
+    matrix2_t* delta_Lb = Mat2_create(1,1);
+    // delta Lz 矩阵，L 对 z 的导数
+    matrix2_t* delta_Lz = Mat2_create(1,1);
+    // delta Az 矩阵，A 激活函数对 z 的导数
+    matrix_t* delta_Az  = Mat2_create(1,1);
 
     
-    // TODO : 1 申请并且使用 0～1 初始化权重矩阵。
+    // TODO : 1 组建并且使用 0～1 初始化权重矩阵网络。
     // 权重矩阵的数量为：隐藏层 + 输入 + 输出 - 1；
-    int wbs_number = hidden_layers_number + 1;
-    matrix2_t** Wbs = (matrix2_t**) malloc( wbs_number * sizeof(matrix2_t*) );
+    int cell_layer_number = hidden_layers_number + 1;
+
+    matrix2_t** _Wbs = (matrix2_t**) malloc( cell_layer_number * sizeof(matrix2_t*) );
     
     // 以及申请未激活后的 z 矩阵数组，用于未激励激活后的输出的 z
-    matrix2_t** Zs = (matrix2_t**) malloc (wbs_number * sizeof(matrix2_t*));
+    matrix2_t** _Zs = (matrix2_t**) malloc (cell_layer_number * sizeof(matrix2_t*) );
+
+    matrix2_t** _Us = (matrix2_t**) malloc (cell_layer_number * sizeof(matrix2_t*) );
 
     int last_input_number = data->cols;
-    int wb_index;
+    int cell_layer_index;
 
-    for(wb_index=0; wb_index<hidden_layers_number; wb_index++) {
+    for(cell_layer_index=0; cell_layer_index<cell_layer_number; cell_layer_index++) {
 
-        Wbs[wb_index] = Mat2_create(hidden_layer_cell_numbers[wb_index], (last_input_number+1));
-        Mat_fill_random(Wbs[wb_index], 0, 1);
+        // 若果是最后一个的便是输出 Y 的列数
+        int wbs_rows = cell_layer_index != cell_layer_number ? hidden_layer_cell_numbers[cell_layer_index] : label->cols;
+
+        _Wbs[cell_layer_index] = Mat2_create( wbs_rows, (last_input_number+1));
+        Mat_fill_random(Wbs[cell_layer_index], 0, 1);
 
         // 这随便就行了
-        Zs[wb_index]  = Mat2_create(1,1);
+        _Zs[cell_layer_index] = Mat2_create(1,1);
+        _Us[cell_layer_index] = Mat2_create(1,1);
 
-        last_input_number = hidden_layer_cell_numbers[wb_index];
+        last_input_number = hidden_layer_cell_numbers[cell_layer_index];
 
     }
-    // 最后一个矩阵的行数要有输出层的列数决定，也就是 label 的 cols 
-    Wbs[wb_index] = Mat2_create(label->cols, last_input_number+1);
-    Mat_fill_random(Wbs[wb_index], 0, 1);
-    Zs[wb_index] = Mat2_create(1,1);
-    // end 1
 
     // TODO: 2 batch 的大小随机选取一些数据
     
@@ -85,8 +89,7 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
     double error = FLT_MAX;
     double last_error = 0.f;
     int iter = 0;
-    while (fabs(error-last_error) < ann_params->epsilon 
-    && iter++ <= ann_params->max_iter) {
+    while (fabs(error-last_error) < ann_params->epsilon && iter++ <= ann_params->max_iter) {
 
         last_error = error;
 
@@ -95,45 +98,65 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
 
             int data_index = batch_data_index[i];
 
-            // 输入层从 data 开始获取。
-            Mat2_slice_row_to(_u, data, data_index);
-            Mat2_T(_u);
+            // 输入层从 data 开始获取原始的输入 Xi
+            Mat2_slice_row_to(_input, data, data_index);
+            Mat2_slice_row_to(_Yi, label, data_index);
+
+            Mat2_T(_input);
             
-            for (int i=0; i<wbs_number; ++i) {
+            for (int i=0; i<cell_layer_number; ++i) {
                 // 这里 padding 1 是为了 把 [x1, x2, x3, ... xn] => [x1, x2, x3, ..., xn, 1] 
-                Mat2_padding_bottom(_u, 1, 1.f);
+                Mat2_padding_bottom(_input, 1, 1.f);
                 // W dot X + b
                 _z = Zs[i];
                 Mat2_cpy(_z, Wbs[i]);
-                Mat2_dot(_z, _u);
-                Mat2_cpy(_u, _z);
-                // 通过激活函数。成功成为了下一个神经层的输入。
-                ann_params->active(_u, ann_params->active_params);
-                // 保存每一层的净输出。
+                Mat2_dot(_z, _input);
+
+                // 把净输出的结果保存到 _Us 中
+                Mat2_cpy(_Us[i], _z);
+                // 通过激活函数后，激活的结果保留在 _Us 中
+                ann_params->active(_Us[i], ann_params->active_params);
+
+                // 把激活结果复制给 _input 为下一层运算做准备
+                Mat2_cpy(_input, Us[i]);
             }
 
-            
-            // 循环退出后，得到 _u 和 _z 是保留向后传播使用。
 
             // 统计这个 batch 的误差。
-            Mat2_slice_row_to(_Yi, label, data_index);
-            error += vec_diff(_u, _Yi);
+            
+            error += vec_diff(_Us[cell_layer_number-1], _Yi);
 
             // TODO: 5 向后传播算法。
-            delta_z = _u;
 
-            Mat2_sub(delta_z, _Yi);
+            // 计算倒数第一层的误差值 delta_z
+            
+            Mat2_cpy(delta_Lz, _Us[cell_layer_number-1]);
+            Mat2_cpy(delta_Az, _Zs[cell_layer_number-1]);
 
-            _z = Zs[wbs_number-1];
+            Mat2_sub(delta_Lz, _Yi);
+            ann_params->d_active(delta_Az, ann_params->d_active_params);
+            Mat2_hadamard_product(delta_Lz, delta_Az);
 
-            ann_params->d_active(_z, ann_params->d_active_params);
+            for (int j=cell_layer_number-1; j>=0; ++j) {
+                
+                Mat2_cpy(delta_LW, delta_Lz);
+                if ( j== 0) {
+                    // 来到最后一个的时候，_input 便是输入原始 x
+                    Mat2_slice_row_to(_input, data, data_index);
+                    //Mat2_T(_input);
+                } else {
+                    Mat2_cpy(_input, _Us[j-1]);
+                    Mat2_T(_input);
+                }
 
-            Mat2_hadamard_product(delta_z, _z);
-        
-            for (int i=wbs_number-1; i<=0; --i) {
+                Mat2_dot(delta_LW, _input);
+
+                // TOOD: update delta
                 
                 
+
             }
+
         }
 
         //if (fabs(error - last_error) < ann_params->epsilon) break;
@@ -141,7 +164,6 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
         
     }
 
-    
 
     *out_Wbs = Wbs;
     return 0;
