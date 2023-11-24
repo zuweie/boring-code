@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-11-21 16:21:00
+ * @LastEditTime: 2023-11-24 09:40:15
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -54,6 +54,7 @@ int Mat2_reshape(matrix2_t* mat, size_t new_rows, size_t new_cols);
 
 vfloat_t Mat2_get(matrix2_t* mat, size_t i, size_t j);
 int Mat2_put(matrix2_t* mat, size_t i, size_t j, vfloat_t v);
+int Mat2_2I(matrix2_t* mat, size_t side);
 
 int Mat2_load_csv(matrix2_t* mat, char* file_csv);
 

@@ -69,7 +69,7 @@ static int calculate_gain_D_A(matrix2_t* _Xi, matrix2_t* _Y, double* gain, vfloa
             // 将 i 以外的所有的向量合并。
             for (int j=0; j<group_size; ++j) {
                 if (j!=sub_d1_index && j!=sub_d2_index) {
-                    Mat2_merge(sub_d2, group_Y[j]);
+                    Mat2_merge_rows(sub_d2, group_Y[j]);
                 }
             }
 

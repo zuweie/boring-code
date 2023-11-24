@@ -73,7 +73,7 @@ int __mat2_hadamard_product(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_
     vfloat_t (*m3_ptr)[cols3]  = m3;
 
     for (int i=0; i<(*rows1); ++i) {
-        for (int j=0; j<(*cols1), ++j) {
+        for (int j=0; j<(*cols1); ++j) {
             m1_ptr[i][j] = m2_ptr[i][j] * m3_ptr[i][j];
         }
     }
@@ -143,20 +143,20 @@ int __mat2_merge_rows(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2,
         0,
         0,
         0,
-        padding_bottom;
+        padding_bottom,
         0.f
     );
     
     vfloat_t (*m1_ptr)[*cols1] = *m1;
     vfloat_t (*m3_ptr)[cols3]  = m3;
 
-    for (int i=o_rows, int j=0; i<*rows1; ++i, ++j) {
+    for (int i=o_rows, j=0; i<*rows1; ++i, ++j) {
         memcpy(m1_ptr[i], m3_ptr[j], *cols1 * sizeof(vfloat_t));
     }
     return 0;
 }
 
-int __mat2_merge_cols(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t row2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3)
+int __mat2_merge_cols(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3)
 {
     size_t o_cols = *cols1;
     int padding_right = cols3;

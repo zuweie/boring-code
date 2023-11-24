@@ -584,7 +584,7 @@ static void test_matrix_group_x(void)
         MAT2_INSPECT(gy);
     }
 }
-static void test_matrix2_merge(void) {
+static void test_matrix2_merge_rows(void) {
 
     vfloat_t x_data[][3] = {
         {1,5,6},
@@ -615,19 +615,83 @@ static void test_matrix2_merge(void) {
     Mat2_load_on_shape(m2, y_data, 3, 3);
     Mat2_load_on_shape(m3, z_data, 3, 3);
 
-    Mat2_merge(m1, m2);
+    Mat2_merge_rows(m1, m2);
     MAT2_INSPECT(m1);
 
-    Mat2_merge(m1, m3);
+    Mat2_merge_rows(m1, m3);
+    MAT2_INSPECT(m1);
+
+    Mat2_destroy(m1);
+    Mat2_destroy(m2);
+    Mat2_destroy(m3);
+}
+
+static void test_matrix2_merge_cols(void) 
+{
+    vfloat_t x_data[][3] = {
+        {1,5,6},
+        {2,3,4},
+    };
+
+    vfloat_t y_data[][4] = {
+        {1,5,6,5},
+        {2,3,4,8},
+    };
+
+    vfloat_t z_data[][2] = {
+        {3,2},
+        {9,2},
+    };
+
+    matrix2_t* m1 = Mat2_create(1,1);
+    matrix2_t* m2 = Mat2_create(1,1);
+    matrix2_t* m3 = Mat2_create(1,1);
+
+    Mat2_load_on_shape(m1, x_data, 2, 3);
+    Mat2_load_on_shape(m2, y_data, 2, 4);
+    Mat2_load_on_shape(m3, z_data, 2, 2);
+
+    Mat2_merge_cols(m1, m2);
+    MAT2_INSPECT(m1);
+
+    Mat2_merge_cols(m1, m3);
     MAT2_INSPECT(m1);
 
     Mat2_destroy(m1);
     Mat2_destroy(m2);
     Mat2_destroy(m3);
 
-
+    return;
 }
 
+static void test_matrix2_hadamard_product(void) 
+{
+    vfloat_t m1_data[][2] = {{2,2}, {2,2}, {2,2}};
+    vfloat_t m2_data[][2] = {{3,3}, {3,3}, {3,3}};
+
+    matrix2_t* m1 = Mat2_create(1,1);
+    matrix2_t* m2 = Mat2_create(1,1);
+
+
+    Mat2_load_on_shape(m1, m1_data, 3, 2);
+    Mat2_load_on_shape(m2, m2_data, 3, 2);
+
+
+    Mat2_hadamard_product(m1, m2);
+    MAT2_INSPECT(m1);
+
+    Mat2_destroy(m1);
+    Mat2_destroy(m2);
+    return;
+}
+static void test_matrix2_2I (void) 
+{
+    matrix2_t* mat = Mat2_create(1,1);
+    Mat2_2I(mat, 5);
+    MAT2_INSPECT(mat);
+    Mat2_destroy(mat);
+    return;
+}
 int do_matrix2_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -734,7 +798,22 @@ int do_matrix2_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, " test group x ", test_matrix2_merge) ) {
+    // if (NULL == CU_add_test(pSuite, " test merge rows ", test_matrix2_merge_rows) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+    
+    // if (NULL == CU_add_test(pSuite, " test merge cols ", test_matrix2_merge_cols) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, " test hadamard product ", test_matrix2_hadamard_product) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, " test hadamard product ", test_matrix2_2I) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

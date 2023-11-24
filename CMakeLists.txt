@@ -79,6 +79,7 @@ set (SOURCE
     src/statistical_learning/svm_kernel_func.c
     src/statistical_learning/counting.c
     src/deep_learning/ann.c
+    src/deep_learning/active.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c

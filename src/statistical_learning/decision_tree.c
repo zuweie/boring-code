@@ -331,7 +331,7 @@ static int __build_classification_node(matrix2_t* data, matrix2_t* label,  dct_n
                     Ags_size, \
                     (level_label+1), \
                     tree_level,  \
-                    gain_esp, \
+                    gain_eps, \
                     least_limit, \
                     level_limit, \
                     progress \

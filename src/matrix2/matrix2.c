@@ -112,7 +112,7 @@ int Mat2_fill_random(matrix2_t* mat, double from, double to)
     size_t mat_size = mat->rows * mat->cols;
 
     for (size_t i=0; i<mat_size; ++i)
-        mat->pool = from + (to - from) * (((double) rand()) / RAND_MAX);
+        mat->pool[i] = from + (to - from) * (((double) rand()) / RAND_MAX);
 
     return 0;
 }
@@ -428,24 +428,16 @@ int Mat2_inverse(matrix2_t* mat) {
 
 int Mat2_hadamard_product(matrix2_t* mat1, matrix2_t* mat2)
 {
-    // int mat1_size = mat1->rows * mat1->cols;
-    // int mat2_size = mat2->rows * mat2->cols;
 
-    // if (mat1_size == mat2_size) {
-    //     for (int i=0; i<mat1_size; ++i) {
-    //         mat1->pool[i] *= mat2->pool[i];
-    //     }
-    //     return 0;
-    // }
 
     if (mat1->rows == mat2->rows && mat1->cols == mat2->cols) {
         return __mat2_hadamard_product(
             &(mat1->pool),
             &(mat1->rows),
             &(mat1->cols),
-            m1->pool,
-            m1->rows,
-            m1->cols,
+            mat1->pool,
+            mat1->rows,
+            mat1->cols,
             mat2->pool,
             mat2->rows,
             mat2->cols
@@ -511,6 +503,21 @@ int Mat2_T(matrix2_t* mat)
     return 0;
 }
 
+int Mat2_2I(matrix2_t* mat, size_t side)
+{
+    if (mat->rows * mat->cols != side * side) {
+        mat->pool = realloc(mat->pool, side * side * sizeof(vfloat_t));
+    }
+    mat->rows = side;
+    mat->cols = side;
+
+    memset(mat->pool, 0, side * side * sizeof(vfloat_t));
+
+    for (int i=0; i<side; ++i) {
+        mat->pool[i*side + i] = 1.f;
+    }
+}
+
 /**
  * @brief 融合两个矩阵，结果存放在 ma1 中多生成的行中
  * 
@@ -528,25 +535,25 @@ int Mat2_merge_rows(matrix2_t* mat1, matrix2_t* mat2)
         // memcpy(m1_ptr[mat1->rows], mat2->pool, (mat2->rows * mat2->cols * sizeof(vfloat_t)));
         // mat1->rows = mat1->rows + mat2->rows;
         // return 0;
-        vfloat_t* m_cpy = malloc (mat1->rows * mat1->cols * sizeof(vfloat_t));
-        size_t cpy_rows = mat1->rows;
-        size_t cpy_cols = mat1->cols;
+        // vfloat_t* m_cpy = malloc (mat1->rows * mat1->cols * sizeof(vfloat_t));
+        // size_t cpy_rows = mat1->rows;
+        // size_t cpy_cols = mat1->cols;
 
-        memcpy(m_cpy, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+        // memcpy(m_cpy, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
 
         __mat2_merge_rows(
             &(mat1->pool),
             &(mat1->rows),
             &(mat1->cols),
-            m_cpy,
-            cpy_rows,
-            cpy_cols,
+            mat1->pool,
+            mat1->rows,
+            mat1->cols,
             mat2->pool,
             mat2->rows,
             mat2->cols
         );
 
-        free(m_cpy);
+        //free(m_cpy);
         return 0;
     }
     return -1;
@@ -567,7 +574,7 @@ int Mat2_merge_cols(matrix2_t* mat1, matrix2_t* mat2)
         size_t cpy_rows = mat1->rows;
         size_t cpy_cols = mat1->cols;
 
-        memcpy(m_cpy, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+        memcpy(m_cpy, mat1->pool, mat1->rows * mat1->cols * sizeof(vfloat_t));
 
         __mat2_merge_cols(
             &(mat1->pool),
