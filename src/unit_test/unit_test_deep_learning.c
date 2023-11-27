@@ -15,11 +15,11 @@ static int suite_success_clean (void)
     printf("\ndeep learning suite success clean\n");
 }
 
-static void ann_train_progress(char* title, unsigned long step, unsigned total) 
+static void ann_train_progress(char* title, unsigned long step, unsigned long total, double error) 
 {
     char buffer[1024];
     memset(buffer, 0x0, sizeof(buffer));
-    sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf ", title, step, total, (double) step / (double) total );
+    sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf, error: %lf", title, step, total, (double) step / (double) total, fabs(error) > 100.f ? 100.f : error);
     printf("%s\r", buffer);
     fflush(stdout);
 }
@@ -139,18 +139,19 @@ static void test_ann(void) {
     Mat2_load_on_shape(label, response1, y_data_row, y_data_col);
     Mat2_load_on_shape(_Input, _sample, 4, 1);
 
+    double symmetric_sigmoid_params[] = { 2./3, 1.7159};
     ann_param_t params;
-    params.max_iter = 1000;
-    params.learning_rate = 0.5f;
+    params.max_iter = 100000;
+    params.learning_rate = 0.3f;
     params.batch = 40;
-    params.trim_epsilon = 1e-3; // 0.001
-    params.lambda = .5;
-    params.act.active = ann_sigmoid;
-    params.act.active_params = NULL;
-    params.d_act.d_active = ann_d_sigmoid;
-    params.d_act.d_active_params = NULL;
-    int hidden_layer_cells_number[] = {3, 5, 4};
-    int hidden_layer_length = 3;
+    params.trim_epsilon = 1e-6; // 0.001
+    params.lambda = 1e-3;
+    params.act.active = ann_symmetric_sigmoid;
+    params.act.active_params = symmetric_sigmoid_params;
+    params.d_act.d_active = ann_d_symmetric_sigmoid;
+    params.d_act.d_active_params = symmetric_sigmoid_params;
+    int hidden_layer_cells_number[] = {5};
+    int hidden_layer_length = sizeof(hidden_layer_cells_number) / sizeof (int);
     matrix2_t* out_Wbs;
     int out_Wbs_length;
 

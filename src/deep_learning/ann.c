@@ -1,11 +1,3 @@
-/*
- * @Author: zuweie jojoe.wei@gmail.com
- * @Date: 2023-11-20 09:28:39
- * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-11-24 16:52:58
- * @FilePath: /boring-code/src/deep_learning/ann.c
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
@@ -27,13 +19,21 @@ static double vec_diff(matrix2_t* m1, matrix2_t* m2)
     return -1;
 }
 
+static void sub_lambda_alpha_W (matrix2_t* wb, double alpha, double lambda) 
+{
+    MAT2_POOL_PTR(wb, wb_ptr);
+    for (int i=0; i<wb->rows; ++i) {
+        for (int j=0; j<wb->cols-1; ++j) {
+            wb_ptr[i][j] *= 1 - alpha * lambda;
+        }
+    }
+}
 
-int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers, int hidden_layers_length, ann_param_t* ann_params, matrix2_t** out_Wbs, int* out_Wbs_length, void (*progress)(char*, unsigned long, unsigned long))
+
+int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers, int hidden_layers_length, ann_param_t* ann_params, matrix2_t** out_Wbs, int* out_Wbs_length, void (*progress)(char*, unsigned long, unsigned long, double))
 {
     // 这是计算得到的 y^.
     matrix2_t* _Yi     = Mat2_create(1,1);
-    // input 是每层神经网络的输入。
-    matrix2_t* _input   = Mat2_create(1,1);
     // delta LW 矩阵, L 对 W 的导数
     matrix2_t* delta_lW = Mat2_create(1,1);
     // delta Lz 矩阵，L 对 z 的导数
@@ -45,6 +45,10 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
     matrix2_t* next_layer_W = Mat2_create(1,1);
 
     matrix2_t* _W            = Mat2_create(1,1);
+
+    // input 是每层神经网络的输入。
+    matrix2_t* _input = Mat2_create(1,1);
+
 
     
     // TODO : 1 组建并且使用 0～1 初始化权重矩阵网络。
@@ -95,9 +99,10 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
     while (fabs(error-last_error) > ann_params->trim_epsilon && iter++ <= ann_params->max_iter) {
 
         if (progress) 
-            progress("ann training...", iter, ann_params->max_iter);
+            progress("ann training foorward ...", iter, ann_params->max_iter, fabs(error - last_error));
             
         last_error = error;
+        error = 0.f;
 
         
         for(int batch_index=0; batch_index<ann_params->batch; ++batch_index) {
@@ -137,6 +142,8 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
             
             error += vec_diff(_Us[input_layer_length-1], _Yi);
 
+            if (progress)
+                progress(" ann training backword...", iter, ann_params->max_iter, fabs(error-last_error));
             // TODO: 5 向后传播算法。
 
             // 1 计算最后一层的 delta_lz
@@ -148,12 +155,15 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
 
             Mat2_2I(next_layer_W, next_layer_delta_lz->rows);
             
-            // 1.2 核心函数
+            // 1.2 从最后一层开始做向后传播算法。
             for (int i=cell_layer_length-1, j=input_layer_length-1; i>=0; --i, --j) {
 
                 // 计算 f`(z) 也就是激活函数对输入的导数
                 
                 matrix2_t* _z = _Zs[i];
+                matrix2_t* _Wb = _Wbs[i];
+                matrix2_t* _x  = _Us[j-1];
+
                 ann_params->d_act.d_active(_z, ann_params->d_act.d_active_params);
                 
                 Mat2_T(next_layer_W);
@@ -162,23 +172,32 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
                 Mat2_hadamard_product(delta_lz, _z);
 
                 Mat2_cpy(delta_lW, delta_lz);
-                Mat2_T(_Us[j-1]);
-                Mat2_dot(delta_lW, _Us[j-1]);
+                Mat2_T(_x);
+                Mat2_dot(delta_lW, _x);
 
+                /*
                 Mat2_slice_cols_to(_W, _Wbs[i], 0, _Wbs[i]->cols-1);
                 Mat2_scalar_multiply(_W, ann_params->lambda);
 
                 Mat2_add(delta_lW, _W);
                 Mat2_scalar_multiply(delta_lW, ann_params->learning_rate);
 
-                //Mat2_cpy(delta_lb, delta_lz);
-                
-                Mat2_merge_cols(delta_lW, delta_lz);
+                Mat2_cpy(delta_lb, delta_lz);
+                */
 
-                Mat2_add(_Wbs[i], delta_lW);
+                // 若 lamba 不等于 0，那么需要提前把正则项加入到 W 的部分。
+                if (ann_params->lambda != 0.f) {
+                    sub_lambda_alpha_W(_Wb, ann_params->learning_rate, ann_params->lambda);
+                }
 
                 // 
-                Mat2_slice_cols_to(next_layer_W, _Wbs[i], 0, _Wbs[i]->cols-1);
+                Mat2_merge_cols(delta_lW, delta_lz);
+                Mat2_scalar_multiply(delta_lW, ann_params->learning_rate);
+
+                Mat2_sub(_Wb, delta_lW);
+
+                // 从新截取 W 到 和 delta lz 进行新一步的
+                Mat2_slice_cols_to(next_layer_W, _Wb, 0, _Wb->cols-1);
                 
                 Mat2_cpy(next_layer_delta_lz, delta_lz);
                 
