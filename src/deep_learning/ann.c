@@ -19,8 +19,13 @@ static double vec_diff(matrix2_t* m1, matrix2_t* m2)
     return -1;
 }
 
-static void sub_lambda_alpha_W (matrix2_t* wb, double alpha, double lambda) 
+static void sub_regular_term (matrix2_t* wb, double alpha, double lambda) 
 {
+    // 这里计算 Wb 中关于 W 的部分。W 部分需要减去 \alpha * \lambda * W
+    // 这里的 Wb 最后一列是偏置 b 所以计算知道 倒数第二项。
+    // W = W - \alpha * \lambda * W
+    // => W = W (1 -\alpha * \lambda )
+    // => W *= 1 - \alpha * \lambda
     MAT2_POOL_PTR(wb, wb_ptr);
     for (int i=0; i<wb->rows; ++i) {
         for (int j=0; j<wb->cols-1; ++j) {
@@ -78,7 +83,7 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
         // 这随便就行了
         _Us[j] = Mat2_create(1,1);
 
-        if (i != cell_layer_length - 1) last_input_number = hidden_layer_cell_numbers[i];
+        if (i < hidden_layers_length ) last_input_number = hidden_layer_cell_numbers[i];
 
     }
 
@@ -175,25 +180,18 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
                 Mat2_T(_x);
                 Mat2_dot(delta_lW, _x);
 
-                /*
-                Mat2_slice_cols_to(_W, _Wbs[i], 0, _Wbs[i]->cols-1);
-                Mat2_scalar_multiply(_W, ann_params->lambda);
-
-                Mat2_add(delta_lW, _W);
-                Mat2_scalar_multiply(delta_lW, ann_params->learning_rate);
-
-                Mat2_cpy(delta_lb, delta_lz);
-                */
-
-                // 若 lamba 不等于 0，那么需要提前把正则项加入到 W 的部分。
+                // 若 lamba 不等于 0，那么要从 W 中减去正则项。
                 if (ann_params->lambda != 0.f) {
-                    sub_lambda_alpha_W(_Wb, ann_params->learning_rate, ann_params->lambda);
+                    sub_regular_term(_Wb, ann_params->learning_rate, ann_params->lambda);
                 }
 
-                // 
+                // 根据公式 delta b 等于是 delta lz。
+                // 这里把 delta w 和 delta delta b 合并到一起。然后就可以乘以学习系数。
+                // 然后更新整个 Wb 
                 Mat2_merge_cols(delta_lW, delta_lz);
                 Mat2_scalar_multiply(delta_lW, ann_params->learning_rate);
 
+                // 跟新整个 Wb
                 Mat2_sub(_Wb, delta_lW);
 
                 // 从新截取 W 到 和 delta lz 进行新一步的
@@ -208,6 +206,7 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
     }
 
     // clean up the shit
+    // 清理所有生情的内存。
     Mat2_destroy(_Yi); 
     Mat2_destroy(_input);   
     Mat2_destroy(delta_lW);
