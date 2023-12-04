@@ -79,6 +79,7 @@ set (SOURCE
     src/statistical_learning/svm_kernel_func.c
     src/statistical_learning/counting.c
     src/deep_learning/ann.c
+    src/deep_learning/cnn.c
     src/deep_learning/rnn.c
     src/deep_learning/lstm.c
     src/deep_learning/active.c
