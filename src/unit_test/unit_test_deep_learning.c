@@ -144,11 +144,11 @@ static void test_ann(void) {
     params.max_iter = 100000;
     params.learning_rate = 0.3f;
     params.batch = 40;
-    params.trim_epsilon = 1e-4; // 0.001
+    params.term_epsilon = 1e-4; // 0.001
     params.lambda = 0.f;
-    params.act.active = ann_sigmoid;
+    params.act.active = sigmoid;
     params.act.active_params = symmetric_sigmoid_params;
-    params.d_act.d_active = ann_d_sigmoid;
+    params.d_act.d_active = d_sigmoid;
     params.d_act.d_active_params = symmetric_sigmoid_params;
     int hidden_layer_cells_number[] = {5};
     int hidden_layer_length = sizeof(hidden_layer_cells_number) / sizeof (int);
