@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-11-24 12:03:36
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-12-06 10:46:25
+ * @LastEditTime: 2023-12-08 16:11:04
  * @FilePath: /boring-code/src/deep_learning/active.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -66,7 +66,18 @@ int tanh (matrix2_t* vec, double* params)
 {
     
 }
+
 int d_tanh(matrix2_t* vec, double* params)
 {
 
+}
+
+int softmax(matrix2_t* vec, double* params)
+{
+
+}
+
+int d_softmax(matrix2_t* vec, double* params) 
+{
+    
 }
