@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-11-29 15:56:34
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-12-08 16:22:22
+ * @LastEditTime: 2023-12-11 17:35:01
  * @FilePath: /boring-code/src/deep_learning/rnn.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -35,10 +35,6 @@ typedef struct {
     double learn_rate;
     // 隐藏层神经元数量
     int hidden_layer_cells_numbers;
-    // 激活函数
-    rnn_active_t act;
-    // 激活函数倒数
-    rnn_d_active_t d_act;
 
 } rnn_param_t;
 

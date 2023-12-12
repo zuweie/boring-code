@@ -750,3 +750,15 @@ double Mat2_norm(matrix2_t* mat)
 {
     return __mat2_vect_norm(mat->pool, mat->rows * mat->cols);
 }
+
+int Mat2_export(matrix2_t* mat, void* buff)
+{
+    memcpy(buff, mat->pool, mat->rows * mat->cols * sizeof(vfloat_t));
+    return 0;
+}
+
+int Mat2_import(matrix2_t* mat, void* buff)
+{
+    memcpy(mat->pool, buff, mat->rows * mat->cols * sizeof (vfloat_t));
+    return 0;
+}
