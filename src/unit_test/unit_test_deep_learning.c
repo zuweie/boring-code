@@ -4,6 +4,7 @@
 #include "vtype/vfloat_type.h"
 #include "deep_learning/ann.h"
 #include "deep_learning/active.h"
+#include "deep_learning/rnn.h"
 
 static int  suite_success_init (void) 
 {
@@ -172,6 +173,97 @@ static void test_ann(void) {
 
     return;
 }
+
+static void rnn_train_progress(char* title, unsigned long step, unsigned long total, double error) 
+{
+    char buffer[1024];
+    memset(buffer, 0x0, sizeof(buffer));
+    sprintf(buffer, "%s, step: %ld , total: %ld, percent: %lf, error: %lf", title, step, total, (double) step / (double) total, fabs(error) > 100.f ? 100.f : error);
+    printf("%s\r", buffer);
+    fflush(stdout);
+}
+
+static void test_rnn (void) 
+{
+    vfloat_t train_data[][6] = {
+        {0,0,0,0,0,0},
+        {1,1,1,1,1,1},
+        {2,2,2,2,2,2},
+        {3,3,3,3,3,3},
+        {4,4,4,4,4,4},
+        {5,5,5,5,5,5},
+        {6,6,6,6,6,6},
+        {7,7,7,7,7,7},
+        {8,8,8,8,8,8},
+        {9,9,9,9,9,9},
+        {2,2,2,2,2,2},
+        {3,3,3,3,3,3},
+        {4,4,4,4,4,4},
+    };
+
+    vfloat_t label_data [][10] = {
+        {1,0,0,0,0,0,0,0,0,0},
+        {0,1,0,0,0,0,0,0,0,0},
+        {0,0,1,0,0,0,0,0,0,0},
+        {0,0,0,1,0,0,0,0,0,0},
+        {0,0,0,0,1,0,0,0,0,0},
+        {0,0,0,0,0,1,0,0,0,0},
+        {0,0,0,0,0,0,1,0,0,0},
+        {0,0,0,0,0,0,0,1,0,0},
+        {0,0,0,0,0,0,0,0,1,0},
+        {0,0,0,0,0,0,0,0,0,1},
+        {0,0,1,0,0,0,0,0,0,0},
+        {0,0,0,1,0,0,0,0,0,0},
+        {0,0,0,0,1,0,0,0,0,0},
+    };
+
+    vfloat_t test_data [][6] = {
+        {6,6,6,6,6,6},
+        {7,7,7,7,7,7},
+        {8,8,8,8,8,8}
+    };
+
+    
+    matrix2_t* seq_data  = Mat2_create(1,1);
+    matrix2_t* seq_label = Mat2_create(1,1);
+    matrix2_t* seq_test  = Mat2_create(1,1);
+
+    matrix2_t* _W_xh;
+    matrix2_t* _W_hh;
+    matrix2_t* _W_hy;
+
+    matrix2_t* _outputs;
+
+    Mat2_load_on_shape(seq_data, train_data, sizeof(train_data) / (sizeof(vfloat_t) * 6), 6);
+    Mat2_load_on_shape(seq_label, label_data, sizeof(label_data) / (sizeof(vfloat_t) * 10), 10 );
+    Mat2_load_on_shape(seq_test, test_data, sizeof(test_data) / (sizeof (vfloat_t) * 6), 6 );
+
+    rnn_param_t rnn_params;
+    rnn_params.max_iter = 1000;
+    rnn_params.term_epsilon = 1e-4;
+    rnn_params.learning_rate = 0.3;
+    rnn_params.hidden_layer_cells_numbers = 15;
+
+
+    rnn_sync_train(seq_data, seq_label, &rnn_params, &_W_xh, &_W_hh, &_W_hy, rnn_train_progress);
+
+    rnn_sync_predict(seq_test, _W_xh, _W_hh, _W_hy, &_outputs);
+
+    MAT2_INSPECT(_outputs);
+
+    Mat2_destroy(seq_data);
+    Mat2_destroy(seq_label);
+    Mat2_destroy(seq_test);
+
+    Mat2_destroy(_W_xh);
+    Mat2_destroy(_W_hh);
+    Mat2_destroy(_W_hy);
+
+    Mat2_destroy(_outputs);
+    
+
+}
+
 int do_deep_learning_test (void) 
 {
 
@@ -182,7 +274,12 @@ int do_deep_learning_test (void)
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(pSuite, "ann test", test_ann) ) {
+    // if (NULL == CU_add_test(pSuite, "ann test", test_ann) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "rnn test", test_rnn) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

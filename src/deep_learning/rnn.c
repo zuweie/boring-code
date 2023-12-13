@@ -2,11 +2,12 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-11-29 15:56:28
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-12-13 14:47:24
+ * @LastEditTime: 2023-12-13 15:36:47
  * @FilePath: /boring-code/src/deep_learning/rnn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include <float.h>
+#include <math.h>
 #include <string.h>
 #include "rnn.h"
 
@@ -58,7 +59,7 @@ static double vec_diff(matrix2_t* m1, matrix2_t* m2)
  * @param out_V 关于输出的
  * @return int 
  */
-int rnn_sync_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params, matrix2_t* out_W_xh, matrix2_t* out_W_hh, matrix2_t* out_W_hy, void (*progress)(char*, unsigned long, unsigned long))
+int rnn_sync_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params, matrix2_t* out_W_xh, matrix2_t* out_W_hh, matrix2_t* out_W_hy, void (*progress)(char*, unsigned long, unsigned long, double))
 {
 
     // TODO：1、做向前传播计算
@@ -116,8 +117,8 @@ int rnn_sync_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_p
 
     while ( iter++ < rnn_params->max_iter) {
 
-        if (progress) progress("rnn training...", iter, rnn_params->max_iter);
-        
+        if (progress) progress("rnn training...", iter, rnn_params->max_iter, fabs(error - last_error));
+
         last_error = error;
         error = 0.f;
 
