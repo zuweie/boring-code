@@ -186,7 +186,9 @@ int Mat2_put(matrix2_t* mat, size_t i, size_t j, vfloat_t v)
 
 int Mat2_load_on_shape(matrix2_t* mat, vfloat_t* data, size_t rows, size_t cols) 
 {
-    mat->pool = realloc(mat->pool, rows * cols * sizeof(vfloat_t));
+    if (mat->rows * mat->cols != rows * cols) {
+        mat->pool = realloc(mat->pool, rows * cols * sizeof(vfloat_t));
+    }
     mat->rows = rows;
     mat->cols = cols;
     memcpy(mat->pool, data, rows * cols * sizeof(vfloat_t));
