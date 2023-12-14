@@ -101,7 +101,7 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
     double error = FLT_MAX;
     double last_error = 0.f;
     int iter = 0;
-    while (fabs(error-last_error) > ann_params->trim_epsilon && iter++ <= ann_params->max_iter) {
+    while (fabs(error-last_error) > ann_params->term_epsilon && iter++ <= ann_params->max_iter) {
 
         if (progress) 
             progress("ann training foorward ...", iter, ann_params->max_iter, fabs(error - last_error));
@@ -136,7 +136,7 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
                 Mat2_cpy(_Zs[i], _Us[j]);
                 // 通过激活函数后，激活的结果保留在 _Us 中
 
-                ann_params->act.active(_Us[j], ann_params->act.active_params);
+                ann_params->hidden_act.active(_Us[j], ann_params->hidden_act.active_params);
 
                 // 把激活结果复制给 _input 为下一层运算做准备
                 Mat2_cpy(_input, _Us[j]);
@@ -169,7 +169,7 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
                 matrix2_t* _Wb = _Wbs[i];
                 matrix2_t* _x  = _Us[j-1];
 
-                ann_params->d_act.d_active(_z, ann_params->d_act.d_active_params);
+                ann_params->hidden_d_act.d_active(_z, ann_params->hidden_d_act.d_active_params);
                 
                 Mat2_T(next_layer_W);
                 Mat2_cpy(delta_lz, next_layer_W);
@@ -231,7 +231,7 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
 }
 
 
-int ann_predict(matrix2_t* _Input, matrix2_t** Wbs, int Wbs_length, ann_active_t* act, matrix2_t* predict)
+int ann_predict(matrix2_t* _Input, matrix2_t** Wbs, int Wbs_length, ann_active_t* hidden_act, matrix2_t* predict)
 {
     // 确保 _Input 是竖向量。
     if (_Input->rows < _Input->cols) 
@@ -245,7 +245,7 @@ int ann_predict(matrix2_t* _Input, matrix2_t** Wbs, int Wbs_length, ann_active_t
 
         Mat2_dot(predict, _Input);
 
-        act->active(predict, act->active_params);
+        hidden_act->active(predict, hidden_act->active_params);
         
         Mat2_cpy(_Input, predict);
     }

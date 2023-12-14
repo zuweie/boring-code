@@ -142,15 +142,18 @@ static void test_ann(void) {
 
     double symmetric_sigmoid_params[] = { 2./3, 1.7159};
     ann_param_t params;
+
     params.max_iter = 100000;
     params.learning_rate = 0.3f;
     params.batch = 40;
     params.term_epsilon = 1e-4; // 0.001
     params.lambda = 0.f;
-    params.act.active = sigmoid;
-    params.act.active_params = symmetric_sigmoid_params;
-    params.d_act.d_active = d_sigmoid;
-    params.d_act.d_active_params = symmetric_sigmoid_params;
+
+    params.hidden_act.active = sigmoid;
+    params.hidden_act.active_params = symmetric_sigmoid_params;
+    params.hidden_d_act.d_active = d_sigmoid;
+    params.hidden_d_act.d_active_params = symmetric_sigmoid_params;
+
     int hidden_layer_cells_number[] = {5};
     int hidden_layer_length = sizeof(hidden_layer_cells_number) / sizeof (int);
     matrix2_t* out_Wbs;
@@ -160,7 +163,7 @@ static void test_ann(void) {
     ann_train(data, label, hidden_layer_cells_number, hidden_layer_length, &params, &out_Wbs, &out_Wbs_length, ann_train_progress);
 
     // 
-    ann_predict(_Input, out_Wbs, out_Wbs_length, &params.act, predict);
+    ann_predict(_Input, out_Wbs, out_Wbs_length, &params.hidden_act, predict);
 
     MAT2_INSPECT(predict);
     
@@ -185,20 +188,63 @@ static void rnn_train_progress(char* title, unsigned long step, unsigned long to
 
 static void test_rnn (void) 
 {
+    // vfloat_t train_data[][6] = {
+    //     {0,0,0,0,0,0},
+    //     {1,1,1,1,1,1},
+    //     {2,2,2,2,2,2},
+    //     {3,3,3,3,3,3},
+    //     {4,4,4,4,4,4},
+    //     {5,5,5,5,5,5},
+    //     {6,6,6,6,6,6},
+    //     {7,7,7,7,7,7},
+    //     {8,8,8,8,8,8},
+    //     {9,9,9,9,9,9},
+    //     {2,2,2,2,2,2},
+    //     {3,3,3,3,3,3},
+    //     {4,4,4,4,4,4},
+    //     {0,0,0,0,0,0},
+    //     {1,1,1,1,1,1},
+    //     {2,2,2,2,2,2},
+    //     {3,3,3,3,3,3},
+    //     {4,4,4,4,4,4},
+    //     {5,5,5,5,5,5},
+    //     {6,6,6,6,6,6},
+    //     {7,7,7,7,7,7},
+    //     {8,8,8,8,8,8},
+    //     {9,9,9,9,9,9},
+    //     {2,2,2,2,2,2},
+    //     {3,3,3,3,3,3},
+    //     {4,4,4,4,4,4},
+        
+    // };
+    
     vfloat_t train_data[][6] = {
         {0,0,0,0,0,0},
-        {1,1,1,1,1,1},
-        {2,2,2,2,2,2},
-        {3,3,3,3,3,3},
-        {4,4,4,4,4,4},
-        {5,5,5,5,5,5},
-        {6,6,6,6,6,6},
-        {7,7,7,7,7,7},
-        {8,8,8,8,8,8},
-        {9,9,9,9,9,9},
-        {2,2,2,2,2,2},
-        {3,3,3,3,3,3},
-        {4,4,4,4,4,4},
+        {0,0,0,0,0,0.1},
+        {0,0,0,0,0,0.2},
+        {0,0,0,0,0,0.3},
+        {0,0,0,0,0,0.4},
+        {0,0,0,0,0,0.5},
+        {0,0,0,0,0,0.6},
+        {0,0,0,0,0,0.7},
+        {0,0,0,0,0,0.8},
+        {0,0,0,0,0,0.9},
+        {0,0,0,0,0,0.2},
+        {0,0,0,0,0,0.3},
+        {0,0,0,0,0,0.4},
+        {0,0,0,0,0,0},
+        {0,0,0,0,0,0.1},
+        {0,0,0,0,0,0.2},
+        {0,0,0,0,0,0.3},
+        {0,0,0,0,0,0.4},
+        {0,0,0,0,0,0.5},
+        {0,0,0,0,0,0.6},
+        {0,0,0,0,0,0.7},
+        {0,0,0,0,0,0.8},
+        {0,0,0,0,0,0.9},
+        {0,0,0,0,0,0.2},
+        {0,0,0,0,0,0.3},
+        {0,0,0,0,0,0.4},
     };
 
     vfloat_t label_data [][10] = {
@@ -215,12 +261,25 @@ static void test_rnn (void)
         {0,0,1,0,0,0,0,0,0,0},
         {0,0,0,1,0,0,0,0,0,0},
         {0,0,0,0,1,0,0,0,0,0},
+        {1,0,0,0,0,0,0,0,0,0},
+        {0,1,0,0,0,0,0,0,0,0},
+        {0,0,1,0,0,0,0,0,0,0},
+        {0,0,0,1,0,0,0,0,0,0},
+        {0,0,0,0,1,0,0,0,0,0},
+        {0,0,0,0,0,1,0,0,0,0},
+        {0,0,0,0,0,0,1,0,0,0},
+        {0,0,0,0,0,0,0,1,0,0},
+        {0,0,0,0,0,0,0,0,1,0},
+        {0,0,0,0,0,0,0,0,0,1},
+        {0,0,1,0,0,0,0,0,0,0},
+        {0,0,0,1,0,0,0,0,0,0},
+        {0,0,0,0,1,0,0,0,0,0},
     };
 
     vfloat_t test_data [][6] = {
-        {6,6,6,6,6,6},
-        {7,7,7,7,7,7},
-        {8,8,8,8,8,8}
+        {0,0,0,0,0,0.6},
+        {0,0,0,0,0,0.7},
+        {0,0,0,0,0,0.8},
     };
 
     
@@ -239,17 +298,31 @@ static void test_rnn (void)
     Mat2_load_on_shape(seq_test, test_data, sizeof(test_data) / (sizeof (vfloat_t) * 6), 6 );
 
     rnn_param_t rnn_params;
-    rnn_params.max_iter = 1000;
-    rnn_params.term_epsilon = 1e-4;
-    rnn_params.learning_rate = 0.3;
-    rnn_params.hidden_layer_cells_numbers = 15;
+    rnn_params.max_iter = 150;
+    rnn_params.term_epsilon = 1e-2;
+    rnn_params.learning_rate = 0.2;
+    rnn_params.hidden_layer_cells_numbers = 40;
+
+    rnn_params.hidden_act.active = tanh1;
+    rnn_params.hidden_act.params = NULL;
+    rnn_params.hidden_d_act.d_active = d_tanh1;
+    rnn_params.hidden_d_act.params = NULL;
+
+    rnn_params.output_act.active = softmax;
+    rnn_params.output_act.params = NULL;
+    rnn_params.output_d_act.d_active = d_softmax;
+    rnn_params.output_d_act.params = NULL;
 
 
-    rnn_sync_train(seq_data, seq_label, &rnn_params, &_W_xh, &_W_hh, &_W_hy, rnn_train_progress);
+    rnn_train(seq_data, seq_label, &rnn_params, &_W_xh, &_W_hh, &_W_hy, rnn_train_progress);
 
-    rnn_sync_predict(seq_test, _W_xh, _W_hh, _W_hy, &_outputs);
+    //MAT2_INSPECT(_W_xh);
+    //MAT2_INSPECT(_W_hh);
+    //MAT2_INSPECT(_W_hy);
 
-    MAT2_INSPECT(_outputs);
+    rnn_predict(seq_test, _W_xh, _W_hh, _W_hy, &rnn_params.hidden_act, &rnn_params.output_act, &_outputs);
+
+    //MAT2_INSPECT(_outputs);
 
     Mat2_destroy(seq_data);
     Mat2_destroy(seq_label);
@@ -260,8 +333,6 @@ static void test_rnn (void)
     Mat2_destroy(_W_hy);
 
     Mat2_destroy(_outputs);
-    
-
 }
 
 int do_deep_learning_test (void) 

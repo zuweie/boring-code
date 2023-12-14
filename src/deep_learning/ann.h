@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-11-20 09:28:45
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-12-05 13:33:51
+ * @LastEditTime: 2023-12-14 11:36:24
  * @FilePath: /boring-code/src/deep_learning/ann.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -36,9 +36,17 @@ typedef struct {
     // 正则化项参数
     double lambda;
     
-    ann_active_t act;
+    // 隐藏层的 active
+    ann_active_t hidden_act;
 
-    ann_d_active_t d_act;
+    // 隐藏层的 d_active
+    ann_d_active_t hidden_d_act;
+
+    // 输出层的 active
+    ann_active_t output_act;
+
+    // 输出层的 d active
+    ann_active_t output_d_act;
 
 } ann_param_t;
 
