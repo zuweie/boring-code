@@ -332,8 +332,6 @@ static void test_rnn (void)
         {'3','3','3'},
         {'2','2','2'},
         {'3','3','3'},
-        {'2','2','2'},
-        {'3','3','3'},
     };
 
     // vfloat_t label_data [][10] = {
@@ -369,8 +367,6 @@ static void test_rnn (void)
         {0,0,1},
         {0,1,0},
         {0,0,1},
-        {0,1,0},
-        {0,0,1}
     };
 
     vfloat_t test_data [][test_cols] = {
@@ -399,9 +395,9 @@ static void test_rnn (void)
     Mat2_normalize_on_col(seq_test);
 
     rnn_param_t rnn_params;
-    rnn_params.max_iter = 1000;
-    rnn_params.term_epsilon = 1.f;
-    rnn_params.learning_rate = 0.02;
+    rnn_params.max_iter = 10000;
+    rnn_params.term_epsilon = 0.5f;
+    rnn_params.learning_rate = 0.01;
     rnn_params.hidden_layer_cells_numbers = 3;
 
     rnn_params.hidden_act.active = tanh1;

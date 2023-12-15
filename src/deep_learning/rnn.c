@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-11-29 15:56:28
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-12-15 15:36:29
+ * @LastEditTime: 2023-12-15 16:08:49
  * @FilePath: /boring-code/src/deep_learning/rnn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -54,6 +54,23 @@ static double __output_compare(matrix2_t* out_put, matrix2_t* label)
     }
     return 1.f;
     
+}
+
+static double __error (matrix2_t* out_put, matrix2_t* label)
+{
+    int m1_size = out_put->rows * out_put->cols;
+    int m2_size = label->rows * label->cols;
+
+    if (m1_size == m2_size) {
+        double err = 0.f;
+
+        for (int i=0; i<m1_size; ++i) {
+            err += label->pool[i] * log(out_put->pool[i]);
+        }
+        return err;
+    }
+    return -1.f;
+
 }
 
 /**
@@ -148,14 +165,12 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
     memset(delta_h_buff[seq_length], 0, N * sizeof(vfloat_t));
 
     double error = FLT_MAX;
-    double last_error = 0.f;
     int iter = 0;
 
-    while ( iter++ < rnn_params->max_iter && error > rnn_params->term_epsilon) {
+    while ( iter++ < rnn_params->max_iter && fabs(error) > rnn_params->term_epsilon ) {
 
-        // if (progress) progress("rnn training...", iter, rnn_params->max_iter, fabs(error));
+        if (progress) progress("rnn training...", iter, rnn_params->max_iter, fabs(error));
 
-        last_error = error;
         error = 0.f;
 
         // for debug
@@ -234,9 +249,10 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
             // 把输出保存起来。
             Mat2_export(_item2, y_buff[i]);
 
+            // 此处本想用于收敛停止训练。后来发现这个是收敛了还是不行的。
             Mat2_slice_row_to(_item1, seq_label, i);
+            error += __error(_item2, _item1);
 
-            error += __output_compare(_item1, _item2);
             // for debug
             // Mat2_T(_item2);
             // MAT2_INSPECT(_item2);
@@ -250,8 +266,8 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
         // __printf_buff("u_buff", seq_length, N, u_buff);
         // __printf_buff("h_buff", seq_length+1, N, h_buff);
         // __printf_buff("v_buff", seq_length, L, v_buff);
-        __printf_buff("y_buff", seq_length, L, y_buff);
-        printf("\n error : %f \n", error);
+        // __printf_buff("y_buff", seq_length, L, y_buff);
+        // printf("\n error : %f \n", error);
         // for debug
 
         // bptt 向后传播
@@ -413,7 +429,7 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
         }
 
         // for debug
-        printf(" \n <iter: %d> ---------------------------------------------------- \n", iter);
+        // printf(" \n <iter: %d> ---------------------------------------------------- \n", iter);
         // for debug
 
     }
