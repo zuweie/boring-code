@@ -764,3 +764,21 @@ int Mat2_import(matrix2_t* mat, void* buff)
     memcpy(mat->pool, buff, mat->rows * mat->cols * sizeof (vfloat_t));
     return 0;
 }
+
+int Mat2_normalize_on_col(matrix2_t* mat) 
+{
+    MAT2_POOL_PTR(mat, mat_ptr);
+    double total;
+    for (int j=0; j<mat->cols; ++j) {
+        total = 0.f;
+
+        for (int i=0; i<mat->rows; ++i) {
+            total += mat_ptr[i][j];
+        }
+
+        for (int k=0; k<mat->rows; ++k) {
+            mat_ptr[k][j] /= total;
+        }
+   }
+   return 0;
+}

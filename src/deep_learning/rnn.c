@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-11-29 15:56:28
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-12-14 16:06:18
+ * @LastEditTime: 2023-12-15 15:36:29
  * @FilePath: /boring-code/src/deep_learning/rnn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,18 +13,46 @@
 #include "rnn.h"
 //#include "active.h"
 
-static double vec_error(matrix2_t* m1, matrix2_t* m2) 
+// for debug
+static __printf_buff(const* title, int r, int c, vfloat_t (*buff)[c])
 {
-    // int m1_size = m1->rows * m1->cols;
-    // int m2_size = m2->rows * m2->cols;
-    // double diff = 0.f;
-    // if (m1_size == m2_size) {
-    //     for (int i = 0; i<m1_size; ++i){
-    //         diff += sqrt(((m1->pool[i] - m2->pool[i]) * (m1->pool[i] - m2->pool[i])));
-    //     }
-    //     return diff;
-    // }
-    // return -1;
+    printf(" \n------- <%s> ------ %d x %d \n", title, r, c);
+    for (int i=0; i<r; ++i) {
+        for (int j=0; j<c; ++j) {
+            printf("  %lf, ", buff[i][j]);
+        }
+        printf("\n");
+    }
+    printf(" ------------------ \n");
+}
+// for debug
+
+static double __output_compare(matrix2_t* out_put, matrix2_t* label) 
+{
+    int m1_size = out_put->rows * out_put->cols;
+    int m2_size = label->rows * label->cols;
+
+    if (m1_size == m2_size) {
+
+        int out_cls = -1;
+        int label_cls = -2;
+
+        double out_max = -FLT_MAX;
+        double label_max = -FLT_MAX;
+
+        for (int i=0; i<m1_size; ++i) {
+            if (out_put->pool[i] > out_max) {
+                out_cls = i;
+                out_max = out_put->pool[i];
+            }
+            if (label->pool[i] > label_max) {
+                label_cls = i;
+                label_max = label->pool[i];
+            }
+        }
+        return ! (out_cls == label_cls);
+    }
+    return 1.f;
     
 }
 
@@ -62,7 +90,7 @@ static double vec_error(matrix2_t* m1, matrix2_t* m2)
  * @param out_V 关于输出的
  * @return int 
  */
-int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params, matrix2_t** out_W_xh, matrix2_t** out_W_hh, matrix2_t** out_W_hy, void (*progress)(char*, unsigned long, unsigned long, double))
+int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params, matrix2_t** out_Wb_xh, matrix2_t** out_W_hh, matrix2_t** out_W_hy, void (*progress)(char*, unsigned long, unsigned long, double))
 {
 
     // TODO：1、做向前传播计算
@@ -77,7 +105,9 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
     // ouput length
     int L = seq_label->cols;
     
-    matrix2_t* _W_xh = Mat2_create(N, K);
+    // 添加一个偏置量在 xh 中来
+    matrix2_t* _Wb_xh = Mat2_create(N, K+1);
+
     matrix2_t* _W_hh = Mat2_create(N, N);
     matrix2_t* _W_hy = Mat2_create(L, N);
 
@@ -94,9 +124,13 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
     matrix2_t* _delta_y = Mat2_create(L,1);
     matrix2_t* _delta_h = Mat2_create(N,1);
     
-    Mat2_fill_random(_W_xh, 0, 1.f);
+    Mat2_fill_random(_Wb_xh, 0, 1.f);
     Mat2_fill_random(_W_hh, 0, 1.f);
     Mat2_fill_random(_W_hy, 0, 1.f);
+    
+    // Mat2_fill(_W_xh, 0.f);
+    // Mat2_fill(_W_hh, 0.f);
+    // Mat2_fill(_W_hy, 0.f);
     // 
 
     vfloat_t (*u_buff)[N] = malloc( seq_length * N * sizeof (vfloat_t));
@@ -117,12 +151,21 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
     double last_error = 0.f;
     int iter = 0;
 
-    while ( iter++ < rnn_params->max_iter) {
+    while ( iter++ < rnn_params->max_iter && error > rnn_params->term_epsilon) {
 
-        //if (progress) progress("rnn training...", iter, rnn_params->max_iter, fabs(error));
+        // if (progress) progress("rnn training...", iter, rnn_params->max_iter, fabs(error));
 
         last_error = error;
         error = 0.f;
+
+        // for debug
+        // printf("\n wxh: \n");
+        // MAT2_INSPECT(_Wb_xh);
+        // printf("\n whh: \n");
+        // MAT2_INSPECT(_W_hh);
+        // printf("\n why: \n");
+        // MAT2_INSPECT(_W_hy);
+        // for debug
 
         // 向前传播。
         for (int i=0, l=1; i<seq_length; ++i, ++l) {
@@ -131,7 +174,13 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
 
             Mat2_T(_Xi);
 
-            Mat2_cpy(_item1, _W_xh);
+            // for debug
+            // MAT2_INSPECT(_Xi);
+            // for debug
+
+            Mat2_padding_bottom(_Xi, 1, 1.0f);
+            
+            Mat2_cpy(_item1, _Wb_xh);
 
             Mat2_dot(_item1, _Xi);
         
@@ -142,6 +191,15 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
 
             Mat2_dot(_item2, _h);
 
+            //for debug 
+            // printf("\n item1: \n");
+            // MAT2_INSPECT(_item1);
+            // printf("\n\n item2: \n");
+            // MAT2_INSPECT(_item2);
+            // printf("\n\n _h: \n");
+            // MAT2_INSPECT(_h);
+            //for debug
+
             Mat2_add(_item1, _item2);
             
             // 一系列操作后成为 u_{t}
@@ -149,7 +207,16 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
 
             // 经过激活后成为 h_{t}
             //tanh1(_item1, NULL);
+
+            // for debug 
+            // MAT2_INSPECT(_item1);
+            // for debug
+
             rnn_params->hidden_act.active(_item1, rnn_params->hidden_act.params);
+
+            // for debug
+            // MAT2_INSPECT(_item1);
+            // for debug
 
             Mat2_export(_item1, h_buff[l]);
             
@@ -169,20 +236,23 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
 
             Mat2_slice_row_to(_item1, seq_label, i);
 
-            Mat2_T(_item2);
-            MAT2_INSPECT(_item2);
-            MAT2_INSPECT(_item1);
-            printf("\n seq: %d -------- \n", i);
-            //error += vec_diff(_item1, _item2);
-            
+            error += __output_compare(_item1, _item2);
+            // for debug
+            // Mat2_T(_item2);
+            // MAT2_INSPECT(_item2);
+            // MAT2_INSPECT(_item1);
+
+            // printf("\n seq: %d -------- \n", i);
+            // for debug
         }
 
-        printf("\n iter: %d ------------------------ \n", iter);
-        
-        // 如果达到精度要求则不在训练。
-        //if (progress) progress("rnn training...", iter, rnn_params->max_iter, fabs(error));
-        
-        //if ( fabs(error) < rnn_params->term_epsilon ) break;
+        // for debug print buff
+        // __printf_buff("u_buff", seq_length, N, u_buff);
+        // __printf_buff("h_buff", seq_length+1, N, h_buff);
+        // __printf_buff("v_buff", seq_length, L, v_buff);
+        __printf_buff("y_buff", seq_length, L, y_buff);
+        printf("\n error : %f \n", error);
+        // for debug
 
         // bptt 向后传播
         
@@ -198,16 +268,32 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
 
             Mat2_sub(_item1, _item2);
 
+            // for debug
+            // MAT2_INSPECT(_item1);
+            // for debug
+
             Mat2_cpy(_delta_y, _item1);
-            
+        
             Mat2_load_on_shape(_item1, v_buff[j], L, 1);
+
             // g'(vt)
             rnn_params->output_d_act.d_active(_item1, rnn_params->output_d_act.params);
 
+            // for debug
+            // printf("\n\n g'(vt)\n");
+            // MAT2_INSPECT(_item1);
+            // for debug 
+
             Mat2_hadamard_product(_delta_y, _item1);
+            
+            // for debug
+            // printf("\n\n hadamard product \n");
+            // MAT2_INSPECT(_delta_y);
+            // for debug
 
             Mat2_export(_delta_y, delta_y_buff[j]);
 
+            /* --------------------------------------- */
             // 2 计算 delta_h
             Mat2_cpy(_item1, _W_hh);
             
@@ -242,6 +328,13 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
             
         }
 
+        // for debug 
+
+        // __printf_buff("delta_h_buff", seq_length + 1, N, delta_h_buff);
+        // __printf_buff("delta_y_buff", seq_length, L, delta_y_buff);
+
+        // for debug 
+
         // update model
 
         for (int k=0, l=1; k<seq_length; ++k, ++l) {
@@ -253,12 +346,25 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
 
             Mat2_T(_item2);
 
+            // for debug
+
+            // MAT2_INSPECT(_item1);
+            // MAT2_INSPECT(_item2);
+
+            // for debug
+            
+
             Mat2_dot(_item1, _item2);
             
             Mat2_scalar_multiply(_item1, rnn_params->learning_rate);
             
-            Mat2_add(_W_hy, _item1);
+            // for debug 
+            // MAT2_INSPECT(_item1);
+            // for debug
 
+            Mat2_sub(_W_hy, _item1);
+
+            /* ------------------------------------------------------------- */
             // 更新 W_hh
 
             Mat2_load_on_shape(_item1, delta_h_buff[k], N, 1);
@@ -271,7 +377,14 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
 
             Mat2_scalar_multiply(_item1, rnn_params->learning_rate);
 
-            Mat2_add(_W_hh, _item1);
+            // for debug 
+            // MAT2_INSPECT(_item1);
+            // for debug
+
+            Mat2_sub(_W_hh, _item1);
+
+            
+            /* ------------------------------------------------------------------- */
 
             // 更新 W_hx
             Mat2_load_on_shape(_item1, delta_h_buff[k], N, 1);
@@ -280,10 +393,28 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
 
             Mat2_dot(_item1, _item2);
 
+            Mat2_load_on_shape(_item2, delta_h_buff[k], N, 1);
+
+            Mat2_merge_cols(_item1, _item2);
+            
             Mat2_scalar_multiply(_item1, rnn_params->learning_rate);
 
-            Mat2_add(_W_xh, _item1);
+
+
+            // for debug 
+            // MAT2_INSPECT(_item1);
+            // for debug
+
+            Mat2_sub(_Wb_xh, _item1);
+
+            // for debug
+            // printf("\n ------- \n");
+            // for debug
         }
+
+        // for debug
+        printf(" \n <iter: %d> ---------------------------------------------------- \n", iter);
+        // for debug
 
     }
 
@@ -307,22 +438,22 @@ int rnn_train(matrix2_t* seq_data, matrix2_t* seq_label, rnn_param_t* rnn_params
     free(delta_h_buff);
     free(delta_y_buff);
 
-    *out_W_xh = _W_xh;
+    *out_Wb_xh = _Wb_xh;
     *out_W_hh = _W_hh;
     *out_W_hy = _W_hy;
 
     return 0;
 }
 
-int rnn_predict(matrix2_t* seq_inputs, matrix2_t* w_xh, matrix2_t* w_hh, matrix2_t* w_hy, rnn_active_t* hidden_act, rnn_active_t* output_act, matrix2_t** seq_outpts)
+int rnn_predict(matrix2_t* seq_inputs, matrix2_t* Wb_xh, matrix2_t* W_hh, matrix2_t* W_hy, rnn_active_t* hidden_act, rnn_active_t* output_act, matrix2_t** seq_outpts)
 {
     int seq_length = seq_inputs->rows;
-    int seq_cols   = w_hy->rows;
+    int seq_cols   = W_hy->rows;
 
     matrix2_t* _outputs = Mat2_create(seq_length, seq_cols);
     MAT2_POOL_PTR(_outputs, _outputs_ptr);
 
-    matrix2_t* _h0       = Mat2_create(w_hh->cols, 1);
+    matrix2_t* _h0      = Mat2_create(W_hh->cols, 1);
     matrix2_t* _Xi      = Mat2_create(1,1);
     matrix2_t* _item1   = Mat2_create(1,1);
     matrix2_t* _item2   = Mat2_create(1,1);
@@ -337,11 +468,13 @@ int rnn_predict(matrix2_t* seq_inputs, matrix2_t* w_xh, matrix2_t* w_hh, matrix2
 
         Mat2_T(_Xi);
         
-        Mat2_cpy(_item1, w_xh);
+        Mat2_padding_bottom(_Xi, 1, 1.f);
+
+        Mat2_cpy(_item1, Wb_xh);
 
         Mat2_dot(_item1, _Xi);
         
-        Mat2_cpy(_item2, w_hh);
+        Mat2_cpy(_item2, W_hh);
 
         Mat2_dot(_item2, _h0);
 
@@ -351,7 +484,7 @@ int rnn_predict(matrix2_t* seq_inputs, matrix2_t* w_xh, matrix2_t* w_hh, matrix2
 
         Mat2_cpy(_h0, _item1);
 
-        Mat2_cpy(_item1, w_hy);
+        Mat2_cpy(_item1, W_hy);
 
         Mat2_dot(_item1, _h0);
 

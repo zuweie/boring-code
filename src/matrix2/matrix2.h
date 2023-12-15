@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-12-12 20:21:05
+ * @LastEditTime: 2023-12-15 12:50:09
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -72,6 +72,8 @@ int Mat2_eig(matrix2_t* eigvalue_mat, matrix2_t* eigvectors_mat, matrix2_t* m1);
 
 int Mat2_sum(matrix2_t* mat, int axis);
 double Mat2_norm(matrix2_t* mat);
+
+int Mat2_normalize_on_col(matrix2_t* mat);
 
 
 #define MAT2_POOL_PTR(mat, ptr_name) vfloat_t(*ptr_name)[(mat)->cols]=(mat)->pool
