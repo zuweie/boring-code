@@ -1,13 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-10-07 20:11:11
-<<<<<<< HEAD
- * @LastEditTime: 2021-11-03 14:57:41
- * @LastEditors: Please set LastEditors
-=======
- * @LastEditTime: 2023-06-14 12:01:46
+ * @LastEditTime: 2024-09-01 13:03:32
  * @LastEditors: zuweie jojoe.wei@gmail.com
->>>>>>> origin/main
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/type_value/__built_in_type.h
  */

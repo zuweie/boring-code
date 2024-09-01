@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-10-11 15:07:54
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-10-12 15:58:32
+ * @LastEditTime: 2024-08-31 10:17:45
  * @FilePath: /boring-code/src/ultra_array/x_array.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "x_array.h"
+#include "tensor.h"
 
 
 static int __calculate_dimens_unit_size(int* dimens, int axisn, int axis)
@@ -31,7 +31,7 @@ static int __calculate_dimens_unit_size(int* dimens, int axisn, int axis)
     return -1;
 }
 
-static int __count_arr_elems_number(x_array_t* arr) 
+static int __count_arr_elems_number(tensor_t* arr) 
 {
     int number = 1;
     for (int i=0; i<arr->axisn; ++i) {
@@ -41,7 +41,7 @@ static int __count_arr_elems_number(x_array_t* arr)
 }
 
 
-static int __do_displaying(x_array_t* arr, char* base, int curr_dimen, int space)
+static int __do_displaying(tensor_t* arr, char* base, int curr_dimen, int space)
 {
     space++;
 
@@ -76,7 +76,7 @@ static int __do_displaying(x_array_t* arr, char* base, int curr_dimen, int space
 }
 
 
-static int __do_padding(x_array_t* dest, x_array_t* src, char* dest_base, char* src_base,  int* padding_info, int curr_axis)
+static int __do_padding(tensor_t* dest, tensor_t* src, char* dest_base, char* src_base,  int* padding_info, int curr_axis)
 {
     int padding_left  = padding_info[curr_axis*2];
     int dest_unit_size = __calculate_dimens_unit_size(dest->dimens, dest->axisn,  curr_axis);
@@ -99,7 +99,7 @@ static int __do_padding(x_array_t* dest, x_array_t* src, char* dest_base, char* 
     return 0;
 }
 
-static int __do_slicing(char** dest, char* base, int* slice_info, x_array_t* src, int curr_axis)
+static int __do_slicing(char** dest, char* base, int* slice_info, tensor_t* src, int curr_axis)
 {
     int start     = slice_info[curr_axis*2];
     int open_end  = slice_info[curr_axis*2 +1];
@@ -124,9 +124,9 @@ static int __do_slicing(char** dest, char* base, int* slice_info, x_array_t* src
     return 0;
 }
 
-x_array_t* xarray_create(int axisn, ...)
+tensor_t* tensor_create(int axisn, ...)
 {
-    x_array_t* arr = malloc(sizeof(x_array_t));
+    tensor_t* arr = malloc(sizeof(tensor_t));
     arr->axisn = axisn;
     arr->dimens = malloc(axisn * sizeof (int));
     
@@ -147,7 +147,7 @@ x_array_t* xarray_create(int axisn, ...)
 }
 
 
-int xarray_arange(x_array_t* arr, float start, float open_end)
+int tensor_arange(tensor_t* arr, float start, float open_end)
 {
     int elems_number = __count_arr_elems_number(arr);
     float per_value  = (open_end - start) / (float) elems_number;
@@ -158,9 +158,9 @@ int xarray_arange(x_array_t* arr, float start, float open_end)
     return 0;
 }
 
-x_array_t* xarray_slice(x_array_t* arr, ...)
+tensor_t* tensor_slice(tensor_t* arr, ...)
 {
-    x_array_t* slice_arr = malloc( sizeof (x_array_t));
+    tensor_t* slice_arr = malloc( sizeof (tensor_t));
     slice_arr->axisn = arr->axisn;
     slice_arr->dimens = malloc ( arr->axisn * sizeof(int) );
 
@@ -184,9 +184,9 @@ x_array_t* xarray_slice(x_array_t* arr, ...)
     return slice_arr;
 }
 
-x_array_t* xarray_padding(x_array_t* arr, float padding_value, ...)
+tensor_t* tensor_padding(tensor_t* arr, float padding_value, ...)
 {
-    x_array_t* padding_arr = malloc( sizeof (x_array_t));
+    tensor_t* padding_arr = malloc( sizeof (tensor_t));
     padding_arr->axisn = arr->axisn;
     padding_arr->dimens = malloc ( arr->axisn * sizeof (int) );
 
@@ -214,7 +214,7 @@ x_array_t* xarray_padding(x_array_t* arr, float padding_value, ...)
     return padding_arr;
 }
 
-int xarray_display(x_array_t* arr)
+int tensor_display(tensor_t* arr)
 {
     printf(" shape: <");
     for (int i=0; i<arr->axisn; ++i) {
@@ -225,7 +225,7 @@ int xarray_display(x_array_t* arr)
     return __do_displaying(arr, arr->elems, 0, 0);
 }
 
-int xarray_recycle(x_array_t* arr)
+int tensor_recycle(tensor_t* arr)
 {
     free(arr->dimens);
     free(arr->elems);

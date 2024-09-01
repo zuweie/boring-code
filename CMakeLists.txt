@@ -58,7 +58,7 @@ set (SOURCE
     src/ultra_array/ultra_router.c
     src/ultra_array/ultra_data_chunk.c
     src/ultra_array/ultra_padding.c
-    src/ultra_array/x_array.c
+    src/ultra_array/tensor.c
     src/machine_learning/linear_regression.c
     src/machine_learning/logistic_regression.c
     src/machine_learning/svm/support_vector_machines.c
@@ -83,6 +83,7 @@ set (SOURCE
     src/deep_learning/rnn.c
     src/deep_learning/lstm.c
     src/deep_learning/active.c
+    src/deep_learing/compute_garph/compute_garph.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c
