@@ -206,7 +206,7 @@ int ann_train(matrix2_t* data, matrix2_t* label, int* hidden_layer_cell_numbers,
     }
 
     // clean up the shit
-    // 清理所有生情的内存。
+    // 清理所有申请的内存。
     Mat2_destroy(_Yi); 
     Mat2_destroy(_input);   
     Mat2_destroy(delta_lW);

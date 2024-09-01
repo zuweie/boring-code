@@ -12,21 +12,16 @@ static int __vertex_list_insert(compute_vertex_node_t* first, compute_vertex_t* 
     return 0;
 }
 
-static int __vertex_list_recycle(compute_vertex_node_t* first, int is_vertex_recycling)
+static int __vertex_list_recycle(compute_vertex_node_t* first)
 {
     compute_vertex_node_t* curr_node;
-    while (first)
-    {
+    while (first) {
         curr_node = first;
         first = first->next;
-        // 彻底回收 vertex 
-        if (is_vertex_recycling)
-            curr_node->vertex->recycle(curr_node->vertex);
-        free(curr);
+        free(curr_node);
     }
     return 0;
 }
-
 
 /**
  * @brief 从顶层节点开始做向前传播。使用递归方法，从上到下，再从下到上的向前传播。
@@ -93,7 +88,14 @@ int cg_vertex_link(compute_vertex_t* from, compute_vertex_t* to)
 
 int cg_recycle(compute_garph_t* garph) 
 {
-    __vertex_list_recycle(garph->vertexes, 1);
+    compute_vertex_node_t* first = garph->vertexes;
+    while(first) {
+        compute_vertex_node_t* curr_node = first;
+        first = first->next;
+        curr_node->vertex->recycle(curr_node->vertex);
+        free(curr_node->vertex);
+        free(curr_node);
+    }
     return 0;
 }
 
