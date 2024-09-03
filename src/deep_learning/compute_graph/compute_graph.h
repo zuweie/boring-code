@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-03 11:49:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2024-09-03 15:37:09
+ * @LastEditTime: 2024-09-03 17:16:45
  * @FilePath: /boring-code/src/deep_learning/compute_graph/compute_graph.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -49,9 +49,6 @@ typedef struct _compute_graph {
     const char* z;
 } compute_graph_t;
 
-
-
-
 int compute_graph_init(compute_graph_t* p_compute_graph, const char* z, void* p_op_params);
 int compute_graph_recycle(compute_graph_t* p_compute_graph);
 
@@ -59,9 +56,10 @@ int compute_graph_add_note(compute_graph_t* p_compute_graph, compute_node_t* p_n
 int compute_graph_link_note(compute_graph_t* p_compute_graph, const char* p_from_id, const char* p_to_id);
 
 // 最重要这三个函数。
-int compute_forward_propagation(compute_graph_t* p_compute_graph);
-int compute_build_gradient(compute_graph_t* p_compute_graph);
-int compute_update_gradient(compute_graph_t* p_compute_graph):
+int compute_graph_forward_propagation(compute_graph_t* p_compute_graph);
+int compute_graph_build_gradient(compute_graph_t* p_compute_graph);
+int compute_graph_update_gradient(compute_graph_t* p_compute_graph):
+int compute_graph_update_payload(compute_graph_t* p_compute_graph);
 
 compute_node_t* compute_node_create_type1(const char* id, int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*, void*), int (*bp)(compute_node_t*, void*), int (*update_payload)(comute_node_t*, void*));
 compute_node_t* compute_node_create_type2(const char* id, matrix2_t* input, int(*recycle)(compute_node_t*), int (*bp)(compute_node_t*, void*), int(*update_payload)(compute_node_t*, void*));

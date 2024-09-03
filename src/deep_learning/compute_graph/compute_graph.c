@@ -60,20 +60,21 @@ int compute_graph_link_note(compute_graph_t* p_compute_graph, const char* p_from
 }
 
 // 最重要这三个函数。
-int compute_forward_propagation(compute_graph_t* p_compute_graph)
+int compute_graph_forward_propagation(compute_graph_t* p_compute_graph)
 {
-
-}
-int compute_build_gradient(compute_graph_t* p_compute_graph)
-{
-
-}
-int compute_update_gradient(compute_graph_t* p_compute_graph)
-{
+    compute_node_t* p_z = __search_node_by_id(p_compute_graph->z);
+    // 统计有多少个 income 节点。
     
 }
+int compute_graph_build_gradient(compute_graph_t* p_compute_graph)
+{
 
-compute_node_t* compute_node_create_type1(const char* id, int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*), int (*bp)(compute_node_t*), int (*update_payload)(comute_node_t*))
+}
+int compute_graph_update_gradient(compute_graph_t* p_compute_graph)
+{
+}
+
+compute_node_t* compute_node_create_type1(const char* id, int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*), int (*bp)(compute_node_t*))
 {
     compute_node_t* p_node_1     = (compute_node_t*) malloc (sizeof(compute_node_t));
     p_node_1->p_compute_node_id  = id;
@@ -86,7 +87,8 @@ compute_node_t* compute_node_create_type1(const char* id, int (*recycle)(compute
     p_node_1->recycle            = recycle;
     p_node_1->forward_op         = fp;
     p_node_1->backward_op        = bp;
-    p_node_1->update_payload     = update_payload;
+    // 1 型节点是不需要 update payload，它们的 payload 靠它们的 fp 来update的。 
+    p_node_1->update_payload     = NULL;
     p_node_1->p_compute_graph    = NULL;
     return p_node_1;
 }
