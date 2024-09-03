@@ -24,6 +24,7 @@ matrix2_t* Mat2_create_cpy(matrix2_t* mat)
     return mat2;
 }
 
+
 int Mat2_destroy(matrix2_t* mat)
 {
     free(mat->pool);
@@ -330,7 +331,8 @@ int Mat2_load_csv(matrix2_t* mat, char* file_csv)
     return 0;
 }
 
-int Mat2_is_vector(matrix2_t* mat) {
+int Mat2_is_vector(matrix2_t* mat) 
+{
     return mat->cols == 1 || mat->rows == 1;
 }
 
