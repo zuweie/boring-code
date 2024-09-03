@@ -83,7 +83,9 @@ set (SOURCE
     src/deep_learning/rnn.c
     src/deep_learning/lstm.c
     src/deep_learning/active.c
-    src/deep_learing/compute_garph/compute_garph.c
+    src/deep_learning/compute_graph/compute_graph.c
+    src/deep_learning/compute_graph/cg_list.c
+    src/deep_learning/compute_graph/cg_graph.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c
