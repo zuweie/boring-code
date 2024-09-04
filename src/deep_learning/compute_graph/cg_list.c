@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-02 14:07:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2024-09-03 16:01:02
+ * @LastEditTime: 2024-09-04 10:15:09
  * @FilePath: /boring-code/src/deep_learning/compute_garph/cg_list.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -56,6 +56,7 @@ int cg_list_recycle(cg_list_t* p_list, int(*recycle)(cg_ref_t))
         if (recycle) recycle(p_curr->ref);
         free(p_curr);
     }
+    free(p_list);
     return 0;
 }
 
@@ -74,10 +75,13 @@ int cg_list_push(cg_list_t* p_list, cg_ref_t ref)
 }
 cg_ref_t cg_list_pop(cg_list_t* p_list)
 {
-    cg_node_t* p_pop = p_list->p_top;
-    p_list->p_top    = p_list->p_top->prev;
-    cg_ref_t ref     = p_pop->ref;
+    if (!cg_list_is_empty(p_list)) {
+        cg_node_t* p_pop = p_list->p_top;
+        p_list->p_top    = p_list->p_top->prev;
+        cg_ref_t ref     = p_pop->ref;
     
-    free(p_pop);
-    return ref;
+        free(p_pop);
+        return ref;
+    } 
+    return NULL;
 }

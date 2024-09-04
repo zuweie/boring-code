@@ -39,8 +39,11 @@ static cg_vertex_t* __vertex_create(const char* p_id)
 
 static int __vertex_recycle(cg_vertex_t* p_vertex) 
 {
-    cg_list_recycle(p_vertex->p_income_vertexes);
-    cg_list_recycle(p_vertex->p_outcome_vertexes);
+    // 解除路径
+    cg_list_recycle(p_vertex->p_income_vertexes, NULL);
+    cg_list_recycle(p_vertex->p_outcome_vertexes, NULL);
+    // 启动自毁
+    free(p_vertex);
     return 0;
 }
 
@@ -93,10 +96,13 @@ int cg_graph_search_paths(cg_graph_t* p_graph, cg_vertex_t* p_start, cg_vertex_t
     __unset_vertex_visit_mark();
     cg_list_t* p_searching = cg_list_create();
     __dfs_search(p_start, p_end, p_searching, p_paths);
-    cg_list_recycle(p_searching_path, NULL);
+    cg_list_recycle(p_searching, NULL);
+    p_searching = NULL;
     return 0;
 }
 int cg_graph_recycle(cg_graph_t* p_graph)
 {
+    
     return cg_list_recycle(p_graph->p_vertexes, __vertex_recycle);
+    
 }
