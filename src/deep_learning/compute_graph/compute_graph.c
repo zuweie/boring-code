@@ -1,3 +1,4 @@
+#include <string.h>
 #include "cg_node.h"
 #include "cg_list.h"
 #include "cg_graph.h"
@@ -101,14 +102,18 @@ static int __do_build_gradient(compute_node_t* p_znode, compute_node_t* p_unode)
     return 0;
 }
 
-int compute_graph_init(compute_graph_t* p_compute_graph, void* p_op_params)
+int compute_graph_init(compute_graph_t* p_thiz, void* p_compute_params, int (*build_graph)(compute_graph_t*, void*))
 {
-    p_compute_graph->z              = z;
-    p_compute_graph->p_op_params    = p_op_params;
-    p_compute_graph->update_version = 0;
-    p_compute_graph->nodes          = cg_list_create();
-    cg_graph_init(&p_compute_graph->graph);
+    p_thiz->p_compute_params    = p_compute_params;
+    p_thiz->update_version      = 0;
+    p_thiz->nodes               = cg_list_create();
+    p_thiz->build_graph         = build_graph;
+    cg_graph_init(&p_thiz->graph);
     return 0;
+}
+int compute_graph_building(compute_graph_t* p_thiz, void* p_build_params) 
+{
+    return p_thiz->build_graph(p_thiz, p_build_params);
 }
 int compute_graph_recycle(compute_graph_t* p_compute_graph)
 {
@@ -155,10 +160,10 @@ int compute_graph_build_gradient(compute_graph_t* p_compute_graph, const char* z
 }
 
 
-compute_node_t* compute_create_mediate_node(const char* id, int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*), int (*bp)(compute_node_t*))
+compute_node_t* compute_create_mediate_node(const char* id, int (*init)(compute_node_t*), int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*), int (*bp)(compute_node_t*))
 {
     compute_node_t* p_node_1     = (compute_node_t*) malloc (sizeof(compute_node_t));
-    p_node_1->str_node_id        = id;
+    strcpy(p_node_1->str_node_id, id);
     p_node_1->p_payload          = Mat2_create(1,1);
     p_node_1->p_gradient         = Mat2_create(1,1);
     p_node_1->gradient_version   = 0;
@@ -171,14 +176,16 @@ compute_node_t* compute_create_mediate_node(const char* id, int (*recycle)(compu
     // 1 型节点是不需要 update payload，它们的 payload 靠它们的 fp 来update的。 
     p_node_1->update_payload     = NULL;
     p_node_1->p_compute_graph    = NULL;
+    if (init) init(p_node_1);
     return p_node_1;
 }
 
-compute_node_t* compute_create_input_node(const char* id, matrix2_t* input, int(*recycle)(compute_node_t*))
+compute_node_t* compute_create_input_node(const char* id, int (*init)(compute_node_t*), int(*recycle)(compute_node_t*))
 {
     compute_node_t* p_node_2    = (compute_node_t*) malloc (sizeof(compute_node_t));
-    p_node_2->str_node_id       = id;
-    p_node_2->p_payload         = Mat2_create_cpy(input);
+    //p_node_2->str_node_id       = id;
+    strcpy(p_node_2->str_node_id, id);
+    p_node_2->p_payload         = Mat2_create(1,1);
     // 2 型节点是不需要 gradient 的, 因为它们是 X，y
     p_node_2->p_gradient        = NULL;
     // gradient_version 对于 2 型节点没有意义。
@@ -194,15 +201,17 @@ compute_node_t* compute_create_input_node(const char* id, matrix2_t* input, int(
     // 它们的 payload 更新是靠外部输入的，即每轮训练输入不同的记录。
     p_node_2->update_payload    = NULL;
     p_node_2->p_compute_graph   = NULL;
+    if (init) init(p_node_2);
     return p_node_2;
 }
 
-compute_node_t* compute_create_training_params_node(const char* id, matrix2_t* input, int(*recycle)(compute_node_t*), int (*bp)(compute_node_t*), int(*update_payload)(compute_node_t*))
+compute_node_t* compute_create_training_params_node(const char* id, matrix2_t* p_initialization, int (*init)(compute_node_t*),int(*recycle)(compute_node_t*), int (*bp)(compute_node_t*), int(*update_payload)(compute_node_t*))
 {
     compute_node_t* p_node_3    = (compute_node_t*) malloc (sizeof(compute_node_t));
-    p_node_3->str_node_id       = id;
-    p_node_3->p_payload         = Mat2_create(1,1);
-    p_node_3->p_gradient        = Mat2_create(1,1);
+    //p_node_3->str_node_id       = id;
+    strcpy(p_node_3->str_node_id, id);
+    p_node_3->p_payload         = Mat2_create_cpy(p_initialization);
+    p_node_3->p_gradient        = Mat2_create_cpy(p_initialization);
     p_node_3->gradient_version  = 0;
     p_node_3->node_type         = e_training_params;
     p_node_3->p_gradient_paths  = NULL;
@@ -211,8 +220,10 @@ compute_node_t* compute_create_training_params_node(const char* id, matrix2_t* i
     // 终端节点不需要 fp 操作
     p_node_3->forward_op        = NULL;
     p_node_3->backward_op       = bp;
+    // update_payload 就是更新训练参数。
     p_node_3->update_payload    = update_payload;
     p_node_3->p_compute_graph   = NULL;
+    if (init) init(p_node_3);
     return p_node_3;
 }
 
@@ -229,9 +240,5 @@ int compute_set_input(compute_graph_t* p_compute_graph, const char* id, matrix2_
 int compute_update_training_params(compute_garph_t* p_compute_graph, const char* id)
 {
     compute_node_t* p_node = __search_node_by_id(p_compute_graph, id);
-    if (p_node->node_type == e_training_params) {
-        p_node->update_payload(p_node);
-        return 0;
-    }
-    return -1;
+    p_node->update_payload(p_node);
 }
