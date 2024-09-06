@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-02 14:07:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2024-09-05 14:43:18
+ * @LastEditTime: 2024-09-06 18:54:21
  * @FilePath: /boring-code/src/deep_learning/compute_garph/cg_list.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -38,13 +38,16 @@ int cg_list_revert(cg_list_t* p_list)
     cg_node_t* p_revert_prev = p_list->p_top->prev;
     p_revert_node->prev      = LIST_HEAD(p_list);
 
-    while(p_revert_node != LIST_HEAD(p_list)) {
+    do {
+        cg_node_t* prev     = p_revert_prev->prev;
         p_revert_prev->prev = p_revert_node;
         p_revert_node       = p_revert_prev;
-        p_revert_prev       = p_revert_node->prev;
-    }
-    return 0;
+        p_revert_prev       = prev;
+    }while (p_revert_prev != LIST_HEAD(p_list));
+
+    p_list->p_top = p_revert_node;
     
+    return 0;
 }
 
 int cg_list_recycle(cg_list_t* p_list, int(*recycle)(cg_ref_t))
@@ -62,14 +65,14 @@ int cg_list_recycle(cg_list_t* p_list, int(*recycle)(cg_ref_t))
 
 int cg_list_is_empty(cg_list_t* p_list)
 {
-    return p_list->p_top != LIST_HEAD(p_list);
+    return p_list->p_top == LIST_HEAD(p_list);
 }
 
 int cg_list_push(cg_list_t* p_list, cg_ref_t ref)
 {
     cg_node_t* p_node = (cg_node_t*) malloc (sizeof(cg_node_t));
     p_node->ref       = ref;
-    p_node->prev      = p_list->p_top->prev;
+    p_node->prev      = p_list->p_top;
     p_list->p_top     = p_node;
     return 0;
 }

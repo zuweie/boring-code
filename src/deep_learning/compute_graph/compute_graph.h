@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-03 11:49:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2024-09-06 10:40:28
+ * @LastEditTime: 2024-09-06 16:30:04
  * @FilePath: /boring-code/src/deep_learning/compute_graph/compute_graph.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,7 +19,10 @@ typedef enum {
     e_training_params
 } node_type_t;
 
-typedef struct _compute_node {
+typedef struct _compute_node compute_node_t;
+typedef struct _compute_graph compute_graph_t;
+
+struct _compute_node {
 
     /// @brief 每个节点的唯一 ID
     char        str_node_id[128];
@@ -47,19 +50,19 @@ typedef struct _compute_node {
     compute_graph_t* p_compute_graph;
     /// @brief  保留字段，可以放入指针或者整型
     cg_ref_t reserved[8];
-} compute_node_t;
+};
 
 
-typedef struct _compute_graph {
+struct _compute_graph {
     /// @brief 训练的时候用的
     void* p_compute_params;
     int update_version;
     cg_graph_t graph;
     cg_list_t* p_nodes;
-    int (*build_graph)(compute_graph_t*, void*)
-} compute_graph_t;
+    int (*build_graph)(compute_graph_t*, void*);
+};
 
-int compute_graph_init(compute_graph_t* p_thiz, void* p_compute_params, int (*build_graph)(compute_graph_t*, void* build_params));
+int compute_graph_init(compute_graph_t* p_thiz, void* p_compute_params, int (*build_graph)(compute_graph_t*, void*));
 int compute_graph_building(compute_graph_t* p_thiz, void* p_build_params);
 int compute_graph_recycle(compute_graph_t* p_thiz);
 
@@ -70,11 +73,12 @@ int compute_graph_link_note(compute_graph_t* p_thiz, const char* p_from_id, cons
 int compute_graph_forward_propagation(compute_graph_t* p_thiz, const char* str_zid);
 int compute_graph_build_gradient(compute_graph_t* p_thiz, const char* str_zid, const char* str_uid);
 
-compute_node_t* compute_create_mediate_node(const char* id,  int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*, void*), int (*bp)(compute_node_t*, void*));
+compute_node_t* compute_create_mediate_node(const char* id,  int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*), int (*bp)(compute_node_t*));
 compute_node_t* compute_create_input_node(const char* id,  int(*recycle)(compute_node_t*));
-compute_node_t* compute_create_training_params_node(const char* id, matrix2_t* p_initialization, int(*recycle)(compute_node_t*), int (*bp)(compute_node_t*, void*), int(*update_payload)(compute_node_t*, void*));
+compute_node_t* compute_create_training_params_node(const char* id, matrix2_t* p_initialization, int(*recycle)(compute_node_t*), int (*bp)(compute_node_t*), int(*update_payload)(compute_node_t*));
 
 int compute_set_input(compute_graph_t* p_thiz, const char* str_id, matrix2_t* p_input);
+
 int compute_update_training_params(compute_graph_t* p_thiz, const char* str_id);
 
 #endif

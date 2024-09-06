@@ -70,8 +70,8 @@ static int __do_build_gradient(compute_node_t* p_znode, compute_node_t* p_unode)
         if (!p_unode->p_gradient_paths) {
             // 到 z 的导数路径为空，则说明未曾开始求导数路径。
             cg_list_t* gradient_paths = cg_list_create();
-            cg_graph_search_paths(p_unode->p_vertex, p_znode->p_vertex, gradient_paths);
-            p_unode->gradient_paths= gradient_paths;
+            cg_graph_search_paths(&p_graph->graph, p_unode->p_vertex, p_znode->p_vertex, gradient_paths);
+            p_unode->p_gradient_paths   = gradient_paths;
         }
 
         // 
@@ -106,7 +106,7 @@ int compute_graph_init(compute_graph_t* p_thiz, void* p_compute_params, int (*bu
 {
     p_thiz->p_compute_params    = p_compute_params;
     p_thiz->update_version      = 0;
-    p_thiz->nodes               = cg_list_create();
+    p_thiz->p_nodes             = cg_list_create();
     p_thiz->build_graph         = build_graph;
     cg_graph_init(&p_thiz->graph);
     return 0;
@@ -160,7 +160,7 @@ int compute_graph_build_gradient(compute_graph_t* p_compute_graph, const char* z
 }
 
 
-compute_node_t* compute_create_mediate_node(const char* id, int (*init)(compute_node_t*), int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*), int (*bp)(compute_node_t*))
+compute_node_t* compute_create_mediate_node(const char* id, int (*recycle)(compute_node_t*), int (*fp)(compute_node_t*), int (*bp)(compute_node_t*))
 {
     compute_node_t* p_node_1     = (compute_node_t*) malloc (sizeof(compute_node_t));
     strcpy(p_node_1->str_node_id, id);
@@ -176,11 +176,10 @@ compute_node_t* compute_create_mediate_node(const char* id, int (*init)(compute_
     // 1 型节点是不需要 update payload，它们的 payload 靠它们的 fp 来update的。 
     p_node_1->update_payload     = NULL;
     p_node_1->p_compute_graph    = NULL;
-    if (init) init(p_node_1);
     return p_node_1;
 }
 
-compute_node_t* compute_create_input_node(const char* id, int (*init)(compute_node_t*), int(*recycle)(compute_node_t*))
+compute_node_t* compute_create_input_node(const char* id, int(*recycle)(compute_node_t*))
 {
     compute_node_t* p_node_2    = (compute_node_t*) malloc (sizeof(compute_node_t));
     //p_node_2->str_node_id       = id;
@@ -201,11 +200,10 @@ compute_node_t* compute_create_input_node(const char* id, int (*init)(compute_no
     // 它们的 payload 更新是靠外部输入的，即每轮训练输入不同的记录。
     p_node_2->update_payload    = NULL;
     p_node_2->p_compute_graph   = NULL;
-    if (init) init(p_node_2);
     return p_node_2;
 }
 
-compute_node_t* compute_create_training_params_node(const char* id, matrix2_t* p_initialization, int (*init)(compute_node_t*),int(*recycle)(compute_node_t*), int (*bp)(compute_node_t*), int(*update_payload)(compute_node_t*))
+compute_node_t* compute_create_training_params_node(const char* id, matrix2_t* p_initialization,int(*recycle)(compute_node_t*), int (*bp)(compute_node_t*), int(*update_payload)(compute_node_t*))
 {
     compute_node_t* p_node_3    = (compute_node_t*) malloc (sizeof(compute_node_t));
     //p_node_3->str_node_id       = id;
@@ -223,7 +221,6 @@ compute_node_t* compute_create_training_params_node(const char* id, matrix2_t* p
     // update_payload 就是更新训练参数。
     p_node_3->update_payload    = update_payload;
     p_node_3->p_compute_graph   = NULL;
-    if (init) init(p_node_3);
     return p_node_3;
 }
 
@@ -237,8 +234,9 @@ int compute_set_input(compute_graph_t* p_compute_graph, const char* id, matrix2_
     return -1;
 }
 
-int compute_update_training_params(compute_garph_t* p_compute_graph, const char* id)
+int compute_update_training_params(compute_graph_t* p_compute_graph, const char* str_id)
 {
-    compute_node_t* p_node = __search_node_by_id(p_compute_graph, id);
+    compute_node_t* p_node = __search_node_by_id(p_compute_graph, str_id);
     p_node->update_payload(p_node);
+    return 0;
 }
