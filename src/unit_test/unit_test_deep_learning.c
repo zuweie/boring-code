@@ -434,6 +434,11 @@ static void test_rnn (void)
     Mat2_destroy(_outputs);
 }
 
+static void test_ann_cg_simulation(void) 
+{
+
+}
+
 int do_deep_learning_test (void) 
 {
 
@@ -449,7 +454,12 @@ int do_deep_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "rnn test", test_rnn) ) {
+    // if (NULL == CU_add_test(pSuite, "rnn test", test_rnn) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_suite(pSuite, "ann cg simulation", test_ann_cg_simulation)) {
         CU_cleanup_registry();
         return CU_get_error();
     }

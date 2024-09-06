@@ -6,7 +6,6 @@
 #include "base/container_of.h"
 #include "matrix2/matrix2.h"
 
-#define CONVERT_TO_COM_NODE(P_V) container_of((P_V), compute_node_t, p_vertex)
 
 static int __compute_node_recycle(compute_node_t* p_compute_node) 
 {
@@ -83,11 +82,12 @@ static int __do_build_gradient(compute_node_t* p_znode, compute_node_t* p_unode)
             
             cg_list_t* gradient_path = (cg_list_t*) p_paths_first->ref;
 
-            // 从第二个节点开始，让他上一层的节点做梯度更新。
-            cg_node_t* p_gp_second = gradient_path->p_top->prev;
-            while(p_gp_second != LIST_HEAD(gradient_path)) {
-                compute_node_t* p_compute_node = CONVERT_TO_COM_NODE(p_gp_second->ref);
-                __do_build_gradient(p_znode, p_compute_node);
+            // 从第二个节点开始就是它的上一级节点，让他的上一层的节点做梯度更新。
+            cg_node_t* p_superior = gradient_path->p_top->prev;
+            while(p_superior != LIST_HEAD(gradient_path)) {
+                compute_node_t* p_superior_node = CONVERT_TO_COM_NODE(p_superior->ref);
+                __do_build_gradient(p_znode, p_superior);
+                p_superior = p_superior->prev;
             }
             
             p_paths_first = p_paths_first->prev;

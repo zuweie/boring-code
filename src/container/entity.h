@@ -1,11 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
-<<<<<<< HEAD
- * @LastEditTime: 2023-06-15 13:15:14
-=======
- * @LastEditTime: 2023-06-14 13:11:11
->>>>>>> origin/main
+ * @LastEditTime: 2024-09-06 10:13:44
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
