@@ -122,11 +122,14 @@ static int __recycle_note(compute_node_t* p_thiz)
     if (p_thiz->p_payload)  Mat2_destroy(p_thiz->p_payload);
     if (p_thiz->p_gradient) Mat2_destroy(p_thiz->p_gradient);
     // 把导数链条释放。
-    cg_ref_t gradient_path;
-    while ( gradient_path = cg_list_pop(p_thiz->p_gradient_paths) ) {
-        cg_list_recycle(gradient_path, NULL);
+    if (p_thiz->p_gradient_paths) {
+        cg_ref_t gradient_path;
+        while ( gradient_path = cg_list_pop(p_thiz->p_gradient_paths) ) {
+            cg_list_recycle(gradient_path, NULL);
+        }
+        cg_list_recycle(p_thiz->p_gradient_paths, NULL);
     }
-    cg_list_recycle(p_thiz->p_gradient_paths, NULL);
+
     return 0;
 }
 /**
@@ -173,7 +176,7 @@ static int __build_compute_graph(compute_graph_t* p_thiz, void* params)
         Mat2_reshape(mat_b, rows_b, cols_b);
         Mat2_fill_random(mat_b, 0, 1);
         // build fuck node
-        sprintf(str_node_id_buff, "W_%d", W_i);
+        sprintf(str_node_id_buff, "W_%d", W_i++);
         p_W = compute_create_training_params_node(str_node_id_buff, mat_W, &__recycle_note, &__bp_W_node, &__update_payload_W_node);
         
         // 将 W 节点加到计算图中去
@@ -277,6 +280,7 @@ int ann_cg_train(matrix2_t* p_data, matrix2_t* p_label, ann_cg_params_t* p_param
             if (p_node->node_type == e_training_params) {
                 compute_graph_build_gradient(p_compute_graph, "z", p_node->str_node_id);
             }
+            p_first = p_first->prev;
         }
 
         // 将所有的训练参数使用梯度表更新一次。
@@ -286,6 +290,8 @@ int ann_cg_train(matrix2_t* p_data, matrix2_t* p_label, ann_cg_params_t* p_param
             if (p_node->node_type == e_training_params) {
                 compute_update_training_params(p_compute_graph, p_node->str_node_id);
             }
+
+            p_first = p_first->prev;
         }
     }
     Mat2_destroy(mat_fake_input);

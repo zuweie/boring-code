@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-03 11:49:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2024-09-06 16:30:04
+ * @LastEditTime: 2024-09-07 00:50:01
  * @FilePath: /boring-code/src/deep_learning/compute_graph/compute_graph.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,7 +11,7 @@
 #include "matrix2/matrix2.h"
 #include "cg_graph.h"
 
-#define CONVERT_TO_COM_NODE(P_V) container_of((P_V), compute_node_t, p_vertex)
+#define CONVERT_TO_COM_NODE(P_V) container_of((((cg_vertex_t*)(P_V))->str_id), compute_node_t, str_node_id)
 
 typedef enum {
     e_mediate = 1,

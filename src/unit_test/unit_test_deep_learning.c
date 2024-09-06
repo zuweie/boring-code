@@ -418,8 +418,6 @@ static void test_rnn (void)
     //Mat2_normalize_on_col(seq_test);
 
     rnn_train(seq_data, seq_label, &rnn_params, &_W_xh, &_W_hh, &_W_hy, rnn_train_progress);
-
-    //MAT2_INSPECT(_W_xh);
     //MAT2_INSPECT(_W_hh);
     //MAT2_INSPECT(_W_hy);
 
@@ -449,7 +447,7 @@ static void test_ann_cg_simulation(void)
     compute_graph_t compute_graph;
     ann_cg_train(NULL, NULL, &ann_cg_params, &compute_graph);
     ann_cg_predict(NULL, &compute_graph, NULL);
-    ann_cg_recycle(compute_graph);
+    ann_cg_recycle(&compute_graph);
     return;
 }
 
@@ -609,10 +607,10 @@ int do_deep_learning_test (void)
     //     return CU_get_error();
     // }
 
-    // if (NULL == CU_add_test(pSuite, "ann cg simulation", test_ann_cg_simulation)) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "ann cg simulation", test_ann_cg_simulation)) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     // if (NULL == CU_add_test(pSuite, "cg_list push", test_cg_list_push)) {
     //     CU_cleanup_registry();
@@ -624,9 +622,9 @@ int do_deep_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test_cg_graph\n", test_cg_graph)) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test_cg_graph\n", test_cg_graph)) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     return 0;
 }

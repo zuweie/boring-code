@@ -39,10 +39,13 @@ static int __do_forward_op(compute_node_t* p_znode)
         cg_node_t* p_first = p_income_list->p_top;
         while (p_first != LIST_HEAD(p_income_list))
         {
+            //compute_node_t* p_income_node = CONVERT_TO_COM_NODE(p_first->ref);
+            //cg_vertex_t* pv               = (cg_vertex_t*)p_first->ref;
             compute_node_t* p_income_node = CONVERT_TO_COM_NODE(p_first->ref);
             if (p_income_node->node_type == e_mediate) {
                 __do_forward_op(p_income_node);
             }
+            p_first = p_first->prev;
         }
         // 这里的 op 操作会
         return p_znode->forward_op(p_znode);
@@ -83,11 +86,11 @@ static int __do_build_gradient(compute_node_t* p_znode, compute_node_t* p_unode)
             cg_list_t* gradient_path = (cg_list_t*) p_paths_first->ref;
 
             // 从第二个节点开始就是它的上一级节点，让他的上一层的节点做梯度更新。
-            cg_node_t* p_superior = gradient_path->p_top->prev;
-            while(p_superior != LIST_HEAD(gradient_path)) {
-                compute_node_t* p_superior_node = CONVERT_TO_COM_NODE(p_superior->ref);
+            cg_node_t* p_second = gradient_path->p_top->prev;
+            while(p_second != LIST_HEAD(gradient_path)) {
+                compute_node_t* p_superior = CONVERT_TO_COM_NODE(p_second->ref);
                 __do_build_gradient(p_znode, p_superior);
-                p_superior = p_superior->prev;
+                p_second = p_second->prev;
             }
             
             p_paths_first = p_paths_first->prev;
