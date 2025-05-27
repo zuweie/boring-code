@@ -44,7 +44,7 @@ static int __update_payload_b_node(compute_node_t* p_thiz)
 
 static int __fp_u_x_dot_w_node(compute_node_t* p_thiz)
 {
-    printf("doing fp on %s:( W dot X ).\n", p_thiz->str_node_id);
+    printf("forward propragation on %s:( W dot X ).\n", p_thiz->str_node_id);
     return 0;
 
 }
@@ -56,7 +56,7 @@ static int __bp_u_x_dot_w_node(compute_node_t* p_thiz)
 
 static int __fp_u_plus_b_node(compute_node_t* p_thiz)
 {
-    printf("doing fp on %s:((W dot X) + b).\n", p_thiz->str_node_id);
+    printf("forward propragation on %s:((W dot X) + b).\n", p_thiz->str_node_id);
     return 0;
 }
 static int __bp_u_plus_b_node(compute_node_t* p_thiz)
@@ -67,7 +67,7 @@ static int __bp_u_plus_b_node(compute_node_t* p_thiz)
 
 static int __fp_u_act_input_node(compute_node_t* p_thiz) 
 {
-    printf("doing fp on %s:act((W dot x) + b).\n", p_thiz->str_node_id);
+    printf("forward propragation on %s:act((W dot x) + b).\n", p_thiz->str_node_id);
     return 0;
 }
 
@@ -83,7 +83,7 @@ static int __bp_u_act_input_node(compute_node_t* p_thiz)
 
 static int __fp_u_act_y_hat_node(compute_node_t* p_thiz)
 {
-    printf("doing fp on %s:act(y-hat).\n", p_thiz->str_node_id);
+    printf("forward propragation on %s:act(y-hat).\n", p_thiz->str_node_id);
     return 0;
 }
 
@@ -102,7 +102,7 @@ static int __fp_output_node(compute_node_t* p_thiz)
      * @brief 如果 loss 使用 mse 那么公式为 1/2 || y^-y||_2
      * 
      */
-    printf("doing fp on %s:z.\n", p_thiz->str_node_id);
+    printf("forward propragation on %s:z.\n", p_thiz->str_node_id);
     return 0;
 }  
 

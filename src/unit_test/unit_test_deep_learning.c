@@ -445,6 +445,7 @@ static void test_ann_cg_simulation(void)
     ann_cg_params.layers_dimension = layers_dimension;
 
     compute_graph_t compute_graph;
+    printf("\n");
     ann_cg_train(NULL, NULL, &ann_cg_params, &compute_graph);
     ann_cg_predict(NULL, &compute_graph, NULL);
     ann_cg_recycle(&compute_graph);
