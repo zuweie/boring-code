@@ -14,10 +14,11 @@ typedef struct cg_hash
 
 } cg_hash_t;
 
-cg_hash_t* cg_hash_create();
+cg_hash_t* cg_hash_create(int (*hash)(void*), int (*key_cmp)(void*, void*));
 int        cg_hash_recycle(cg_hash_t*, int(*recycle)(void*));
 int        cg_hash_set(cg_hash_t*, void*, void*);
 cg_ref_t*  cg_hash_get(cg_hash_t*, void*);
+int        cg_hash_has(cg_hash_t*, void*);
 
 
 #endif
