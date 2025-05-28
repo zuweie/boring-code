@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-02 14:07:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-27 16:03:42
+ * @LastEditTime: 2025-05-28 12:26:59
  * @FilePath: /boring-code/src/deep_learning/compute_garph/cg_list.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,6 +17,7 @@ cg_list_t* cg_list_create()
     CG_LIST_TOP(p_list) = CG_LIST_HEAD(p_list)
     return p_list;
 }
+
 cg_list_t* cg_list_create_cpy(cg_list_t* p_list) 
 {
     cg_list_t* p_list_cpy  = cg_list_create();
