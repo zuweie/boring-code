@@ -1,3 +1,11 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2025-05-24 09:57:39
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2025-05-29 16:07:11
+ * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #include <stdlib.h>
 #include <stdarg.h>
 #include "cg_debug.h"
@@ -17,13 +25,13 @@ cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
         tensor->dimens[i] = va_arg(args, int);
         elems_size       *= tensor->dimens[i];
     }
-    tensor->elems = cg_alloc(alloc, elems_size * sizeof(float));
+    tensor->elems = (float*)cg_alloc(alloc, elems_size * sizeof(float));
     
     va_end(args);
     return tensor;
 }
 
-int cg_tensor_destroy(cg_tensor_t* thiz)
+int cg_tensor_cycle(cg_tensor_t* thiz)
 {
     cg_recycle(thiz->allocator, thiz->elems);
     free(thiz);
