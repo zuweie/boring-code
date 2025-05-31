@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-31 16:19:12
+ * @LastEditTime: 2025-05-31 22:09:54
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -301,6 +301,7 @@ int cg_tensor_dot(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
 
     return __dot(&r->elems, *r->dimensions, t1->elems, t1->dimensions, t2->elems, t2->dimensions, r->allocator);
 }
+
 int cg_tensor_sum(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
 {
     int axes1 = TENSOR_AXES(t1);
@@ -310,28 +311,59 @@ int cg_tensor_sum(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
         return -1;
     } 
     for (int i=0; i<axes1; ++i) {
-        if (TENSOR_DIMEN(t1, i) != TENSOR_DIMEN(t2, i) && TENSOR_DIMEN(t1, i) != TENSOR_DIMEN(r, i)) {
+        if (TENSOR_DIMEN(t1, i) != TENSOR_DIMEN(t2, i)) {
             CG_DEBUG("t1 %d axis`s dimens is %d, t2 %d axis`s dimens is %d\n, not match!", i, TENSOR_DIMEN(t1, i), i, TENSOR_DIMEN(t2, i));
             return -1;
         }
     }
 
+    __reshape(&r->elems, &r->dimensions, axes1, &t1->dimensions[1], r->allocator);
+
     // reshap the r
     // TODO: do sum.
-    float* p_r = r->elems;
+    float* p_r  = r->elems;
     float* p_t1 = t1->elems;
     float* p_t2 = t2->elems;
     
     for (int i=0; i<TENSOR_NUM(r); ++i) {
-        
+        p_r[i] = p_t1[i] + p_t2[i];
     }
     return 0;
 }
+
 int cg_tensor_subtract(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
 {
+    int axes1 = TENSOR_AXES(t1);
+    int axes2 = TENSOR_AXES(t2);
+    if (axes1 != axes2) {
+        CG_DEBUG("t1 axes %d not euq t2 axes %d\n", axes1, axes2);
+        return -1;
+    } 
+    for (int i=0; i<axes1; ++i) {
+        if (TENSOR_DIMEN(t1, i) != TENSOR_DIMEN(t2, i)) {
+            CG_DEBUG("t1 %d axis`s dimens is %d, t2 %d axis`s dimens is %d\n, not match!", i, TENSOR_DIMEN(t1, i), i, TENSOR_DIMEN(t2, i));
+            return -1;
+        }
+    }
+    __reshape(&r->elems, &r->dimensions, axes1, &t1->dimensions[1], r->allocator);
 
-}
-int cg_tensor_scale(cg_tensor_t*, float scale)
-{
+    // reshap the r
+    // TODO: do sum.
+    float* p_r  = r->elems;
+    float* p_t1 = t1->elems;
+    float* p_t2 = t2->elems;
     
+    for (int i=0; i<TENSOR_NUM(r); ++i) {
+        p_r[i] = p_t1[i] - p_t2[i];
+    }
+    return 0;
+}
+
+int cg_tensor_scale(cg_tensor_t* t, float scale)
+{
+    float* p_t  = r->elems;
+    for (int i=0; i<TENSOR_NUM(r); ++i) {
+        p_t[i] *= scale;
+    }
+    return 0;
 }
