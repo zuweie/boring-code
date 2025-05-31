@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-31 21:56:33
+ * @LastEditTime: 2025-05-31 22:17:19
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -25,7 +25,7 @@
 
 typedef struct cg_tensor {
     cg_allocator_t* allocator;
-    float*          elems;
+    void*           elems;
     int*            dimensions;
 } cg_tensor_t;
 
@@ -35,9 +35,11 @@ int cg_tensor_recycle(cg_tensor_t* thiz);
 cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int axes, ...);
 cg_tensor_t* cg_tensor_padding(cg_tensor_t* this, int axes, ...);
 
-int cg_tensor_dot(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2);
-int cg_tensor_sum(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2);
-int cg_tensor_subtract(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2);
-int cg_tensor_scale(cg_tensor_t*, float scale);
+int cg_tensor_dot(cg_tensor_t*, cg_tensor_t*, cg_tensor_t* );
+int cg_tensor_sum(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );
+int cg_tensor_subtract(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );
+int cg_tensor_scale(cg_tensor_t*, float);
+int cg_tensor_fill(cg_tensor_t*, float);
+int cg_tensor_arange(cg_tensor_t*, float, float);
 
 #endif

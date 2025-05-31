@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-31 22:09:54
+ * @LastEditTime: 2025-05-31 22:36:40
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,7 +14,7 @@
 
 static void* __coordinate_router(const char* base, const int* dimensions,  int axes, int* coordinate) 
 {
-    char* dist = tensor->elems;
+    char* dist = base;
     for (int i=0; i<axes; ++i) {
         dist += coordinate[i] * _D_STRIDE(dimensions,i) * TENSOR_ELEM_SIZE;
     }
@@ -140,7 +140,7 @@ static int __do_padding(const void* target_base, const int* target_dimens, const
 
             const char* src        = __coordinate_router(src_base, src_dimens, axes, src_coord);
             target_dist            = __coordinate_router(target_base, target_dimens, axes,  target_coord);
-            unsigned int cpy_size  = _D_DIMEN(src_dimens, curr_axis); * TENSOR_ELEM_SIZE
+            unsigned int cpy_size  = _D_DIMEN(src_dimens, curr_axis) * TENSOR_ELEM_SIZE;
             memcpy(target_dist, src, cpy_size);
             return 0;
 
@@ -186,8 +186,8 @@ static int __do_doting(void* target_base, int* target_dimens, const void* t1_bas
     } else {
         for (int i=0; i<_D_DIMEN(target_dimens); ++i) {
             target_coord[curr_axis] = i;
-            t1_coord[curr_axis] = i < _D_DIMEN(t1_dimens, curr_axis) ? i : 0;
-            t2_coord[curr_axis] = i < _D_DIMEN(t2_dimens, curr_axis) ? i : 0;
+            t1_coord[curr_axis]     = i < _D_DIMEN(t1_dimens, curr_axis) ? i : 0;
+            t2_coord[curr_axis]     = i < _D_DIMEN(t2_dimens, curr_axis) ? i : 0;
             return __do_doting(target_base, target_dimens, t1_base, t1_dimens, t2_base, t2_dimens, curr_axis+1, target_coord, t1_coord, t2_coord);
         }
     }
@@ -215,6 +215,29 @@ static int __dot(void** target_base, int** target_dimens, const void* t1_base, c
     return __do_doting((*target_base), (*target_dimens), t1_base, t1_dimens, t2_base, t2_dimens, 0, target_coord, t1_coord, t2_coord);
 }
 
+static int __display_elems(cg_tensor_t* t, int curr_axis, int coord[]) {
+    if (curr_axis == TENSOR_AXES(t) -1) {
+
+        int axes         = curr_axis + 1;
+        float* p_elem    = __coordinate_router(t->elems, t->dimensions, axes, coord);
+        coord[curr_axis] = 0;
+
+        for (int i=0; i<TENSOR_DIMEN(t, curr_axis); ++i) {
+            if (i == TENSOR_DIMEN(t, curr_axis) - 1)
+                printf("%f ", p_elem[i]);
+            else
+                printf("%f, ", p_elem[i]);
+        }
+
+    } else {
+        printf("[ ");
+        for (int i=0; i<TENSOR_DIMEN(t, curr_axis); ++i) {
+            coord[curr_axis] = i;
+            __display_elems(t, curr_axis + 1);
+        }
+        printf(" ]\n");
+    }
+}
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
 {
     int dimensions[axes];
@@ -361,9 +384,30 @@ int cg_tensor_subtract(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
 
 int cg_tensor_scale(cg_tensor_t* t, float scale)
 {
-    float* p_t  = r->elems;
+    float* p_t  = t->elems;
     for (int i=0; i<TENSOR_NUM(r); ++i) {
         p_t[i] *= scale;
+    }
+    return 0;
+}
+
+
+int cg_tensor_fill(cg_tensor_t* t, float fill)
+{
+    float* p_t  = t->elems;
+    for (int i=0; i<TENSOR_NUM(t); ++i) {
+        p_t[i] *= fill;
+    }
+    return 0;
+}
+
+int cg_tensor_arange(cg_tensor_t* t, float from, float to)
+{
+    float* p_t = t->elems;
+    float* per = (to - from) / TENSOR_NUM(t);
+
+    for (int i=0; i<TENSOR_NUM(t); ++i) {
+        p_t[i] = i*per + from;
     }
     return 0;
 }
