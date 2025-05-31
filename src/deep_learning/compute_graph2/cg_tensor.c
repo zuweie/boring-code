@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-30 12:28:19
+ * @LastEditTime: 2025-05-31 12:46:19
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,55 +12,154 @@
 #include "cg_debug.h"
 #include "cg_tensor.h"
 
-static float* __coordinate_router(cg_tensor_t* tensor, int axes, int coordinate[]) 
+static void* __coordinate_router(const char* base, const int* dimensions,  int axes, int* coordinate) 
 {
-    float* dist = tensor->elems;
+    char* dist = tensor->elems;
     for (int i=0; i<axes; ++i) {
-        dist += coordinate[i] * TENSOR_STRIDE(tensor, i)
+        dist += coordinate[i] * _D_STRIDE(dimensions,i) * TENSOR_ELEM_SIZE;
     }
-    return dist, 
+    return dist;
 }
 
-static int __reshape(cg_tensor_t* tensor, int axes, int dimensions[]) 
+static int __reshape(char** target_elems, int** target_dimens, int new_axes, int new_dimensions[], cg_allocator_t* alloc) 
 {
     unsigned int old_size = 0;
-    if (tensor->dimensions == NULL) { 
-        tensor->dimensions = (int*) malloc ((1+2*axes) * sizeof(int));
-    } else if (axes > TENSOR_AXES(tensor)) {
-        old_size = TENSOR_SIZE(tensor);
-        tensor->dimensions = (int*) realloc ((1+2*axes) * sizeof(int));
+    if (*target_dimens == NULL) {
+        *target_dimens = (int*) malloc ((new_axes*2+1) * sizeof(int))
+    } else {
+        old_size = _D_SIZE(*target_dimens);
+        if (_D_AXES(*target_dimens) < new_axes) 
+            (*target_dimens) = (int*)realloc((new_axes*2+1) * sizeof(int));
     }
 
-    TENSOR_AXES(tensor) = axes;
+    _D_AXES(*target_dimens) = new_axes;
+
     // 更新维度信息。
-    for (int i=axes-1; i>=0 ; --i) {
-        TENSOR_DIMEN(tensor, i)  = dimensions[i];
-        TENSOR_STRIDE(tensor, i) = (i == axes-1 ? 1 : TENSOR_DIMEN(tensor, (i+1)) * TENSOR_STRIDE(tensor, (i+1)));
+     for (int i=new_axes-1; i>=0 ; --i) {
+
+        _D_DIMEN(*target_dimens, i)   = new_dimensions[i];
+        _D_STRIDE(*target_dimens, i)  = (i == new_axes-1? 1 : _D_DIMEN(*target_dimens, i+1) * _D_STRIDE(*target_dimens, i+1));
     }
 
     // 跟新 element 池子大小 
-    if (TENSOR_SIZE(tensor) > old_size) {
+    if (_D_SIZE(*target_dimens) > old_size) {
 
-        float* new_elemes = cg_alloc(tensor->allocator, TENSOR_SIZE(tensor));
+        void *old_elems = *target_elems;
+        *target_elems   = cg_alloc(tensor->allocator, _D_SIZE(*target_dimens));
 
         // 如果原来旧有数据复制旧的，然后回收。
-        if (tensor->elems) {
-            memcpy(new_elemes, tensor->elems, old_size);
-            cg_recycle(tensor->allocator, tensor->elems);
+        if (old_elems) {
+            memcpy(*target_dimens, old_elems, old_size);
+            cg_recycle(alloc, old_elems);
         }
-        tensor->elems = new_elemes;
     }
     
     return 0;
 }
-cg_tensor_t* __create_tensor(cg_allocator_t* alloc, int axes, int dimension[])
+
+static cg_tensor_t* __create_tensor(int axes, int dimension[], cg_allocator_t* alloc)
 {
     cg_tensor_t* tensor = (cg_tensor_t*) malloc(sizeof(cg_tensor_t) + sizeof(int) * axes);
     tensor->allocator   = alloc;
     tensor->dimensions  = NULL;
     tensor->elems       = NULL;
-    __reshape(tensor, axes, dimension);
+    __reshape(&tensor->elems, &tensor->dimensions, axes, dimension, alloc);
     return tensor;
+}
+
+static int __do_slice(void** dist, const void* src_base, const int* src_dimensions, const int slice[], int curr_axis, int coordinate[]) 
+{
+    if (curr_axis == _D_AXES(src_dimensions)-1) {
+        int axes = curr_axis + 1;
+        // 拷贝发生在最后一维
+        coordinate[curr_axis] = slice[curr_axis * 2];
+
+        unsigned int size = (slice[curr_axis * 2+1] - slice[curr_axis*2]) * TENSOR_ELEM_SIZE;
+        const void* src   = __coordinate_router(src_base, src_dimensions, axes, coordinate); 
+
+        memcpy((*dist), src, size);
+        //到下一个
+        (*dist) = ((char*)(*dist)) + size;
+    } else {
+        for (int i=slice[curr_axis*2]; i<slice[curr_axis*2+1]; ++i) {
+            coordinate[curr_axis] = i;
+            return __do_slice(dist, src_base, src_dimensions, slice, curr_axis+1, coordinate);
+        }
+    }
+    return 0;
+}
+
+// 一种新的 padding 算法, 复杂而又巧妙，简直就是艺术品的算法。nice
+static int __do_padding(const void* target_base, const int* target_dimens, const void* src_base, const int* src_dimens, float fill, const int padding[], int curr_axis, int target_coord[]) 
+{
+    if (curr_axis < _D_AXES(target_dimens)) {
+        
+        int i, j;
+        char*        target_dist    = NULL;
+        int          axes           = curr_axis + 1;
+        target_coord[curr_axis]     = 0;
+
+        int padding_left_start      = 0;
+        int padding_left_end        = padding[curr_axis*2];
+
+        int padding_middle_start    = padding_left_end;
+        int padding_middle_end      = padding[curr_axis*2] + _D_DIMEN(src_dimens, curr_axis);
+
+        int padding_right_start     = padding_middle_end;
+        int padding_right_end       = padding[curr_axis*2] + _D_DIMEN(src_dimens, curr_axis) + padding[curr_axis*2+1];
+
+        // fill the left part
+        for (i = padding_left_start; i<padding_left_end ; ++i){
+            // fill
+            target_coord[curr_axis] = i;
+            target_dist             = __coordinate_router(target_base,target_dimens, axes, target_coord);
+
+            for (j=0; j<_D_STRIDE(target_dimens, curr_axis); ++j, target_dist += TENSOR_ELEM_SIZE) {
+                *((float*)target_dist) = fill;
+            }
+            
+        }
+
+        // fill the right part
+        for (i = padding_right_start; i < padding_right_end, ++i) {
+            // fill
+            target_coord[curr_axis] = i;
+            target_dist = __coordinate_router(target_base, target_dimens, axes, target_coord);
+            for (j=0; j<_D_STRIDE(target_dimens, curr_axis); ++j, target_dist += TENSOR_ELEM_SIZE) {
+                *((float*)target_dist) = fill;
+            }
+        }
+
+        // fill fucking middle part
+        if (curr_axis == _D_AXES(target_dimens)-1) {
+            // 根据
+            int src_coord[axes];
+            for(int k=0; k<axes; ++k) {
+                src_coord[k] = target_coord[k] - padding[k*2];
+            }
+
+            const char* src        = __coordinate_router(src_base, src_dimens, axes, src_coord);
+            target_dist            = __coordinate_router(target_base, target_dimens, axes,  target_coord);
+            unsigned int cpy_size  = _D_DIMEN(src_dimens, curr_axis); * TENSOR_ELEM_SIZE
+            memcpy(target_dist, src, cpy_size);
+            return 0;
+
+        } else {
+
+            for (i = padding_middle_start; i<padding_middle_end; ++i){
+                //
+                target_coord[curr_axis] = i;
+                return __do_padding(target_base, target_dimens, src_base, src_dimens, fill, padding, curr_axis+1, target_coord);
+            }
+        }
+    }
+    return 0;
+}
+
+static int __do_dot(void** target_base, int** target_dimens, const void* t1_base, const void* t1_dimens, const void* t2_base, const int* t2_dimens)
+{
+    int axes = _D_AXES(t1_dimens);
+    
 }
 
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
@@ -88,31 +187,60 @@ int cg_tensor_cycle(cg_tensor_t* thiz)
 
 cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...)
 {
-    int slice_dimensions[ 2 * TENSOR_AXES(thiz) ];
+    int slice[ 2 * TENSOR_AXES(thiz) ];
     int new_dimensions[TENSOR_AXES(thiz)];
 
     va_list vargs;
     va_start(vargs, slice_axes);
     for (i=0; i<TENSOR_AXES(thiz); ++i) {
-        slice_dimensions[i*2]   = i<slice_axes? va_arg(args, int) : 0;
-        slice_dimensions[i*2+1] = i<slice_axes? va_arg(args, int) : TENSOR_DIMEN(this, i);
-        new_dimensions[i] = slice_dimensions[i*2+1] - slice_dimensions[i*2];
+        slice[i*2]   = i<slice_axes? va_arg(args, int) : 0;
+        slice[i*2+1] = i<slice_axes? va_arg(args, int) : TENSOR_DIMEN(this, i);
+        new_dimensions[i] = slice[i*2+1] - slice[i*2];
     }
     va_end(vargs);
 
-    cg_tensor_t* tensor = __create_tensor(thiz->alloc, TENSOR_AXES(this), new_dimensions);
+    cg_tensor_t* tensor = __create_tensor(thiz->alloc, TENSOR_AXES(thiz), new_dimensions);
 
     // copy 数据
-     
+    int coordinate[TENSOR_AXES(tensor)];
+    void* dist = tensor->elems;
+    //__do_slice(&dist, thiz, slice, 0, coordinate);
+    __do_slice(&dist, thiz->elems, thiz->dimensions, slice, 0, coordinate)
     return tensor;
 }
 
-cg_tensor_t* cg_tensor_padding(cg_tensor_t* this, int axes, ...);
+cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, float fill, int padding_axes, ...)
 {
+    int padding[TENSOR_AXES(thiz) * 2];
+    int new_dimensions[TENSOR_AXES(thiz)];
 
+    va_list vargs;
+    va_start(vargs, padding_axes);
+    for (int i=0; i<TENSOR_AXES(thiz); ++i) {
+        padding[i*2]   = i<padding_axes ? va_arg(vargs, int) : 0;
+        padding[i*2+1] = i<padding_axes ? va_arg(vargs, int) : 0;
+        new_dimensions = padding[i*2] + padding[i*2+1] + TENSOR_DIMEN(thiz, i);
+    }
+    cg_tensor_t* tensor = __create_tensor(thiz->allocator, TENSOR_AXES(thiz), new_dimensions);
+    void* dist = tensor->elems;
+    int coordinate[TENSOR_AXES(tensor)];
+    __do_padding(tensor->elems, tensor->dimensions, thiz->elems, thiz->dimensions, fill, padding, 0, coordinate);
+    return tensor;
 }
 
 int cg_tensor_dot(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
+{
+
+}
 int cg_tensor_sum(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
+{
+
+}
 int cg_tensor_subtract(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
+{
+
+}
 int cg_tensor_scale(cg_tensor_t*, float scale)
+{
+
+}

@@ -2,20 +2,26 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-30 11:44:09
+ * @LastEditTime: 2025-05-31 11:05:45
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE  
+ * @Description: 好难
  */
 #ifndef __CG_TENSOR_H__
 #define __CG_TENSOR_H__
 #include "cg_allocator.h"
 
-#define TENSOR_AXES(tensor)      ((tensor)->dimension[0])
-#define TENSOR_DIMEN(tensor, i)  ((tensor)->dimension[i+1])
-#define TENSOR_STRIDE(tensor, i) ((tensor)->dimension[TENSOR_AXES[(tensor)]+1+i])
-#define TENSOR_NUM(tensor)  (TENSOR_DIMEN(tensor, 0) * TENSOR_STRIDE(tensor, 0))
+#define TENSOR_ELEM_SIZE          sizeof(float)
+#define _D_AXES(dimensions)        ((dimensions)[0])
+#define _D_DIMEN(dimensions, i)    ((dimensions)[i+1])
+#define _D_STRIDE(dimensions, i)   ((dimensions)[_D_AXES(dimensions)+i+1])
+#define _D_NUM(dimensions)         _D_DIMEN(dimensions, 0) * _D_STRIDE(dimensions, 0)
+#define _D_SIZE(dimensions)        _D_NUM(diemnsions) * TENSOR_ELEM_SIZE;
 
-#define TENSOR_SIZE(tensor) (TENSOR_NUM(tensor) * sizeof(float))
+#define TENSOR_AXES(tensor)      _D_AXES((tensor)->dimensions)
+#define TENSOR_DIMEN(tensor, i)  _D_DIMEN((tensor)->dimensions, i)
+#define TENSOR_STRIDE(tensor, i) _D_STRIDE((tensor)->dimensions, i)
+#define TENSOR_NUM(tensor)       (TENSOR_DIMEN(tensor, 0) * TENSOR_STRIDE(tensor, 0))
+#define TENSOR_SIZE(tensor)      (TENSOR_NUM(tensor) * TENSOR_ELEM_SIZE)
 
 typedef struct cg_tensor {
     cg_allocator_t* allocator;
