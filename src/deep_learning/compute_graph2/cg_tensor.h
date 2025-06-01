@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-31 22:17:19
+ * @LastEditTime: 2025-06-01 23:02:40
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -15,7 +15,7 @@
 #define _D_DIMEN(dimensions, i)    ((dimensions)[i+1])
 #define _D_STRIDE(dimensions, i)   ((dimensions)[_D_AXES(dimensions)+i+1])
 #define _D_NUM(dimensions)         _D_DIMEN(dimensions, 0) * _D_STRIDE(dimensions, 0)
-#define _D_SIZE(dimensions)        _D_NUM(diemnsions) * TENSOR_ELEM_SIZE
+#define _D_SIZE(dimensions)        _D_NUM(dimensions) * TENSOR_ELEM_SIZE
 
 #define TENSOR_AXES(tensor)      _D_AXES((tensor)->dimensions)
 #define TENSOR_DIMEN(tensor, i)  _D_DIMEN((tensor)->dimensions, i)
@@ -33,7 +33,7 @@ cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...);
 int cg_tensor_recycle(cg_tensor_t* thiz);
 
 cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int axes, ...);
-cg_tensor_t* cg_tensor_padding(cg_tensor_t* this, int axes, ...);
+cg_tensor_t* cg_tensor_padding(cg_tensor_t* this, float fill, int padding_axes, ...);
 
 int cg_tensor_dot(cg_tensor_t*, cg_tensor_t*, cg_tensor_t* );
 int cg_tensor_sum(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );

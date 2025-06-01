@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <string.h>
 #include "cg_debug.h"
 #include "cg_allocator.h"

@@ -2,16 +2,21 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:57:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-28 13:39:07
+ * @LastEditTime: 2025-06-01 21:55:15
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_list.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #ifndef __CG_LIST_H__
 #define __CG_LIST_H__
-#include "cg_node.h"
+#include "cg_ref.h"
 
 #define CG_LIST_HEAD(p_list) (&((p_list)->base))
 #define CG_LIST_TOP(p_list)  (CG_LIST_HEAD(p_list)->prev)
+
+typedef struct cg_list_node {
+    cg_ref_t ref;
+    struct cg_list_node* prev;
+} cg_node_t;
 
 /// @brief 这个玩意虽然叫 list，它其实是一个盏。
 typedef struct cg_list {

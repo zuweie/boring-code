@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:58:08
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-28 12:20:42
+ * @LastEditTime: 2025-06-01 22:03:13
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_hash.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -39,22 +39,21 @@ static cg_hash_node_t* __hash_find(cg_hash_t* hash, void* key)
     if (first) {
         do {
             if (hash->key_cmp(first->ref, key) == 0) return first;
-            first = frist->next;
+            first = first->next;
         } while(first->hash_code == code);
     }
     return NULL;
 }
 
-cg_hash_t* cg_hash_create(int (*hash)(void*), int (*key_cmp)(void*, void*))
+cg_hash_t* cg_hash_create(int (*hash_func)(void*), int (*key_cmp)(void*, void*))
 {
     cg_hash_t* hash     = (cg_hash_t*) malloc(sizeof(cg_hash_t));
-    CG_HASH_FIRST(hash) = CG_HASH_HEAD(hash)
-    CG_HASH_LAST(hash)  = CG_HASH_TAIL(hash)
-    hash->hash          = hash;
+    CG_HASH_FIRST(hash) = CG_HASH_HEAD(hash);
+    CG_HASH_LAST(hash)  = CG_HASH_TAIL(hash);
+    hash->hash          = hash_func;
     hash->key_cmp       = key_cmp;
     memset(hash->slot, (void*)0, SLOT_NUM);
-
-    return hash
+    return hash;
 }
 
 int cg_hash_recycle(cg_hash_t* hash, int(*recycle)(void*))
@@ -91,7 +90,7 @@ int cg_hash_set(cg_hash_t* hash, void* key, void* value)
     return 0;
 }
 
-cg_ref_t* cg_hash_get(cg_hash_t* hash, void* key)
+cg_ref_t cg_hash_get(cg_hash_t* hash, void* key)
 {
     cg_hash_node_t* find = __hash_find(hash, key);
     return find ? find->ref: NULL;
@@ -102,12 +101,13 @@ int cg_hash_has(cg_hash_t* hash, void* key)
     return __hash_find(hash, key) != NULL;
 }
 
-cg_ref_t* cg_hash_del(cg_hash_t* hash, void* key)
+cg_ref_t cg_hash_del(cg_hash_t* hash, void* key)
 {
     cg_hash_node_t* find = __hash_find(hash, key);
     if (find){
-        cg_ref_t* ref = find->ref;
-        __list_del(find);
+        cg_ref_t ref = find->ref;
+        __list_remove(find);
+        free(find);
         return ref;
     } 
     return NULL;

@@ -436,157 +436,157 @@ static void test_rnn (void)
     Mat2_destroy(_outputs);
 }
 
-static void test_ann_cg_simulation(void) 
-{
-    int layers_dimension[] = {5, 3, 5, 4, 3};
-    ann_cg_params_t ann_cg_params;
-    ann_cg_params.learning_rate = 0.5;
-    ann_cg_params.layers_size = 5;
-    ann_cg_params.layers_dimension = layers_dimension;
+// static void test_ann_cg_simulation(void) 
+// {
+//     int layers_dimension[] = {5, 3, 5, 4, 3};
+//     ann_cg_params_t ann_cg_params;
+//     ann_cg_params.learning_rate = 0.5;
+//     ann_cg_params.layers_size = 5;
+//     ann_cg_params.layers_dimension = layers_dimension;
 
-    compute_graph_t compute_graph;
-    printf("\n");
-    ann_cg_train(NULL, NULL, &ann_cg_params, &compute_graph);
-    ann_cg_predict(NULL, &compute_graph, NULL);
-    ann_cg_recycle(&compute_graph);
-    return;
-}
+//     compute_graph_t compute_graph;
+//     printf("\n");
+//     ann_cg_train(NULL, NULL, &ann_cg_params, &compute_graph);
+//     ann_cg_predict(NULL, &compute_graph, NULL);
+//     ann_cg_recycle(&compute_graph);
+//     return;
+// }
 
-static void test_cg_list_push(void) 
-{
-    int i = 10; 
-    cg_list_t* list = cg_list_create();
-    char buff[10][64];
+// static void test_cg_list_push(void) 
+// {
+//     int i = 10; 
+//     cg_list_t* list = cg_list_create();
+//     char buff[10][64];
 
 
-    while (i--) {
-        sprintf(buff[i], "list_element_%d\n", i);
-        cg_list_push(list, buff[i]);
-    }
+//     while (i--) {
+//         sprintf(buff[i], "list_element_%d\n", i);
+//         cg_list_push(list, buff[i]);
+//     }
 
-    char* str;
-    while (str = cg_list_pop(list))
-    {
-        printf(str);
-    }
+//     char* str;
+//     while (str = cg_list_pop(list))
+//     {
+//         printf(str);
+//     }
     
-    cg_list_recycle(list, NULL);
+//     cg_list_recycle(list, NULL);
     
-}
+// }
 
-static void test_cg_list_cpy(void) 
-{
-    int i = 30; 
-    cg_list_t* list = cg_list_create();
-    cg_list_t* cpy;
-    char buff[30][64];
+// static void test_cg_list_cpy(void) 
+// {
+//     int i = 30; 
+//     cg_list_t* list = cg_list_create();
+//     cg_list_t* cpy;
+//     char buff[30][64];
 
-    while (i--) {
-        sprintf(buff[i], "list_element_%d\n", i);
-        cg_list_push(list, buff[i]);
-    }
+//     while (i--) {
+//         sprintf(buff[i], "list_element_%d\n", i);
+//         cg_list_push(list, buff[i]);
+//     }
 
-    printf("\nlist: \n");
-    cg_node_t* p_first = list->p_top;
-    while (p_first != LIST_HEAD(list)) {
-        printf("%s", p_first->ref);
-        p_first = p_first->prev;
-    }
+//     printf("\nlist: \n");
+//     cg_node_t* p_first = list->p_top;
+//     while (p_first != LIST_HEAD(list)) {
+//         printf("%s", p_first->ref);
+//         p_first = p_first->prev;
+//     }
 
-    printf("\n cpy: \n");
-    cpy = cg_list_create_cpy(list);
-    char* str;
-    while (str = cg_list_pop(cpy))
-    {
-        printf(str);
-    }
+//     printf("\n cpy: \n");
+//     cpy = cg_list_create_cpy(list);
+//     char* str;
+//     while (str = cg_list_pop(cpy))
+//     {
+//         printf(str);
+//     }
 
-    cg_list_recycle(list, NULL);
-    cg_list_recycle(cpy, NULL);
-}
+//     cg_list_recycle(list, NULL);
+//     cg_list_recycle(cpy, NULL);
+// }
 
-void test_cg_graph(void) {
-    cg_graph_t graph;
-    cg_graph_init(&graph);
+// void test_cg_graph(void) {
+//     cg_graph_t graph;
+//     cg_graph_init(&graph);
     
-    const int vertex_size = 10;
-    cg_vertex_t* vertexs[vertex_size];
-    char vertex_ids[vertex_size][64];
+//     const int vertex_size = 10;
+//     cg_vertex_t* vertexs[vertex_size];
+//     char vertex_ids[vertex_size][64];
 
-    for (int i=0; i<vertex_size; ++i) {
-        sprintf(vertex_ids[i], "v_%d", i);
-        vertexs[i] = cg_graph_add_vertex(&graph, vertex_ids[i]);
-    }
+//     for (int i=0; i<vertex_size; ++i) {
+//         sprintf(vertex_ids[i], "v_%d", i);
+//         vertexs[i] = cg_graph_add_vertex(&graph, vertex_ids[i]);
+//     }
 
-    // printf vertex;
-    // cg_node_t* p_first = graph.p_vertexes->p_top;
-    // while (p_first != LIST_HEAD(graph.p_vertexes))
-    // {
-    //     printf("%s\n", ((cg_vertex_t*)p_first->ref)->str_id);
-    //     p_first = p_first->prev;
-    // }
+//     // printf vertex;
+//     // cg_node_t* p_first = graph.p_vertexes->p_top;
+//     // while (p_first != LIST_HEAD(graph.p_vertexes))
+//     // {
+//     //     printf("%s\n", ((cg_vertex_t*)p_first->ref)->str_id);
+//     //     p_first = p_first->prev;
+//     // }
 
-    // draw graph
-    cg_graph_link(vertexs[0], vertexs[1]);
-    cg_graph_link(vertexs[1], vertexs[2]);
-    cg_graph_link(vertexs[2], vertexs[3]);
-    cg_graph_link(vertexs[3], vertexs[7]);
+//     // draw graph
+//     cg_graph_link(vertexs[0], vertexs[1]);
+//     cg_graph_link(vertexs[1], vertexs[2]);
+//     cg_graph_link(vertexs[2], vertexs[3]);
+//     cg_graph_link(vertexs[3], vertexs[7]);
 
-    cg_graph_link(vertexs[1], vertexs[4]);
-    cg_graph_link(vertexs[4], vertexs[5]);
-    cg_graph_link(vertexs[5], vertexs[7]);
+//     cg_graph_link(vertexs[1], vertexs[4]);
+//     cg_graph_link(vertexs[4], vertexs[5]);
+//     cg_graph_link(vertexs[5], vertexs[7]);
 
-    cg_graph_link(vertexs[1], vertexs[6]);
-    cg_graph_link(vertexs[6], vertexs[7]);
+//     cg_graph_link(vertexs[1], vertexs[6]);
+//     cg_graph_link(vertexs[6], vertexs[7]);
 
-    cg_graph_link(vertexs[8], vertexs[6]);
-    cg_graph_link(vertexs[8], vertexs[9]);
-    cg_graph_link(vertexs[9], vertexs[7]);
+//     cg_graph_link(vertexs[8], vertexs[6]);
+//     cg_graph_link(vertexs[8], vertexs[9]);
+//     cg_graph_link(vertexs[9], vertexs[7]);
 
-    cg_list_t* paths_0_7 = cg_list_create();
-    cg_graph_search_paths(&graph, vertexs[0], vertexs[7], paths_0_7);
+//     cg_list_t* paths_0_7 = cg_list_create();
+//     cg_graph_search_paths(&graph, vertexs[0], vertexs[7], paths_0_7);
 
-    cg_list_t* paths_8_7 = cg_list_create();
-    cg_graph_search_paths(&graph, vertexs[8], vertexs[7], paths_8_7);
+//     cg_list_t* paths_8_7 = cg_list_create();
+//     cg_graph_search_paths(&graph, vertexs[8], vertexs[7], paths_8_7);
 
-    printf("0 ~ 7 paths: \n");
-    cg_node_t* p_first_paths = paths_0_7->p_top;
-    while (p_first_paths != LIST_HEAD(paths_0_7))
-    {
-        cg_list_t* path = (cg_list_t*)p_first_paths->ref;
-        cg_node_t* p_first_path = path->p_top;
-        while (p_first_path != LIST_HEAD(path)) {
+//     printf("0 ~ 7 paths: \n");
+//     cg_node_t* p_first_paths = paths_0_7->p_top;
+//     while (p_first_paths != LIST_HEAD(paths_0_7))
+//     {
+//         cg_list_t* path = (cg_list_t*)p_first_paths->ref;
+//         cg_node_t* p_first_path = path->p_top;
+//         while (p_first_path != LIST_HEAD(path)) {
 
-            printf("(%s)->", ((cg_vertex_t*)p_first_path->ref)->str_id);
-            p_first_path = p_first_path->prev;
-        }
-        cg_list_recycle(path, NULL);
-        printf("\n");
-        p_first_paths = p_first_paths->prev;
-    }
-    printf("\n");
+//             printf("(%s)->", ((cg_vertex_t*)p_first_path->ref)->str_id);
+//             p_first_path = p_first_path->prev;
+//         }
+//         cg_list_recycle(path, NULL);
+//         printf("\n");
+//         p_first_paths = p_first_paths->prev;
+//     }
+//     printf("\n");
 
-    printf("8 ~ 7 paths: \n");
-    p_first_paths = paths_8_7->p_top;
-    while (p_first_paths != LIST_HEAD(paths_8_7))
-    {
-        cg_list_t* path = (cg_list_t*)p_first_paths->ref;
-        cg_node_t* p_first_path = path->p_top;
-        while (p_first_path != LIST_HEAD(path)) {
+//     printf("8 ~ 7 paths: \n");
+//     p_first_paths = paths_8_7->p_top;
+//     while (p_first_paths != LIST_HEAD(paths_8_7))
+//     {
+//         cg_list_t* path = (cg_list_t*)p_first_paths->ref;
+//         cg_node_t* p_first_path = path->p_top;
+//         while (p_first_path != LIST_HEAD(path)) {
 
-            printf("(%s)->", ((cg_vertex_t*)p_first_path->ref)->str_id);
-            p_first_path = p_first_path->prev;
-        }
-        cg_list_recycle(path, NULL);
-        printf("\n");
-        p_first_paths = p_first_paths->prev;
-    }
+//             printf("(%s)->", ((cg_vertex_t*)p_first_path->ref)->str_id);
+//             p_first_path = p_first_path->prev;
+//         }
+//         cg_list_recycle(path, NULL);
+//         printf("\n");
+//         p_first_paths = p_first_paths->prev;
+//     }
     
 
-    cg_list_recycle(paths_0_7, NULL);
-    cg_list_recycle(paths_8_7, NULL);
-    cg_graph_recycle(&graph);
-}
+//     cg_list_recycle(paths_0_7, NULL);
+//     cg_list_recycle(paths_8_7, NULL);
+//     cg_graph_recycle(&graph);
+// }
 
 int do_deep_learning_test (void) 
 {
@@ -608,10 +608,10 @@ int do_deep_learning_test (void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "ann cg simulation", test_ann_cg_simulation)) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "ann cg simulation", test_ann_cg_simulation)) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     // if (NULL == CU_add_test(pSuite, "cg_list push", test_cg_list_push)) {
     //     CU_cleanup_registry();

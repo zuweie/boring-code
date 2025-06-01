@@ -30,6 +30,7 @@ set (SOURCE
     src/unit_test/unit_test_matrix2.c
     src/unit_test/unit_test_statistical_learning.c
     src/unit_test/unit_test_deep_learning.c
+    src/unit_test/unit_test_dl_cg2.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__vector.c
@@ -83,10 +84,6 @@ set (SOURCE
     src/deep_learning/rnn.c
     src/deep_learning/lstm.c
     src/deep_learning/active.c
-    src/deep_learning/ann_cg_simulation.c
-    src/deep_learning/compute_graph/compute_graph.c
-    src/deep_learning/compute_graph/cg_list.c
-    src/deep_learning/compute_graph/cg_graph.c
     src/deep_learning/compute_graph2/opt/cg_opt_dot.c
     src/deep_learning/compute_graph2/cg_allocator.c
     src/deep_learning/compute_graph2/cg_debug.c
