@@ -2,7 +2,7 @@
  * @Description: 迭代器
  * @Author: zuweie
  * @Date: 2019-09-07 23:21:54
- * @LastEditTime: 2025-06-01 20:32:04
+ * @LastEditTime: 2025-06-02 01:08:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #ifndef __ITERATOR_H__
@@ -13,24 +13,24 @@
 #include "type_value/__type_value.h"
 
 #define iterator_assign(iter1, iter2) \
-({ \
+do{ \
     iterator_t t1 = (iter1); \
     iterator_t t2 = (iter2); \
     int ty_size = T_size(t1.container->type_clazz); \
     type_value_cpy(t1.reference, t2.reference, ty_size); \
-}) 
+} while(0)
 
 #define iterator_exchange(iter1, iter2) \
-({ \
+do { \
     iterator_t t1 = (iter1); \
     iterator_t t2 = (iter2); \
     int ty_size = T_size(t1.container->type_clazz); \
     type_value_swap(t1.reference, t2.reference, ty_size); \
-})
+} while(0)
 
 #define iterator_move(piter, step) ((piter)->container->move(piter, step))
-#define iterator_next(iter) ({iterator_move(&iter, 1); iter;})
-#define iterator_prev(iter) ({iterator_move(&iter, -1); iter;})
+#define iterator_next(iter) iterator_move(&iter, 1)
+#define iterator_prev(iter) iterator_move(&iter, -1)
 
 #define iterator_equal(iter1, iter2) ((iter1).reference == (iter2).reference)
 
@@ -48,6 +48,9 @@ struct _iterator {
     type_value_t* reference;
 };
 
-#define __iterator(__refer, __container) ({ iterator_t it = { .reference = (__refer), .container = (__container)}; it;})
-#define __null_iterator ({iterator_t it = {.reference = NULL, .container = NULL}; it;})
+// #define __iterator(__refer, __container) ({ iterator_t it = { .reference = (__refer), .container = (__container)}; it;})
+// #define __null_iterator ({iterator_t it = {.reference = NULL, .container = NULL}; it;})
+
+#define __iterator(__refer, __container) ((iterator_t){.container=(__container), .reference=(__refer)})
+#define __null_iterator ((iterator_t){.container=NULL, .reference=NULL})
 #endif

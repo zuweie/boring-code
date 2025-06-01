@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-10-27 15:57:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-07-11 11:01:30
+ * @LastEditTime: 2025-06-02 01:07:37
  * @FilePath: /boring-code/src/dp/lcs.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,7 +16,7 @@
 #define UPLEFT 2
 
 static int combine_strings(int** path, int shape, int x, int y, const char* s1, char* str_lcs, int lcs_capacity, CN strings);
-static char* copy_lcs_string(const* s1, int lcs_capactity);
+static char* copy_lcs_string(const char* s1, int lcs_capactity);
 
 /**
  * @brief 用动态规划算法实现，两个字符串最大公共子序列的查找。
@@ -165,7 +165,7 @@ static int combine_strings(int** path, int shape, int x, int y, const char* s1, 
     return 0;
 }
 
-static char* copy_lcs_string(const* s1, int lcs_capactity)
+static char* copy_lcs_string(const char* s1, int lcs_capactity)
 {
     char* str_cpy = malloc(lcs_capactity);
     memset(str_cpy, 0, lcs_capactity);

@@ -2,8 +2,8 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2021-11-10 15:21:11
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 00:47:34
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 
 #include <stdlib.h>
@@ -29,7 +29,7 @@ static iterator_t __list_last (container_t* plist)
     return __iterator(list_last(plist)->w, plist);
 }
 
-static int __list_move(iterator_t* it, int step)
+static iterator_t __list_move(iterator_t* it, int step)
 {
     list_node_t* pnode = container_of(it->reference, list_node_t, w);
 
@@ -38,7 +38,7 @@ static int __list_move(iterator_t* it, int step)
         else if (step < 0) pnode = pnode->prev;
     }
     it->reference = pnode->w;
-    return 0;
+    return (iterator_t){.container=it->container, .reference=it->reference};
 }
 
 static iterator_t __list_search (container_t* container, iterator_t offset, type_value_t* find, int(compare)(type_value_t* t1, type_value_t* t2))

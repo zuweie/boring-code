@@ -2,8 +2,8 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2021-11-13 15:45:42
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 01:01:34
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #include <stdlib.h>
 #include "__rb_tree.h"
@@ -521,7 +521,7 @@ static int __rb_tree_remove (container_t* container, iterator_t pos, void* rdata
 
 //static iterator_t _get_iter(void* refer, void* tree);
 
-static int __rb_tree_move(iterator_t* it, int step) 
+static iterator_t __rb_tree_move(iterator_t* it, int step) 
 {
     rb_tree_node_t* pnode = container_of(it->reference, rb_tree_node_t, w);
     rb_tree_t* tree       = it->container;
@@ -532,7 +532,7 @@ static int __rb_tree_move(iterator_t* it, int step)
         else if (step<0) pnode = __tree_predecessor(tree, pnode);
     }
     it->reference = pnode->w;
-    return 0;
+    return (iterator_t){.container=it->container, .reference=it->reference};
 }
 
 /** container function **/

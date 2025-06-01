@@ -2,8 +2,8 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2021-11-01 13:34:53
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 00:50:34
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #ifndef __CONTAINER_H__
 #define __CONTAINER_H__
@@ -54,7 +54,7 @@
     (((container_t*)(container_ptr))->size((container_t*)container_ptr))
 
 #define initialize_container(container_ptr, __first, __last, __move, __search, __insert, __remove, __size, __type_clazz, __mem_pool) \
-({ \
+do { \
     ((container_t*)(container_ptr))->first  = (__first);                                        \
     ((container_t*)(container_ptr))->last   = (__last);                                         \
     ((container_t*)(container_ptr))->move   = (__move);                                         \
@@ -64,7 +64,8 @@
     ((container_t*)(container_ptr))->size   = (__size);                                         \
     ((container_t*)(container_ptr))->type_clazz = (__type_clazz);                               \
     ((container_t*)(container_ptr))->mem_pool = (__mem_pool);                                   \
-})
+}while (0)
+
 
 typedef struct _iterator iterator_t;
 typedef struct _container container_t;
@@ -72,7 +73,7 @@ typedef struct _container container_t;
 struct _container {
     iterator_t (*first) (container_t* container_ptr);   
     iterator_t (*last) (container_t * container_ptr); 
-    int (*move) (iterator_t* iter, int step);
+    iterator_t (*move) (iterator_t* iter, int step);
     iterator_t (*search) (container_t* container_ptr, iterator_t offset, type_value_t* find, int (*compare)(type_value_t*, type_value_t*));
     int (*insert) (container_t* container_ptr, iterator_t iter, type_value_t* data); 
     int (*remove) (container_t* container_ptr, iterator_t iter, void* rdata);

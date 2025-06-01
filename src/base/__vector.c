@@ -2,8 +2,8 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2021-11-04 16:10:25
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 01:02:49
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 //#include <stdio.h>
 #include <stddef.h>
@@ -16,10 +16,10 @@
 #include "base/operate/__wring.h"
 /** iterator function **/
 
-static int __vector_move (iterator_t* it, int step) 
+static iterator_t __vector_move (iterator_t* it, int step) 
 {
     it->reference =  it->reference +  (step * T_size(it->container->type_clazz));
-    return 0;
+    return (iterator_t){.container=it->container, .reference=it->reference};
 }
 /** iterator function **/
 
