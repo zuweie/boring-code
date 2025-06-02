@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 17:37:16
- * @LastEditTime: 2021-11-02 15:49:59
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 16:34:29
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_heap_sort.c
  */
@@ -52,8 +52,7 @@ static void test_vector_heap_sort(void)
 
     for(iterator_t first = container_first(vector); !iterator_equal(first, container_last(vector)); first = iterator_next(first)) {
         //printf("%d ", vtype_int(iterator_dereference(first)));
-        iterator_t next = first;
-        iterator_next(next);
+        iterator_t next = iterator_next(first);
         int i1 = type_value_(first.reference, int);
         int i2 = type_value_(next.reference, int);
         CU_ASSERT_TRUE( i1 <= i2 );
@@ -75,11 +74,10 @@ static void test_list_heap_sort(void)
 
     heap_sort(list, __icmp_int);
 
-    for(iterator_t first = container_first(list); !iterator_equal(first, container_last(list)); iterator_next(first)) {
+    for(iterator_t first = container_first(list); !iterator_equal(first, container_last(list)); first=iterator_next(first)) {
         //printf("%d ", vtype_int(iterator_dereference(first)));
         
-        iterator_t next = first;
-        iterator_next(next);
+        iterator_t next = iterator_next(first);
         int i1 = type_value_(first.reference, int);
         int i2 = type_value_(next.reference, int);
 

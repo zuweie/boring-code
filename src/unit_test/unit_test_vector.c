@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-11-05 11:46:19
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 15:41:06
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
  */
@@ -73,7 +73,7 @@ static void test_vector_remove(void)
     float target = tsd_get_float(5);
     float ret;
     
-    It remove = CN_find(vector, target);
+    Iter remove = CN_find(vector, target);
 
     CU_ASSERT_TRUE(CN_remove_at(vector, remove, &ret) == 0);
 
@@ -90,7 +90,7 @@ static void test_vector_remove(void)
     }
     char* target2 = tsd_get_str(5);
     char* ret2;
-    It remove2 = CN_find(vector2, target2);
+    Iter remove2 = CN_find(vector2, target2);
     CU_ASSERT_TRUE(CN_remove_at(vector2, remove2, &ret2) == 0);
     CU_ASSERT_STRING_EQUAL(target2, ret2);
     CU_ASSERT_FALSE(CN_has(vector2, target2));
@@ -111,8 +111,8 @@ void test_vector_sort(void)
     //printf("\n inspect after sort \n");
     //CN_inspect(vector, PRINTF_T_ON_FLOAT);
 
-    for(It first=CN_first(vector); !It_equal(first, CN_last(vector)); It_next(first)){
-        It next = first;
+    for(Iter first=CN_first(vector); !It_equal(first, CN_last(vector)); first = It_next(first)){
+        Iter next = first;
         It_next(next);
         float f1 = It_float(first);
         float f2 = It_float(next);
@@ -134,8 +134,8 @@ void test_vector_sort(void)
     CN_sort(vector2, NULL);
     //CN_inspect(vector2, PRINTF_T_ON_STRING);
 
-    for(It first=CN_first(vector2); !It_equal(first, CN_last(vector2)); It_next(first)){
-        It next = first;
+    for(Iter first=CN_first(vector2); !It_equal(first, CN_last(vector2)); first=It_next(first)){
+        Iter next = first;
         It_next(next);
         char* s1 = It_str(first);
         char *s2 = It_str(next);
@@ -158,9 +158,9 @@ static void test_vector_unique(void)
 
     CN_to_unique(vector);
     
-    for(It first = CN_first(vector); !It_equal(first, CN_last(vector)); It_next(first)){
+    for(Iter first = CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
 
-        It next = first;
+        Iter next = first;
         It_next(next);
         int v1 = It_int(first);
         int v2 = It_int(next);
@@ -205,4 +205,5 @@ int do_vector_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    return 0;
 }

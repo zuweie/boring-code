@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2021-11-23 14:58:10
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 16:24:39
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
  */
@@ -65,12 +65,10 @@ int svm_classify_problem(u_array_t* _X, u_array_t* _Y, CN svm_problems)
     int class_nr = CN_size(counting_map);
     if (class_nr > 2) {
         // 三个以上的class
-        for(It firstA=CN_first(counting_map); !It_equal(firstA, CN_last(counting_map)); It_next(firstA)) {
+        for(Iter firstA=CN_first(counting_map); !It_equal(firstA, CN_last(counting_map)); firstA = It_next(firstA)) {
 
-            It firstB = firstA;
-            It_next(firstB);
-            
-            for (;!It_equal(firstB, CN_tail(counting_map)); It_next(firstB)) {
+            Iter firstB = It_next(firstA);
+            for (;!It_equal(firstB, CN_tail(counting_map)); firstB = It_next(firstB)) {
                 
                 entity_t* entity_A = It_ptr(firstA);
                 entity_t* entity_B = It_ptr(firstB);
@@ -124,7 +122,7 @@ int svm_classify_problem_finalize(CN problems)
     int j = 2;
     // 这里有个问题，若果是两个怎么办，
     // 
-    for (It last=CN_last(problems); !It_equal(last, CN_head(problems)); It_prev(last)) {
+    for (Iter last=CN_last(problems); !It_equal(last, CN_head(problems)); last=It_prev(last)) {
 
         svm_classify_problem_t* problem = It_ptr(last);
         int c_nr = j * (j -1) / 2;
@@ -324,7 +322,7 @@ int svm_solve_c_svc(
 
     size_t problem_size = CN_size(problems);
 
-    for ( It first = CN_first(problems); !It_equal(first, CN_tail(problems)); It_next(first) ) {
+    for ( Iter first = CN_first(problems); !It_equal(first, CN_tail(problems)); first=It_next(first) ) {
 
         svm_classify_problem_t* problem = It_ptr(first);
         
@@ -348,7 +346,7 @@ int svm_solve_c_svc(
         int i=0, j=0, k=0;
 
 
-        for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); It_next(it_a)) {
+        for (Iter it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
             size_t index_a = It_int(it_a);
             memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] = 1.f;
@@ -356,7 +354,7 @@ int svm_solve_c_svc(
             _C_ptr[k++] = solver.c;
         }
         
-        for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); It_next(it_b)) {
+        for (Iter it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
             size_t index_b = It_int(it_b);
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] =  -1.f;
@@ -512,7 +510,7 @@ int svm_solve_nu_svc(
 
     // TOOD：这里要做 3-66 的 nu-svc 的监测。
 
-    for (It first = CN_first(problems); !It_equal(first, CN_tail(problems)); It_next(first)) {
+    for (Iter first = CN_first(problems); !It_equal(first, CN_tail(problems)); first=It_next(first)) {
         svm_classify_problem_t* problem = It_ptr(first);
 
         size_t len_class_A = CN_size(problem->class_ls_A);
@@ -529,7 +527,7 @@ int svm_solve_nu_svc(
         vfloat_t *_C_ptr           = UA_data_ptr(&_C);
         // 开始初始化所有的要计算的数据
         int i = 0, j = 0, k = 0;
-        for (It it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); It_next(it_a)) {
+        for (Iter it_a=CN_first(problem->class_ls_A); !It_equal(it_a, CN_tail(problem->class_ls_A)); it_a=It_next(it_a)) {
             size_t index_a = It_int(it_a);
             memcpy(_X_ptr[i++], X_ptr[index_a], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] = 1.f;
@@ -537,7 +535,7 @@ int svm_solve_nu_svc(
             _C_ptr[k++] = solver.c;
         }
         
-        for (It it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); It_next(it_b)) {
+        for (Iter it_b=CN_first(problem->class_ls_B); !It_equal(it_b, CN_tail(problem->class_ls_B)); it_b=It_next(it_b)) {
             size_t index_b = It_int(it_b);
             memcpy(_X_ptr[i++], X_ptr[index_b], sizeof(vfloat_t) * len_Xc);
             _Y_ptr[j++] =  -1.f;
@@ -667,7 +665,7 @@ double svm_c_svc_predict(CN classify_models, u_array_t* sample)
     int j = 2;
 
 
-    for (It last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); It_prev(last)) {
+    for (Iter last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); last=It_prev(last)) {
 
         svm_model_t * model = It_ptr(last);
         
@@ -686,7 +684,7 @@ double svm_c_svc_predict(CN classify_models, u_array_t* sample)
     // // do the prediction 
     // Debug: 
     // printf("\n");
-    for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); It_next(first)){
+    for (Iter first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); first=It_next(first)){
         svm_model_t* model = It_ptr(first);
         // Debug:
         // printf(" model->tagA is %f, model->tagB is %f \n", model->tagA, model->tagB);
@@ -708,7 +706,7 @@ double svm_c_svc_predict(CN classify_models, u_array_t* sample)
     // printf("\n");
     double winner_tag = -999.f;
     int count_vote = -1;
-    for (It first=CN_first(vote); !It_equal(first, CN_tail(vote)); It_next(first)) {
+    for (Iter first=CN_first(vote); !It_equal(first, CN_tail(vote)); first=It_next(first)) {
         entity_t* ent = It_ptr(first);
 
         // Debug:
@@ -757,7 +755,7 @@ double svm_nu_svc_predict(CN classify_models, u_array_t* sample)
     int j = 2;
 
 
-    for (It last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); It_prev(last)) {
+    for (Iter last=CN_last(classify_models); !It_equal(last, CN_head(classify_models)); last=It_prev(last)) {
 
         svm_model_t * model = It_ptr(last);
         
@@ -776,7 +774,7 @@ double svm_nu_svc_predict(CN classify_models, u_array_t* sample)
     // // do the prediction 
     // Debug: 
     // printf("\n");
-    for (It first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); It_next(first)){
+    for (Iter first=CN_first(classify_models); !It_equal(first, CN_tail(classify_models)); first=It_next(first)){
         svm_model_t* model = It_ptr(first);
 
         double tag = svm_nu_svc_predict_one(model, sample);
@@ -789,7 +787,7 @@ double svm_nu_svc_predict(CN classify_models, u_array_t* sample)
     // printf("\n");
     double winner_tag = -999.f;
     int count_vote = -1;
-    for (It first=CN_first(vote); !It_equal(first, CN_tail(vote)); It_next(first)) {
+    for (Iter first=CN_first(vote); !It_equal(first, CN_tail(vote)); first=It_next(first)) {
         entity_t* ent = It_ptr(first);
 
         // Debug:
@@ -836,7 +834,7 @@ double svm_nu_svc_predict_one(svm_model_t* model, u_array_t* sample)
 
 int svm_models_finalize(CN models)
 {
-    for(It first=CN_first(models); !It_equal(first, CN_tail(models)); It_next(first)) {
+    for(Iter first=CN_first(models); !It_equal(first, CN_tail(models)); first=It_next(first)) {
         svm_model_t* model = It_ptr(first);
         svm_model_finalize(model);
         free(model);

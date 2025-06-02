@@ -2,20 +2,23 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-24 23:53:53
- * @LastEditTime: 2021-11-05 13:10:10
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 13:39:01
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 
 #include "base/__iterator.h"
+#include "base/__container.h"
 #include "__quick_sort.h"
 
 static iterator_t __partition (iterator_t p, iterator_t r, int(*compare)(type_value_t*, type_value_t*))
 {
     //type_value_t x = iterator_dereference(r);
-    iterator_t i = p;
-    iterator_prev(i);
+    // iterator_t i = p;
+    // iterator_prev(i);
 
-    for(;!iterator_equal(p,r);iterator_next(p)) {
+    iterator_t i = iterator_prev(p);
+
+    for(;!iterator_equal(p,r);p=iterator_next(p)) {
         if (compare(p.reference, r.reference) != 1)
             iterator_exchange(iterator_next(i), p);
     }

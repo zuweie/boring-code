@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2025-05-31 23:13:00
+ * @LastEditTime: 2025-06-02 16:27:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -32,7 +32,7 @@
 
 #define CN_inspect(con, T_printer)  do{ \
     printf("\n ********* inspection of container *****************\n"); \
-    for(It first=CN_first(con); !It_equal(first, CN_tail(con)); It_next(first)) {\
+    for(It first=CN_first(con); !It_equal(first, CN_tail(con)); first=It_next(first)) {\
         T_printer(first._iter.reference);\
     } \
     printf("\n"); \

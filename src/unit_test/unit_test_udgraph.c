@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-12-01 08:42:35
- * @LastEditTime: 2021-11-10 15:38:42
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 13:30:41
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_udgraph.c
  */
@@ -29,7 +29,7 @@ static int suite_success_clean (void)
 
 static void test_udgraph_mst_kruskal(void) 
 {
-    UDGraph* graph = UDGraph_create(sizeof(It));
+    UDGraph* graph = UDGraph_create(sizeof(Iter));
     CN list = CN_create(LIST, ptr_t);
     
     UDGraph_add_vertex(graph, 'a');
@@ -61,7 +61,7 @@ static void test_udgraph_mst_kruskal(void)
     
     printf("\n");
     int i = 0;
-    for (It first = CN_first(list); !It_equal(first, CN_tail(list)); It_next(first), ++i) {
+    for (Iter first = CN_first(list); !It_equal(first, CN_tail(list)); first = It_next(first), ++i) {
 
         uedge_t* edge = It_ptr(first);
         printf("(%d), edge: %c --- %c  weight: %f", i, edge->epv->id, edge->epw->id, edge->weight);

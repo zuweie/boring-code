@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2021-11-05 13:11:39
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 13:15:00
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
  */
@@ -65,7 +65,7 @@ static void test_list_remove()
 
     float target = tsd_get_float(5);
     float ret;
-    It remove = CN_find(list, target);
+    Iter remove = CN_find(list, target);
 
     CU_ASSERT_TRUE(CN_remove_at(list, remove, &ret) == err_ok);
     CU_ASSERT_DOUBLE_EQUAL(target, ret, 0.0001);
@@ -86,9 +86,8 @@ void test_list_sort()
     // 从小到大的排序    
     CN_sort(list, NULL);
 
-    for(It first=CN_first(list); !It_equal(first, CN_last(list)); It_next(first)){
-        It next = first;
-        It_next(next);
+    for(Iter first=CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
+        Iter next = It_next(first);
         float f1 = It_float(first);
         float f2 = It_float(next);
         CU_ASSERT_TRUE(f1 <= f2);
@@ -113,10 +112,9 @@ static void test_list_unique(void)
     
     CN_to_unique(list);
 
-    for(It first = CN_first(list); !It_equal(first, CN_last(list)); It_next(first)){
+    for(Iter first = CN_first(list); !It_equal(first, CN_last(list)); first=It_next(first)){
         
-        It next = first;
-        It_next(next);
+        Iter next = It_next(first);
         int i1 = It_int(first);
         int i2 = It_int(next);
         

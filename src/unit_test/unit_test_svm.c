@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2021-11-23 14:54:56
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 13:35:32
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
  */
@@ -140,18 +140,18 @@ test_sample_classify_problems()
     int class_nr = svm_classify_problem(&X, &Y, problems);
 
     printf("\n");
-    for (It first=CN_first(problems); !It_equal(first, CN_tail(problems)); It_next(first)) {
+    for (Iter first=CN_first(problems); !It_equal(first, CN_tail(problems)); first = It_next(first)) {
 
         svm_classify_problem_t* problem = It_ptr(first);
 
         printf(" %c, %c ", (int)problem->tagA, (int)problem->tagB);
         printf("\n");
 
-        for (It a=CN_first(problem->class_ls_A); !It_equal(a, CN_tail(problem->class_ls_A)); It_next(a)) {
+        for (Iter a=CN_first(problem->class_ls_A); !It_equal(a, CN_tail(problem->class_ls_A)); a = It_next(a)) {
             printf(" %d ", It_int(a));
         }
         printf("\n");
-        for (It b=CN_first(problem->class_ls_B); !It_equal(b, CN_tail(problem->class_ls_B)); It_next(b) ){
+        for (Iter b=CN_first(problem->class_ls_B); !It_equal(b, CN_tail(problem->class_ls_B)); b = It_next(b) ){
             printf(" %d ", It_int(b));
         }
         printf("\n");

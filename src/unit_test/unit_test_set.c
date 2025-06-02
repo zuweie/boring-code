@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-12-04 07:26:51
- * @LastEditTime: 2021-11-02 16:26:11
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 08:21:20
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_set.c
  */
@@ -51,7 +51,7 @@ static void test_hashset_del(void)
     }
  
     for (int k=3; k<7; ++k) {
-        CU_ASSERT_FALSE(CN_has(&hashset,tsd_get_int(k)));
+        CU_ASSERT_FALSE(CN_has(hashset,tsd_get_int(k)));
     }
 
     CN_finalize(hashset, NULL);

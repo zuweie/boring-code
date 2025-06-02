@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2021-11-10 13:42:14
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 16:18:49
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
  */
@@ -44,7 +44,7 @@ int trans(imatrix_t* matrix_ptr)
 {
     CooMatrix* cooMatrix = (CooMatrix*)matrix_ptr;
     CN new_coo = CN_create(HASH_MAP|customized_entity, 3, 2, uint_t, uint_t, vf_t);
-    for(It first = CN_first(cooMatrix->coo);!It_equal(first, CN_tail(cooMatrix->coo)); It_next(first)) {
+    for(Iter first = CN_first(cooMatrix->coo);!It_equal(first, CN_tail(cooMatrix->coo)); first=It_next(first)) {
         entity_t* ent = It_ptr(first);
         CN_set(new_coo, ef_uint(ent, 1), ef_uint(ent, 0), ef_vft(ent, 2));
     }

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-10-27 16:36:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-08 15:21:09
+ * @LastEditTime: 2025-06-02 16:27:30
  * @FilePath: /boring-code/src/unit_test/unit_test_dp.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -45,7 +45,7 @@ static void test_string_matcher_kmp(void)
     char* word = "abca-d";
     CN index = kmp_matcher(seq, word);
     printf("match pos: ");
-    for (It first=CN_first(index); !It_equal(first, CN_tail(index)); It_next(first)) {
+    for (Iter first=CN_first(index); !It_equal(first, CN_tail(index)); first = It_next(first)) {
         printf("%d, ", It_int(first));
     }
     CN_finalize(index, NULL);

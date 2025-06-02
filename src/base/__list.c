@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2025-06-02 00:47:34
+ * @LastEditTime: 2025-06-02 16:29:45
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 
@@ -46,7 +46,7 @@ static iterator_t __list_search (container_t* container, iterator_t offset, type
     iterator_t first = offset;
     iterator_t tail  = container_tail(container);
 
-    for(;!iterator_equal(first, tail); iterator_next(first)) {
+    for(;!iterator_equal(first, tail); first=iterator_next(first)) {
         if ( (compare && compare(first.reference, find) == 0) 
             || (T_cmp(container->type_clazz)(first.reference, find) == 0) ){
             return first;

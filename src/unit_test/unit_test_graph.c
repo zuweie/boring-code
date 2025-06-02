@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-11-18 08:31:38
- * @LastEditTime: 2021-11-10 15:25:52
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 13:28:44
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_grap.c
  */
@@ -17,13 +17,13 @@
 
 #define Graph_inspect(graph, vertex_printer, exploring_printer) do{ \
     printf(" \n\n********* inspection of Graph *****************\n\n"); \
-    for (It i = CN_first( ((graph)->vertexes) ); !It_equal(i, CN_tail( ((graph)->vertexes) ) ); It_next(i)) { \
+    for (Iter i = CN_first( ((graph)->vertexes) ); !It_equal(i, CN_tail( ((graph)->vertexes) ) ); i = It_next(i)) { \
         vertex_t* pv = It_ptr(i); \
         printf("vertex: "); \
         vertex_printer(pv->vertex_id); \
         exploring_printer(pv->exploring); \
         printf("------> "); \
-        for (It j = CN_first( pv->paths); !It_equal(j, CN_tail(pv->paths)); It_next(j)) { \
+        for (Iter j = CN_first( pv->paths); !It_equal(j, CN_tail(pv->paths));  j = It_next(j)) { \
             path_t* pnode = It_ptr(j); \
             printf("{ ");\
             vertex_printer(pnode->to->vertex_id); \
@@ -37,46 +37,48 @@
 #define long_id_printer(id) printf("%ld ", id)
 #define char_id_ptrinter(id) printf("%c ", id)
 #define BFS_exploring_printer(exploring, printer, printer_from) \ 
-    ({  \
+    do{  \
         if (exploring) { \
             bfs_explor_t* __p_marco_explor = (bfs_explor_t*) exploring; \
             printf("[ distance: %d ] ", __p_marco_explor->distance); \
             printf("[ pi_id: %d ] ", t2i(__p_marco_explor->pi->vertex_id)); \
         } \
-    })  
+    } while(0)  
     
 #define DFS_exploring_printer(exploring) \
-    ({ \
+    do { \
         if (exploring) { \
             dfs_explor_t* __p_marco_explor = (dfs_explor_t*) exploring; \
             printf("[ d time %d ]", __p_marco_explor->d_time); \
             printf("[ f time %d ]", __p_marco_explor->f_time); \
         } \
-    })
+    }while (0)
+    
 
 #define PRIM_exploring_printer(exploring) \
-    ({ \
+    do { \
         if (exploring) { \
             prim_explor_t* __p_marco_explor = (prim_explor_t*) exploring;   \
             if (__p_marco_explor->pi) { \
                 printf("[ pi_id: %c, key:%f] ", __p_marco_explor->pi->vertex_id, __p_marco_explor->key); \
             } \
         } \
-    })
+    } while(0)
 #define RELAX_exploring_printer(exploring) \
-    ({ \
+    do { \
         if (exploring) { \
             relax_explor_t* __p_marco_explor = (relax_explor_t*) exploring; \
             if (__p_marco_explor->pi) { \
                 printf("[ pi_id: %c, distance: %f] ", __p_marco_explor->pi->vertex_id, __p_marco_explor->distance); \
             } \
         } \
-    }) 
+    } while(0)
 
 #define NULL_exploring_printer(exploring) \
-    ({ \
+    do{ \
         printf("[]");\
-    })
+    }while (0)
+    
 
 static int  suite_success_init (void) 
 {
@@ -257,7 +259,7 @@ static void test_graph_dfs (void)
     CN list = CN_create(LIST, ptr_t);   
     grp_calculate_component(reverse, list);
     
-    for (It first = CN_first(list); !It_equal(first, CN_tail(list)); It_next(first)) {
+    for (Iter first = CN_first(list); !It_equal(first, CN_tail(list)); first = It_next(first)) {
         vertex_t* v = It_ptr(first);
         if (v) {
             char_id_ptrinter(v->vertex_id);
@@ -292,7 +294,7 @@ static void test_grap_strongly_connect(void) {
 
     grp_calculate_component(strongly_connected, list);
     
-    for (It first = CN_first(list); !It_equal(first, CN_tail(list)); It_next(first)) {
+    for (Iter first = CN_first(list); !It_equal(first, CN_tail(list)); first = It_next(first)) {
         vertex_t* v = It_ptr(first);
         if (v) {
             char_id_ptrinter(v->vertex_id);

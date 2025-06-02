@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2025-06-02 01:02:49
+ * @LastEditTime: 2025-06-02 16:32:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 //#include <stdio.h>
@@ -42,7 +42,7 @@ static iterator_t __vector_search (container_t* container, iterator_t offset, ty
     iterator_t first = offset;
     iterator_t tail = container_tail(container);
 
-    for(; !iterator_equal(first, tail); iterator_next(first)) {
+    for(; !iterator_equal(first, tail); first=iterator_next(first)) {
         if ( (compare && compare(first.reference, find) == 0) 
         || (T_cmp(container->type_clazz)(first.reference, find)) == 0) 
         return first;
@@ -82,15 +82,14 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
     }
 
     // 继续做插入动作。
-    iterator_t it_prev = it;
-    iterator_prev(it_prev);
+    iterator_t it_prev = iterator_prev(it);
 
     iterator_t last = container_last(container);
-    iterator_t last_next = last;
-    iterator_next(last_next);
+    iterator_t last_next = iterator_next(last);
+    
 
     // 挪位
-    for (; !iterator_equal(last, it_prev); iterator_prev(last_next), iterator_prev(last)){
+    for (; !iterator_equal(last, it_prev); iterator_prev(last_next), last=iterator_prev(last)){
         iterator_assign(last_next, last);
     }
     // 插入
@@ -103,16 +102,12 @@ static int __vector_insert (container_t* container, iterator_t it, type_value_t*
 static int __vector_remove (container_t* container, iterator_t it, void* rdata) 
 {
     vector_t *vec = container;
-    //if (rdata) container->type_def.ty_adapter.bit_cpy(rdata, it.refer);
     if (rdata) type_value_cpy(rdata, it.reference, T_size(container->type_clazz));
-    // if (rdata) 
-    // iterator_t it_next = it;
-    // iterator_next(it_next); 
+
 
     // 擦除
-    iterator_t it_next = it;
-    iterator_next(it_next);
-    for (;!iterator_equal(it, container_last(vec));iterator_next(it), iterator_next(it_next)){
+    iterator_t it_next = iterator_next(it);
+    for (;!iterator_equal(it, container_last(vec));iterator_next(it),it_next=iterator_next(it_next)){
         iterator_assign(it, it_next);
     }
     vec->_size--;

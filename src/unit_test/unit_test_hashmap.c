@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-10-14 21:29:01
- * @LastEditTime: 2021-11-13 14:20:03
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 16:29:09
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_hashmap.c
  */
@@ -20,7 +20,7 @@
 // #include "container/TreeMap.h"
 
 #define PRINTF_ENTITY(e, keyx, key_trans, valuex, value_trans) \
-    ({                                                         \
+    do {                                                       \
         printf("keys: ");                                      \
         for(int i=0; i<e->value_index; ++i) {                  \
             char label_str[10];                                \
@@ -35,15 +35,17 @@
             PRINTF_TV_ON_X(e->tv[i], label_str, valuex, value_trans); \
         } \
         printf("\n"); \
-    })
+    } while(0)
+
 #define PRINTF_HASH_NODE(tv) \
-    ({                                \
+    do {                                \
         HashmapNode* pnode = t2p(tv);       \
         Entity* pentity = t2p(pnode->entity);               \
         PRINTF_ENTITY( pentity, %d, t2i, %s, t2p);          \
         printf("index: %2d ", pnode->slot_index);           \
         printf("\n\n");                                       \
-    })
+    } while(0)
+
 #define ENTITY_2_HASH_KEY(tv) do {     \
     HashmapNode * pnode  =  t2p(tv);   \
     int index = entity_int_keyhasher(pnode->entity, HASHMAP_SLOT_SIZE); \
@@ -119,7 +121,7 @@ static void test_hashmap (void)
     //     printf("value: %s\n", ef_str(ent, 1));
     // }
 
-    It first = CN_first(hashmap);
+    Iter first = CN_first(hashmap);
     T* n = first._iter.reference;
     entity_t* ent = It_ptr(first);
     hash_inner_list_node_t* node = container_of(n, hash_inner_list_node_t, w);
@@ -127,7 +129,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 1+1024);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "11");
 
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -135,7 +137,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 1);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "1");
 
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -143,7 +145,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 1);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "1 again again");
 
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -151,7 +153,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 1);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "1 again");
 
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -159,7 +161,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 2+1024);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "12");
 
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -167,7 +169,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 2);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "2");
     
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -175,7 +177,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 2);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "2 again again");
     
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -183,7 +185,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 2);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "2 again");
 
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -191,7 +193,7 @@ static void test_hashmap (void)
     CU_ASSERT_EQUAL(ef_int(ent, 0), 2);
     CU_ASSERT_STRING_EQUAL(ef_str(ent, 1), "2");
 
-    It_next(first);
+    first = It_next(first);
     n = first._iter.reference;
     ent = It_ptr(first);
     node = container_of(n, hash_inner_list_node_t, w);
@@ -439,25 +441,25 @@ static void test_treemap_first_last(void)
 
     CN_sort(list, NULL);
     
-    It ls_first = CN_first(list);
-    It ls_last  = CN_last(list);
+    Iter ls_first = CN_first(list);
+    Iter ls_last  = CN_last(list);
 
     int list_first = It_int( ls_first );
     int list_last  = It_int( ls_last );
 
-    It_next(ls_first);
-    It_prev(ls_last);
+    ls_first = It_next(ls_first);
+    ls_last  = It_prev(ls_last);
     int list_sec   = It_int( ls_first );
     int list_rsec  = It_int( ls_last );
 
-    It tree2_first = CN_first(treemap2);
+    Iter tree2_first = CN_first(treemap2);
     entity_t* first_entity = It_ptr(tree2_first);
 
-    It tree2_last  = CN_last(treemap2);
+    Iter tree2_last  = CN_last(treemap2);
     entity_t* last_entity = It_ptr(tree2_last);
 
-    CU_ASSERT_TRUE(  ef_int(first_entity, 0) == list_first );/*CMP_INT(first_entity->tv[0], list_first) == 0*/
-    CU_ASSERT_TRUE( ef_int(last_entity, 0) == list_last );/*CMP_INT(last_entity->tv[0], list_last) == 0*/
+    CU_ASSERT_TRUE( ef_int(first_entity, 0) == list_first );/*CMP_INT(first_entity->tv[0], list_first) == 0*/
+    CU_ASSERT_TRUE( ef_int(last_entity, 0)  == list_last  );/*CMP_INT(last_entity->tv[0], list_last) == 0*/
 
     //CN_del(treemap2, 45);
     //CN_del(treemap2, 53);
@@ -472,7 +474,7 @@ static void test_treemap_first_last(void)
     CU_ASSERT_TRUE(ef_int(last_entity, 0) ==list_last);
     
     // printf("\n");
-    // for (It first = CN_first(treemap2); !It_equal(first, CN_tail(treemap2)); first = It_next(first)) 
+    // for (Iter first = CN_first(treemap2); !It_equal(first, CN_tail(treemap2)); first = It_next(first)) 
     // {
     //     Entity* entity = It_getptr(first);
     //     PRINTF_TV_ON_INT(entity->tv[0]);
@@ -487,7 +489,7 @@ static void test_treemap_first_last(void)
 
     // printf("\n\n");
     // j = 99;
-    // for (It first=CN_last(treemap2); !It_equal(first, CN_head(treemap2)); It_prev(first))
+    // for (Iter first=CN_last(treemap2); !It_equal(first, CN_head(treemap2)); first=It_prev(first))
     // {
     //     entity_t* ent = It_ptr(first);
     //     printf(" ent_%i: %d ", j--, ef_int(ent, 0));
@@ -510,10 +512,10 @@ static void test_treemap_first_last(void)
 
     
     CU_ASSERT_FALSE(ef_int(first_entity, 0) ==  list_first);
-    CU_ASSERT_FALSE(ef_int(last_entity, 0) == list_last);
+    CU_ASSERT_FALSE(ef_int(last_entity, 0)  == list_last);
 
     CU_ASSERT_TRUE(ef_int(first_entity, 0) == list_sec);
-    CU_ASSERT_TRUE(ef_int(last_entity, 0) == list_rsec);
+    CU_ASSERT_TRUE(ef_int(last_entity, 0)  == list_rsec);
     // printf("\n\n");
     // int i=99;
     // printf("size: %d\n ", CN_size(treemap2));
@@ -552,29 +554,29 @@ int do_hashmap_test (void)
         return CU_get_error();
     }
     
-    // if (NULL == CU_add_test(pSuite, "test hashmap set", test_hashmap) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test hashmap set", test_hashmap) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
 
 
-    // if (NULL == CU_add_test(pSuite, "test hashmap del", test_hashmap_del) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test hashmap del", test_hashmap_del) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     
-    // if (NULL == CU_add_test(pSuite, "test treemap set", test_treemap_set) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test treemap set", test_treemap_set) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
 
-    // if (NULL == CU_add_test(pSuite, "test treemap del", test_treemap_del) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test treemap del", test_treemap_del) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     
 
     if (NULL == CU_add_test(pSuite, "test treemap first last", test_treemap_first_last) ) {
@@ -582,8 +584,8 @@ int do_hashmap_test (void)
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "test multi", test_multi_tree) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test multi", test_multi_tree) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 }

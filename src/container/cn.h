@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 11:59:07
- * @LastEditTime: 2023-06-19 16:29:31
+ * @LastEditTime: 2025-06-02 12:40:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Cn.h
@@ -77,11 +77,11 @@ enum {
     using_at_add = 1,
     using_at_find,
 };
-typedef struct __It It;
+typedef struct Iter Iter;
 typedef int CN;
-typedef struct __cn cn_t;
+typedef struct Cn Cn;
 
-struct __cn {
+struct Cn {
     container_t* eng;
     unsigned long build_code;
     T_clazz* type_clazz;
@@ -92,10 +92,10 @@ CN CN_create(unsigned long build_code, ...);
 CN CN_finalize(CN cn, int(*cleanup)(T*));
 T_clazz* CN_ty_clazz(CN);
 
-It CN_head(CN cn);
-It CN_tail(CN cn);
-It CN_first(CN cn);
-It CN_last(CN cn);
+Iter CN_head(CN cn);
+Iter CN_tail(CN cn);
+Iter CN_first(CN cn);
+Iter CN_last(CN cn);
   
 int CN_earse(CN cn, int (*chearup)(T*));
 int CN_reverse(CN cn);
@@ -107,13 +107,13 @@ int CN_to_unique(CN);
 int CN_merge(CN, CN);
 
 int CN_add(CN, ...);
-int CN_add_at(CN, It, ...);
+int CN_add_at(CN, Iter, ...);
 
 int CN_remove(CN, T*);
-int CN_remove_at(CN, It, T*);
+int CN_remove_at(CN, Iter, T*);
 
-It CN_find(CN, ...);
-It CN_find_at(CN, It, ...);
+Iter CN_find(CN, ...);
+Iter CN_find_at(CN, Iter, ...);
 
 int CN_del(CN, ...);
 int CN_set(CN, ...);

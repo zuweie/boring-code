@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2025-06-02 00:50:34
+ * @LastEditTime: 2025-06-02 13:46:32
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #ifndef __CONTAINER_H__
@@ -15,6 +15,9 @@
 #include "__iterator.h"
 #include "mem_pool/__mem_pool.h"
 
+typedef struct iterator iterator_t;
+typedef struct container container_t;
+
 #define container_create(container_label, ...) container_label##_create(__VA_ARGS__)
 #define container_destroy(conatainer_label, ...) conatainer_label##_destroy(__VA_ARGS__)
 
@@ -23,11 +26,13 @@
 // 容器的 last
 #define container_last(container_ptr) (((container_t*)(container_ptr))->last((container_t*)(container_ptr)))
 // 容器的 head
-#define container_head(container_ptr) ({iterator_t first=container_first(container_ptr); iterator_move(&first, -1); first;})
+//#define container_head(container_ptr) ({iterator_t first=container_first(container_ptr); iterator_move(&first, -1); first;})
+#define container_head(container_ptr) ((container_t*)(container_ptr))->move(container_first(container_ptr), -1)
 // 容器的 tail
-#define container_tail(container_ptr) ({iterator_t last=container_last(container_ptr); iterator_move(&last, 1); last;})
+// #define container_tail(container_ptr) ({iterator_t last=container_last(container_ptr); iterator_move(&last, 1); last;})
+#define container_tail(container_ptr) ((container_t*)(container_ptr))->move(container_last(container_ptr), 1)
 // 容器的
-#define container_access(container_ptr, step) ({iterator_t first=container_first(container_ptr); iterator_move(&first, step); first;})
+#define container_access(container_ptr, step) ((container_t*)(container_ptr))->move(container_first(container_ptr), step)//({iterator_t first=container_first(container_ptr); iterator_move(&first, step); first;})
 
 // 容器搜索
 #define container_search(container_ptr, offset, find, compare) \
@@ -67,13 +72,12 @@ do { \
 }while (0)
 
 
-typedef struct _iterator iterator_t;
-typedef struct _container container_t;
 
-struct _container {
+
+struct container {
     iterator_t (*first) (container_t* container_ptr);   
     iterator_t (*last) (container_t * container_ptr); 
-    iterator_t (*move) (iterator_t* iter, int step);
+    iterator_t (*move) (iterator_t iter, int step);
     iterator_t (*search) (container_t* container_ptr, iterator_t offset, type_value_t* find, int (*compare)(type_value_t*, type_value_t*));
     int (*insert) (container_t* container_ptr, iterator_t iter, type_value_t* data); 
     int (*remove) (container_t* container_ptr, iterator_t iter, void* rdata);

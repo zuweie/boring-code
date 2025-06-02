@@ -2,8 +2,8 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 10:14:04
- * @LastEditTime: 2021-11-10 15:22:09
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 16:15:38
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #include "container/cn.h"
 #include "container/entity.h"
@@ -70,7 +70,7 @@ Graph* Graph_create_reverse(Graph* graph)
     new_graph->exploring_size = graph->exploring_size;
     
     // 注入复制定点
-    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)){
+    for (Iter first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first=It_next(first)){
         vertex_t* v = It_ptr(first);
         Graph_add_vertex(new_graph, v->vertex_id);
     }
@@ -87,9 +87,9 @@ Graph* Graph_create_reverse(Graph* graph)
 int Graph_destroy(Graph* graph) 
 {
     // 把顶点删了。
-    for (It first = CN_first(graph->vertexes); 
+    for (Iter first = CN_first(graph->vertexes); 
         !It_equal(first, CN_tail(graph->vertexes)); 
-        It_next(first)) {
+        first = It_next(first)) {
             vertex_t* pv = It_ptr(first);
             Graph_del_vertex(pv);
     }
@@ -111,7 +111,7 @@ vertex_t* Graph_add_vertex(Graph* graph, unsigned long vertex_id)
 
 vertex_t* Graph_get_vertex(Graph* graph,  unsigned long vertex_id) 
 {
-    It i = CN_find(graph->vertexes, vertex_id);
+    Iter i = CN_find(graph->vertexes, vertex_id);
     return !It_is_tail(i) ? It_ptr(i) : NULL;
 }
 
@@ -143,7 +143,7 @@ int Graph_del_vertex(vertex_t* vertex)
 
 int Graph_del_path(vertex_t* from, unsigned long to)
 {
-    It del = CN_find(from->paths, to);
+    Iter del = CN_find(from->paths, to);
     path_t* del_path;
     CN_remove_at(from->paths, del, &del_path);
     free(del_path);
@@ -171,15 +171,15 @@ int Graph_get_paths_matrix(Graph* graph, CooMatrix* matrix)
 
         Graph_indexing_vertex(graph);
 
-        for (It first = CN_first(graph->vertexes);
+        for (Iter first = CN_first(graph->vertexes);
             !It_equal(first, CN_tail(graph->vertexes));
-            It_next(first)){
+            first = It_next(first)){
 
             vertex_t *pvertex = It_ptr(first);
 
-            for (It first2 = CN_first(pvertex->paths);
+            for (Iter first2 = CN_first(pvertex->paths);
                 !It_equal(first2, CN_tail(pvertex->paths));
-                It_next(first2)){
+                first2 = It_next(first2)){
 
                 path_t *path = It_ptr(first2);
                 Matrix_set(matrix, pvertex->index, path->to->index, path->weight);
@@ -198,11 +198,11 @@ int Graph_connect_vertexes(Graph* graph, CooMatrix* coomatrix)
 
         unsigned long vertex_id[size];
         int i=0;
-        for (It first=CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first), ++i) {
+        for (Iter first=CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first=It_next(first), ++i) {
             vertex_id[i] = ((vertex_t*)It_ptr(first))->vertex_id;
         }
 
-        for (It first = CN_first(coomatrix->coo); !It_equal(first, CN_tail(coomatrix->coo)); It_next(first)) {
+        for (Iter first = CN_first(coomatrix->coo); !It_equal(first, CN_tail(coomatrix->coo)); first=It_next(first)) {
             entity_t* ent = It_ptr(first);
             unsigned int x = ef_uint(ent, 0);
             unsigned int y = ef_uint(ent, 1);
@@ -216,7 +216,7 @@ int Graph_connect_vertexes(Graph* graph, CooMatrix* coomatrix)
 
 int Graph_initialize_exploring(Graph* graph, int (*initialize)(void* exploring)) 
 {
-    for(It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)) {
+    for(Iter first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first=It_next(first)) {
         vertex_t* vertex = It_ptr(first);
         initialize(vertex->exploring);
     }
@@ -226,7 +226,7 @@ int Graph_initialize_exploring(Graph* graph, int (*initialize)(void* exploring))
 void Graph_indexing_vertex(Graph* graph) 
 {
     size_t i =0;
-    for (It first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); It_next(first)) {
+    for (Iter first = CN_first(graph->vertexes); !It_equal(first, CN_tail(graph->vertexes)); first=It_next(first)) {
         vertex_t* vertex = It_ptr(first);
         vertex->index = i++;
     }

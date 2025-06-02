@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-11-27 23:10:30
- * @LastEditTime: 2021-11-04 11:27:58
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 16:17:47
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/graph/undirect_graph.c
  */
@@ -74,8 +74,8 @@ uvertex_t* UDGraph_add_vertex(UDGraph* udgraph, unsigned long vertex_id)
 
 uedge_t* UDGraph_add_edge(UDGraph* udgraph, unsigned long vertex_1, unsigned long vertex_2, float w) 
 {
-    It i_v1 = CN_find(udgraph->uvertexs, vertex_1);
-    It i_v2 = CN_find(udgraph->uvertexs, vertex_2);
+    Iter i_v1 = CN_find(udgraph->uvertexs, vertex_1);
+    Iter i_v2 = CN_find(udgraph->uvertexs, vertex_2);
 
     if (!It_is_tail(i_v1) && !It_is_tail(i_v2)) {
         
@@ -92,19 +92,19 @@ uedge_t* UDGraph_add_edge(UDGraph* udgraph, unsigned long vertex_1, unsigned lon
 
 int UDGraph_del_vertex(UDGraph* udgraph, unsigned long vertex_id) 
 {
-    It it = CN_find(udgraph->uvertexs, &vertex_id, NULL);
+    Iter it = CN_find(udgraph->uvertexs, &vertex_id, NULL);
     uvertex_t* del_vertex;
     if (err_ok == CN_remove_at(udgraph->uvertexs, it, &del_vertex)) {
         // 1 把所有有关的边都干掉
-        for (It first=CN_first(udgraph->uedges); !It_equal(first, CN_tail(udgraph->uedges));) {
+        for (Iter first=CN_first(udgraph->uedges); !It_equal(first, CN_tail(udgraph->uedges));) {
             uedge_t* edge = It_ptr(first);
             if (edge->epv == del_vertex->id || edge->epw == del_vertex->id) {
-                It rm_it = first;
-                It_next(first);
+                Iter rm_it = first;
+                first = It_next(first);
                 CN_remove_at(udgraph->uedges, rm_it, NULL);
                 free(edge);
             } else {
-                It_next(first);
+                first = It_next(first);
             }
         } 
     }
@@ -114,7 +114,7 @@ int UDGraph_del_vertex(UDGraph* udgraph, unsigned long vertex_id)
 int UDGraph_del_edge(UDGraph* udgraph, unsigned long v1, unsigned long v2)
 {
  
-    for (It first=CN_first(udgraph->uedges); !It_equal(first, CN_tail(udgraph->uedges)); It_next(first)) {
+    for (Iter first=CN_first(udgraph->uedges); !It_equal(first, CN_tail(udgraph->uedges)); first=It_next(first)) {
         uedge_t* pedge = It_ptr(first);
         if ((pedge->epv->id == v1 && pedge->epw->id == v2) 
         || (pedge->epv->id == v2) && (pedge->epw->id == v1)) {
@@ -129,7 +129,7 @@ int UDGraph_del_edge(UDGraph* udgraph, unsigned long v1, unsigned long v2)
 void UDGraph_indexing_vertex(UDGraph* graph) 
 {
     size_t i = 0;
-    for (It first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); It_next(first)) {
+    for (Iter first = CN_first(graph->uvertexs); !It_equal(first, CN_tail(graph->uvertexs)); first=It_next(first)) {
         uvertex_t* vertext = It_ptr(first);
         vertext->index     = i++;
     }

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-11-11 14:37:11
- * @LastEditTime: 2021-11-10 14:53:51
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 13:29:38
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_coo_matrix.c
  */
@@ -47,6 +47,7 @@ static void test_coo_matrix_set_get (void)
     CooMatrix_destroy(matrix);
     //CU_ASSERT_TRUE(1);
 }
+
 static void test_coo_matrix_trans (void) 
 {
     extern vfloat_t test_data_float[TEST_DATA_SIZE];
