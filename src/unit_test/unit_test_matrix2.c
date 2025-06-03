@@ -701,117 +701,117 @@ int do_matrix2_test (void)
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat2_rescale) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat2_rescale) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     
-    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_add_sub_scalar_mulity) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_add_sub_scalar_mulity) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_slice) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_slice) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " load mnist csv ", test_matrix_load_csv) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " load mnist csv ", test_matrix_load_csv) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_slice2) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_slice2) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_counting) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-
-    // if (NULL == CU_add_test(pSuite, " test mat cofactor ", test_matrix_cofactor) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, " test mat det ", test_matrix_det) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_adjoint) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_inverse) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat add sub mulity ", test_matrix_counting) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
 
-    // if (NULL == CU_add_test(pSuite, " test mat dot ", test_matrix_dot) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test mat cofactor ", test_matrix_cofactor) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_T) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-    // if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_householder_transform) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test mat det ", test_matrix_det) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_qr) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_adjoint) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eig) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test mat adjoint ", test_matrix_inverse) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
 
-    // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eigenvectors) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test mat dot ", test_matrix_dot) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_solve_lu) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_T) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_householder_transform) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_qr_decompe) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_qr) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " test group x ", test_matrix_group_x) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eig) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " test merge rows ", test_matrix2_merge_rows) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+
+    if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_eigenvectors) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, " test mat eigen valus ", test_matrix_solve_lu) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, " test mat T ", test_matrix_qr_decompe) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, " test group x ", test_matrix_group_x) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, " test merge rows ", test_matrix2_merge_rows) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     
-    // if (NULL == CU_add_test(pSuite, " test merge cols ", test_matrix2_merge_cols) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test merge cols ", test_matrix2_merge_cols) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, " test hadamard product ", test_matrix2_hadamard_product) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, " test hadamard product ", test_matrix2_hadamard_product) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     if (NULL == CU_add_test(pSuite, " test hadamard product ", test_matrix2_2I) ) {
         CU_cleanup_registry();

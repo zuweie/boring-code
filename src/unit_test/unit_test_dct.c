@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-01-15 09:14:00
- * @LastEditTime: 2021-04-08 15:06:18
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-02 16:38:30
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_dct.c
  */
@@ -40,7 +40,7 @@ static void test_dct_test(void)
 
 int do_dct_test (void) 
 {
-    #if 0
+    #if 1
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Test dct Suite", suite_success_init, suite_success_clean);
     if (NULL == pSuite){

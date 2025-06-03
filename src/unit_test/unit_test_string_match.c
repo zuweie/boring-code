@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-10-27 16:36:03
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-02 16:27:30
+ * @LastEditTime: 2025-06-02 16:43:48
  * @FilePath: /boring-code/src/unit_test/unit_test_dp.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -76,10 +76,10 @@ int do_string_matcher_test (void)
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "test string matcher ..\n", test_string_matcher_kmp) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test string matcher ..\n", test_string_matcher_kmp) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
 
     if (NULL == CU_add_test(pSuite, "test regexp ..\n", test_regexp) ) {

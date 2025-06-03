@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-24 23:53:53
- * @LastEditTime: 2025-06-02 13:39:01
+ * @LastEditTime: 2025-06-03 11:40:13
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 
@@ -20,9 +20,9 @@ static iterator_t __partition (iterator_t p, iterator_t r, int(*compare)(type_va
 
     for(;!iterator_equal(p,r);p=iterator_next(p)) {
         if (compare(p.reference, r.reference) != 1)
-            iterator_exchange(iterator_next(i), p);
+            iterator_exchange((i=iterator_next(i)), p);
     }
-    iterator_exchange(iterator_next(i), r);
+    iterator_exchange((i=iterator_next(i)), r);
     return i;
 }
 

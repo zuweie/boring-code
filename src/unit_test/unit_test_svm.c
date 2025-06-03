@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-02 14:26:30
- * @LastEditTime: 2025-06-02 13:35:32
+ * @LastEditTime: 2025-06-02 16:44:04
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_svm.c
@@ -325,15 +325,15 @@ int do_svm_test (void)
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "test svm sample classify", test_sample_classify_problems) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test svm sample classify", test_sample_classify_problems) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test svm c svc solver", test_c_svc_solve) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test svm c svc solver", test_c_svc_solve) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     if (NULL == CU_add_test(pSuite, "test svm nu svc solver", test_nu_svc_solve) ) {
         CU_cleanup_registry();
         return CU_get_error();

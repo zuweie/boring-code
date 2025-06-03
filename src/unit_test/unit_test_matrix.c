@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-06 22:15:11
- * @LastEditTime: 2023-03-31 00:13:41
+ * @LastEditTime: 2025-06-02 16:42:26
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_matrix.h
@@ -11,7 +11,7 @@
 #include "matrix/matrix.h"
 
 #define PRINTF_MATRIX(matrix) \
-    ({ \
+    do{ \
         printf("Max rows: %d, cols: %d \n", Mat_rows(&matrix), Mat_cols(&matrix)); \
         Mat_eptr(&matrix, ptr);\
         for (size_t i=0; i<Mat_rows(&matrix); ++i) { \
@@ -20,7 +20,8 @@
             } \
             printf("\n"); \
         } \
-    })
+    } while (0)
+
 
 static int  suite_success_init (void) 
 {
@@ -201,30 +202,30 @@ int do_matrix_test (void)
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "test move row", test_move_row) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test move row", test_move_row) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test move col", test_move_col) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test move col", test_move_col) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_dot) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_dot) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_op) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_op) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_deflate) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test mat dot ", test_mat_deflate) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat_rescale) ) {
         CU_cleanup_registry();

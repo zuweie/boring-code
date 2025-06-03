@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-03-31 13:28:12
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2023-11-20 12:14:49
+ * @LastEditTime: 2025-06-02 16:43:39
  * @FilePath: /boring-code/src/unit_test/unit_test_statistical_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1298,77 +1298,77 @@ int do_statistical_learning_test (void)
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "test knn predict", test_knn_predict) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test knn predict", test_knn_predict) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test perceptron test", test_perceptron) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-
-    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navie_bayes) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navie_bayes2) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd_big) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd2) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
-    // if (NULL == CU_add_test(pSuite, "test classification decision tree", test_decision_tree_large) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test perceptron test", test_perceptron) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
 
-    // if (NULL == CU_add_test(pSuite, "test classification decision tree simple ", test_decision_tree_simple) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navie_bayes) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test classification decision tree simple 2", test_decision_tree_simple2) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navie_bayes2) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test adaboost tree simple 2", test_adaboost_tree_simple) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "test adaboost tree large", test_adaboost_tree_large) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd_big) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "svm test simple", test_svm_simple) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test navie bayes", test_navies_bayes_mgd2) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "svm test large", test_svm_large) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "test classification decision tree", test_decision_tree_large) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+
+    if (NULL == CU_add_test(pSuite, "test classification decision tree simple ", test_decision_tree_simple) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test classification decision tree simple 2", test_decision_tree_simple2) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test adaboost tree simple 2", test_adaboost_tree_simple) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test adaboost tree large", test_adaboost_tree_large) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "svm test simple", test_svm_simple) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "svm test large", test_svm_large) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     if (NULL == CU_add_test(pSuite, "svm test em", test_em) ) {
         CU_cleanup_registry();

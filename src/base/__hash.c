@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-11 19:54:38
- * @LastEditTime: 2025-06-02 00:57:59
+ * @LastEditTime: 2025-06-03 10:44:45
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/base/__hashmap.c
@@ -43,16 +43,17 @@ static iterator_t __hash_last(container_t* container)
     hash_t* hash = (hash_t*) container;
     return __iterator(hash_table_tail(hash)->prev->w, container);
 }
-static iterator_t __hash_move(iterator_t* iter, int step) 
+static iterator_t __hash_move(iterator_t iter, int step) 
 {
-    hash_t* hash = iter->container;
-    hash_inner_list_node_t* node = container_of(iter->reference, hash_inner_list_node_t, w);
+    hash_t* hash = iter.container;
+    hash_inner_list_node_t* node = container_of(iter.reference, hash_inner_list_node_t, w);
     for (int next = step ; next; step > 0 ? next-- : next++) {
         if (step > 0) node = node->next;
         else if (step < 0) node = node->prev;
     }
-    iter->reference = node->w;
-    return (iterator_t) {.container=iter->container, .reference=iter->reference};
+    iter.reference = node->w;
+    //return (iterator_t) {.container=iter->container, .reference=iter->reference};
+    return iter;
 }
 
 static iterator_t __hash_search (container_t* container, iterator_t offset, type_value_t* find, int(compare)(type_value_t, type_value_t))

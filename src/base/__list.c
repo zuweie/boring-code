@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-03 15:07:45
- * @LastEditTime: 2025-06-02 16:29:45
+ * @LastEditTime: 2025-06-03 10:44:27
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 
@@ -29,16 +29,17 @@ static iterator_t __list_last (container_t* plist)
     return __iterator(list_last(plist)->w, plist);
 }
 
-static iterator_t __list_move(iterator_t* it, int step)
+static iterator_t __list_move(iterator_t it, int step)
 {
-    list_node_t* pnode = container_of(it->reference, list_node_t, w);
+    list_node_t* pnode = container_of(it.reference, list_node_t, w);
 
     for (int next = step; next; next = step > 0? next - 1: next + 1) {
         if (step > 0) pnode = pnode->next;
         else if (step < 0) pnode = pnode->prev;
     }
-    it->reference = pnode->w;
-    return (iterator_t){.container=it->container, .reference=it->reference};
+    it.reference = pnode->w;
+    //return (iterator_t){.container=it->container, .reference=it->reference};
+    return it;
 }
 
 static iterator_t __list_search (container_t* container, iterator_t offset, type_value_t* find, int(compare)(type_value_t* t1, type_value_t* t2))

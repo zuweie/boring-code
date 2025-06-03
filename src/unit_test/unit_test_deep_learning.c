@@ -598,16 +598,16 @@ int do_deep_learning_test (void)
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "ann test", test_ann) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
+    if (NULL == CU_add_test(pSuite, "ann test", test_ann) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
-    // if (NULL == CU_add_test(pSuite, "rnn test", test_rnn) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
-
+    if (NULL == CU_add_test(pSuite, "rnn test", test_rnn) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    #if 0
     // if (NULL == CU_add_test(pSuite, "ann cg simulation", test_ann_cg_simulation)) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
@@ -627,5 +627,6 @@ int do_deep_learning_test (void)
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+    #endif
     return 0;
 }

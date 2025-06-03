@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2025-06-02 08:19:30
+ * @LastEditTime: 2025-06-03 12:56:17
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #include <stdio.h>
@@ -46,7 +46,7 @@ int main ()
     // do_dense_matrix_test();
     // do_graph_test();
     // do_udgraph_test();
-    do_set_test();
+    // do_set_test();
     // do_heapsort_test();
     // do_fft_test();
     // do_dct_test();
@@ -61,7 +61,7 @@ int main ()
     // do_leetcode_test();
     // do_statistical_learning_test();
     // do_deep_learning_test();
-    // do_cg2_test();
+    do_cg2_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);

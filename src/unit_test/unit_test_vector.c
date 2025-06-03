@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-12 23:35:44
- * @LastEditTime: 2025-06-02 15:41:06
+ * @LastEditTime: 2025-06-03 11:28:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/vetcor_test.c
@@ -160,8 +160,7 @@ static void test_vector_unique(void)
     
     for(Iter first = CN_first(vector); !It_equal(first, CN_last(vector)); first=It_next(first)){
 
-        Iter next = first;
-        It_next(next);
+        Iter next = It_next(first);
         int v1 = It_int(first);
         int v2 = It_int(next);
         CU_ASSERT_FALSE( v1 == v2);

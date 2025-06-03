@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-11 10:15:37
- * @LastEditTime: 2025-06-02 01:01:34
+ * @LastEditTime: 2025-06-03 10:40:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #include <stdlib.h>
@@ -521,18 +521,19 @@ static int __rb_tree_remove (container_t* container, iterator_t pos, void* rdata
 
 //static iterator_t _get_iter(void* refer, void* tree);
 
-static iterator_t __rb_tree_move(iterator_t* it, int step) 
+static iterator_t __rb_tree_move(iterator_t it, int step) 
 {
-    rb_tree_node_t* pnode = container_of(it->reference, rb_tree_node_t, w);
-    rb_tree_t* tree       = it->container;
+    rb_tree_node_t* pnode = container_of(it.reference, rb_tree_node_t, w);
+    rb_tree_t* tree       = it.container;
     
     for (int next = step; next; step>0?next--:next++){
         /* code */
         if (step>0) pnode = __tree_successor(tree, pnode);
         else if (step<0) pnode = __tree_predecessor(tree, pnode);
     }
-    it->reference = pnode->w;
-    return (iterator_t){.container=it->container, .reference=it->reference};
+    it.reference = pnode->w;
+    //return (iterator_t){.container=it->container, .reference=it->reference};
+    return it;
 }
 
 /** container function **/

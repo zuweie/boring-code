@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 17:37:16
- * @LastEditTime: 2025-06-02 16:34:29
+ * @LastEditTime: 2025-06-03 12:05:28
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_heap_sort.c
@@ -39,9 +39,10 @@ static void test_vector_heap_sort(void)
 {
     T_clazz ty_clazz;
     ty_clazz._def = T_def_get(int_t);
-    
-    vector_t* vector = container_create(vector, &ty_clazz);
+    ty_clazz._adapter[e_setup] = T_adapter_get(ty_clazz._def.ty_id, e_setup);
+    ty_clazz._adapter[e_cmp]   = T_adapter_get(ty_clazz._def.ty_id, e_cmp);
 
+    vector_t* vector = container_create(vector, &ty_clazz);
     for (int i=0; i<10; ++i) {
         int v = tsd_get_int(i);
         container_insert(vector, container_tail(vector), &v);
@@ -64,7 +65,8 @@ static void test_list_heap_sort(void)
 {
     T_clazz ty_clazz;
     ty_clazz._def = T_def_get(int_t);
-
+    ty_clazz._adapter[e_setup] = T_adapter_get(ty_clazz._def.ty_id, e_setup);
+    ty_clazz._adapter[e_cmp]   = T_adapter_get(ty_clazz._def.ty_id, e_cmp);
     list_t* list = container_create(list, &ty_clazz);
 
     for (int i=0; i<10; ++i) {

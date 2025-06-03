@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-08 00:02:36
- * @LastEditTime: 2025-06-02 16:32:30
+ * @LastEditTime: 2025-06-03 10:51:34
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 //#include <stdio.h>
@@ -16,10 +16,11 @@
 #include "base/operate/__wring.h"
 /** iterator function **/
 
-static iterator_t __vector_move (iterator_t* it, int step) 
+static iterator_t __vector_move (iterator_t it, int step) 
 {
-    it->reference =  it->reference +  (step * T_size(it->container->type_clazz));
-    return (iterator_t){.container=it->container, .reference=it->reference};
+    it.reference =  it.reference +  (step * T_size(it.container->type_clazz));
+    //return (iterator_t){.container=it->container, .reference=it->reference};
+    return it;
 }
 /** iterator function **/
 
@@ -107,7 +108,7 @@ static int __vector_remove (container_t* container, iterator_t it, void* rdata)
 
     // 擦除
     iterator_t it_next = iterator_next(it);
-    for (;!iterator_equal(it, container_last(vec));iterator_next(it),it_next=iterator_next(it_next)){
+    for (;!iterator_equal(it, container_last(vec));it=iterator_next(it),it_next=iterator_next(it_next)){
         iterator_assign(it, it_next);
     }
     vec->_size--;
