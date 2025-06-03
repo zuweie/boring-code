@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-11-15 16:45:08
- * @LastEditTime: 2021-12-09 17:00:56
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-03 13:13:29
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /boring-code/src/machine_learning/neural_network.c
  */
@@ -16,7 +16,7 @@
 #include "neural_network.h"
 
 #define INSPECT_U_MAT() \
-({ \
+do{ \
     int ll_count = Nl_count(model);\
     int ll, ee, ee_count;\
     for(ll=0; ll<ll_count; ++ll)\
@@ -33,10 +33,10 @@
         } \
         printf("\n"); \
     } \
-})
+} while(0)
 
 #define INSPECT_Y_MAT() \
-({ \
+do { \
     int ll_count = Nl_count(model);\
     int ll, ee, ee_count;\
     for(ll=0; ll<ll_count; ++ll){ \
@@ -52,10 +52,10 @@
         } \
         printf("\n");\
     } \
-})
+} while(0)
 
 #define INSPECT_W_MAT() \
-({ \    
+do { \    
     int ll_count = Nl_count(model);\
     int ll, ee, ee_count;\
     for(ll=0; ll<ll_count; ++ll)\
@@ -76,10 +76,10 @@
         } \
         printf("\n");\
     } \
-})
+} while(0)
 
 #define INSPECT_DELTA_MAT() \
-({ \
+do { \
     int ll_count = Nl_count(model);\
     int ll, ee, ee_count;\
     for(ll=0; ll<ll_count; ++ll){ \
@@ -95,7 +95,7 @@
         } \
         printf("\n");\
     } \
-})
+} while(0)
 
 // static double __do_active_u(ann_mpl_param_t* params, double u)
 // {

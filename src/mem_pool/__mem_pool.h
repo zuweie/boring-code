@@ -2,8 +2,8 @@
  * @Description: 一个简单的内存池模型
  * @Author: zuweie
  * @Date: 2019-09-03 17:13:11
- * @LastEditTime: 2021-10-24 09:24:19
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-03 14:13:49
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #ifndef __MEM_POOL_H__
 #define __MEM_POOL_H__
@@ -50,23 +50,30 @@
 #define POOL_EXPOSE_POINTER(p) ((char *)(p) + __SLOT_INFO_BYTES)
 #define POOL_RECOVER_POINTER(p) ((char *)(p) - __SLOT_INFO_BYTES)
 
-#define POOL_SET_SLOT(p, slot) \
-	({\
-		size_t v = slot; \
-		*((slot_type_t*)(p)) = *((slot_type_t*)(&v));\
-	})
-	
-#define POOL_GET_SLOT(p) \
-	({ \
-		size_t slot = 0; \
-		*((slot_type_t*)(&slot)) = *((slot_type_t*)(p)); \
-		slot;\
-	})
+// #define POOL_SET_SLOT(p, slot) \
+// 	do{\
+// 		size_t v = slot; \
+// 		*((slot_type_t*)(p)) = *((unsigned int*)(&v));\
+// 	}while(0)
 
+#define POOL_SET_SLOT(p, slot) (*(unsigned char*)(p)=slot)
+	
+
+// #define POOL_SET_SLOT(p, slot) (*((slot_type_t*)(p))=slot)
+	
+// #define POOL_GET_SLOT(p) \
+// 	({ \
+// 		size_t slot = 0; \
+// 		*((slot_type_t*)(&slot)) = *((slot_type_t*)(p)); \
+// 		slot;\
+// 	})
+#define POOL_GET_SLOT(p)  (*(unsigned char*)(p))//((size_t)(*((slot_type_t*)(p))));
+	
 /*#define g_pool(x) pool_instance(x)*/
 typedef struct _slot_type {
 	unsigned char holder[__SLOT_INFO_BYTES];
 } slot_type_t;
+
 
 typedef union _pool_node 
 {

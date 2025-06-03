@@ -47,6 +47,8 @@ static void cg_list_testcase(void)
         printf("%s ", first->ref);
     }
     CU_ASSERT_TRUE(list_number == 10);
+    cg_list_recycle(list, NULL);
+    return;
 }
 
 static void cg_hash_testcase(void)

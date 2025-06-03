@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-01-21 11:28:35
- * @LastEditTime: 2021-02-19 14:23:36
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-03 13:09:39
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/mfcc/signal_process.c
  */

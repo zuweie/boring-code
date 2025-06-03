@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-05 14:51:16
- * @LastEditTime: 2023-03-31 00:02:57
+ * @LastEditTime: 2025-06-03 13:25:48
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/matrix.h
@@ -73,13 +73,13 @@ int Mat_copy(matrix_t* dest, matrix_t* src);
 #define Mat_eptr(pmat, ptr) vfloat_t(*ptr)[(pmat)->cols] = (pmat)->pool
 #define Mat_put(pmat, x, y, v) ((pmat)->pool[(x)*(pmat)->cols + y] = (v))//({ Mat_eptr(pmat, ptr); ptr[x][y] = v; })
 #define Mat_inspect(pmat) \
-({ \
+do{ \
     for (int i=0; i<(pmat)->rows; ++i) { \
         for (int j=0; j<(pmat)->cols; ++j) { \
             printf("%f ", (pmat)->pool[i*(pmat)->cols + j]); \
         } \
         printf("\n");\
     } \
-})
+} while(0)
 
 #endif
