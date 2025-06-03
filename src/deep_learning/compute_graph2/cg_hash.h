@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:58:14
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-01 21:56:39
+ * @LastEditTime: 2025-06-03 15:27:06
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_hash.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,6 +21,7 @@ typedef struct cg_hash_node
 {
     unsigned int hash_code;
     cg_ref_t ref;
+    void*    key;
     struct cg_hash_node* prev;
     struct cg_hash_node* next;
 
