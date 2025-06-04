@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-03 16:06:40
+ * @LastEditTime: 2025-06-03 16:09:10
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -191,6 +191,11 @@ int do_cg2_test (void)
     }
 
     if (NULL == CU_add_test(pSuite, "test cg hash ..\n", cg_hash_testcase) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(pSuite, "test cg alloc ..\n", cg_allocator_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-01 23:02:40
+ * @LastEditTime: 2025-06-04 14:29:11
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -28,6 +28,13 @@ typedef struct cg_tensor {
     void*           elems;
     int*            dimensions;
 } cg_tensor_t;
+
+typedef struct __sub_tensor {
+    void* sub_elems;
+    int*  sub_stride;
+    int*  sub_dimens;
+    int   sub_axes;
+} __sub_tensor_t;
 
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...);
 int cg_tensor_recycle(cg_tensor_t* thiz);
