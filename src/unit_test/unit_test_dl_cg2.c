@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-05 16:50:58
+ * @LastEditTime: 2025-06-05 22:09:00
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -157,21 +157,30 @@ static void cg_allocator_testcase(void)
     cg_allocator_t alloc;
     cg_allocator_init(&alloc);
 
-    void* block1 = cg_alloc(&alloc, 7);
-    void* block2 = cg_alloc(&alloc, 7);
+    // void* block1 = cg_alloc(&alloc, 7);
+    // void* block2 = cg_alloc(&alloc, 7);
 
-    cg_recycle(&alloc, block1);
+    // cg_recycle(&alloc, block1);
 
-    void* block3 = cg_alloc(&alloc, 7);
+    // void* block3 = cg_alloc(&alloc, 7);
 
-    cg_recycle(&alloc, block2);
-    cg_recycle(&alloc, block3);
+    // cg_recycle(&alloc, block2);
+    // cg_recycle(&alloc, block3);
 
-    void* block4 = cg_alloc(&alloc, 17);
-    cg_recycle(&alloc, block4);
+    // void* block4 = cg_alloc(&alloc, 17);
+    // cg_recycle(&alloc, block4);
     
-    void* bigblock = cg_alloc(&alloc, 8*256-1);
-    cg_recycle(&alloc, bigblock);
+    // void* bigblock = cg_alloc(&alloc, 8*256-1);
+    // cg_recycle(&alloc, bigblock);
+
+    void* block5 = cg_alloc(&alloc, 3*7*6*sizeof(float));
+    float* pelem  = block5;
+
+    for (int i=0; i<3*7*6; ++i) {
+        pelem[i] = 4.44;
+    }
+
+    cg_recycle(&alloc, block5);
 
     cg_allocator_reset(&alloc);
 
@@ -201,24 +210,29 @@ static void cg_tensor_testcase(void)
     // cg_tensor_inspect(t1);
 
     cg_tensor_arange(t1, 0, 24);
-    cg_tensor_inspect(t1);
+    //cg_tensor_inspect(t1);
 
-    // cg_tensor_t* t_slice = cg_tensor_slice(t1, 3, 1, 2, 1, 3, 2, 4);
-    // cg_tensor_inspect(t_slice);
+    cg_tensor_t* t_slice = cg_tensor_slice(t1, 3, 1, 2, 1, 3, 2, 4);
+    //cg_tensor_inspect(t_slice);
 
     cg_tensor_t* t_padding = cg_tensor_padding(t1, 3.14, 3, 1, 0, 2, 2, 1, 1);
-    cg_tensor_inspect(t_padding);
+    //cg_tensor_inspect(t_padding);
     
     float* v = cg_tensor_get(t1, 1, 1,2);
-    printf("v %0.2f\n", *v);
     CU_ASSERT_DOUBLE_EQUAL(*v, 18, 0.001);
+
     v = cg_tensor_get(t1, 0, 2, 3);
-    printf("v %0.2f\n", *v);
     CU_ASSERT_DOUBLE_EQUAL(*v, 11, 0.001);
 
+    v = cg_tensor_get(t_slice, 0, 1, 0);
+    CU_ASSERT_DOUBLE_EQUAL(*v, 22, 0.001);
+
+    v = cg_tensor_get(t_padding, 2, 3, 1);
+    CU_ASSERT_DOUBLE_EQUAL(*v, 16, 0.001);
+    
     cg_tensor_recycle(t1);
-    // cg_tensor_recycle(t_slice);
-    //cg_tensor_recycle(t_padding);
+    cg_tensor_recycle(t_slice);
+    cg_tensor_recycle(t_padding);
 
     cg_allocator_reset(&alloc);
 }
@@ -243,28 +257,35 @@ int do_cg2_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
 
+    #if 0
     if (NULL == CU_add_test(pSuite, "test cg list ..\n", cg_list_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-
+    #endif
+    
+    #if 0
     if (NULL == CU_add_test(pSuite, "test cg hash ..\n", cg_hash_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-   
-
+    #endif
+    
+    #if 0
     if (NULL == CU_add_test(pSuite, "test cg alloc ..\n", cg_allocator_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-    #endif
+    #endif  
 
+    #if 1
     if (NULL == CU_add_test(pSuite, "test cg tensor ..\n", cg_tensor_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
 
     return 0;
 }

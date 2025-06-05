@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 10:08:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-05 11:30:27
+ * @LastEditTime: 2025-06-05 21:53:02
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_allocator.h
  * @Description: 关于这个内存配置器简单的一个设计如下：
  * 1 按照申请 size ruond up 到 8，例如  53 round_up 56
@@ -23,8 +23,8 @@
 #define GET_INDEX(block) (*((unsigned char*)(block)))
 #define SET_INDEX(block, index) (*((unsigned char*)(block)) = (unsigned char)(index))  //({*((unsigned char*)(block))=(unsigned char)(index);})
 
-#define EXPOSE(block) ((char*)(block)-1)
-#define COVER(block)  ((char*)(block)+1)
+#define EXPOSE(block) ((char*)(block)+1)
+#define COVER(block)  ((char*)(block)-1)
 
 typedef struct chunk
 {

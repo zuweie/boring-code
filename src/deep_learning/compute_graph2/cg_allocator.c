@@ -20,6 +20,7 @@ int cg_allocator_reset(cg_allocator_t* alloc)
     while(first) {
         chunk_t* del = first;
         first = first->next;
+        CG_DEBUG("free chunk (addr: %p)\n", del);
         free(del);
     }
 
@@ -73,7 +74,7 @@ void* cg_alloc(cg_allocator_t* alloc, unsigned int size)
 
             // 添加统计
             alloc->total_alloc += block_size * ALLOC_NUMBER; 
-            CG_DEBUG("alloc %d chuck from system, current %d memory\n", block_size * ALLOC_NUMBER, alloc->total_alloc);
+            CG_DEBUG("alloc %d chuck(addr:%p) from system, current %d memory\n", block_size * ALLOC_NUMBER, chunk, alloc->total_alloc);
         }
 
         // 把当前的 block 抽出来。

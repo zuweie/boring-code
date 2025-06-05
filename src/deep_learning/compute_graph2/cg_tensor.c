@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-05 17:25:48
+ * @LastEditTime: 2025-06-05 21:30:57
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -49,11 +49,14 @@ static void* __coordinate_router(const void* base, const int* strides, int axes,
 
 static __sub_tensor_t __get_sub_tensor(__sub_tensor_t sub_t1, int axes, int* coord) 
 {   
-    void* sub_elems  = __coordinate_router(sub_t1.sub_elems, sub_t1.sub_stride, axes, coord);
-    int   sub_axes   = sub_t1.sub_axes - axes;
-    int*  sub_dimens = &sub_t1.sub_dimens[axes];
-    int*  sub_stride = &sub_t1.sub_stride[axes];
-    return (__sub_tensor_t){.sub_elems=sub_elems, .sub_axes=sub_axes, .sub_dimens=sub_dimens, .sub_stride=sub_stride};
+    if (sub_t1.sub_axes > 0) {
+        void* sub_elems  = __coordinate_router(sub_t1.sub_elems, sub_t1.sub_stride, axes, coord);
+        int   sub_axes   = sub_t1.sub_axes - axes;
+        int*  sub_dimens = &sub_t1.sub_dimens[axes];
+        int*  sub_stride = &sub_t1.sub_stride[axes];
+        return (__sub_tensor_t){.sub_elems=sub_elems, .sub_axes=sub_axes, .sub_dimens=sub_dimens, .sub_stride=sub_stride};
+    }
+    return (__sub_tensor_t) {.sub_elems=NULL, .sub_axes=-1, .sub_dimens=NULL, .sub_stride=NULL};
 }
 
 static __sub_tensor_t __to_sub_tensor(cg_tensor_t* tensor) 
@@ -107,21 +110,27 @@ static int __sub_tensor_dot(__sub_tensor_t dist, __sub_tensor_t sub_t1, __sub_te
 static int __reshape(char** target_elems, int** target_dimens, int new_axes, int new_dimensions[], cg_allocator_t* alloc) 
 {
     unsigned int old_size = 0;
+    // 这里我将加多一维，第 0 维。例如 axes 为 3。 那么的有 0，1，2，3个轴。第三个轴是第 0 维。
     if (*target_dimens == NULL) {
-        *target_dimens = (int*) malloc ((new_axes*2+1) * sizeof(int));
+        *target_dimens = (int*) malloc (((new_axes+1)*2+1) * sizeof(int));
     } else {
         old_size = _D_SIZE(*target_dimens);
         if (_D_AXES(*target_dimens) < new_axes) 
-            (*target_dimens) = (int*)realloc((*target_dimens), (new_axes*2+1) * sizeof(int));
+            (*target_dimens) = (int*)realloc((*target_dimens), ((new_axes+1)*2+1) * sizeof(int));
     }
 
     _D_AXES(*target_dimens) = new_axes;
 
+    
     // 更新维度信息。
+    // 第 0 维存入1，1。
+    _D_DIMEN(*target_dimens, new_axes)  = 1;
+    _D_STRIDE(*target_dimens, new_axes) = 1;
+    
      for (int i=new_axes-1; i>=0 ; --i) {
 
         _D_DIMEN(*target_dimens, i)   = new_dimensions[i];
-        _D_STRIDE(*target_dimens, i)  = (i == new_axes-1? 1 : _D_DIMEN(*target_dimens, i+1) * _D_STRIDE(*target_dimens, i+1));
+        _D_STRIDE(*target_dimens, i)  = _D_DIMEN(*target_dimens, i+1) * _D_STRIDE(*target_dimens, i+1);
     }
 
     // 跟新 element 池子大小 
@@ -182,20 +191,20 @@ static int __do_padding(const __sub_tensor_t dist, const __sub_tensor_t src, flo
     int sub_src_index;
 
     int padding_left_start = 0;
-    int padding_left_end = padding[curr_axis * 2];
+    int padding_left_end   = padding[curr_axis * 2];
 
     int padding_middle_start = padding_left_end;
-    int padding_middle_end = padding[curr_axis * 2] + src.sub_dimens[0];
+    int padding_middle_end   = padding[curr_axis * 2] + src.sub_dimens[0];
 
     int padding_right_start = padding_middle_end;
-    int padding_right_end = padding[curr_axis * 2] + src.sub_dimens[0] + padding[curr_axis * 2 + 1];
+    int padding_right_end   = padding[curr_axis * 2] + src.sub_dimens[0] + padding[curr_axis * 2 + 1];
 
     // fill the left part
     for (i = padding_left_start; i < padding_left_end; ++i)
     {
         sub_dist_index = i;
         __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, &sub_dist_index);
-        if (sub_dist.sub_stride[0] == 1) {
+        if (sub_dist.sub_axes == 0) {
             // 只有一个元素，那么直接赋值
             *((float*)sub_dist.sub_elems) = fill;
         } else {
@@ -209,7 +218,7 @@ static int __do_padding(const __sub_tensor_t dist, const __sub_tensor_t src, flo
         // fill
         sub_dist_index = i;
         __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, &sub_dist_index);
-        if (sub_dist.sub_stride[0] == 1) {
+        if (sub_dist.sub_axes == 0) {
             // 只有一个元素，那么直接赋值
             *((float*)sub_dist.sub_elems) = fill;
         } else {
@@ -226,7 +235,7 @@ static int __do_padding(const __sub_tensor_t dist, const __sub_tensor_t src, flo
         __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, &sub_dist_index);
         __sub_tensor_t sub_src  = __get_sub_tensor(src,  1, &sub_src_index);
 
-        if (sub_dist.sub_stride[0] == 1){
+        if (sub_dist.sub_axes == 0){
             // 单个元素直接 copy
             float *p_dist = sub_dist.sub_elems;
             float *p_src  = sub_src.sub_elems;
@@ -477,11 +486,11 @@ int cg_tensor_arange(cg_tensor_t* t, float from, float to)
 int cg_tensor_inspect(cg_tensor_t* t)
 {
     printf("AXES:%d, SHAPE: ", TENSOR_AXES(t));
-    for (int i=0; i<TENSOR_AXES(t); ++i) {
+    for (int i=0; i<TENSOR_AXES(t)+1; ++i) {
         printf("%d, ", TENSOR_DIMEN(t, i));
     }
     printf("STRIDE: ");
-    for (int i=0; i<TENSOR_AXES(t); ++i) {
+    for (int i=0; i<TENSOR_AXES(t)+1; ++i) {
         printf("%d, ", TENSOR_STRIDE(t, i));
     }
     printf("\n");
