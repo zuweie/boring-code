@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-05 16:43:43
+ * @LastEditTime: 2025-06-05 16:50:58
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -206,9 +206,16 @@ static void cg_tensor_testcase(void)
     // cg_tensor_t* t_slice = cg_tensor_slice(t1, 3, 1, 2, 1, 3, 2, 4);
     // cg_tensor_inspect(t_slice);
 
-    //cg_tensor_t* t_padding = cg_tensor_padding(t1, 3.14, 3, 1, 0, 2, 2, 1, 1);
-    //cg_tensor_inspect(t_padding);
+    cg_tensor_t* t_padding = cg_tensor_padding(t1, 3.14, 3, 1, 0, 2, 2, 1, 1);
+    cg_tensor_inspect(t_padding);
     
+    float* v = cg_tensor_get(t1, 1, 1,2);
+    printf("v %0.2f\n", *v);
+    CU_ASSERT_DOUBLE_EQUAL(*v, 18, 0.001);
+    v = cg_tensor_get(t1, 0, 2, 3);
+    printf("v %0.2f\n", *v);
+    CU_ASSERT_DOUBLE_EQUAL(*v, 11, 0.001);
+
     cg_tensor_recycle(t1);
     // cg_tensor_recycle(t_slice);
     //cg_tensor_recycle(t_padding);
