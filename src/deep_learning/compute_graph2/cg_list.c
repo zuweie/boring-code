@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-02 14:07:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-03 14:22:04
+ * @LastEditTime: 2025-06-05 12:39:58
  * @FilePath: /boring-code/src/deep_learning/compute_garph/cg_list.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -32,19 +32,23 @@ cg_list_t* cg_list_create_cpy(cg_list_t* p_list)
 
 int cg_list_revert(cg_list_t* p_list) 
 {
-    cg_node_t* p_revert_node = CG_LIST_TOP(p_list);
-    cg_node_t* p_revert_prev = CG_LIST_TOP(p_list)->prev;
-    p_revert_node->prev      = CG_LIST_HEAD(p_list);
+    // plist 不为空，并且有一个以上的元素，才会反转。
+    if (!cg_list_is_empty(p_list) || CG_LIST_TOP(p_list)->prev != CG_LIST_HEAD(p_list)) {
 
-    do {
-        cg_node_t* prev     = p_revert_prev->prev;
-        p_revert_prev->prev = p_revert_node;
-        p_revert_node       = p_revert_prev;
-        p_revert_prev       = prev;
-    }while (p_revert_prev != CG_LIST_HEAD(p_list));
+        cg_node_t *p_revert_node = CG_LIST_TOP(p_list);
+        cg_node_t *p_revert_prev = CG_LIST_TOP(p_list)->prev;
+        p_revert_node->prev = CG_LIST_HEAD(p_list);
 
-    CG_LIST_TOP(p_list) = p_revert_node;
-    
+        do
+        {
+            cg_node_t *prev = p_revert_prev->prev;
+            p_revert_prev->prev = p_revert_node;
+            p_revert_node = p_revert_prev;
+            p_revert_prev = prev;
+        } while (p_revert_prev != CG_LIST_HEAD(p_list));
+
+        CG_LIST_TOP(p_list) = p_revert_node;
+    }
     return 0;
 }
 

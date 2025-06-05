@@ -2,10 +2,11 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-04 16:29:30
+ * @LastEditTime: 2025-06-05 15:52:33
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
@@ -52,7 +53,7 @@ static __sub_tensor_t __get_sub_tensor(__sub_tensor_t sub_t1, int axes, int* coo
     int   sub_axes   = sub_t1.sub_axes - axes;
     int*  sub_dimens = &sub_t1.sub_dimens[axes];
     int*  sub_stride = &sub_t1.sub_stride[axes];
-    return (__sub_tensor_t){.sub_elems=sub_elems, .sub_axes=axes, .sub_dimens=sub_dimens, .sub_stride=sub_stride};
+    return (__sub_tensor_t){.sub_elems=sub_elems, .sub_axes=sub_axes, .sub_dimens=sub_dimens, .sub_stride=sub_stride};
 }
 
 static __sub_tensor_t __to_sub_tensor(cg_tensor_t* tensor) 
@@ -62,7 +63,7 @@ static __sub_tensor_t __to_sub_tensor(cg_tensor_t* tensor)
 
 static int __sub_tensor_opt_scalar(__sub_tensor_t sub, float scalar, float (*opt)(float e, float scalar))
 {
-    float* p_elems  = sub.elems;
+    float* p_elems  = sub.sub_elems;
     int size        = sub.sub_dimens[0] * sub.sub_stride[0];
     for (int i = 0; i<size; ++i) {
         p_elems[i] = opt(p_elems[i], scalar);
@@ -76,7 +77,7 @@ static int __sub_tensor_opt(__sub_tensor_t dist, __sub_tensor_t sub_t1, __sub_te
     float* p_t1_elems   = sub_t1.sub_elems;
     float* p_t2_elems   = sub_t2.sub_elems;
 
-    int size = dist->sub_dimens[0] * dist->sub_stride[0];
+    int size = dist.sub_dimens[0] * dist.sub_stride[0];
 
     for (int i=0; i<size; ++i) {
         p_dist_elems[i] = opt(p_t1_elems[i], p_t2_elems[i]);
@@ -86,7 +87,7 @@ static int __sub_tensor_opt(__sub_tensor_t dist, __sub_tensor_t sub_t1, __sub_te
 
 static int __sub_tensor_dot(__sub_tensor_t dist, __sub_tensor_t sub_t1, __sub_tensor_t sub_t2) 
 {
-    float* p_dist = dist.elems;
+    float* p_dist = dist.sub_elems;
     float* p_m1   = sub_t1.sub_elems;
     float* p_m2   = sub_t2.sub_elems;
     int    r1     = sub_t1.sub_dimens[0];
@@ -139,25 +140,25 @@ static int __reshape(char** target_elems, int** target_dimens, int new_axes, int
     return 0;
 }
 
-static cg_tensor_t* __create_tensor(int axes, int dimension[], cg_allocator_t* alloc)
+static cg_tensor_t* __create_tensor(int axes, int dimensions[], cg_allocator_t* alloc)
 {
-    cg_tensor_t* tensor = (cg_tensor_t*) malloc(sizeof(cg_tensor_t) + sizeof(int) * axes);
+    cg_tensor_t* tensor = (cg_tensor_t*) malloc(sizeof(cg_tensor_t));
     tensor->allocator   = alloc;
     tensor->dimensions  = NULL;
     tensor->elems       = NULL;
-    __reshape(&tensor->elems, &tensor->dimensions, axes, dimension, alloc);
+    __reshape(&tensor->elems, &tensor->dimensions, axes, dimensions, alloc);
     return tensor;
 }
 
-static int __do_slice(void** dist, const void* src_base, const int* str_stride, const int slice[], int curr_axis, int src_coord[]) 
+static int __do_slice(void** dist, __sub_tensor_t sub_src, const int slice[], int curr_axis, int src_coord[]) 
 {
-    if (curr_axis == _D_AXES(src_dimensions)-1) {
+    if (curr_axis == sub_src.sub_axes -1) {
         int axes = curr_axis + 1;
         // 拷贝发生在最后一维
         src_coord[curr_axis] = slice[curr_axis * 2];
 
         unsigned int size = (slice[curr_axis * 2+1] - slice[curr_axis*2]) * TENSOR_ELEM_SIZE;
-        const void* src   = __coordinate_router(src_base, str_stride, axes, src_coord); 
+        const void* src   = __coordinate_router(sub_src.sub_elems, sub_src.sub_stride, axes, src_coord); 
 
         memcpy((*dist), src, size);
         //到下一个
@@ -165,7 +166,7 @@ static int __do_slice(void** dist, const void* src_base, const int* str_stride, 
     } else {
         for (int i=slice[curr_axis*2]; i<slice[curr_axis*2+1]; ++i) {
             src_coord[curr_axis] = i;
-            return __do_slice(dist, src_base, str_stride, slice, curr_axis+1, src_coord);
+            __do_slice(dist, sub_src, slice, curr_axis+1, src_coord);
         }
     }
     return 0;
@@ -177,23 +178,23 @@ static int __do_padding(const __sub_tensor_t dist, const __sub_tensor_t src, flo
 
     int i, j;
 
-    int* sub_dist_index;
-    int* sub_src_index;
+    int sub_dist_index;
+    int sub_src_index;
 
     int padding_left_start = 0;
     int padding_left_end = padding[curr_axis * 2];
 
     int padding_middle_start = padding_left_end;
-    int padding_middle_end = padding[curr_axis * 2] + dist.sub_dimens[0];
+    int padding_middle_end = padding[curr_axis * 2] + src.sub_dimens[0];
 
     int padding_right_start = padding_middle_end;
-    int padding_right_end = padding[curr_axis * 2] + dist.sub_dimens[0] + padding[curr_axis * 2 + 1];
+    int padding_right_end = padding[curr_axis * 2] + src.sub_dimens[0] + padding[curr_axis * 2 + 1];
 
     // fill the left part
     for (i = padding_left_start; i < padding_left_end; ++i)
     {
-        *sub_dist_index = i;
-        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_index);
+        sub_dist_index = i;
+        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, &sub_dist_index);
         if (sub_dist.sub_stride[0] == 1) {
             // 只有一个元素，那么直接赋值
             *((float*)sub_dist.sub_elems) = fill;
@@ -206,8 +207,8 @@ static int __do_padding(const __sub_tensor_t dist, const __sub_tensor_t src, flo
     for (i = padding_right_start; i < padding_right_end; ++i)
     {
         // fill
-        *sub_dist_index = i;
-        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_dist_index);
+        sub_dist_index = i;
+        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, &sub_dist_index);
         if (sub_dist.sub_stride[0] == 1) {
             // 只有一个元素，那么直接赋值
             *((float*)sub_dist.sub_elems) = fill;
@@ -219,17 +220,16 @@ static int __do_padding(const __sub_tensor_t dist, const __sub_tensor_t src, flo
     for (i = padding_middle_start; i < padding_middle_end; ++i)
     {
         //
+        sub_dist_index = i;
+        sub_src_index  = sub_dist_index - padding[curr_axis * 2];
 
-        *sub_dist_index = i;
-        *sub_src_index = sub_dist_index - padding[curr_axis * 2];
-
-        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_dist_index);
-        __sub_tensor_t sub_src  = __get_sub_tensor(src,  1, sub_src_index);
+        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, &sub_dist_index);
+        __sub_tensor_t sub_src  = __get_sub_tensor(src,  1, &sub_src_index);
 
         if (sub_dist.sub_stride[0] == 1){
             // 单个元素直接 copy
             float *p_dist = sub_dist.sub_elems;
-            float *p_src = sub_src.sub_elems;
+            float *p_src  = sub_src.sub_elems;
             *p_dist = *p_src;
         }
         else{
@@ -241,15 +241,15 @@ static int __do_padding(const __sub_tensor_t dist, const __sub_tensor_t src, flo
 
 static int __do_doting(__sub_tensor_t dist, __sub_tensor_t sub1, __sub_tensor_t sub2, int curr_axis, int* dist_coord) 
 {
-    if (curr_axis == dist->sub_axes-2) {
+    if (curr_axis == dist.sub_axes-2) {
         int axes = curr_axis + 1;
         
-        int sub1_coord[sub1->sub_dimens[curr_axis]];
-        int sub2_coord[sub2->sub_dimens[curr_axis]];
+        int sub1_coord[sub1.sub_dimens[curr_axis]];
+        int sub2_coord[sub2.sub_dimens[curr_axis]];
 
         for (int i=0; i<curr_axis; ++i) {
-            sub1_coord = sub1_coord[i] == 1 ? sub1_coord[i] : dist_coord[i];
-            sub2_coord = sub2_coord[i] == 1 ? sub2_coord[i] : dist_coord[i];
+            sub1_coord[i] = (sub1_coord[i] == 1 ? sub1_coord[i] : dist_coord[i]);
+            sub2_coord[i] = (sub2_coord[i] == 1 ? sub2_coord[i] : dist_coord[i]);
         }
         __sub_tensor_t sub_dist = __get_sub_tensor(dist, axes, dist_coord);
         __sub_tensor_t sub_sub1 = __get_sub_tensor(sub1, axes, sub1_coord);
@@ -258,7 +258,7 @@ static int __do_doting(__sub_tensor_t dist, __sub_tensor_t sub1, __sub_tensor_t 
         return __sub_tensor_dot(sub_dist, sub_sub1, sub_sub2);
 
     } else {
-        for (int i=0; i<dist->sub_dimens[curr_axis]; ++i) {
+        for (int i=0; i<dist.sub_dimens[curr_axis]; ++i) {
             dist_coord[curr_axis] = i;
             __do_doting(dist, sub1, sub2, curr_axis+1, dist_coord);
         }
@@ -274,24 +274,35 @@ static int __display_elems(cg_tensor_t* t, int curr_axis, int coord[]) {
         coord[curr_axis] = 0;
         int axes         = curr_axis + 1;
         float* p_elem    = __coordinate_router(t->elems, &TENSOR_STRIDE(t, 0), axes, coord);
-
+        for (int k=0; k<2*curr_axis; ++k) {
+            printf(" ");
+        }
+        printf("[");
         for (int i=0; i<TENSOR_DIMEN(t, curr_axis); ++i) {
             if (i == TENSOR_DIMEN(t, curr_axis) - 1)
-                printf("%f ", p_elem[i]);
+                printf("%0.2f", p_elem[i]);
             else
-                printf("%f, ", p_elem[i]);
+                printf("%0.2f, ", p_elem[i]);
         }
+        printf(" ]\n");
 
     } else {
-        printf("[ ");
+        for (int k=0; k<2*curr_axis; ++k) {
+            printf(" ");
+        }
+        printf("[ \n");
         for (int i=0; i<TENSOR_DIMEN(t, curr_axis); ++i) {
             coord[curr_axis] = i;
             __display_elems(t, curr_axis + 1, coord);
         }
-        printf(" ]\n");
+        for (int k=0; k<2*curr_axis; ++k) {
+            printf(" ");
+        }
+        printf("]\n");
     }
     return 0;
 }
+
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
 {
     int dimensions[axes];
@@ -306,14 +317,13 @@ cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
     return __create_tensor(axes, dimensions, alloc);
 }
 
-int cg_tensor_cycle(cg_tensor_t* thiz)
+int cg_tensor_recycle(cg_tensor_t* thiz)
 {
     cg_recycle(thiz->allocator, thiz->elems);
     free(thiz->dimensions);
     free(thiz);
     return 0;
 }
-
 
 cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...)
 {
@@ -332,10 +342,9 @@ cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...)
     cg_tensor_t* tensor = __create_tensor(TENSOR_AXES(thiz), new_dimensions, thiz->allocator);
 
     // copy 数据
-    int coordinate[TENSOR_AXES(tensor)];
+    int coordinate[TENSOR_AXES(thiz)];
     void* dist = tensor->elems;
-    //__do_slice(&dist, thiz, slice, 0, coordinate);
-    __do_slice(&dist, thiz->elems, thiz->dimensions, slice, 0, coordinate);
+    __do_slice(&dist, __to_sub_tensor(thiz), slice, 0, coordinate);
     return tensor;
 }
 
@@ -380,11 +389,6 @@ int cg_tensor_dot(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
         CG_DEBUG("t1 col is %d, t2 row is %d, not match!\n", TENSOR_DIMEN(t1,axes1-1), TENSOR_DIMEN(t2, axes2-1));
         return -1;
     }
-
-    // return __dot(&r->elems, &r->dimensions, t1->elems, t1->dimensions, t2->elems, t2->dimensions, r->allocator);
-    // __sub_tensor_t sub_r;
-    // __sub_tensor_t sub_t1;
-    // __sub_tensor_t sub_t2;
 
     int coordinate[TENSOR_AXES(t1)];
     int new_dimens[TENSOR_AXES(t1)];
@@ -445,18 +449,18 @@ int cg_tensor_subtract(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
 
 int cg_tensor_scale(cg_tensor_t* t, float scalar)
 {
-    __sub_tensor_opt_scalar(__to_sub_tensor(t), scalar, __mulit_scalar)
-    return 0;
+    return __sub_tensor_opt_scalar(__to_sub_tensor(t), scalar, __mulit_scalar);
 }
 
 
 int cg_tensor_fill(cg_tensor_t* t, float fill)
 {
-    float* p_t  = t->elems;
-    for (int i=0; i<TENSOR_NUM(t); ++i) {
-        p_t[i] *= fill;
-    }
-    return 0;
+    // float* p_t  = t->elems;
+    // for (int i=0; i<TENSOR_NUM(t); ++i) {
+    //     p_t[i] = fill;
+    // }
+    return __sub_tensor_opt_scalar(__to_sub_tensor(t), fill, __assign_scalar);
+
 }
 
 int cg_tensor_arange(cg_tensor_t* t, float from, float to)
@@ -467,5 +471,49 @@ int cg_tensor_arange(cg_tensor_t* t, float from, float to)
     for (int i=0; i<TENSOR_NUM(t); ++i) {
         p_t[i] = i*per + from;
     }
+    return 0;
+}
+
+int cg_tensor_inspect(cg_tensor_t* t)
+{
+    printf("AXES:%d, SHAPE: ", TENSOR_AXES(t));
+    for (int i=0; i<TENSOR_AXES(t); ++i) {
+        printf("%d, ", TENSOR_DIMEN(t, i));
+    }
+    printf("STRIDE: ");
+    for (int i=0; i<TENSOR_AXES(t); ++i) {
+        printf("%d, ", TENSOR_STRIDE(t, i));
+    }
+    printf("\n");
+    int coord[TENSOR_AXES(t)];
+    __display_elems(t, 0, coord);
+    return 0;
+}
+
+float* cg_tensor_get(cg_tensor_t* thiz, ...)
+{
+    int coord[TENSOR_AXES(thiz)];
+    va_list vargs;
+    va_start(vargs, thiz);
+    for (int i=0; i<TENSOR_AXES(thiz); ++i) {
+        coord[i] = va_arg(vargs, int);
+    }
+    va_end(vargs);
+
+    return __coordinate_router(thiz->elems, &TENSOR_STRIDE(thiz, 0), TENSOR_AXES(thiz), coord);
+}
+
+int cg_tensor_set(cg_tensor_t* thiz, float val, ...)
+{
+    int coord[TENSOR_AXES(thiz)];
+    va_list vargs;
+    va_start(vargs, thiz);
+    for (int i=0; i<TENSOR_AXES(thiz); ++i) {
+        coord[i] = va_arg(vargs, int);
+    }
+    va_end(vargs);
+
+    float* elem = __coordinate_router(thiz->elems, &TENSOR_STRIDE(thiz, 0), TENSOR_AXES(thiz), coord);
+    *elem = val;
     return 0;
 }

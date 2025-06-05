@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-04 14:29:11
+ * @LastEditTime: 2025-06-05 12:01:24
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -48,5 +48,8 @@ int cg_tensor_subtract(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );
 int cg_tensor_scale(cg_tensor_t*, float);
 int cg_tensor_fill(cg_tensor_t*, float);
 int cg_tensor_arange(cg_tensor_t*, float, float);
+int cg_tensor_inspect(cg_tensor_t*);
+float* cg_tensor_get(cg_tensor_t*, ...);
+int cg_tensor_set(cg_tensor_t*, float val, ...);
 
 #endif

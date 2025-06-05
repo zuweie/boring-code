@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 10:08:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-05-27 12:28:10
+ * @LastEditTime: 2025-06-05 11:30:27
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_allocator.h
  * @Description: 关于这个内存配置器简单的一个设计如下：
  * 1 按照申请 size ruond up 到 8，例如  53 round_up 56
@@ -14,7 +14,7 @@
 #define __CG_ALLOCATOR_H__
 
 #define ROUND_UP(x) (((x) + 8 - 1) & ~(8 - 1))
-#define BLOCKS_SIZE  128
+#define SLOT_SIZE  256
 #define ALLOC_NUMBER  64
 
 #define BLOCK_INDEX(size) ((size)/8-1)
@@ -42,7 +42,7 @@ typedef struct cg_allocator
 {
     /* data */
     unsigned long total_alloc;
-    char*         blocks[BLOCKS_SIZE];
+    char*         blocks[SLOT_SIZE];
     chunk_t*      chunk_head;
 }cg_allocator_t;
 

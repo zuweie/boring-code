@@ -6,7 +6,7 @@
 #include "opt/cg_opt_base.h"
 typedef struct cg_znode {
     
-    cg_vertex_t* vertex;
+    cg_vertex_t vertex;
     cg_tensor_t* payload;
     cg_tensor_t* gradient;
     cg_opt_base* opt;

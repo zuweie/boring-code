@@ -86,7 +86,6 @@ set (SOURCE
     src/deep_learning/active.c
     src/deep_learning/compute_graph2/opt/cg_opt_dot.c
     src/deep_learning/compute_graph2/cg_allocator.c
-    src/deep_learning/compute_graph2/cg_debug.c
     src/deep_learning/compute_graph2/cg_graph.c
     src/deep_learning/compute_graph2/cg_hash.c
     src/deep_learning/compute_graph2/cg_list.c
