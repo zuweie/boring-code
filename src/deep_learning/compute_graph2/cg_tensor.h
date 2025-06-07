@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-05 21:12:49
+ * @LastEditTime: 2025-06-07 21:08:36
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -20,7 +20,7 @@
 #define TENSOR_AXES(tensor)      _D_AXES((tensor)->dimensions)
 #define TENSOR_DIMEN(tensor, i)  _D_DIMEN((tensor)->dimensions, i)
 #define TENSOR_STRIDE(tensor, i) _D_STRIDE((tensor)->dimensions, i)
-#define TENSOR_NUM(tensor)       (TENSOR_DIMEN(tensor, 0) * TENSOR_STRIDE(tensor, 0))
+#define TENSOR_NUM(tensor)        (TENSOR_DIMEN(tensor, 0) * TENSOR_STRIDE(tensor, 0))
 #define TENSOR_SIZE(tensor)      (TENSOR_NUM(tensor) * TENSOR_ELEM_SIZE)
 
 typedef struct cg_tensor {
@@ -37,6 +37,7 @@ typedef struct __sub_tensor {
 } __sub_tensor_t;
 
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...);
+cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz);
 int cg_tensor_recycle(cg_tensor_t* thiz);
 
 cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int axes, ...);
@@ -51,5 +52,6 @@ int cg_tensor_arange(cg_tensor_t*, float, float);
 int cg_tensor_inspect(cg_tensor_t*);
 float* cg_tensor_get(cg_tensor_t*, ...);
 int cg_tensor_set(cg_tensor_t*, float val, ...);
+int cg_tensor_T(cg_tensor_t*, ...);
 
 #endif

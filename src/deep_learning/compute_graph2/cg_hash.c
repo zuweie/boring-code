@@ -2,12 +2,13 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:58:08
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-03 15:51:05
+ * @LastEditTime: 2025-06-07 13:29:48
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_hash.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include <stdlib.h>
 #include <string.h>
+#include "cg_debug.h"
 #include "cg_hash.h"
 
 static cg_hash_node_t* __list_insert(cg_hash_node_t* pos, cg_hash_node_t* new) 
@@ -53,12 +54,19 @@ cg_hash_t* cg_hash_create(int (*hash_func)(void*), int (*key_cmp)(void*, void*))
     hash->hash          = hash_func;
     hash->key_cmp       = key_cmp;
     memset(hash->slot, (void*)0, sizeof(hash->slot));
+    // 这里给capacity节点的 hash code 赋值非常重要。因为要将 list 的 tail 排除在正常节点之外。
+    // 否则会出现将 tial 节点装入 slot 的情况
+    hash->capacity.hash_code = SLOT_NUM + 1;
+    hash->capacity.key       = NULL;
+    hash->capacity.ref       = NULL;
+    CG_DEBUG("cg hash(%p) created\n", hash);
     return hash;
 }
 
 int cg_hash_recycle(cg_hash_t* hash, int(*recycle)(void*))
 {
     // 从尾部开始删除
+    CG_DEBUG("cg hash(%p) recycle\n", hash);
     cg_hash_node_t* del  = CG_HASH_LAST(hash);
     cg_hash_node_t* prev;
     while (del != CG_HASH_HEAD(hash)) {

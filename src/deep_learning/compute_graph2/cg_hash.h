@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:58:14
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-03 15:27:06
+ * @LastEditTime: 2025-06-07 13:14:04
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_hash.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,7 +10,7 @@
 #define __CG_HASH_H__
 #include "cg_ref.h"
 
-#define SLOT_NUM 10
+#define SLOT_NUM 1024
 
 #define CG_HASH_HEAD(hash) (&((hash)->capacity))
 #define CG_HASH_TAIL(hash) (&((hash)->capacity))

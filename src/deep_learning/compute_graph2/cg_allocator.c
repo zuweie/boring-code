@@ -112,7 +112,7 @@ void* cg_alloc(cg_allocator_t* alloc, unsigned int size)
 int cg_recycle(cg_allocator_t* alloc, void* ptr)
 {
     block_node_t* block        = COVER(ptr);
-    unsigned char block_index = GET_INDEX(block);
+    unsigned char block_index  = GET_INDEX(block);
     unsigned int  block_size   = BLOCK_SIZE(block_index);
 
     if (block_index < SLOT_SIZE) {

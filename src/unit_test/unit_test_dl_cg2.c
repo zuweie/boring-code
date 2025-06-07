@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-05 22:09:00
+ * @LastEditTime: 2025-06-07 21:09:02
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -18,6 +18,7 @@
 #include "deep_learning/compute_graph2/cg_tensor.h"
 #include "deep_learning/compute_graph2/cg.h"
 
+
 static int key_hash(void* key) 
 {
     unsigned int hash = 0;
@@ -31,6 +32,47 @@ static int key_hash(void* key)
 static int key_cmp(void* k1, void* k2) 
 {
     return strcmp(k1, k2);
+}
+
+static void print_path(const char* path_name, cg_list_t* path) 
+{
+    printf("%s:", path_name);
+
+    cg_node_t* first = CG_LIST_TOP(path);
+
+    while(first != CG_LIST_HEAD(path)) {
+
+        cg_vertex_t* vertex = first->ref;
+        if(first->prev == CG_LIST_HEAD(path))
+            printf("(%s(eop))", vertex->id);
+        else
+            printf("(%s) --> ", vertex->id);
+
+        first = first->prev;
+    }
+    printf("\n");
+    return;
+}
+
+static void print_paths(const char* paths_name, cg_list_t* paths) 
+{
+    cg_node_t* first = CG_LIST_TOP(paths);
+
+    while(first != CG_LIST_HEAD(paths)) {
+
+        print_path(paths_name, first->ref);
+        first = first->prev;
+    }
+    
+    printf("\n\n");
+    return;
+}
+
+static int recycle_path(cg_ref_t path) 
+{
+    cg_list_t* list = path;
+    cg_list_recycle(list, NULL);
+    return 0;
 }
 
 static int  suite_success_init (void) 
@@ -157,30 +199,41 @@ static void cg_allocator_testcase(void)
     cg_allocator_t alloc;
     cg_allocator_init(&alloc);
 
-    // void* block1 = cg_alloc(&alloc, 7);
-    // void* block2 = cg_alloc(&alloc, 7);
 
-    // cg_recycle(&alloc, block1);
+    int alloc_size    = 88;
+    int round_up_size = ROUND_UP(88+1);
 
-    // void* block3 = cg_alloc(&alloc, 7);
+    void* block = cg_alloc(&alloc, alloc_size);
 
-    // cg_recycle(&alloc, block2);
-    // cg_recycle(&alloc, block3);
+    //printf("index: %d\n", BLOCK_INDEX(alloc_size));
+    CU_ASSERT_EQUAL(BLOCK_INDEX(round_up_size), 11);
 
-    // void* block4 = cg_alloc(&alloc, 17);
-    // cg_recycle(&alloc, block4);
+    CU_ASSERT_NOT_EQUAL(alloc.blocks[BLOCK_INDEX(round_up_size)], NULL);
+
+    int block_count = 0;
+    block_node_t* block_next = alloc.blocks[BLOCK_INDEX(round_up_size)];
+
+    while (block_next)
+    {
+        block_next = block_next->link;
+        block_count += 1;
+    }
     
-    // void* bigblock = cg_alloc(&alloc, 8*256-1);
-    // cg_recycle(&alloc, bigblock);
+    CU_ASSERT_EQUAL(block_count, 63);
 
-    void* block5 = cg_alloc(&alloc, 3*7*6*sizeof(float));
-    float* pelem  = block5;
+    cg_recycle(&alloc, block);
 
-    for (int i=0; i<3*7*6; ++i) {
-        pelem[i] = 4.44;
+    block_next = alloc.blocks[BLOCK_INDEX(round_up_size)];
+    block_count = 0;
+    while (block_next)
+    {
+        block_next = block_next->link;
+        block_count += 1;
     }
 
-    cg_recycle(&alloc, block5);
+    CU_ASSERT_EQUAL(block_count, 64);
+
+    CU_ASSERT_EQUAL(alloc.blocks[BLOCK_INDEX(round_up_size)], COVER(block));
 
     cg_allocator_reset(&alloc);
 
@@ -229,18 +282,103 @@ static void cg_tensor_testcase(void)
 
     v = cg_tensor_get(t_padding, 2, 3, 1);
     CU_ASSERT_DOUBLE_EQUAL(*v, 16, 0.001);
+
+    cg_tensor_t* tt = cg_tensor_create(&alloc, 3, 2, 2, 3);
+    cg_tensor_arange(tt, 0, 2*2*3);
+    cg_tensor_inspect(tt);
+
+    cg_tensor_t* cpy = cg_tensor_create_cpy(tt);
+    cg_tensor_inspect(cpy);
+
+    cg_tensor_T(tt, 0, 2, 1);
+    cg_tensor_inspect(tt);
+
+    // test Transform
+    // cg_tensor_T(t1);
+    // cg_tensor_inspect(t1);
     
     cg_tensor_recycle(t1);
     cg_tensor_recycle(t_slice);
     cg_tensor_recycle(t_padding);
+    cg_tensor_recycle(tt);
+    cg_tensor_recycle(cpy);
 
     cg_allocator_reset(&alloc);
 }
 
-static void cg_compute_graph_testcase(void)
+static void cg_graph_testcase(void)
 {
+    printf("\n");
+
+    cg_graph_t graph;
+    cg_graph_init(&graph);
+    
+    cg_vertex_t vertexes[10];
+    for (int i=0; i<10; ++i) {
+        sprintf(vertexes[i].id, "vtx_%d", i);
+        vertexes[i].in_vertexes  = cg_list_create();
+        vertexes[i].out_vertexes = cg_list_create();
+
+        cg_graph_add_vertex(&graph, &vertexes[i]);
+    }
+
+    cg_graph_link(&vertexes[8], &vertexes[0]);
+    cg_graph_link(&vertexes[0], &vertexes[2]);
+    cg_graph_link(&vertexes[2], &vertexes[3]);
+    cg_graph_link(&vertexes[3], &vertexes[5]);
+    cg_graph_link(&vertexes[5], &vertexes[7]);
+
+    cg_graph_link(&vertexes[0], &vertexes[4]);
+    cg_graph_link(&vertexes[4], &vertexes[5]);
+
+    cg_graph_link(&vertexes[8], &vertexes[1]);
+    cg_graph_link(&vertexes[1], &vertexes[2]);
+
+    cg_graph_link(&vertexes[1], &vertexes[6]);
+    cg_graph_link(&vertexes[6], &vertexes[7]);
+    cg_graph_link(&vertexes[9], &vertexes[1]);
+
+
+    cg_list_t* paths_0_7 = cg_list_create();
+    cg_graph_search_paths(&graph, &vertexes[0], &vertexes[7], paths_0_7);
+
+    cg_list_t* paths_8_7 = cg_list_create();
+    cg_graph_search_paths(&graph, &vertexes[8], &vertexes[7], paths_8_7);
+
+    cg_list_t* paths_9_7 = cg_list_create();
+    cg_graph_search_paths(&graph, &vertexes[9], &vertexes[7], paths_9_7);
+
+    //print_paths("[paths: 0 to 7]", paths_0_7);
+    //print_paths("[paths: 8 to 7]", paths_8_7);
+    //print_paths("[paths: 9 to 7]", paths_9_7);
+
+    cg_node_t* first = CG_LIST_TOP(paths_8_7);
+    cg_node_t* _first = CG_LIST_TOP((cg_list_t*)first->ref);
+
+    cg_vertex_t* vtx = _first->ref;
+    CU_ASSERT_STRING_EQUAL(vtx->id, "vtx_8");
+    vtx = _first->prev->ref;
+    CU_ASSERT_STRING_EQUAL(vtx->id, "vtx_0");
+    vtx = _first->prev->prev->ref;
+    CU_ASSERT_STRING_EQUAL(vtx->id, "vtx_2");
+    vtx = _first->prev->prev->prev->ref;
+    CU_ASSERT_STRING_EQUAL(vtx->id, "vtx_3");
+    vtx = _first->prev->prev->prev->prev->ref;
+    CU_ASSERT_STRING_EQUAL(vtx->id, "vtx_5");
+    vtx = _first->prev->prev->prev->prev->prev->ref;
+    CU_ASSERT_STRING_EQUAL(vtx->id, "vtx_7");
+
+    cg_list_recycle(paths_0_7, recycle_path);
+    cg_list_recycle(paths_8_7, recycle_path);
+    cg_list_recycle(paths_9_7, recycle_path);
+
+    cg_graph_recycle(&graph);
+
+    return;
     
 }
+
+
 
 int do_cg2_test (void) 
 {
@@ -282,6 +420,13 @@ int do_cg2_test (void)
 
     #if 1
     if (NULL == CU_add_test(pSuite, "test cg tensor ..\n", cg_tensor_testcase) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    #endif
+
+    #if 0
+    if (NULL == CU_add_test(pSuite, "\ntest cg path ..\n\n", cg_graph_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
