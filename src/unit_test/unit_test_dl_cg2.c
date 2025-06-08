@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-07 21:09:02
+ * @LastEditTime: 2025-06-08 13:51:01
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -287,21 +287,17 @@ static void cg_tensor_testcase(void)
     cg_tensor_arange(tt, 0, 2*2*3);
     cg_tensor_inspect(tt);
 
-    cg_tensor_t* cpy = cg_tensor_create_cpy(tt);
-    cg_tensor_inspect(cpy);
+    // cg_tensor_t* cpy = cg_tensor_create_cpy(tt);
+    // cg_tensor_inspect(cpy);
 
-    cg_tensor_T(tt, 0, 2, 1);
+    cg_tensor_T(tt, 2, 1, 0);
     cg_tensor_inspect(tt);
-
-    // test Transform
-    // cg_tensor_T(t1);
-    // cg_tensor_inspect(t1);
     
     cg_tensor_recycle(t1);
     cg_tensor_recycle(t_slice);
     cg_tensor_recycle(t_padding);
     cg_tensor_recycle(tt);
-    cg_tensor_recycle(cpy);
+    //cg_tensor_recycle(cpy);
 
     cg_allocator_reset(&alloc);
 }
@@ -372,7 +368,7 @@ static void cg_graph_testcase(void)
     cg_list_recycle(paths_8_7, recycle_path);
     cg_list_recycle(paths_9_7, recycle_path);
 
-    cg_graph_recycle(&graph);
+    cg_graph_reset(&graph);
 
     return;
     

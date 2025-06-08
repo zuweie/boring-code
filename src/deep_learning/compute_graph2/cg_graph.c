@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:57:53
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-07 12:06:41
+ * @LastEditTime: 2025-06-08 12:53:41
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_graph.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%A
  */
@@ -84,7 +84,7 @@ int cg_graph_init(cg_graph_t* p_graph)
     return 0;
 }
 
-int cg_graph_recycle(cg_graph_t* p_graph)
+int cg_graph_reset(cg_graph_t* p_graph)
 {
     // 此 graph 的 vertex 对象并不需要 graph 来维护。
     return cg_hash_recycle(p_graph->vertexes, __vertexes_recycle);
