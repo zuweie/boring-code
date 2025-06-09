@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2020-10-22 13:30:59
- * @LastEditTime: 2025-06-02 16:18:49
+ * @LastEditTime: 2025-06-09 12:18:56
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/matrix/CooMatrix.c
  */
 #include "imatrix.h"
-#include "container/entity.h"
-#include "container/cn.h"
+#include "container/Entity.h"
+// #include "container/Cont.h"
 #include "CooMatrix.h"
 static inline 
 int COOMATRIX_Keyhasher(T* v, size_t slot_t) 

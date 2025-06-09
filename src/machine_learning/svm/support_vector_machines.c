@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:21
- * @LastEditTime: 2025-06-02 16:24:39
+ * @LastEditTime: 2025-06-09 12:19:29
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/machine_learning/svm.c
@@ -10,8 +10,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include "container/cn.h"
-#include "container/entity.h"
+// #include "container/cn.h"
+#include "container/Entity.h"
 #include "ultra_array/ultra_router.h"
 #include "ultra_array/ultra_array.h"
 #include "support_vector_machines.h"

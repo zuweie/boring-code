@@ -3,7 +3,7 @@
 #include "matrix2/matrix2.h"
 #include "matrix2/matrix2_operator.h"
 #include "statistical_learning/counting.h"
-#include "container/cn.h"
+#include "container/Cont.h"
 #define PRINTF_DOUBLES(x) printf("%lf ", (x));
 
 static int  suite_success_init (void) 

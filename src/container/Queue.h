@@ -2,13 +2,13 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-14 19:09:21
- * @LastEditTime: 2021-11-04 11:21:16
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-09 12:16:52
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
 
-#include "cn.h"
+#include "Cont.h"
 #include "base/__list.h"
 
 typedef CN Queue;

@@ -1,15 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:26
- * @LastEditTime: 2021-11-09 09:45:06
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-09 11:50:56
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.c
  */
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include "entity.h"
+#include "Entity.h"
 #include "base/type_value/__type_value_def.h"
 
 // 单纯计算 block 中 data 的 size 的大小。

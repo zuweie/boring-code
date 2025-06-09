@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-12-07 08:50:00
- * @LastEditTime: 2021-11-04 11:07:43
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-09 12:17:10
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/MxQueue.h
  */
@@ -10,9 +10,9 @@
 #ifndef __MX_QUEUE_H__
 #define __MX_QUEUE_H__
 #include <stdio.h>
-#include "Cn.h"
-#include "base/__vector.h"
-#include "base/operate/__heap_sort.h"
+//#include "base/__vector.h"
+//#include "base/operate/__heap_sort.h"
+#include "Cont.h"
 
 typedef CN MxQueue;
 

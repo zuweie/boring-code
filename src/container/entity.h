@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 15:16:31
- * @LastEditTime: 2024-09-06 10:13:44
+ * @LastEditTime: 2025-06-09 12:11:07
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/Entity.h
@@ -10,7 +10,7 @@
 #define __ENTITY_H__
 #include <stdarg.h>
 #include "base/type_value/__type_value_def.h"
-#include "ty.h"
+#include "Typ.h"
 
 #define ROUND_UP_4(x) (((x) + 4 -1) & ~(4-1))
 #define MAX_ENT_FIELD_NUM 32

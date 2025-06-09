@@ -40,8 +40,8 @@ set (SOURCE
     src/base/operate/__heap_sort.c
     src/base/type_value/__built_in_type_adapters.c
     src/base/type_value/__type_value_def.c
-    src/container/entity.c
-    src/container/cn.c
+    src/container/Entity.c
+    src/container/Cont.c
     src/graph/graph_research.c
     src/graph/graph.c
     src/graph/ud_graph.c

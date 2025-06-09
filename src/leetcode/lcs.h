@@ -2,14 +2,14 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-10-27 15:56:53
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-11-21 13:06:24
+ * @LastEditTime: 2025-06-09 12:16:17
  * @FilePath: /boring-code/src/dp/lcs.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #ifndef __LCS_H__
 #define __LCS_H__
 
-#include "container/cn.h"
+#include "container/Cont.h"
 
 // typedef struct {
 //     int x;

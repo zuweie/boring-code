@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-05-10 13:15:30
- * @LastEditTime: 2021-11-23 14:32:08
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2025-06-09 12:14:32
+ * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: 软间隔支持向量机的实现
  * @FilePath: /boring-code/src/machine_learning/svm.h
  */
@@ -10,7 +10,7 @@
 #define __SUPPORT_VECTOR_MACHINES_H__
 
 #include "vtype/vfloat_type.h"
-#include "container/cn.h"
+#include "container/Cont.h"
 #include "solver.h"
 #include "svm_model.h"
 

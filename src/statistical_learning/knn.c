@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-04-04 10:06:22
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-02 16:26:13
+ * @LastEditTime: 2025-06-09 12:20:27
  * @FilePath: /boring-code/src/statistical_learning/knn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,8 +10,8 @@
 #include <float.h>
 #include <math.h>
 #include "vtype/vfloat_type.h"
-#include "container/cn.h"
-#include "container/entity.h"
+#include "container/Cont.h"
+#include "container/Entity.h"
 #include "knn.h"
 
 // 使用二分查找法，找到适合插入的位置。

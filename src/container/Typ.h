@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-10-21 13:42:12
- * @LastEditTime: 2023-06-19 17:38:15
+ * @LastEditTime: 2025-06-09 12:05:52
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/container/t.h
  */
-#ifndef __TY_H__
-#define __TY_H__
+#ifndef __TYP_H__
+#define __TYP_H__
 #include "base/type_value/__type_value.h"
 
 #define T_type(T_ptr, type) type_value_(T_ptr, type)
