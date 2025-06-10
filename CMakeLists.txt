@@ -91,7 +91,7 @@ set (SOURCE
     src/deep_learning/compute_graph2/cg_list.c
     src/deep_learning/compute_graph2/cg_tensor.c
     src/deep_learning/compute_graph2/cg_znode.c
-    src/deep_learning/compute_graph2/compute_graph.c
+    src/deep_learning/compute_graph2/cg.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c

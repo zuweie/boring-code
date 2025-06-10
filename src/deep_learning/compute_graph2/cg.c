@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:56:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-10 13:59:45
+ * @LastEditTime: 2025-06-10 16:22:01
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE{}
  */
@@ -70,15 +70,16 @@ static int __do_gradient(cg_znode_t* J, cg_znode_t* start, int curr_version)
     return 0;
 }
 
-static cg_znode_t __forward_propagation(cg_t* cg) {
+int cg_forward_propagation(cg_t* cg) 
+{
     cg_node_t* first = CG_LIST_TOP(cg->znode_list);
     cg_znode_t* J    = __find_znode(cg, e_loss);
     __do_forward(J);
     cg->data_version++;
-    return J;
+    return 0;
 }
 
-static int __backward_propagation(cg_t* cg) 
+int cg_backward_propagation(cg_t* cg) 
 {
     cg_node_t* first   = CG_LIST_TOP(cg->znode_list);
     cg_znode_t* J      = __find_znode(cg, e_loss);
@@ -94,7 +95,6 @@ static int __backward_propagation(cg_t* cg)
     return 0;
 }
 
-
 static int __mount_zonde(cg_znode_t* znode, cg_list_t* flow_stack)
 {   
     cg_flow_elem_t* e = cg_list_pop(flow_stack);
@@ -109,7 +109,7 @@ static int __mount_zonde(cg_znode_t* znode, cg_list_t* flow_stack)
                 if (znode->opt == NULL) {
                     znode->opt = (cg_opt_base_t*)e;
                 } else {
-                    CG_DEBUG("ERROR: znode->opt has assign twice !!");
+                    CG_DEBUG("ERROR: znode->opt has been assign twice !!");
                     return -1;
                 }
                 break; 
@@ -189,25 +189,11 @@ cg_flow_elem_t* cg_create_zonde(cg_t* cg, const char* znode_name, int shape_axes
     return znode;
 }
 
-int cg_train(cg_t* cg, cg_tensor_t* data, cg_tensor_t* labal, float stop_time, float diff)
+int cg_update_data_version(cg_t* cg)
 {
-    // 
-    
+    return ++(cg->data_version);    
 }
 
-int cg_predict(cg_t* cg, cg_tensor_t* predict)
-{
-    
-}
-
-int cg_save_model(cg_t*, const char* path)
-{
-    return 0;
-}
-int cg_load_model(cg_t*, const char* path)
-{
-    return 0;
-}
 int cg_show_roadmap(cg_t*)
 {
     return 0;
