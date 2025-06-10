@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-09 17:34:09
+ * @LastEditTime: 2025-06-10 13:05:07
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_znode.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,11 +13,29 @@
 #include "cg_tensor.h"
 #include "cg_opt_base.h"
 #include "cg_flow.h"
+
+typedef enum {
+    e_X = 1,
+    e_y,
+    e_middle,
+    e_output,
+    e_loss,
+    e_weight,
+    e_baise,
+
+} znode_type_t;
+
+// 这个事一个继承 cg_flow_elemt_t 的 struct
 typedef struct cg_znode {
-    cg_vertex_t   vertex;
-    cg_tensor_t*  payload;
-    cg_tensor_t*  gradient;
+    cg_flow_elem_t flow_elem;
+    cg_vertex_t    vertex;
+    cg_tensor_t*   payload;
+    cg_tensor_t*   gradient;
+    cg_list_t*     gradient_paths;
     cg_opt_base_t* opt;
-    cg_flow_elem_t flow_elem;     
+    int            curr_gradient_version;
+    znode_type_t   znode_type;
+
 } cg_znode_t;
+
 #endif

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:57:53
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-08 12:53:41
+ * @LastEditTime: 2025-06-10 11:47:55
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_graph.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%A
  */
@@ -102,7 +102,7 @@ int cg_graph_add_vertex(cg_graph_t* p_graph, cg_vertex_t* vertex)
     return cg_hash_set(p_graph->vertexes, vertex->id, vertex);
 }
 
-int cg_graph_search_paths(cg_graph_t* p_graph, cg_vertex_t* p_start, cg_vertex_t* p_end, cg_list_t* p_paths)
+int cg_graph_search_paths(cg_vertex_t* p_start, cg_vertex_t* p_end, cg_list_t* p_paths)
 {   
     cg_list_t* p_searching = cg_list_create();
     cg_hash_t* p_marker    = cg_hash_create(__marker_hash, __marker_cmp);
