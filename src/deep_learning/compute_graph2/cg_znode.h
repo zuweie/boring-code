@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-10 13:05:07
+ * @LastEditTime: 2025-06-11 16:36:29
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_znode.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,7 +15,7 @@
 #include "cg_flow.h"
 
 typedef enum {
-    e_X = 1,
+    e_x = 1,
     e_y,
     e_middle,
     e_output,
@@ -35,7 +35,7 @@ typedef struct cg_znode {
     cg_opt_base_t* opt;
     int            curr_gradient_version;
     znode_type_t   znode_type;
-
+    cg_t*          compute_graph;
 } cg_znode_t;
 
 #endif

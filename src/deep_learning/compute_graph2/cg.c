@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:56:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-10 16:22:01
+ * @LastEditTime: 2025-06-11 14:28:15
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE{}
  */
@@ -14,6 +14,43 @@
 #include "cg_list.h"
 #include "cg_znode.h"
 #include "compute_graph.h"
+
+static int __recycle_path(cg_ref_t ref) 
+{
+    cg_list_t* list = (cg_list_t*) ref;
+    cg_list_recycle(list, NULL);
+}
+
+static int __recycle_flow_stack_elem(cg_ref_t ref) 
+{
+    cg_flow_elem_t* e = (cg_flow_elem_t*) ref;
+    if (e->elem_type == e_beg || e->elem_type == e_end) free(e);
+    return 0;
+}
+
+static int __recycle_znode(cg_ref_t ref) 
+{
+    cg_znode_t* znode = (cg_znode_t*) ref;
+
+    if (znode->payload) 
+        cg_tensor_recycle(znode->payload);
+
+    if (znode->gradient)
+        cg_tensor_recycle(znode->gradient);
+
+    if (znode->opt){
+        znode->opt->recycle(znode->opt);
+        free(znode->opt);
+    } 
+    
+    // free gradient paths
+    cg_list_recycle(znode->gradient_paths, __recycle_path);
+
+    free(znode);
+
+    return 0;
+
+}
 
 static cg_znode_t* __find_znode(cg_t* cg, znode_type_t znode_type) 
 {
@@ -114,7 +151,7 @@ static int __mount_zonde(cg_znode_t* znode, cg_list_t* flow_stack)
                 }
                 break; 
             default:
-                // e_end, free thiz guy
+                // after use e_end, free thiz guy
                 free(e);
                 break;
         }
@@ -138,7 +175,11 @@ int cg_init(cg_t* cg, cg_allocator_t* alloc)
 int cg_reset(cg_t* cg)
 {
     cg_graph_reset(&cg->compute_graph);
-    cg_list_recycle(cg->flow_stack);
+
+    // 清除 flow stack 中的残留 elem
+    cg_list_recycle(cg->flow_stack, __recycle_flow_stack_elem);
+    // 释放所有 znode 的空间
+    cg_list_recycle(cg->znode_list, __recycle_znode);
     cg->data_version = 0;
     cg->znode_count  = 1;
     return 0;
@@ -153,12 +194,13 @@ cg_flow_elem_t* cg_flow_push(cg_t* cg, cg_flow_elem_t* e)
         // 生产一个 new 中间节点
         cg_znode_t*  znode = (cg_znode_t*) cg_create_zonde(cg, NULL, 0, NULL);
         __mount_zonde(znode, cg->flow_stack);
+
         return (cg_flow_elem_t*) znode;
     }
     return e;
 }
 
-cg_flow_elem_t* cg_create_zonde(cg_t* cg, const char* znode_name, int shape_axes, int* shape_dimens, zonde_type_t znode_type)
+cg_flow_elem_t* cg_create_zonde(cg_t* cg, const char* znode_name, zonde_type_t znode_type)
 {
     cg->znode_count++;
     cg_znode_t* znode = (cg_znode_t*) malloc (sizeof(cg_znode_t));
@@ -168,17 +210,10 @@ cg_flow_elem_t* cg_create_zonde(cg_t* cg, const char* znode_name, int shape_axes
     } else {
         sprintf(znode->vertex.id, "znode_%d", cg->znode_count);
     }
-
+    znode->compute_graph = cg;
     znode->flow_elem.typ = e_znode;
-    
-    if (shape_axes > 0 && shape_dimens != NULL) {
-        znode->payload  = cg_tensor_create(cg->znode_alloc, shape_axes, shape_dimens);
-        znode->gradient = cg_tensor_create(cg->znode_alloc, shape_axes, shape_dimens);
-    } else {
-        znode->payload  = NULL;
-        znode->gradient = NULL;
-    }
-
+    znode->payload  = NULL;
+    znode->gradient = NULL;
     znode->opt            = NULL;
     znode->gradient_paths = NULL;
     znode->znode_type     = znode_type;
@@ -187,6 +222,25 @@ cg_flow_elem_t* cg_create_zonde(cg_t* cg, const char* znode_name, int shape_axes
     cg_list_push(cg->znode_list, znode);
 
     return znode;
+}
+
+cg_flow_elem_t* cg_create_opt(cg_t* cg, void* param, cg_opt_base_t* (*opt_create)(void*))
+{
+    return opt_create(param);
+}
+
+cg_flow_elem_t* cg_create_beg_elem () 
+{
+    // elem will free in __mount_znode function
+    cg_flow_elem_t* elem = (cg_flow_elem_t*) malloc (sizeof(cg_flow_elem_t));
+    return *elem = (cg_flow_elem_t){.elem_type = e_beg};
+}
+
+cg_flow_elem_t* cg_create_end_elem()
+{
+    // elem will free in __mout_znode function
+    cg_flow_elem_t* elem = (cg_flow_elem_t*) malloc (sizeof (cg_flow_elem_t));
+    return * elem = (cg_flow_elem_t) {.elem_type = e_end}
 }
 
 int cg_update_data_version(cg_t* cg)
