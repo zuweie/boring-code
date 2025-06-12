@@ -2,13 +2,28 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-11 11:11:57
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-11 16:23:49
+ * @LastEditTime: 2025-06-12 13:51:54
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include "deep_learning/compute_graph2/cg_znode.h"
+#include "cg_ann_opt.h"
 #include "cg_ann.h"
 
+static  int __build_linear(cg_ann_t* ann, int in_dimens, int out_dimens, cg_opt_base_t* (*act_opt)(void*), znode_type_t out_znode_type)
+{
+    cg_znode_t* znode;
+    cg_flow_push(ann, dot_opt(NULL));
+    znode = cg_flow_push(ann, cg_zonde_create(ann, e_weight));
+    znode->payload = cg_tensor_create(ann->compute_graph.znode_alloc, 2, out_dimens, in_dimens);
+    cg_flow_push(ann, cg_c_end());
+    znode = cg_create_comb_zonde(ann, e_middle);
+    cg_flow_push(ann, )
+    cg_flow_push(ann, znode);
+    cg_flow_push(ann, plus_opt(NULL));
+    cg_flow_push(cg_create)
+    return 0;
+}
 
 int cg_ann_init(
     cg_ann_t* ann, 
@@ -45,12 +60,25 @@ int cg_ann_init(
  * @param loss_type loss function 有 mse、corss entroy
  * @return int 
  */
-int cg_ann_build(cg_ann_t* ann)
+int cg_ann_build_flow(cg_ann_t* ann)
 {
     // push a start tag to start build compute flow
-    cg_flow_push(ann, cg_create_beg());
-    cg_flow_push(ann, cg_create_zonde(ann, "x", e_x));
-    cg_flow_push(ann, cg_create_end());
+    cg_flow_push(ann, flow_beg());
+    cg_znode_t* node = cg_flow_push(ann, cg_zonde_create(ann,  e_x));
+    if (!node) return -1;
+    // reshap the x_node;
+    node->payload = cg_tensor_create(ann->compute_graph.znode_alloc, 2, ann->batch_size, ann->x_dimens);
+
+    int in_dimens = ann->x_dimens;
+
+    for (int i=0; i<ann->hidden_layer_size; ++i) {
+        __build_linear(ann, in_dimens, ann->hidden_layer[i], relu_opt, e_middle);
+        in_dimens = ann->hidden_layer[i];
+    }
+
+    __build_linear(ann, in_dimens, in_dimens, ann->y_dimens, NULL, e_y_hat)
+
+
     return 0;
 }
 

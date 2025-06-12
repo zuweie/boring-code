@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:56:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-11 16:40:56
+ * @LastEditTime: 2025-06-12 13:49:01
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -25,10 +25,7 @@ int cg_init(cg_t*, cg_allocator_t* alloc);
 int cg_reset(cg_t*);
 
 cg_flow_elem_t* cg_flow_push(cg_t*, cg_flow_elem_t*);
-cg_flow_elem_t* cg_create_zonde(cg_t*, const char*, zonde_type_t);
-cg_flow_elem_t* cg_create_opt(cg_t*, void*, cg_opt_base_t* (*create_func)(void*));
-cg_flow_elem_t* cg_create_beg();
-cg_flow_elem_t* cg_create_end();
+cg_flow_elem_t* cg_comb_zonde(cg_t*, znode_type_t znode_type);
 
 
 int cg_forward_propagation(cg_t* cg);

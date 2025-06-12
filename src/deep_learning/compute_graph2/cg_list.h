@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:57:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-01 21:55:15
+ * @LastEditTime: 2025-06-11 20:17:47
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_list.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,12 +21,14 @@ typedef struct cg_list_node {
 /// @brief 这个玩意虽然叫 list，它其实是一个盏。
 typedef struct cg_list {
     cg_node_t base;
+    int size;
 } cg_list_t;
 
 cg_list_t* cg_list_create();
 cg_list_t* cg_list_create_cpy(cg_list_t* p_list);
 cg_node_t* cg_list_push(cg_list_t* p_list, cg_ref_t ref);
 cg_node_t* cg_list_insert(cg_list_t* p_list, cg_node_t* insert_before, cg_ref_t ref);
+int cg_list_size(cg_list_t* p_list);
 int cg_list_is_empty(cg_list_t* p_list);
 int cg_list_revert(cg_list_t* p_list);
 cg_ref_t cg_list_pop(cg_list_t* p_list);

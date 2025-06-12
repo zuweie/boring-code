@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-02 14:07:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-07 13:42:56
+ * @LastEditTime: 2025-06-11 20:18:10
  * @FilePath: /boring-code/src/deep_learning/compute_garph/cg_list.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,6 +15,7 @@ cg_list_t* cg_list_create()
     cg_list_t* p_list = (cg_list_t*) malloc (sizeof(cg_list_t));
     CG_LIST_TOP(p_list) = CG_LIST_HEAD(p_list);
     CG_DEBUG("cg list(%p) created.\n", p_list);
+    p_list->size = 0;
     return p_list;
 }
 
@@ -88,6 +89,7 @@ cg_node_t* cg_list_insert(cg_list_t* p_list, cg_node_t* insert_before, cg_ref_t 
     p_node->ref          = ref;
     p_node->prev         = insert_before->prev;
     insert_before->prev  = p_node;
+    p_list->size++;
     return p_node;
 }
 
@@ -98,7 +100,13 @@ cg_ref_t cg_list_pop(cg_list_t* p_list)
         CG_LIST_TOP(p_list) = CG_LIST_TOP(p_list)->prev;
         cg_ref_t ref     = p_pop->ref;
         free(p_pop);
+        p_list->size--;
         return ref;
     } 
     return NULL;
+}
+
+int cg_list_size(cg_list_t* p_list) 
+{
+    return p_list->size;
 }
