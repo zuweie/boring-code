@@ -51,6 +51,8 @@ int cg_tensor_fill(cg_tensor_t*, float);
 int cg_tensor_arange(cg_tensor_t*, float, float);
 int cg_tensor_inspect(cg_tensor_t*);
 float* cg_tensor_get(cg_tensor_t*, ...);
+__sub_tensor_t cg_tensor_get_sub (cg_tensor_t*, int axes, int* coord);
+int cg_tensor_sub_to_sub(__sub_tensor_t* dist, const __sub_tensor_t* src);
 int cg_tensor_set(cg_tensor_t*, float val, ...);
 int cg_tensor_T(cg_tensor_t*, ...);
 

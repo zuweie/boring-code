@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "deep_learning/compute_graph2/cg_znode.h"
 #include "deep_learning/compute_graph2/cg_debug.h"
 #include "cg_ann_opt.h"
@@ -53,7 +54,7 @@ static int __cross_bp(cg_znode_t* znode, void*)
 cg_opt_base_t* dot_opt (void*)
 {
     cg_opt_base_t* opt = malloc( sizeof(cg_opt_base_t) );
-    *opt = (cg_opt_base_t){.flow_elem=e_opt, .fp=__dot_fp, .bp=__dot_bp, .recycle=NULL};
+    *opt = (cg_opt_base_t){.flow_elem = (flow_elem_type_t){.elem_type=e_opt}, .fp=__dot_fp, .bp=__dot_bp, .recycle=NULL};
     return opt;
 }
 
@@ -80,7 +81,7 @@ cg_opt_base_t* softmax_opt (void*)
     return opt;
 }
 
-cg_opt_base_t* cross_entroy (void*)
+cg_opt_base_t* cross_entroy_opt (void*)
 {
     cg_opt_base_t* opt = malloc( sizeof(cg_opt_base_t) );
     *opt = (cg_opt_base_t){.flow_elem=e_opt, .fp=__cross_fp, .bp=__cross_bp, .recycle=NULL};
@@ -92,5 +93,4 @@ cg_opt_base_t* mse_opt (void*)
     cg_opt_base_t* opt = malloc( sizeof(cg_opt_base_t) );
     *opt = (cg_opt_base_t){.flow_elem=e_opt, .fp=__cross_fp, .bp=__cross_bp, .recycle=NULL};
     return opt;
-}
 }

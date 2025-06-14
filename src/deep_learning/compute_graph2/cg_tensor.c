@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-07 21:22:50
+ * @LastEditTime: 2025-06-12 16:05:38
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -618,4 +618,21 @@ int cg_tensor_T(cg_tensor_t* thiz, ...)
     cg_tensor_recycle(tensor_cpy);
 
     return 0;
+}
+
+__sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, int* coord)
+{
+    __sub_tensor_t sub_thiz = __to_sub_tensor(thiz);
+    return __get_sub_tensor(&sub_thiz, axes, coord);
+}
+
+int cg_tensor_sub_to_sub(__sub_tensor_t* dist, const __sub_tensor_t* src)
+{
+    int src_number  = src->sub_dimens[0] * src->sub_stride[0];
+    int dist_number = dist->sub_dimens[0] * dist->sub_stride[0];
+    if (src_number == dist_number) {
+        memcpy(dist->sub_elems, src->sub_elems, src_number * TENSOR_ELEM_SIZE);
+        return 0;
+    }
+    return -1;
 }
