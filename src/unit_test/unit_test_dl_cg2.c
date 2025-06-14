@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-08 13:51:01
+ * @LastEditTime: 2025-06-14 18:20:19
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,6 +17,7 @@
 #include "deep_learning/compute_graph2/cg_graph.h"
 #include "deep_learning/compute_graph2/cg_tensor.h"
 #include "deep_learning/compute_graph2/cg.h"
+#include "deep_learning/compute_graph2/cg_ann/cg_ann.h"
 
 
 static int key_hash(void* key) 
@@ -374,6 +375,133 @@ static void cg_graph_testcase(void)
     
 }
 
+static void cg_ann_testcase ()
+{
+    #define x_data_row 60
+    #define x_data_col 4
+
+    #define y_data_row 60
+    #define y_data_col 3
+
+    vfloat_t trainingData[x_data_row][x_data_col] ={
+    /************* S *************/
+        {5.1f, 3.5f, 1.4f, 0.2f}, 
+        {4.9f, 3.0f, 1.4f, 0.2f}, 
+        {4.7f, 3.2f, 1.3f, 0.2f},
+
+        {4.6f, 3.1f, 1.5f, 0.2f}, 
+        {5.0f, 3.6f, 1.4f, 0.2f}, 
+        {5.4f, 3.9f, 1.7f, 0.4f},
+
+        {4.6f, 3.4f, 1.4f, 0.3f}, 
+        {5.0f, 3.4f, 1.5f, 0.2f}, 
+        {4.4f, 2.9f, 1.4f, 0.2f},
+
+        {4.9f, 3.1f, 1.5f, 0.1f}, 
+        {5.4f, 3.4f, 1.5f, 0.2f}, 
+        {4.8f, 3.4f, 1.6f, 0.2f},
+
+        {4.8f, 3.0f, 1.4f, 0.1f}, 
+        {4.3f, 3.0f, 1.1f, 0.1f}, 
+        {5.8f, 4.0f, 1.2f, 0.2f},
+
+        {5.7f, 4.4f, 1.5f, 0.4f}, 
+        {5.4f, 3.9f, 1.3f, 0.4f}, 
+        {5.1f, 3.5f, 1.4f, 0.3f},
+
+        {5.7f, 3.8f, 1.7f, 0.3f}, 
+        {5.1f, 3.8f, 1.5f, 0.3f},
+    /************* v ************/
+        {7.0f, 3.2f, 4.7f, 1.4f}, 
+        {6.4f, 3.2f, 4.5f, 1.5f}, 
+        {6.9f, 3.1f, 4.9f, 1.5f},
+
+        {5.5f, 2.3f, 4.0f, 1.3f}, 
+        {6.5f, 2.8f, 4.6f, 1.5f}, 
+        {5.7f, 2.8f, 4.5f, 1.3f}, 
+
+        {6.3f, 3.3f, 4.7f, 1.6f}, 
+        {4.9f, 2.4f, 3.3f, 1.0f}, 
+        {6.6f, 2.9f, 4.6f, 1.3f},
+
+        {5.2f, 2.7f, 3.9f, 1.4f}, 
+        {5.0f, 2.0f, 3.5f, 1.0f}, 
+        {5.9f, 3.0f, 4.2f, 1.5f}, 
+
+        {6.0f, 2.2f, 4.0f, 1.0f}, 
+        {6.1f, 2.9f, 4.7f, 1.4f}, 
+        {5.6f, 2.9f, 3.6f, 1.3f}, 
+
+        {6.7f, 3.1f, 4.4f, 1.4f}, 
+        {5.6f, 3.0f, 4.5f, 1.5f}, 
+        {5.8f, 2.7f, 4.1f, 1.0f},
+
+        {6.2f, 2.2f, 4.5f, 1.5f}, 
+        {5.6f, 2.5f, 3.9f, 1.1f},
+    /*********** R **************/
+        {6.3f, 3.3f, 6.0f, 2.5f}, 
+        {5.8f, 2.7f, 5.1f, 1.9f}, 
+        {7.1f, 3.0f, 5.9f, 2.1f},
+
+        {6.3f, 2.9f, 5.6f, 1.8f}, 
+        {6.5f, 3.0f, 5.8f, 2.2f}, 
+        {7.6f, 3.0f, 6.6f, 2.1f},
+
+        {4.9f, 2.5f, 4.5f, 1.7f}, 
+        {7.3f, 2.9f, 6.3f, 1.8f}, 
+        {6.7f, 2.5f, 5.8f, 1.8f}, 
+
+        {7.2f, 3.6f, 6.1f, 2.5f}, 
+        {6.5f, 3.2f, 5.1f, 2.0f}, 
+        {6.4f, 2.7f, 5.3f, 1.9f}, 
+
+        {6.8f, 3.0f, 5.5f, 2.1f}, 
+        {5.7f, 2.5f, 5.0f, 2.0f}, 
+        {5.8f, 2.8f, 5.1f, 2.4f},
+
+        {6.4f, 3.2f, 5.3f, 2.3f}, 
+        {6.5f, 3.0f, 5.5f, 1.8f}, 
+        {7.7f, 3.8f, 6.7f, 2.2f}, 
+        
+        {7.7f, 2.6f, 6.9f, 2.3f}, 
+        {6.0f, 2.2f, 5.0f, 1.5f} 
+    };
+    // fucking data
+    vfloat_t response1[y_data_row][y_data_col] = {
+        {1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},
+        {1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},
+        {0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},
+        {0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},
+        {0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},
+        {0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.}
+    };
+
+    vfloat_t _sample [4] = {
+        4.6f, 3.2f, 1.4f, 0.2f
+    };
+
+    #define HIDDEN_LAYERS_SIZE 3
+    int hidden_layers[HIDDEN_LAYERS_SIZE] = {3, 5, 3};
+
+    cg_ann_t cg_ann;
+    cg_ann_init(&cg_ann, HIDDEN_LAYERS_SIZE, hidden_layers, 20, 20, 4, 3, e_cross_entroy, 0.5, 0.01);
+
+    cg_tensor_t* X_data = cg_tensor_create(&cg_ann.alloc, 2, 60, 4);
+    cg_tensor_load(X_data, trainingData);
+
+    cg_tensor_t* Y_label = cg_tensor_create(&cg_ann.alloc, 2, 60, 3);
+    cg_tensor_load(X_data, response1);
+    cg_ann_build_flow(&cg_ann);
+    cg_ann_train(&cg_ann);
+    cg_tensor_t* predict = cg_tensor_create(&cg_ann.alloc, 2, 3, 1);
+    cg_tensor_t* input   = cg_tensor_create(&cg_ann.alloc, 2, 4, 1);
+    cg_tensor_load(input, _sample);
+    cg_ann_predict(&cg_ann, input, predict);
+    cg_tensor_inspect(predict);
+    return 0;
+
+}
+
 
 
 int do_cg2_test (void) 
@@ -414,7 +542,7 @@ int do_cg2_test (void)
     }
     #endif  
 
-    #if 1
+    #if 0
     if (NULL == CU_add_test(pSuite, "test cg tensor ..\n", cg_tensor_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
@@ -423,6 +551,13 @@ int do_cg2_test (void)
 
     #if 0
     if (NULL == CU_add_test(pSuite, "\ntest cg path ..\n\n", cg_graph_testcase) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    #endif
+
+    #if 1
+    if (NULL == CU_add_test(pSuite, "\ntest ann ..\n\n", cg_ann_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

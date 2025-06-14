@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-11 11:12:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-14 08:22:33
+ * @LastEditTime: 2025-06-14 17:52:03
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,7 +21,7 @@ typedef struct cg_ann {
     int   hidden_layer_size;
     int*  hidden_layer;
     int   batch_size;
-    int   max_epoch;
+    int   max_iter;
     int   step;
     int   x_dimens;
     int   y_dimens;
@@ -30,10 +30,10 @@ typedef struct cg_ann {
     float epsilon;
     cg_list_t* znode_list;
     // 记下几个关键的节点，使得操作起来比较方便
-    cg_znode_t* x_node;
-    cg_znode_t* y_node;
-    cg_znode_t* y_hat_node;
-    cg_znode_t* loss_node;
+    ann_znode_t* x_node;
+    ann_znode_t* y_node;
+    ann_znode_t* y_hat_node;
+    ann_znode_t* loss_node;
     cg_allocator_t alloc;
 }cg_ann_t;
 

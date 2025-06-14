@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:56:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-14 08:33:09
+ * @LastEditTime: 2025-06-14 11:22:46
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE{}
  */
@@ -181,23 +181,13 @@ cg_flow_elem_t* cg_flow_push(cg_base_t* cg, cg_flow_elem_t* e)
 int cg_do_forward(cg_base_t* cg, cg_node_base_t* J) 
 {
     int ret = __do_forward(J);
-    cg->gradient_version;
+    cg->gradient_version++;
     return 0;
 }
 
-int cg_do_gradient(cg_base_t* cg, cg_znode_base_t* J, cg_list_t* gradient_znodes) 
+int cg_do_gradient(cg_base_t* cg, cg_znode_base_t* J, cg_znode_base_t* gradient_node) 
 {
-    cg_node_t* first   = CG_LIST_TOP(gradient_znodes);
-    while(first != CG_LIST_HEAD(gradient_znodes)) {
-        if (!__do_gradient(J, first->ref, cg->gradient_version)) return -1;
-        first = first->prev;
-    }
-    return 0;
-}
-
-int cg_update_version(cg_base_t* cg)
-{
-    return cg->gradient_version++;
+   return __do_gradient(J, gradient_node, cg->gradient_version);
 }
 
 int cg_show_roadmap(cg_base_t* cg)

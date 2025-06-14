@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-12 16:05:38
+ * @LastEditTime: 2025-06-14 18:08:20
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -352,6 +352,17 @@ static int __display_elems(cg_tensor_t* t, int curr_axis, int coord[]) {
     return 0;
 }
 
+static int __sub_to_sub(__sub_tensor_t* dist, const __sub_tensor_t* src)
+{
+    int src_number  = src->sub_dimens[0] * src->sub_stride[0];
+    int dist_number = dist->sub_dimens[0] * dist->sub_stride[0];
+    if (dist_number >= src_number ) {
+        memcpy(dist->sub_elems, src->sub_elems, src_number * TENSOR_ELEM_SIZE);
+        return 0;
+    }
+    return -1;
+}
+
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
 {
     int dimensions[axes];
@@ -620,19 +631,35 @@ int cg_tensor_T(cg_tensor_t* thiz, ...)
     return 0;
 }
 
-__sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, int* coord)
+__sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...)
 {
+    int coord[axes];
+    va_list vargs;
+    va_start(vargs, axes);
+    for (int i=0; i<axes; ++i) {
+        coord[i] = va_arg(vargs, int);
+    }
+    va_end(vargs);
+
     __sub_tensor_t sub_thiz = __to_sub_tensor(thiz);
     return __get_sub_tensor(&sub_thiz, axes, coord);
 }
 
 int cg_tensor_sub_to_sub(__sub_tensor_t* dist, const __sub_tensor_t* src)
 {
-    int src_number  = src->sub_dimens[0] * src->sub_stride[0];
-    int dist_number = dist->sub_dimens[0] * dist->sub_stride[0];
-    if (src_number == dist_number) {
-        memcpy(dist->sub_elems, src->sub_elems, src_number * TENSOR_ELEM_SIZE);
-        return 0;
-    }
-    return -1;
+    return __sub_to_sub(dist, src);
+}
+
+int cg_tensor_cpy_to(cg_tensor_t* dist, const cg_tensor_t* src)
+{
+    __sub_tensor_t sub_dist = __to_sub_tensor(dist);
+    __sub_tensor_t sub_src  = __to_sub_tensor(src);
+    return __sub_to_sub(sub_dist, sub_src);
+}
+
+int cg_tensor_load(cg_tensor_t* dist, const void* src)
+{
+    int size = TENSOR_SIZE(dist);
+    memcpy(dist, src, size);
+    return 0;
 }
