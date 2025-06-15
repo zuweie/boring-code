@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-14 18:08:20
+ * @LastEditTime: 2025-06-15 08:41:03
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -645,16 +645,22 @@ __sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...)
     return __get_sub_tensor(&sub_thiz, axes, coord);
 }
 
-int cg_tensor_sub_to_sub(__sub_tensor_t* dist, const __sub_tensor_t* src)
+int cg_tensor_sub_to_sub(__sub_tensor_t dist, __sub_tensor_t src)
 {
-    return __sub_to_sub(dist, src);
+    return __sub_to_sub(&dist, &src);
 }
 
-int cg_tensor_cpy_to(cg_tensor_t* dist, const cg_tensor_t* src)
+int cg_tensor_to_tensor(cg_tensor_t* dist, const cg_tensor_t* src)
 {
     __sub_tensor_t sub_dist = __to_sub_tensor(dist);
     __sub_tensor_t sub_src  = __to_sub_tensor(src);
-    return __sub_to_sub(sub_dist, sub_src);
+    return __sub_to_sub(&sub_dist, &sub_src);
+}
+
+int cg_tensor_sub_to_tensor(cg_tensor_t* dist, __sub_tensor_t src)
+{
+    __sub_tensor_t sub_dist = __to_sub_tensor(dist);
+    return __sub_to_sub(&sub_dist, &src);
 }
 
 int cg_tensor_load(cg_tensor_t* dist, const void* src)

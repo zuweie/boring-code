@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-14 18:20:19
+ * @LastEditTime: 2025-06-15 08:21:42
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,8 +16,8 @@
 #include "deep_learning/compute_graph2/cg_hash.h"
 #include "deep_learning/compute_graph2/cg_graph.h"
 #include "deep_learning/compute_graph2/cg_tensor.h"
-#include "deep_learning/compute_graph2/cg.h"
-#include "deep_learning/compute_graph2/cg_ann/cg_ann.h"
+#include "deep_learning/compute_graph2/cg_base.h"
+#include "deep_learning/cg_ann/cg_ann.h"
 
 
 static int key_hash(void* key) 
@@ -337,13 +337,13 @@ static void cg_graph_testcase(void)
 
 
     cg_list_t* paths_0_7 = cg_list_create();
-    cg_graph_search_paths(&graph, &vertexes[0], &vertexes[7], paths_0_7);
+    cg_graph_search_paths(&vertexes[0], &vertexes[7], paths_0_7);
 
     cg_list_t* paths_8_7 = cg_list_create();
-    cg_graph_search_paths(&graph, &vertexes[8], &vertexes[7], paths_8_7);
+    cg_graph_search_paths(&vertexes[8], &vertexes[7], paths_8_7);
 
     cg_list_t* paths_9_7 = cg_list_create();
-    cg_graph_search_paths(&graph, &vertexes[9], &vertexes[7], paths_9_7);
+    cg_graph_search_paths(&vertexes[9], &vertexes[7], paths_9_7);
 
     //print_paths("[paths: 0 to 7]", paths_0_7);
     //print_paths("[paths: 8 to 7]", paths_8_7);
@@ -383,7 +383,7 @@ static void cg_ann_testcase ()
     #define y_data_row 60
     #define y_data_col 3
 
-    vfloat_t trainingData[x_data_row][x_data_col] ={
+    float trainingData[x_data_row][x_data_col] ={
     /************* S *************/
         {5.1f, 3.5f, 1.4f, 0.2f}, 
         {4.9f, 3.0f, 1.4f, 0.2f}, 
@@ -467,7 +467,7 @@ static void cg_ann_testcase ()
         {6.0f, 2.2f, 5.0f, 1.5f} 
     };
     // fucking data
-    vfloat_t response1[y_data_row][y_data_col] = {
+    float response1[y_data_row][y_data_col] = {
         {1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},
         {1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},
         {0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},
@@ -476,7 +476,7 @@ static void cg_ann_testcase ()
         {0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.}
     };
 
-    vfloat_t _sample [4] = {
+    float _sample [4] = {
         4.6f, 3.2f, 1.4f, 0.2f
     };
 
@@ -492,14 +492,13 @@ static void cg_ann_testcase ()
     cg_tensor_t* Y_label = cg_tensor_create(&cg_ann.alloc, 2, 60, 3);
     cg_tensor_load(X_data, response1);
     cg_ann_build_flow(&cg_ann);
-    cg_ann_train(&cg_ann);
+    cg_ann_train(&cg_ann, X_data, Y_label);
     cg_tensor_t* predict = cg_tensor_create(&cg_ann.alloc, 2, 3, 1);
     cg_tensor_t* input   = cg_tensor_create(&cg_ann.alloc, 2, 4, 1);
     cg_tensor_load(input, _sample);
     cg_ann_predict(&cg_ann, input, predict);
     cg_tensor_inspect(predict);
-    return 0;
-
+    return;
 }
 
 

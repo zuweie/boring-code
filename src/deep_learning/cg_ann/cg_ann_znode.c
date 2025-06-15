@@ -1,3 +1,12 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2025-06-13 13:31:06
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2025-06-15 09:46:39
+ * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann_znode.c
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+#include <stdio.h>
 #include "deep_learning/compute_graph2/cg_list.h"
 #include "deep_learning/compute_graph2/cg_base.h"
 #include "deep_learning/compute_graph2/cg_tensor.h"
@@ -8,37 +17,36 @@ static ann_znode_t* __create_ann_znode(cg_ann_t* ann, ann_znode_type_t znode_typ
 {
     ann_znode_t* znode = (ann_znode_t*) malloc (sizeof(ann_znode_t));
     // 需要将调用基类的构造函数进行初始化
-    cg_znode_base_construct(znode);
+    cg_znode_base_construct(ann,znode);
 
     switch (znode_type)
     {
     case e_x:
         /* code */
-        sprintf(znode->base.vertex.id, "x_%d", cg_list_size(ann->cg_base.znode_list));
-        znode->gradient = cg_tensor_create(ann->cg_base.znode_alloc, )
+        sprintf(znode->znode_base.vertex.id, "x_%d", cg_list_size(ann->znode_list));
         break;
     case e_y:
-        sprintf(znode->base.vertex.id, "y_%d", cg_list_size(ann->cg_base.znode_list));
+        sprintf(znode->znode_base.vertex.id, "y_%d", cg_list_size(ann->znode_list));
         break;
     case e_weight:
-        sprintf(znode->base.vertex.id, "w_%d", cg_list_size(ann->cg_base.znode_list));
+        sprintf(znode->znode_base.vertex.id, "w_%d", cg_list_size(ann->znode_list));
         break;
     case e_bais:
-        sprintf(znode->base.vertex.id, "b_%d", cg_list_size(ann->cg_base.znode_list));
+        sprintf(znode->znode_base.vertex.id, "b_%d", cg_list_size(ann->znode_list));
         break;
     case e_y_hat:
-        sprintf(znode->base.vertex.id, "y-hat_%d", cg_list_size(ann->cg_base.znode_list));
+        sprintf(znode->znode_base.vertex.id, "y-hat_%d", cg_list_size(ann->znode_list));
         break;
     case e_loss:
-        sprintf(znode->base.vertex.id, "J_%d", cg_list_size(ann->cg_base.znode_list));
+        sprintf(znode->znode_base.vertex.id, "J_%d", cg_list_size(ann->znode_list));
         break;
     case e_auto:
     default:
-        sprintf(znode->base.vertex.id, "z_%d", cg_list_size(ann->cg_base.znode_list));
+        sprintf(znode->znode_base.vertex.id, "z_%d", cg_list_size(ann->znode_list));
         break;
     }
     znode->znode_type = znode_type;
-    znode->gradient_version = 0;
+    znode->znode_base.gradient_version = 0;
     return znode;
 }
 

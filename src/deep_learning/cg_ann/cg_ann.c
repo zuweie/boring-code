@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-11 11:11:57
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-14 17:51:31
+ * @LastEditTime: 2025-06-15 09:58:03
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,7 +11,6 @@
 #include <time.h>
 #include "deep_learning/compute_graph2/cg_debug.h"
 #include "deep_learning/compute_graph2/cg_tensor.h"
-#include "deep_learning/compute_graph2/cg_znode.h"
 #include "cg_ann_znode.h"
 #include "cg_ann_opt.h"
 #include "cg_ann.h"
@@ -23,8 +22,7 @@ static int __recycle_znode(cg_ref_t ref)
     return 0;
 }
 
-
-static cg_znode_t* __do_build_linear_act(cg_ann_t* ann, int in_dimens, int out_dimens, cg_opt_base_t* act_opt, ann_znode_type_t out_type)
+static ann_znode_t* __do_build_linear_act(cg_ann_t* ann, int in_dimens, int out_dimens, cg_opt_base_t* act_opt, ann_znode_type_t out_type)
 {
     ann_znode_t* ann_znode;
     cg_flow_push(ann, dot_opt(NULL));
@@ -96,6 +94,11 @@ int cg_ann_reset(cg_ann_t* ann)
     return 0;
 }
 
+int cg_ann_reset_step(cg_ann_t* ann)
+{
+    ann->step = 0;
+}
+
 /**
  * @brief build compute graph
  * 
@@ -105,7 +108,7 @@ int cg_ann_reset(cg_ann_t* ann)
  * @param loss_type loss function 有 mse、corss entroy
  * @return int 
  */
-int cg_ann_build__flow(cg_ann_t* ann)
+int cg_ann_build_flow(cg_ann_t* ann)
 {
     // push a start tag to start build compute flow
     ann_znode_t* znode;
@@ -190,6 +193,7 @@ int cg_ann_train(cg_ann_t* ann, cg_tensor_t* X_data, cg_tensor_t* Y_label)
                 }
             }
 
+            cg_ann_reset_step(ann);
             // printf the loss
             float err = *((float*)ann->loss_node->payload->elems);
             if (err<ann->epsilon) break;
@@ -232,19 +236,19 @@ int cg_ann_train(cg_ann_t* ann, cg_tensor_t* X_data, cg_tensor_t* Y_label)
 
 int cg_ann_predict(cg_ann_t* ann, cg_tensor_t* input, cg_tensor_t* predict)
 {
-    if (cg_tensor_cpy_to(ann->x_node, input) != 0) {
+    if (cg_tensor_to_tensor(ann->x_node, input) != 0) {
         CG_DEBUG("Error to load data!");
         exit(1);
     }
+    
+    cg_ann_reset_step(ann);
     
     if (cg_do_forward(ann, ann->y_hat_node) !=0) {
         CG_DEBUG("Error to do forward!!");
         exit(1);
     }
 
-    __sub_tensor_t sub_y_hat = cg_tensor_get_sub(ann->y_hat_node, 1, 0);
-
-    cg_tensor_sub_to_tensor(predict, &sub_y_hat);
+    cg_tensor_sub_to_tensor(predict, cg_tensor_get_sub(ann->y_hat_node, 1, 0));
 
     return 0;
 }
