@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-15 08:21:42
+ * @LastEditTime: 2025-06-15 10:55:46
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -315,7 +315,6 @@ static void cg_graph_testcase(void)
         sprintf(vertexes[i].id, "vtx_%d", i);
         vertexes[i].in_vertexes  = cg_list_create();
         vertexes[i].out_vertexes = cg_list_create();
-
         cg_graph_add_vertex(&graph, &vertexes[i]);
     }
 

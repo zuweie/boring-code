@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2022-12-08 09:41:04
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2022-12-14 23:07:57
+ * @LastEditTime: 2025-06-15 10:50:22
  * @FilePath: /boring-code/src/leetcode/1775.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include "container/cn.h"
+#include "container/Cont.h"
 
 static int fn(int target, int input[], int input_size, int* res, CN dp);
 
