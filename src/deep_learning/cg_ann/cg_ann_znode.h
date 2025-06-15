@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-13 13:30:57
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-15 09:48:28
+ * @LastEditTime: 2025-06-15 16:06:03
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann_znode.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,6 +26,7 @@ typedef struct ann_znode {
     cg_tensor_t* payload;
     cg_tensor_t* gradient;
     ann_znode_type_t znode_type;
+    cg_ann_t*        ann;
 } ann_znode_t;
 
 ann_znode_t* cg_ann_znode_create(cg_ann_t* ann, int r, int c, ann_znode_type_t type);

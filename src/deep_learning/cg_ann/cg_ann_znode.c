@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-13 13:31:06
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-15 09:46:39
+ * @LastEditTime: 2025-06-15 16:06:19
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann_znode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,6 +16,7 @@
 static ann_znode_t* __create_ann_znode(cg_ann_t* ann, ann_znode_type_t znode_type)
 {
     ann_znode_t* znode = (ann_znode_t*) malloc (sizeof(ann_znode_t));
+    znode->ann = ann;
     // 需要将调用基类的构造函数进行初始化
     cg_znode_base_construct(ann,znode);
 

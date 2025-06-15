@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:56:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-15 10:54:29
+ * @LastEditTime: 2025-06-15 21:58:04
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE{}
  */
@@ -95,9 +95,11 @@ static int __do_forward(cg_znode_base_t* J)
        if ( __do_forward(znode) != 0 ) break;
     }
     cg_opt_base_t* opt = J->opt;
+    int ret;
     while (opt)
     {
-        if (opt->fp && !opt->fp(J, NULL) ) return -1;
+        // opt->fp 应该不为 NULL，为 NULL 就让其爆炸。
+        if ((ret=opt->fp(J, NULL)) != 0) return ret;
         opt = opt->next;
     }
     return 0;
@@ -115,7 +117,7 @@ static int __do_gradient(cg_znode_base_t* J, cg_znode_base_t* start, int curr_ve
         }
 
         // 遍历该节点上所有可能到终点的路径，然后确保它们的前趋的梯度是最新的。
-
+        int ret;
         cg_node_t* first = CG_LIST_TOP(start->gradient_paths);
         while (first != CG_LIST_HEAD(start->gradient_paths)) {
 
@@ -126,19 +128,23 @@ static int __do_gradient(cg_znode_base_t* J, cg_znode_base_t* start, int curr_ve
             cg_vertex_t* superior_vertex = CG_LIST_TOP(path)->prev->ref;
             cg_znode_base_t* superior = container_of(superior_vertex, cg_znode_base_t, vertex);
     
+            // 若发现其上级的梯度不是最新的，那么先求上级的梯度。
             if (superior->gradient_version < curr_version) {
-               int ret =  __do_gradient(J, superior, curr_version);
-               if (ret != 0) return ret;
+                if ((ret = __do_gradient(J, superior, curr_version)) != 0) return ret;
+            } 
+            
+            // 上级梯度求完，现在求上级对本级节点的梯度。
+            cg_opt_base_t* opt = superior->opt;
+            while(opt) {
+                // opt 的 bp 应该是存在的，不存就让其爆炸，找出逻辑错误。
+                if ((ret = opt->bp(superior, start, NULL)) != 0) return ret;
+                opt = opt->next;
             }
+            // 继续下一个求导路径
+            first = first->prev;
         }
-
-        cg_opt_base_t* opt = start->opt;
-        while (opt)
-        {
-            // 有多个 opt->bp 就干多次活
-            if (opt->bp && !opt->bp(start, NULL)) return -1;
-            opt = opt->next;
-        }
+        // 做完所有的梯度求值后，返回
+        start->gradient_version = curr_version;
     }
     return 0;
 }
@@ -190,9 +196,4 @@ int cg_do_forward(cg_base_t* cg, cg_znode_base_t* J)
 int cg_do_gradient(cg_base_t* cg, cg_znode_base_t* J, cg_znode_base_t* gradient_node) 
 {
    return __do_gradient(J, gradient_node, cg->gradient_version);
-}
-
-int cg_show_roadmap(cg_base_t* cg)
-{
-    
 }
