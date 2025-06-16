@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:56:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-16 17:28:51
+ * @LastEditTime: 2025-06-16 17:39:52
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE{}
  */
@@ -68,6 +68,13 @@ static cg_znode_base_t* __combine_znode(cg_base_t* cg, cg_znode_base_t* com_znod
                 // 将 opt 挂成一串
                 {
                     cg_opt_base_t*  opt = (cg_opt_base_t*) e;
+                    if (!com_znode->opt) 
+                        com_znode->opt = opt;
+                    else {
+                        cg_opt_base_t* next = com_znode->opt;
+                        while (next->next) next = next->next;
+                        next->next = opt;
+                    }
                 }
                 break;
             default:
@@ -89,7 +96,8 @@ static int __do_forward(cg_znode_base_t* J)
     while (first != CG_LIST_HEAD(J->vertex.in_vertexes)) {
         cg_vertex_t* vertex = first->ref;
         cg_znode_base_t* znode = container_of(vertex, cg_znode_base_t, vertex);
-       if ( __do_forward(znode) != 0 ) break;
+        if ( __do_forward(znode) != 0 ) break;
+        first = first->prev;
     }
     cg_opt_base_t* opt = J->opt;
     int ret;

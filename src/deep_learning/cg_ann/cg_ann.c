@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-11 11:11:57
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-16 17:03:13
+ * @LastEditTime: 2025-06-16 17:32:51
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,6 +26,7 @@ static ann_znode_t* __do_build_linear_act(cg_ann_t* ann, int in_dimens, int out_
 {
     ann_znode_t* ann_znode;
     cg_flow_push(ann, dot_opt(NULL));
+    cg_flow_push(ann, empty_opt(NULL));
     cg_flow_push(ann, empty_opt(NULL));
     cg_flow_push(ann, cg_ann_znode_create(ann, out_dimens, in_dimens , e_weight));
     ann_znode = cg_flow_end(ann, cg_ann_znode_create(ann, 0, 0, e_auto));
