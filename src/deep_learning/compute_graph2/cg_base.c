@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:56:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-15 21:58:04
+ * @LastEditTime: 2025-06-16 17:28:51
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE{}
  */
@@ -67,12 +67,9 @@ static cg_znode_base_t* __combine_znode(cg_base_t* cg, cg_znode_base_t* com_znod
             case e_opt:
                 // 将 opt 挂成一串
                 {
-                    cg_opt_base_t* opt = (cg_opt_base_t*) e;
-                    cg_opt_base_t* com_opt = com_znode->opt;
-                    while (com_opt && com_opt->next) com_opt = com_opt->next;
-                    com_opt->next = opt;
-                    opt->next = NULL;
+                    cg_opt_base_t*  opt = (cg_opt_base_t*) e;
                 }
+                break;
             default:
                 // free end
                 free(e);
@@ -143,7 +140,7 @@ static int __do_gradient(cg_znode_base_t* J, cg_znode_base_t* start, int curr_ve
             // 继续下一个求导路径
             first = first->prev;
         }
-        // 做完所有的梯度求值后，返回
+        // 做完所有的梯度求值后，更新当前节点的 梯度版本
         start->gradient_version = curr_version;
     }
     return 0;
