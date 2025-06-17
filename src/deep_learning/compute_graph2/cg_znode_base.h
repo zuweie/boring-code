@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-16 16:39:40
+ * @LastEditTime: 2025-06-17 11:49:30
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_znode.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,7 +10,7 @@
 #define __CG_ZNODE_BASE_H__
 
 #include "cg_flow.h"
-#include "cg_graph.h"
+#include "cg_vertex.h"
 
 typedef struct cg_opt_base cg_opt_base_t;
 typedef struct cg_base cg_base_t;
@@ -21,11 +21,10 @@ typedef struct cg_znode_base {
     cg_vertex_t    vertex;
     cg_list_t*     gradient_paths;
     cg_opt_base_t* opt;
-    int            gradient_version;
 } cg_znode_base_t;
 
 // 基类的构造函数
-int cg_znode_base_construct(cg_base_t*, cg_znode_base_t*, const char* id);
+int cg_znode_base_init(cg_base_t*, cg_znode_base_t*, const char* id);
 // 基类的析构函数
-int cg_znode_base_deconstruct(cg_znode_base_t*);
+int cg_znode_base_recycle(cg_znode_base_t*);
 #endif

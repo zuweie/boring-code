@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-16 15:51:44
+ * @LastEditTime: 2025-06-17 11:16:56
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,7 @@
 #include <string.h>
 #include <CUnit/Basic.h>
 #include "unit_test.h"
+#include "deep_learning/compute_graph2/cg_vertex.h"
 #include "deep_learning/compute_graph2/cg_list.h"
 #include "deep_learning/compute_graph2/cg_hash.h"
 #include "deep_learning/compute_graph2/cg_graph.h"
@@ -483,7 +484,7 @@ static void cg_ann_testcase ()
     int hidden_layers[HIDDEN_LAYERS_SIZE] = {3, 5, 3};
 
     cg_ann_t cg_ann;
-    cg_ann_init(&cg_ann, HIDDEN_LAYERS_SIZE, hidden_layers, 20, 20, 4, 3, e_cross_entroy, 0.5, 0.01);
+    cg_ann_init(&cg_ann, HIDDEN_LAYERS_SIZE, hidden_layers, 2, 1, 4, 3, e_cross_entroy, 0.5, 0.01);
 
     cg_tensor_t* X_data = cg_tensor_create(&cg_ann.alloc, 2, 60, 4);
     cg_tensor_load(X_data, trainingData);
@@ -497,6 +498,13 @@ static void cg_ann_testcase ()
     cg_tensor_load(input, _sample);
     cg_ann_predict(&cg_ann, input, predict);
     cg_tensor_inspect(predict);
+
+    cg_tensor_recycle(X_data);
+    cg_tensor_recycle(Y_label);
+    cg_tensor_recycle(predict);
+    cg_tensor_recycle(input);
+
+    cg_ann_reset(&cg_ann);
     return;
 }
 

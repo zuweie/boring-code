@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:58:08
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-07 13:29:48
+ * @LastEditTime: 2025-06-17 13:11:20
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_hash.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -82,6 +82,27 @@ int cg_hash_recycle(cg_hash_t* hash, int(*recycle)(void*))
     free(hash);
     return 0;
 }
+
+int cg_hash_reset(cg_hash_t* hash, int (*recycle)(void*))
+{
+    // 把存数据的双向链表清空。
+    cg_hash_node_t* del  = CG_HASH_LAST(hash);
+    cg_hash_node_t* prev;
+    while (del != CG_HASH_HEAD(hash)) {
+        // 从链表中将节点移除
+        prev = __list_remove(del);
+        // 看看是否有回收
+        if (recycle) recycle(del->ref);
+        // 将该节点内存释放
+        free(del);
+        // 跟新 last 指针。
+        del = prev;
+    }
+    // key 跳转槽清空。
+    memset(hash->slot, (void*)0, sizeof(hash->slot));
+    return 0;
+}
+
 
 int cg_hash_set(cg_hash_t* hash, void* key, void* val)
 {

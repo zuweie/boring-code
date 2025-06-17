@@ -2,20 +2,37 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:56:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-16 17:39:52
+ * @LastEditTime: 2025-06-17 13:23:35
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE{}
  */
 #include <stdlib.h>
-#include <stdio.h>
+#include <string.h>
 #include "base/container_of.h"
+#include "cg_list.h"
+#include "cg_hash.h"
+#include "cg_graph.h"
 #include "cg_debug.h"
 #include "cg_opt_base.h"
-#include "cg_graph.h"
-#include "cg_list.h"
 #include "cg_flow.h"
 #include "cg_znode_base.h"
 #include "cg_base.h"
+
+static int __marker_hash(void* key) 
+{
+    unsigned int hash = 0;
+    const char* str = key;
+    while(*str) {
+        hash = (hash * 31 + *str) % SLOT_NUM;
+        str++;
+    }
+    return hash;
+}
+
+static int __marker_cmp(void* k1, void* k2) 
+{
+    return strcmp(k1, k2);
+}
 
 static int __recycle_path(cg_ref_t ref) 
 {
@@ -37,7 +54,6 @@ static int __recycle_znode(cg_ref_t ref)
     cg_znode_base_t* znode = (cg_znode_base_t*) ref;
     cg_list_recycle(znode->gradient_paths, __recycle_path);
     znode->gradient_paths = NULL;
-    znode->gradient_version = 0;
     
     while (znode->opt)
     {   
@@ -90,29 +106,42 @@ static cg_znode_base_t* __combine_znode(cg_base_t* cg, cg_znode_base_t* com_znod
     return com_znode;
 }
 
-static int __do_forward(cg_znode_base_t* J) 
+static int __do_forward(cg_znode_base_t* J, cg_hash_t* marker) 
 {
-    cg_node_t* first = CG_LIST_TOP(J->vertex.in_vertexes);
-    while (first != CG_LIST_HEAD(J->vertex.in_vertexes)) {
-        cg_vertex_t* vertex = first->ref;
-        cg_znode_base_t* znode = container_of(vertex, cg_znode_base_t, vertex);
-        if ( __do_forward(znode) != 0 ) break;
-        first = first->prev;
-    }
-    cg_opt_base_t* opt = J->opt;
-    int ret;
-    while (opt)
+    if (!cg_hash_has(marker, J->vertex.id))
     {
-        // opt->fp 应该不为 NULL，为 NULL 就让其爆炸。
-        if ((ret=opt->fp(J, NULL)) != 0) return ret;
-        opt = opt->next;
+        if (J->vertex.in_vertexes)
+        {
+            // 如果有 sub_node 把 sub_node 的 payload 搞定，再搞自己。
+            cg_node_t *first = CG_LIST_TOP(J->vertex.in_vertexes);
+            while (first != CG_LIST_HEAD(J->vertex.in_vertexes))
+            {
+                cg_vertex_t *vertex = first->ref;
+                cg_znode_base_t *znode = container_of(vertex, cg_znode_base_t, vertex);
+                if (__do_forward(znode, marker) != 0)
+                    break;
+                first = first->prev;
+            }
+        }
+        
+        int ret;
+        cg_opt_base_t *opt = J->opt;
+        while (opt)
+        {
+            // opt->fp 应该不为 NULL，为 NULL 就让其爆炸。
+            if ((ret = opt->fp(J, NULL)) != 0) return ret;
+            opt = opt->next;
+        }
+        
+        cg_hash_set(marker, J->vertex.id, NULL);
     }
+
     return 0;
 } 
 
-static int __do_gradient(cg_znode_base_t* J, cg_znode_base_t* start, int curr_version) 
+static int __do_gradient(cg_znode_base_t* J, cg_znode_base_t* start, cg_hash_t* marker) 
 {
-    if (J != start && start->gradient_version < curr_version) {
+    if (J != start && !cg_hash_has(marker, start->vertex.id)) {
         // do gradient
         if (start->gradient_paths == NULL) {
             // 从这点到终点 err 的偏导路径为空，先建立一个偏导的路径。
@@ -134,8 +163,8 @@ static int __do_gradient(cg_znode_base_t* J, cg_znode_base_t* start, int curr_ve
             cg_znode_base_t* superior = container_of(superior_vertex, cg_znode_base_t, vertex);
     
             // 若发现其上级的梯度不是最新的，那么先求上级的梯度。
-            if (superior->gradient_version < curr_version) {
-                if ((ret = __do_gradient(J, superior, curr_version)) != 0) return ret;
+            if ( !cg_hash_has(marker, superior->vertex.id)) {
+                if ((ret = __do_gradient(J, superior, marker)) != 0) return ret;
             } 
             
             // 上级梯度求完，现在求上级对本级节点的梯度。
@@ -149,7 +178,7 @@ static int __do_gradient(cg_znode_base_t* J, cg_znode_base_t* start, int curr_ve
             first = first->prev;
         }
         // 做完所有的梯度求值后，更新当前节点的 梯度版本
-        start->gradient_version = curr_version;
+        cg_hash_set(marker, start->vertex.id, NULL);
     }
     return 0;
 }
@@ -157,8 +186,9 @@ static int __do_gradient(cg_znode_base_t* J, cg_znode_base_t* start, int curr_ve
 int cg_base_init(cg_base_t* cg)
 {
     cg_graph_init(&cg->compute_graph);
-    cg->flow_stack     = cg_list_create();
-    cg->gradient_version = 0;
+    cg->flow_stack       = cg_list_create();
+    cg->forward_marker   = cg_hash_create(__marker_hash,__marker_cmp);
+    cg->gradient_marker  = cg_hash_create(__marker_hash,__marker_cmp);
     return 0;
 }
 
@@ -167,7 +197,15 @@ int cg_base_reset(cg_base_t* cg)
     cg_graph_reset(&cg->compute_graph);
     cg_list_recycle(cg->flow_stack, __recycle_flow_stack_elem);
     cg->flow_stack = NULL;
-    cg->gradient_version = 0;
+    cg_hash_recycle(cg->forward_marker, NULL);
+    cg_hash_recycle(cg->gradient_marker, NULL);
+    return 0;
+}
+
+int cg_base_reset_marker(cg_base_t* cg)
+{
+    cg_hash_reset(cg->forward_marker, NULL);
+    cg_hash_reset(cg->gradient_marker, NULL);
     return 0;
 }
 
@@ -190,15 +228,10 @@ cg_flow_elem_t* cg_flow_push(cg_base_t* cg, cg_flow_elem_t* e)
 
 int cg_do_forward(cg_base_t* cg, cg_znode_base_t* J) 
 {
-    if (__do_forward(J) == 0) {
-        cg->gradient_version++;
-        return 0;
-    }
-    
-    return -1;
+    return __do_forward(J, cg->forward_marker);
 }
 
 int cg_do_gradient(cg_base_t* cg, cg_znode_base_t* J, cg_znode_base_t* gradient_node) 
 {
-   return __do_gradient(J, gradient_node, cg->gradient_version);
+    return __do_gradient(J, gradient_node, cg->gradient_marker);
 }

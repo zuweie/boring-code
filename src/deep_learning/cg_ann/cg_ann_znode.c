@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-13 13:31:06
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-16 16:40:21
+ * @LastEditTime: 2025-06-17 14:46:50
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann_znode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -46,8 +46,7 @@ static ann_znode_t* __create_ann_znode(cg_ann_t* ann, ann_znode_type_t znode_typ
         break;
     }
     znode->znode_type = znode_type;
-    znode->znode_base.gradient_version = 0;
-    cg_znode_base_construct(ann, znode, vertex_id);
+    cg_znode_base_init(ann, znode, vertex_id);
     return znode;
 }
 
@@ -72,16 +71,17 @@ ann_znode_t* cg_ann_znode_create(cg_ann_t* ann, int r, int c, ann_znode_type_t z
             znode->payload = cg_tensor_create(&ann->alloc, 2, r, c);
             znode->gradient = cg_tensor_create(&ann->alloc, 2, r, c);
         default:
-            znode->payload = NULL;
-            znode->gradient = NULL;
+            znode->payload = cg_tensor_create(&ann->alloc, 2, 1, 1);
+            znode->gradient = cg_tensor_create(&ann->alloc, 2, 1, 1);
             break;
     }
+    cg_list_push(ann->znode_list, znode);
     return znode;
 }
 
 int cg_ann_znode_recycle(ann_znode_t* znode)
 {
-    cg_znode_base_deconstruct(znode);
+    cg_znode_base_recycle(znode);
 
     if (znode->payload) {
         cg_tensor_recycle(znode->payload);

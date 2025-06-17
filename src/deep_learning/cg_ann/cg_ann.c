@@ -2,13 +2,14 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-11 11:11:57
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-16 17:32:51
+ * @LastEditTime: 2025-06-17 14:50:28
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "deep_learning/compute_graph2/cg_list.h"
 #include "deep_learning/compute_graph2/cg_debug.h"
 #include "deep_learning/compute_graph2/cg_tensor.h"
 #include "cg_ann_znode.h"
@@ -79,6 +80,7 @@ int cg_ann_init(
     ann->step     = 0;
     ann->hidden_layer = malloc(hl_size * sizeof(int));
     memcpy(ann->hidden_layer, hl, hl_size * sizeof(int));
+    ann->znode_list = cg_list_create();
     cg_allocator_init(&ann->alloc);
     return 0;
 }
@@ -118,7 +120,7 @@ int cg_ann_build_flow(cg_ann_t* ann)
     cg_flow_beg(ann);
     znode = (ann_znode_t*)cg_flow_push(ann, cg_ann_znode_create(ann, ann->batch_size, ann->x_dimens, e_x));
     ann->x_node = znode;
-
+    
     int in_dimens = ann->x_dimens;
 
     for (int i=0; i<ann->hidden_layer_size; ++i) {
@@ -187,6 +189,8 @@ int cg_ann_train(cg_ann_t* ann, cg_tensor_t* X_data, cg_tensor_t* Y_label)
             }
 
             // do forward batch_size time 将 y_hat 的数据填满，最后计算 loss。丢复杂到嗨咁
+            cg_base_reset_marker(ann);
+            
             int i;
             for (i=0, ann->step=0; i<ann->batch_size; ++i, ++(ann->step)) {
                 if (cg_do_forward((cg_base_t*)ann, (cg_znode_base_t*)ann->loss_node) != 0) {
@@ -196,8 +200,11 @@ int cg_ann_train(cg_ann_t* ann, cg_tensor_t* X_data, cg_tensor_t* Y_label)
             }
 
             // printf the loss
-            float err = *((float*)ann->loss_node->payload->elems);
-            if (err<ann->epsilon) break;
+            if (0 && ann->loss_node->payload) {
+                float err = *((float*)ann->loss_node->payload->elems);
+                if (err<ann->epsilon) break;
+            }
+
             
             // 做一个变态的 
             cg_node_t* frist = CG_LIST_TOP(ann->znode_list);
