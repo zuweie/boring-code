@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-06-13 13:31:06
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-17 14:46:50
+ * @LastEditTime: 2025-06-18 11:40:37
  * @FilePath: /boring-code/src/deep_learning/cg_ann/cg_ann_znode.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -81,7 +81,7 @@ ann_znode_t* cg_ann_znode_create(cg_ann_t* ann, int r, int c, ann_znode_type_t z
 
 int cg_ann_znode_recycle(ann_znode_t* znode)
 {
-    cg_znode_base_recycle(znode);
+    cg_znode_base_reset(znode);
 
     if (znode->payload) {
         cg_tensor_recycle(znode->payload);
