@@ -31,6 +31,7 @@ set (SOURCE
     src/unit_test/unit_test_statistical_learning.c
     src/unit_test/unit_test_deep_learning.c
     src/unit_test/unit_test_dl_cg2.c
+    src/unit_test/unit_test_reinforce_learning.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__vector.c
@@ -94,6 +95,8 @@ set (SOURCE
     src/deep_learning/cg_ann/cg_ann_opt.c
     src/deep_learning/cg_ann/cg_ann_znode.c
     src/deep_learning/cg_ann/cg_ann.c
+    src/reinforce_learning/grid_world.c
+    src/reinforce_learning/agent.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c

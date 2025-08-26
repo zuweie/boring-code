@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2025-06-09 12:13:35
+ * @LastEditTime: 2025-08-24 16:37:31
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #include <stdio.h>
@@ -61,7 +61,8 @@ int main ()
     // do_leetcode_test();
     // do_statistical_learning_test();
     // do_deep_learning_test();
-    do_cg2_test();
+    // do_cg2_test();
+    do_reinforce_learning_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);

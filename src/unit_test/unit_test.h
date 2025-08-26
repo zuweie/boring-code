@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-10-13 06:51:56
- * @LastEditTime: 2025-06-09 12:09:10
+ * @LastEditTime: 2025-08-23 14:36:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test.h
@@ -85,4 +85,5 @@ int do_matrix2_test(void);
 int do_statistical_learning_test(void);
 int do_deep_learning_test(void);
 int do_cg2_test(void);
+int do_reinforce_learning_test(void);
 #endif

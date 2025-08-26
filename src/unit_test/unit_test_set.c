@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-04 07:26:51
- * @LastEditTime: 2025-06-09 12:13:02
+ * @LastEditTime: 2025-08-23 14:37:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
  * @Description: In User Settings Edit
  * @FilePath: /boring-code/src/unit_test/unit_test_set.c
@@ -116,4 +116,5 @@ int do_set_test(void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    return 0;
 }
