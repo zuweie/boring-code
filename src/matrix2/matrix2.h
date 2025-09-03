@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2024-09-02 11:46:41
+ * @LastEditTime: 2025-08-31 16:12:31
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -33,6 +33,7 @@ int Mat2_import(matrix2_t* mat, void* buff);
 int Mat2_is_vector(matrix2_t* mat);
 int Mat2_is_symmetric(matrix2_t* mat);
 int Mat2_is_same_shape(matrix2_t* m1, matrix2_t* m2);
+int Mat2_is_close(matrix2_t* m1, matrix2_t* m2, float epsilon);
 
 int Mat2_fill(matrix2_t* mat, vfloat_t v);
 int Mat2_fill_random(matrix2_t* mat, double from, double to);

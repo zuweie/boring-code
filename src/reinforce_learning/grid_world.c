@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-22 09:45:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-08-24 17:11:32
+ * @LastEditTime: 2025-09-01 10:37:13
  * @FilePath: /boring-code/src/reinforce_learning/grid_world.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,10 @@
 #include <string.h>
 
 #include "grid_world.h"
+#include "policy.h"
+static const float enter_reward[4] = {-1., 0, -1., 1};
+
+
 
 static int __read_grid_size(FILE* file, grid_world_t* grid) 
 {
@@ -50,7 +54,7 @@ static int __build_grid_world(FILE* file, grid_world_t* grid)
         char* last;
         int row = 0;
         int col = 0;
-
+        int index = 0;
         while(fgets(line, sizeof(line), file)) {
 
             if (strlen(line) <= 1) continue;
@@ -62,9 +66,10 @@ static int __build_grid_world(FILE* file, grid_world_t* grid)
                 
                 cell_t* cell = &grid->cells[row * grid->cols + col];
 
-                cell->x = row;
-                cell->y = col;
-                cell->e_type = atoi(token);
+                //cell->x = row;
+                //cell->y = col;
+                cell->cell_type = atoi(token);
+                cell->id        = index++;
 
                 token = strtok_r(NULL, " \t\n", &last);
 
@@ -78,6 +83,11 @@ static int __build_grid_world(FILE* file, grid_world_t* grid)
     
     return -1;
 
+}
+
+float cell_reward(cell_clazz_t cell_type)
+{
+    return enter_reward[cell_type];
 }
 
 /**
@@ -113,7 +123,7 @@ int grid_world_save(const char* path, grid_world_t* grid)
         for(int i=0; i<grid->rows; ++i) {
             for (int j=0; j<grid->cols; ++j) {
 
-                fprintf(file, "%d ", grid->cells[i * grid->cols + j].e_type);
+                fprintf(file, "%d ", grid->cells[i * grid->cols + j].cell_type);
             }
             fprintf(file, "\n");
         }
@@ -133,7 +143,7 @@ int grid_world_display(grid_world_t* grid)
     for (int i=0; i<grid->rows; ++i) {
         for (int j=0; j<grid->cols; ++j) {
             cell_t* cell = &grid->cells[i * grid->cols +j];
-            printf("%d ", cell->e_type);
+            printf("%d ", cell->cell_type);
         }
         printf("\n");
     }
@@ -150,3 +160,5 @@ int grid_world_reset(grid_world_t* grid)
     } 
     return 0;
 }
+
+

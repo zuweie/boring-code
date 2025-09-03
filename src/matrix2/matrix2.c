@@ -34,9 +34,12 @@ int Mat2_destroy(matrix2_t* mat)
 
 int Mat2_cpy(matrix2_t* dest, matrix2_t* src)
 {
+    // 如果要 dest 的对象的内存小于 src，那么则需要将 dest 的内存扩容，否则就不管了。
+    if (dest->rows * dest->cols < src->rows * src->cols)
+        dest->pool = (vfloat_t*) realloc(dest->pool, src->rows * src->cols * sizeof(vfloat_t));
+
     dest->rows = src->rows;
     dest->cols = src->cols;
-    dest->pool = (vfloat_t*) realloc(dest->pool, src->rows * src->cols * sizeof(vfloat_t));
     memcpy(dest->pool, src->pool, dest->rows * dest->cols * sizeof(vfloat_t));
     return 0;
 }
@@ -339,6 +342,26 @@ int Mat2_is_vector(matrix2_t* mat)
 int Mat2_is_same_shape(matrix2_t* m1, matrix2_t* m2)
 {
     return m1->rows == m2->rows && m1->cols == m2->cols;
+}
+
+int Mat2_is_close(matrix2_t* m1, matrix2_t* m2, float epsilon)
+{
+    if (m1->rows == m2->rows && m1->cols == m2->cols) {
+
+        double eps = 1e-3;
+        MAT2_POOL_PTR(m1, m1_ptr);
+        MAT2_POOL_PTR(m2, m2_ptr);
+
+        for (int i=0; i<m1->rows; ++i) {
+            for (int j=0; j<m1->cols; ++j) {
+
+                if ( fabs(m1_ptr[i][j] - m2_ptr[i][j]) > epsilon) return 0;
+
+            }
+        }
+        return 1;
+    }
+    return 0;
 }
 
 int Mat2_is_symmetric(matrix2_t* mat) {

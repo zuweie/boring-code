@@ -96,6 +96,7 @@ set (SOURCE
     src/deep_learning/cg_ann/cg_ann_znode.c
     src/deep_learning/cg_ann/cg_ann.c
     src/reinforce_learning/grid_world.c
+    src/reinforce_learning/policy.c
     src/reinforce_learning/agent.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c

@@ -2,26 +2,40 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-25 07:50:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-08-26 15:07:09
+ * @LastEditTime: 2025-09-03 11:39:42
  * @FilePath: /boring-code/src/reinforce_learning/agent.h
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: 本算法是基于 B 站 赵世钰 老师的公开课《强化学习的数学原理》而实现的。除了公开课，他还有一个同名的电子书《强化学习的数学原理》。
  */
 #ifndef __AGENT_H__
 #define __AGENT_H__
-
-typedef enum action action_t;
+typedef struct policy policy_t;
+typedef struct grid_world grid_world_t;
+typedef enum move move_t;
 
 typedef struct agent {
 
     grid_world_t* world;
-    action_t*     policies;
-    cell_t*       curr_stat;
+    policy_t*     policy;
 
 } agent_t;
 
+typedef struct consequence {
+    float reward;
+    int   stay_id;
+} consequence_t;
 
-int agent_init(agent_t* agent, grid_world_t* world);
+
+int agent_init(agent_t* agent);
 int agent_reset(agent_t* agent);
-int do_action(agent_t* agent, action_t action);
+int agent_load(const char* grid_path, const char* policy_path, agent_t* agent);
+int agent_display_policy(agent_t* agent);
+int agent_display_gridworld(agent_t* agent);
+consequence_t agent_move(agent_t* agent, int start_id, move_t move);
+int agent_calculate_state_values(agent_t* agent, matrix2_t** state_values, matrix2_t** rewards, matrix2_t** transitions, float gamma);
+
+int agent_value_iteration(agent_t* agent, matrix2_t** state_value, float gamma);
+int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, float gamma);
+int agent_truncated_policy_teration(agent_t* agent, matrix2_t** state_value, float gamma);
+
 
 #endif
