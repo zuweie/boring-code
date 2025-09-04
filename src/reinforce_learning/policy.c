@@ -8,7 +8,7 @@
 #include "policy.h"
 
 
-int policy_load(FILE* path, policy_t* policy)
+int policy_load(const char* path, policy_t* policy)
 {
     if (policy->rows == 0 || policy->cols == 0) return -1;
 

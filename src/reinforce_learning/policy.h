@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-22 09:51:36
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-02 17:27:57
+ * @LastEditTime: 2025-09-04 10:24:28
  * @FilePath: /boring-code/src/reinforce_learning/action.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -36,7 +36,7 @@ typedef struct policy {
     action_t** actions;
 } policy_t;
 
-int policy_load(FILE* path, policy_t* policy);
+int policy_load(const char* path, policy_t* policy);
 int policy_reset(policy_t* policy);
 int policy_display(policy_t* policy);
 

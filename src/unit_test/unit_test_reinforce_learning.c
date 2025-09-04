@@ -2,12 +2,13 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-03 13:57:47
+ * @LastEditTime: 2025-09-04 10:20:28
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 #include <CUnit/Basic.h>
+#include <limits.h>
 #include "matrix2/matrix2.h"
 #include "reinforce_learning/grid_world.h"
 #include "reinforce_learning/agent.h"
@@ -69,10 +70,10 @@ static void test_state_value_calculate(void)
     agent_t agent;
     agent_init(&agent);
     agent_load(grid_path, policy_path, &agent);
-    matrix2_t* rewards;
-    matrix2_t* transition;
-    matrix2_t* Vs;
-    agent_calculate_state_values(&agent, &Vs, &rewards, &transition, 0.9);
+    matrix2_t* rewards = NULL;
+    matrix2_t* transition = NULL;
+    matrix2_t* Vs = NULL;
+    agent_calculate_state_values(&agent, &Vs, &rewards, &transition, INT_MAX, 0.9);
 
     MAT2_INSPECT(Vs);
     MAT2_INSPECT(rewards);
@@ -97,7 +98,7 @@ static void test_state_value_calcualte2(void)
     matrix2_t* Vs;
     matrix2_t* rewards;
     matrix2_t* transition;
-    agent_calculate_state_values(&agent, &Vs, &rewards, &transition, 0.9);
+    agent_calculate_state_values(&agent, &Vs, &rewards, &transition, INT_MAX, 0.9);
 
     MAT2_INSPECT(rewards);
     MAT2_INSPECT(transition);
@@ -121,7 +122,7 @@ static void test_state_value_calcualte2(void)
 
 static void test_boe_value_iteration(void) 
 {
-    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g2x2.txt";
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
     agent_t agent;
     matrix2_t* state_value;
     printf("\n");
@@ -135,6 +136,26 @@ static void test_boe_value_iteration(void)
     display_state_value(&agent, state_value);
     Mat2_destroy(state_value);
     agent_reset(&agent);
+}
+
+static void test_boe_policy_iteration(void) 
+{
+
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    matrix2_t* state_value;
+    printf("\n");
+    agent_init(&agent);
+    agent_load(grid_path, NULL, &agent);
+    agent_display_gridworld(&agent);
+    agent_policy_itreation(&agent, &state_value, 0.9);
+    printf("\n");
+    agent_display_policy(&agent);
+    printf("\n");
+    display_state_value(&agent, state_value);
+    Mat2_destroy(state_value);
+    agent_reset(&agent);
+    return;
 }
 
 int do_reinforce_learning_test(void) 
@@ -167,7 +188,12 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "V(s) value iteration ", test_boe_value_iteration) ) {
+    // if (NULL == CU_add_test(pSuite, "V(s) value iteration ", test_boe_value_iteration) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "V(s) policy iteration ", test_boe_policy_iteration) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

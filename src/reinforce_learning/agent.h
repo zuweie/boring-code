@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-25 07:50:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-03 11:39:42
+ * @LastEditTime: 2025-09-04 11:16:59
  * @FilePath: /boring-code/src/reinforce_learning/agent.h
  * @Description: 本算法是基于 B 站 赵世钰 老师的公开课《强化学习的数学原理》而实现的。除了公开课，他还有一个同名的电子书《强化学习的数学原理》。
  */
@@ -31,11 +31,10 @@ int agent_load(const char* grid_path, const char* policy_path, agent_t* agent);
 int agent_display_policy(agent_t* agent);
 int agent_display_gridworld(agent_t* agent);
 consequence_t agent_move(agent_t* agent, int start_id, move_t move);
-int agent_calculate_state_values(agent_t* agent, matrix2_t** state_values, matrix2_t** rewards, matrix2_t** transitions, float gamma);
+int agent_calculate_state_values(agent_t* agent, matrix2_t** state_values, matrix2_t** rewards, matrix2_t** transitions, int max_iter, float gamma);
 
 int agent_value_iteration(agent_t* agent, matrix2_t** state_value, float gamma);
-int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, float gamma);
-int agent_truncated_policy_teration(agent_t* agent, matrix2_t** state_value, float gamma);
+int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, int truncated, float gamma);
 
 
 #endif

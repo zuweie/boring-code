@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-22 09:45:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-01 10:37:13
+ * @LastEditTime: 2025-09-04 10:46:58
  * @FilePath: /boring-code/src/reinforce_learning/grid_world.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,7 +13,7 @@
 
 #include "grid_world.h"
 #include "policy.h"
-static const float enter_reward[4] = {-1., 0, -1., 1};
+static const float enter_reward[4] = {-1., 0, -10., 1};
 
 
 

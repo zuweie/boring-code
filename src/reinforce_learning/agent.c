@@ -5,6 +5,7 @@
 #include <wchar.h>
 #include <locale.h>
 #include <float.h>
+#include <limits.h>
 
 #include "matrix2/matrix2.h"
 #include "grid_world.h"
@@ -24,8 +25,10 @@ static int __calculate_reward_trans_probibality(agent_t * agent, matrix2_t** rew
     // 需要从 policy 的 action 
     // todo: 统计有多少个的 state。
     int state_number = agent->world->rows * agent->world->cols;
-    *reward_vet      = Mat2_create(state_number, 1);
-    *trans_matrix    = Mat2_create(state_number, state_number);
+    if (*reward_vet == NULL)
+        *reward_vet      = Mat2_create(state_number, 1);
+    if (*trans_matrix == NULL)
+        *trans_matrix    = Mat2_create(state_number, state_number);
 
     // j
     Mat2_fill(*reward_vet, 0.);
@@ -59,20 +62,23 @@ static int __calculate_reward_trans_probibality(agent_t * agent, matrix2_t** rew
  * @param gamma 
  * @return int 
  */
-int agent_calculate_state_values(agent_t* agent, matrix2_t** state_values, matrix2_t** rewards, matrix2_t** transitions, float gamma) 
+int agent_calculate_state_values(agent_t* agent, matrix2_t** state_values, matrix2_t** rewards, matrix2_t** transitions, int max_iter, float gamma) 
 {
     int state_number = agent->world->rows * agent->world->cols;
 
-    *state_values = Mat2_create(state_number, 1);
-    matrix2_t* calculating  = Mat2_create(1,1);
+    if (*state_values == NULL)
+        *state_values = Mat2_create(state_number, 1);
 
     Mat2_fill(*state_values, 0.f);
 
+    matrix2_t* calculating  = Mat2_create(1,1);
     __calculate_reward_trans_probibality(agent, rewards, transitions);
 
     int is_close = 0;
-
+    int iter     = 0;
     do {
+
+        //printf("%d times state value calculate\n", iter);
 
         // cpy the data from trans_mat;
         Mat2_cpy(calculating, *transitions);
@@ -92,7 +98,7 @@ int agent_calculate_state_values(agent_t* agent, matrix2_t** state_values, matri
         // 5 is no close do it one more time.
         if (!is_close) Mat2_cpy(*state_values, calculating);
 
-    } while (!is_close);
+    } while (!is_close && iter++ < max_iter);
 
     // 
     Mat2_destroy(calculating);
@@ -148,6 +154,7 @@ int agent_value_iteration(agent_t* agent, matrix2_t** state_values, float gamma)
                 // 第 0 种的 action 是 idel，没有任何作用，所有从 第一种开始。
                 consequence = agent_move(agent, i, move);
                 Qas = consequence.reward + gamma * Mat2_get(Vs_k, consequence.stay_id, 0);
+
                 if (Qas > Max_Qas)
                 {
                     Max_Qas = Qas;
@@ -171,7 +178,7 @@ int agent_value_iteration(agent_t* agent, matrix2_t** state_values, float gamma)
         }
         // 比较两个 Vs Vs_k1 , check if they are close.
 
-        is_close = Mat2_is_close(Vs_k, Vs_k1, 1e-2);
+        is_close = Mat2_is_close(Vs_k, Vs_k1, 1e-3);
 
         // agent_display_policy(agent);
         // printf("\n");
@@ -192,23 +199,102 @@ int agent_value_iteration(agent_t* agent, matrix2_t** state_values, float gamma)
  * 
  * @param agent 
  * @param gamma 
+ * @param 
  * @return int 
  */
-int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, float gamma)
+int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, int truncated, float gamma)
 {
-    // 
-}
+    // 策略迭代算法。
+    // 此算法地一步就是先初始化所有的策略，给每个状态一个随机策略。
+    // 然后算出那个 state value，然后回过头来去算那个 action value。
+    // 然后再去更新那个策略，然后重复这一个过程。
 
-/**
- * @brief 赵世钰老师《强化学习的数学原理》第四章中截掉一半递归的 policy iteration 算法
- * 
- * @param agent 
- * @param gamma 
- * @return int 
- */
-int agent_truncated_policy_teration(agent_t* agent, matrix2_t** state_value, float gamma)
-{
+    int iter = 0;
 
+    matrix2_t* Vs_k  = NULL;
+    matrix2_t* Vs_k1 = NULL;
+
+    matrix2_t* rewards = NULL;
+    matrix2_t* transition = NULL;
+
+    int is_close = 0;
+    int i, j;
+
+    float Max_Qas;
+    float Qas;
+
+    move_t Max_move;
+    consequence_t consequence;
+
+    agent->policy->rows = agent->world->rows;
+    agent->policy->cols = agent->world->cols;
+    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+    
+    int state_number = agent->world->rows * agent->world->cols;
+    
+    // 初始化为所有的 action 为 5，原地不动。
+    for (i=0; i<state_number; ++i) {
+        action_t** act = &agent->policy->actions[i];
+        (*act) = (action_t*) malloc (sizeof(action_t));
+        (*act)->next = NULL;
+        (*act)->move = e_idle;
+        (*act)->probability = 1.0f;
+    }
+
+    do {
+
+        printf("%d times policy iteration ... \n", iter++);
+
+        // 在当前假设的 action 下，计算每个 state 的 value。
+        // policy evaluation
+        agent_calculate_state_values(agent, &Vs_k, &rewards, &transition, INT_MAX, gamma);
+
+        // 计算最大化的那个 policy， update policy
+        // policy improve
+        for(i=0; i<state_number;++i) {
+
+            Max_Qas  = -FLT_MAX;
+            Max_move = e_idle;
+            
+            for (move_t move=e_go_up; move<MOVE_TYPE_NUM; ++move) {
+
+                consequence = agent_move(agent, i, move);
+                Qas         = consequence.reward + gamma * Mat2_get(Vs_k, consequence.stay_id, 0);
+
+                if (Qas > Max_Qas) {
+                    // 记录下最大的那一个 move。
+                    Max_Qas  = Qas;
+                    Max_move = move;
+                }
+
+            }
+
+            // 这里更新了 agent 的 policy
+            action_t** act      = &agent->policy->actions[i];
+            (*act)->move        = Max_move;
+            (*act)->probability = 1.0f;            
+        }
+
+        if (Vs_k1) {
+            is_close = Mat2_is_close(Vs_k, Vs_k1, 1e-3);
+            if (!is_close) {
+                // 若尚未达到精度要求，继续下一轮。
+                Mat2_cpy(Vs_k1, Vs_k);
+            }
+        } else {
+            Vs_k1 = Mat2_create_cpy(Vs_k);
+        }
+
+    } while (!is_close);
+
+    // 把 state 返回去。
+    *state_value = Vs_k;
+
+    Mat2_destroy(Vs_k1);
+    Mat2_destroy(rewards);
+    Mat2_destroy(transition);
+
+    return 0;
 }
 
 
