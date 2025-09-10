@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-04 10:20:28
+ * @LastEditTime: 2025-09-10 13:30:44
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -158,6 +158,27 @@ static void test_boe_policy_iteration(void)
     return;
 }
 
+static void test_boe_policy_iteration_base_mc_exploring(void) 
+{
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    matrix2_t* state_value;
+    printf("\n");
+    agent_init(&agent);
+    agent_load(grid_path, NULL, &agent);
+    printf("\n");
+    agent_display_gridworld(&agent);
+    agent_policy_iteration_bese_on_monte_carlo_exploring(&agent, &state_value, 10000, 10, 0.9);
+    printf("\n");
+    agent_display_policy(&agent);
+    printf("\n");
+    display_state_value(&agent, state_value);
+    printf("\n");
+    Mat2_destroy(state_value);
+    agent_reset(&agent);
+    return;
+}
+
 int do_reinforce_learning_test(void) 
 {
 
@@ -193,7 +214,12 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "V(s) policy iteration ", test_boe_policy_iteration) ) {
+    // if (NULL == CU_add_test(pSuite, "V(s) policy iteration ", test_boe_policy_iteration) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "V(s) policy iteration exploring", test_boe_policy_iteration_base_mc_exploring) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

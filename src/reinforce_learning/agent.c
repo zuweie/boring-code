@@ -6,11 +6,14 @@
 #include <locale.h>
 #include <float.h>
 #include <limits.h>
+#include <time.h>
+#include <math.h>
 
 #include "matrix2/matrix2.h"
 #include "grid_world.h"
 #include "policy.h"
 #include "agent.h"
+
 
 /**
  * @brief 计算立即奖励，和状态转移矩阵。
@@ -48,6 +51,33 @@ static int __calculate_reward_trans_probibality(agent_t * agent, matrix2_t** rew
         }
         Mat2_put(*reward_vet, i, 0, reward);
     }
+
+    return 0;
+}
+
+static int __explor_sampling(agent_t* agent, int start_id, move_t move,  int steps, float* reward, float gamma, float (*returns)[MOVE_TYPE_NUM], int (*sa_count)[MOVE_TYPE_NUM])
+{
+    
+    // 往前走一步，
+    consequence_t consequence = agent_move(agent, start_id, move);
+    steps--;
+
+    if (steps != 0) {
+        // 若是没有走完，计算下一步要走的方向。
+        int       next_id   = consequence.stay_id;
+        move_t    next_move = agent->policy->actions[next_id]->move;
+        __explor_sampling(agent, next_id, next_move, steps, reward, gamma, returns, sa_count, disp_debug);
+    }
+
+    
+    (*reward) = consequence.reward + (*reward) * gamma;
+    
+    // if (disp_debug) {
+    //     printf("<-(id:%d, move: %d, g: %0.2f)", start_id, move, (*reward));
+    // }
+
+    returns[start_id][move]  += (*reward);
+    sa_count[start_id][move] += 1;
 
     return 0;
 }
@@ -202,7 +232,7 @@ int agent_value_iteration(agent_t* agent, matrix2_t** state_values, float gamma)
  * @param 
  * @return int 
  */
-int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, int truncated, float gamma)
+int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, float gamma)
 {
     // 策略迭代算法。
     // 此算法地一步就是先初始化所有的策略，给每个状态一个随机策略。
@@ -237,7 +267,7 @@ int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, int truncate
         action_t** act = &agent->policy->actions[i];
         (*act) = (action_t*) malloc (sizeof(action_t));
         (*act)->next = NULL;
-        (*act)->move = e_idle;
+        (*act)->move = e_stay;
         (*act)->probability = 1.0f;
     }
 
@@ -297,6 +327,246 @@ int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, int truncate
     return 0;
 }
 
+/**
+ * @brief 基于蒙地卡罗采样 basic 的 policy iteration 算法，
+ * 
+ * @param agent 
+ * @param state_value 
+ * @param episode_length
+ * @param sampling_time
+ * @param gamma 
+ * @return int 
+ */
+int agent_policy_iteration_bese_on_monte_carlo_basic(agent_t* agent, matrix2_t** state_value, int epsiodes, int trajectory_length, float gamma)
+{
+    int i, j, k, l;
+    int is_close;
+    int start_id;
+    int iter = 0;
+    float Qas;
+    float Max_Qas;
+    float gamma_exp = 0.f;
+
+    move_t Max_move;
+    consequence_t consequence;
+    agent->policy->rows = agent->world->rows;
+    agent->policy->cols = agent->world->cols;
+    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+
+    int state_number  = agent->world->rows * agent->world->cols;
+    matrix2_t* Vs_k   = Mat2_create(state_number, 1);
+    matrix2_t* Vs_k1  = NULL;
+
+    Mat2_fill(Vs_k, 0.f);
+    // 为每个 state 的 action 随机分配一个动作。
+    srand(time(NULL));
+    for (i=0; i<state_number; ++i) {
+        action_t** a = &agent->policy->actions[i];
+        // 随机生成五个动作中的一个。
+        (*a)              = (action_t*) malloc (sizeof(action_t));
+        (*a)->move        = rand()%5 + 1;
+        (*a)->probability = 1.0f;
+        (*a)->next        = NULL;
+    }
+
+    do { 
+
+        for (int i=0; i<state_number; ++i) {
+            
+            // policy evaluation
+            Max_Qas  = -FLT_MAX;
+            Max_move = e_idle;
+            
+            start_id = i;
+            
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++k) {
+                
+                // 现实中在同一 state 下，从每个 action 出发，其实是需要经过多轮采样，然后将所有的采样结果求和，再除以采样次数 sampling times.
+                // 得到一个近似的 action value 的 return 的 exception, 即 E[G] = sum( g )/ sampling_time. 其中 g 是每次采样的的值。
+                // 但在此算法中，在初始化的 action 中，所有的 state 中 action 都是 100%， 所以取多少次样，都是一样，于是只需要取一次即可。
+                gamma_exp = 0.f;
+                Qas       = 0.f;
+                for (k=0; k<trajectory_length; ++k) {
+
+                    consequence = agent_move(agent, start_id, j);
+                    Qas         =+ pow(gamma, gamma_exp) * consequence.reward;
+
+                    // 准备下一步动作的计算。
+                    start_id    = consequence.stay_id;
+                    gamma_exp   += 1.0;                    
+                }
+
+
+                if (Qas > Max_Qas) {
+
+                    Max_Qas  = Qas;
+                    Max_move = j;
+
+                }
+                
+            }
+
+            // policy imporve
+            action_t** act = &agent->policy->actions[i];
+            (*act)->move = Max_move;
+            // 把最大的 action value 当作是 state value 返回。
+            Mat2_put(Vs_k, i, 0, Max_Qas);
+        }
+
+        // 检查一下算法是否收敛。
+        if (Vs_k1 == NULL) {
+            Vs_k1 = Mat2_create_cpy(Vs_k);
+        } else {
+
+            is_close = Mat2_is_close( Vs_k1, Vs_k, 1e-3 );
+            if (!is_close) Mat2_cpy( Vs_k1, Vs_k );
+        }
+
+    } while(!is_close && iter++ < epsiodes);
+
+    (*state_value) = Vs_k;
+    Mat2_destroy(Vs_k1);
+
+    return 0;
+}
+/**
+ * @brief 基于蒙地卡罗采样 exploring 的 policy iteration 算法。算法开始也是使用那么初始化的策略。
+ * 
+ * @param agent 
+ * @param state_value 
+ * @param episode 采样长度。就是算 action value 的时候，采样的长度。
+ * @param gamma 
+ * @return int 
+ */
+int agent_policy_iteration_bese_on_monte_carlo_exploring(agent_t* agent, matrix2_t** state_value, int episodes, int trajectory_length, float gamma)
+{
+    int i, j, k;
+    int is_close = 0;
+    int iter = 0;
+    
+    agent->policy->rows = agent->world->rows;
+    agent->policy->cols = agent->world->cols;
+    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+
+    int state_number = agent->world->rows * agent->world->cols;
+
+    float returns[state_number][MOVE_TYPE_NUM];
+    int   sa_count[state_number][MOVE_TYPE_NUM];
+    //int   sa_hit[state_number][MOVE_TYPE_NUM];
+    float Qas[state_number][MOVE_TYPE_NUM];
+
+    float Max_Qas;
+    float Cur_Qas;
+    move_t Max_move;
+
+    matrix2_t* Vs_k  = Mat2_create(agent->policy->rows, agent->policy->cols);
+    matrix2_t* Vs_k1 = NULL;
+
+    Mat2_fill(Vs_k, 0.f);
+
+    // init 
+    for (i=0; i<state_number; ++i) {
+        action_t** a      = &agent->policy->actions[i];
+        (*a)              = (action_t*) malloc (sizeof(action_t));
+        (*a)->move        = rand() % (MOVE_TYPE_NUM-1) + 1;
+        (*a)->probability = 1.0f;
+        (*a)->next        = NULL;
+    }
+
+    agent_display_policy(agent);
+    srand(time(NULL));
+
+    for (i=0; i<state_number; ++i) {
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            Qas[i][j]      = -10000.f;
+            //sa_hit[i][j]   = 0;
+        }
+    }
+
+    do {
+
+        // 每次采样前将所有记录清空。
+        for (i=0; i<state_number; ++i) {
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+                returns[i][j]  = 0.f;
+                sa_count[i][j] = 0;
+
+            }
+        }
+
+        // 随机选一个 state action 的对。
+        int start_id    = rand() % state_number;
+        // 必须是 random 的 action。
+        int start_move  = rand() % (MOVE_TYPE_NUM-1) + 1;
+
+        // 这里很重要。必须要跟着改变当前 random 选择的 state 的 move。一些回弹的动作：
+        // 例如：原地不动，撞墙的。只会执行一次。
+        agent->policy->actions[start_id]->move = start_move;
+
+        sa_hit[start_id][start_move] += 1;
+        float reward    = 0;
+
+        if (start_id == 3 && start_move == e_stay) {
+            int debug_stop_here = 0;
+        }
+        // policy evaluation
+        // int print_debug = 0 && (start_id == 16 && start_move == e_go_right && agent->policy->actions[17]->move == e_stay);
+        __explor_sampling(agent, start_id, start_move, trajectory_length, &reward, gamma, returns, sa_count);
+        //if (print_debug) printf("\n\n");
+        //printf("reward %0.2f \n", reward);
+        // policy imporve
+        for (i=0; i<state_number; ++i) {
+
+            Max_Qas    = -FLT_MAX;
+            Max_move   = e_idle;
+
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+
+                // 计算 exception 的值。
+                if (sa_count[i][j] != 0) {
+
+                    // 以下的代码相当重要：
+                    // 记录当前这轮的 action value。
+                    Cur_Qas = returns[i][j] / sa_count[i][j];
+
+                    // 与历史记录比较，如果大于历史记录，那么将更新成当前的 Qas。如果不进行与最佳历史记录比对，那么当前算出的动作
+                    // 会冲刷掉历史最佳动作。这些细节，在《强化学习的数学原理》中是没有提及的。书中只有算法的大概实现方向。
+                    if (Cur_Qas > Qas[i][j]) Qas[i][j] = Cur_Qas;
+                } 
+
+                if (Qas[i][j] > Max_Qas) {
+                    Max_Qas  = Qas[i][j];
+                    Max_move = j;
+                }
+            }
+
+            agent->policy->actions[i]->move = Max_move;
+            Mat2_put(Vs_k, (i/agent->policy->cols), (i%agent->policy->cols), Max_Qas);
+        }
+
+
+    } while (1 && iter++ < episodes);
+
+    // for (i=0; i<state_number; ++i) {
+    //     printf("state %d: ", i);
+    //     for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+    //         printf("%d ", sa_hit[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("\n");
+    // for (i=0; i<state_number; ++i) {
+    //     printf("state %d: ", i);
+    //     for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+    //         printf("%0.2f ", Qas[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+
+    (*state_value) = Vs_k;
+
+    return 0;
+}
 
 int agent_init(agent_t* agent)
 {
@@ -377,5 +647,6 @@ consequence_t agent_move(agent_t* agent, int start_id, move_t move)
         };
     }
 }
+
 
 
