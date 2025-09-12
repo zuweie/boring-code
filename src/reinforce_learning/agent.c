@@ -66,7 +66,7 @@ static int __explor_sampling(agent_t* agent, int start_id, move_t move,  int ste
         // 若是没有走完，计算下一步要走的方向。
         int       next_id   = consequence.stay_id;
         move_t    next_move = agent->policy->actions[next_id]->move;
-        __explor_sampling(agent, next_id, next_move, steps, reward, gamma, returns, sa_count, disp_debug);
+        __explor_sampling(agent, next_id, next_move, steps, reward, gamma, returns, sa_count);
     }
 
     
@@ -79,6 +79,25 @@ static int __explor_sampling(agent_t* agent, int start_id, move_t move,  int ste
     returns[start_id][move]  += (*reward);
     sa_count[start_id][move] += 1;
 
+    return 0;
+}
+
+
+static int __explor_epsilon_sampling(agent_t* agent, int start_id, int steps, float* g, float gamma, float (*returns)[MOVE_TYPE_NUM], int (*sa_count)[MOVE_TYPE_NUM]) 
+{
+    move_t move               = agent_take_action(agent, start_id);
+    consequence_t consequence = agent_move(agent, start_id, move);
+    steps--;
+
+    if (steps != 0) {
+        int next_id = consequence.stay_id;
+        __explor_epsilon_sampling(agent, next_id, steps, g, gamma, returns, sa_count);
+    }
+
+    (*g) = consequence.reward + (*g) * gamma;
+
+    returns[start_id][move]  += (*g);
+    sa_count[start_id][move] += 1;
     return 0;
 }
 
@@ -438,7 +457,7 @@ int agent_policy_iteration_bese_on_monte_carlo_basic(agent_t* agent, matrix2_t**
  * @param gamma 
  * @return int 
  */
-int agent_policy_iteration_bese_on_monte_carlo_exploring(agent_t* agent, matrix2_t** state_value, int episodes, int trajectory_length, float gamma)
+int agent_policy_iteration_bese_on_monte_carlo_exploring_start(agent_t* agent, matrix2_t** state_value, int episodes, int trajectory_length, float gamma)
 {
     int i, j, k;
     int is_close = 0;
@@ -503,7 +522,8 @@ int agent_policy_iteration_bese_on_monte_carlo_exploring(agent_t* agent, matrix2
         // 例如：原地不动，撞墙的。只会执行一次。
         agent->policy->actions[start_id]->move = start_move;
 
-        sa_hit[start_id][start_move] += 1;
+        //sa_hit[start_id][start_move] += 1;
+
         float reward    = 0;
 
         if (start_id == 3 && start_move == e_stay) {
@@ -568,6 +588,146 @@ int agent_policy_iteration_bese_on_monte_carlo_exploring(agent_t* agent, matrix2
     return 0;
 }
 
+int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* agent, matrix2_t** state_value, int episodes, int trajectory_length, float epsilon, float gamma)
+{
+    int i, j, k;
+    int iter = 0;
+
+    agent->policy->rows = agent->world->rows;
+    agent->policy->cols = agent->world->cols;
+    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+
+    memset(agent->policy->actions, NULL, agent->world->rows * agent->world->cols * sizeof(action_t*));
+
+    move_t greedy_move      = e_idle;
+    float  greedy_probility = 1 - (epsilon * (MOVE_TYPE_NUM-2)) / (MOVE_TYPE_NUM-1);
+    float  other_probility  = epsilon / (MOVE_TYPE_NUM-1);
+
+    int state_number = agent->world->rows * agent->world->cols;
+
+    float Max_Qas;
+    float Max_move;
+    float qas;
+    
+    float returns[state_number][MOVE_TYPE_NUM];
+    int   sa_count[state_number][MOVE_TYPE_NUM];
+    float Qas[state_number][MOVE_TYPE_NUM];
+
+    matrix2_t* Vs = Mat2_create(agent->world->rows, agent->world->cols);
+
+    srand(time(NULL));
+
+    // 初始化 agent policy
+
+    for (i=0; i<state_number; ++i) {
+
+        // 随机选中一个主要的前进方向，给予最大 probability。
+        greedy_move = rand() % (MOVE_TYPE_NUM-1) + 1;
+
+        action_t** act_link = &agent->policy->actions[i];
+        
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+
+            action_t* act = (action_t*) malloc (sizeof(action_t));
+            act->move = j;
+            act->probability = (j==greedy_move)? greedy_probility : other_probility;
+            act->next = (*act_link);
+            // 挂到链表上。
+            (*act_link) = act;
+        }
+    }
+    
+    // 清空所有的 action value
+    for (i=0; i<state_number; ++i) {
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            Qas[i][j] = 0.f;
+        }
+    }
+
+    // 算法正式开始
+    do {
+
+        // 随机选一个 state 作为开始。
+        int start_id = rand() % state_number;
+        // 随机选一个主要的 action。
+        greedy_move = rand() % (MOVE_TYPE_NUM-1) + 1;
+        // 选中的这个把它的 action 模型改掉。
+
+        action_t* first = agent->policy->actions[start_id];
+
+        while (first)
+        {
+            if (first->move == greedy_move) {
+                first->probability = greedy_probility;
+            } else {
+                first->probability = other_probility;
+            }
+            first = first->next;
+        }
+
+        for (i=0; i<state_number; ++i) {
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+                returns[i][j]  = 0.f;
+                sa_count[i][j] = 0;
+            }
+        }
+        
+        float g = 0;
+
+        __explor_epsilon_sampling(agent, start_id, trajectory_length, &g, gamma, returns, sa_count);
+
+        // prolicy imporve
+        for (i=0; i<state_number; ++i) {
+
+            Max_Qas = -FLT_MAX;
+            Max_move = e_idle;
+            
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+                if (sa_count[i][j] > 0) {
+
+                    qas = returns[i][j] / sa_count[i][j];
+                    if (qas > Qas[i][j]) Qas[i][j] = qas;
+
+                }
+
+                if (Qas[i][j] > Max_Qas) {
+                    Max_Qas  = Qas[i][j];
+                    Max_move = j;
+                }
+            }
+
+            // update policy 
+            action_t* first = agent->policy->actions[i];
+            while (first)
+            {
+                if (first->move == Max_move) {
+                    first->probability = greedy_probility;
+                } else {
+                    first->probability = other_probility;
+                }
+                first = first->next;
+            }
+
+            Mat2_put(Vs, i/agent->world->cols, i%agent->world->cols, Max_Qas);
+        }
+
+    } while (iter++ < episodes);
+
+    (*state_value) = Vs;
+
+    printf("\n");
+    
+    for (i=0; i<state_number; ++i) {
+        printf("state %d: ", i);
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            printf("%0.2f ", Qas[i][j]);
+        }
+        printf("\n");
+    }
+
+    return 0;
+}
+
 int agent_init(agent_t* agent)
 {
     agent->world  = (grid_world_t*) malloc (sizeof(grid_world_t));
@@ -603,7 +763,12 @@ int agent_load(const char* grid_path, const char* policy_path, agent_t* agent)
 
 int agent_display_policy(agent_t* agent)
 {
-    return policy_display(agent->policy);
+    return policy_display(agent->policy, 1);
+}
+
+int agent_display_policy2(agent_t* agent)
+{
+    return policy_display(agent->policy, 0);
 }
 
 int agent_display_gridworld(agent_t* agent)
@@ -612,7 +777,7 @@ int agent_display_gridworld(agent_t* agent)
 }
 
 consequence_t agent_move(agent_t* agent, int start_id, move_t move) 
-{
+{ 
     int x = start_id / agent->world->cols;
     int y = start_id % agent->world->cols;
 
@@ -646,6 +811,31 @@ consequence_t agent_move(agent_t* agent, int start_id, move_t move)
             .stay_id = start_id,
         };
     }
+}
+/**
+ * @brief 按照 action 中的 move 之间的概率来返回 move
+ * 
+ * @param agent 
+ * @param state_id 
+ * @return move_t 
+ */
+move_t agent_take_action(agent_t* agent, int state_id)
+{
+    // 在 0 ～ 1 之间获取一个平均分布的数。
+
+    float p     = (double) rand() / (double)RAND_MAX;
+    float range = 0.f;
+    action_t* act = agent->policy->actions[state_id];
+
+    while(act) {
+        range += act->probability;
+
+        if (range - p >=0 ) 
+            return act->move;
+
+        act = act->next;
+    }
+    return e_idle;
 }
 
 

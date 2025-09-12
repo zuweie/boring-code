@@ -4,7 +4,7 @@
 #include <string.h>
 #include <wchar.h>
 #include <locale.h>
-
+#include <float.h>
 #include "policy.h"
 
 
@@ -113,44 +113,69 @@ int policy_reset(policy_t* policy)
     return 0;
 }
 
-int policy_display(policy_t* policy)
+int policy_display(policy_t* policy, int disp_all)
 {
     setlocale(LC_ALL, "");
+    action_t* first;
 
     for (int i=0; i<policy->rows; ++i) {
         for (int j=0; j<policy->cols; ++j) {
-
-            action_t* first = policy->actions[i*policy->cols +j];
-            while(first) {
-                
-                switch (first->move)
-                {
-                case e_go_up:
-                    /* code */
-                    wprintf(L"\u2191@%0.2f;", first->probability);
-                    break;
-                case e_go_right:
-                    wprintf(L"\u2192@%0.2f;", first->probability);
-                    break;
-                case e_go_down:
-                    wprintf(L"\u2193@%0.2f;", first->probability);
-                    break;
-                case e_go_left:
-                    wprintf(L"\u2190@%0.2f;", first->probability);
-                    break;
-                case e_stay:
-                    printf("o@%0.2f;", first->probability);
-                    break;
-                default:
-                    printf("**");
-                    break;
+            first = policy->actions[i * policy->cols + j];
+            if (disp_all) {
+                while (first){
+                    action_display(first);
+                    first = first->next;
                 }
-
-                first = first->next;
-            } 
+            } else {
+                action_t* max = action_get_max(first);
+                action_display(max);
+            }
             printf(" ");
         }
         printf("\n");
+    }
+    return 0;
+}
+
+action_t* action_get_max(action_t* first) 
+{
+    action_t* max_act = NULL;
+    float     max_p   = -FLT_MAX;
+
+    while (first) {
+
+        if (first->probability > max_p) {
+            max_p   = first->probability;
+            max_act = first;
+        }
+        first = first->next;
+    }
+    return max_act;
+}
+
+int action_display(action_t* act)
+{
+    switch (act->move)
+    {
+    case e_go_up:
+        /* code */
+        wprintf(L"\u2191@%0.2f;", act->probability);
+        break;
+    case e_go_right:
+        wprintf(L"\u2192@%0.2f;", act->probability);
+        break;
+    case e_go_down:
+        wprintf(L"\u2193@%0.2f;", act->probability);
+        break;
+    case e_go_left:
+        wprintf(L"\u2190@%0.2f;", act->probability);
+        break;
+    case e_stay:
+        printf("o@%0.2f;", act->probability);
+        break;
+    default:
+        printf("**");
+        break;
     }
     return 0;
 }

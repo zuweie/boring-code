@@ -2,15 +2,17 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-10 13:30:44
+ * @LastEditTime: 2025-09-12 21:57:04
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 #include <CUnit/Basic.h>
+#include <time.h>
 #include <limits.h>
 #include "matrix2/matrix2.h"
 #include "reinforce_learning/grid_world.h"
+#include "reinforce_learning/policy.h"
 #include "reinforce_learning/agent.h"
 
 static int  suite_success_init (void) 
@@ -168,12 +170,86 @@ static void test_boe_policy_iteration_base_mc_exploring(void)
     agent_load(grid_path, NULL, &agent);
     printf("\n");
     agent_display_gridworld(&agent);
-    agent_policy_iteration_bese_on_monte_carlo_exploring(&agent, &state_value, 10000, 10, 0.9);
+    agent_policy_iteration_bese_on_monte_carlo_exploring_start(&agent, &state_value, 10000, 10, 0.9);
     printf("\n");
     agent_display_policy(&agent);
     printf("\n");
     display_state_value(&agent, state_value);
     printf("\n");
+    Mat2_destroy(state_value);
+    agent_reset(&agent);
+    return;
+}
+
+static void test_action_probability(void) 
+{
+    agent_t agent;
+    agent_init(&agent);
+    agent.policy->actions = (action_t**) malloc (sizeof(action_t*));
+
+    action_t* act1 = (action_t*) malloc(sizeof(action_t));
+    act1->move = e_go_up;
+    act1->probability = 0.f;
+    act1->next = NULL;
+
+    action_t* act2 = (action_t*) malloc (sizeof(action_t));
+    act2->move = e_go_right;
+    act2->probability = 1.f;
+    act2->next = act1;
+
+    action_t* act3 = (action_t*) malloc (sizeof(action_t));
+    act3->move = e_go_down;
+    act3->probability = 0.f;
+    act3->next = act2;
+    
+    agent.policy->actions[0] = act3;
+
+    srand(time(NULL));
+
+    int num_up = 0, num_right = 0, num_down = 0;
+    for (int i=0; i<1000; ++i) {
+        move_t move = agent_take_action(&agent, 0);
+        switch (move)
+        {
+        case e_go_up:
+            num_up++;
+            break;
+        case e_go_down:
+            num_down++;
+            break;
+        case e_go_right:
+            num_right++;
+            break;
+        default:
+            break;
+        }
+    }
+    float p_up    = (float) num_up / (float) 1000;
+    float p_right = (float) num_right / (float ) 1000;
+    float p_down  = (float) num_down / (float) 1000;
+
+    printf("up: %d / 1000 = %0.2f, right: %d / 1000 = %0.2f , down: %d / 1000 = %0.2f \n", num_up, num_right, num_down, p_up, p_right, p_down);
+    
+    agent_reset(&agent);
+}
+
+static void test_boe_policy_iteration_epsilon_greedy_exploring (void)
+{
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    matrix2_t* state_value;
+    printf("\n");
+    agent_init(&agent);
+    agent_load(grid_path, NULL, &agent);
+    printf("\n");
+    agent_display_gridworld(&agent);
+    agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(&agent, &state_value, 10000, 15, 0.1f, 0.9);
+    printf("\n");
+    agent_display_policy(&agent);
+    printf("\n");
+    agent_display_policy2(&agent);
+    printf("\n");
+    MAT2_INSPECT(state_value);
     Mat2_destroy(state_value);
     agent_reset(&agent);
     return;
@@ -219,7 +295,18 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "V(s) policy iteration exploring", test_boe_policy_iteration_base_mc_exploring) ) {
+    // if (NULL == CU_add_test(pSuite, "V(s) policy iteration exploring", test_boe_policy_iteration_base_mc_exploring) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, "agent action probability", test_action_probability) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+
+    if (NULL == CU_add_test(pSuite, "epsilon exploring", test_boe_policy_iteration_epsilon_greedy_exploring) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
