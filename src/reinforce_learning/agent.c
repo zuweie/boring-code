@@ -55,8 +55,58 @@ static int __calculate_reward_trans_probibality(agent_t * agent, matrix2_t** rew
     return 0;
 }
 
+/**
+ * @brief greedy exploring 与 epsilon greedy exploring 统一函数，去除递归调用，避免因为 trajectory 长度过长而产生程序崩溃问题。
+ * 
+ * @param agent 
+ * @param start_id 
+ * @param steps 
+ * @param gamma 
+ * @return int 
+ */
+static int __exploring(agent_t* agent, int start_id, int steps, float gamma, float (*returns)[MOVE_TYPE_NUM], int (*sa_count)[MOVE_TYPE_NUM])
+{
+    
+    trajectory_t* first = NULL;
+    trajectory_t* curr  = NULL;
+
+    int    step_id   = start_id;
+    move_t step_move = policy_take_action(agent->policy->actions[step_id]);
+
+    for (int i=0; i<steps; ++i) {
+        
+        trajectory_t* trajectory = (trajectory_t*) malloc (sizeof(trajectory_t));
+        
+        trajectory->consequence = agent_move(agent, step_id, step_move);
+        trajectory->step_id     = step_id;
+        trajectory->step_move   = step_move;
+        trajectory->next        = first;
+
+        first = trajectory;
+
+        step_id   = trajectory->consequence.stay_id;
+        step_move = policy_take_action(agent->policy->actions[step_id]);
+    }
+    float g = 0;
+
+    // 从后往前计算。
+    while(first) {
+
+        curr = first;
+        g = g * gamma + curr->consequence.reward;
+        returns[curr->step_id][curr->step_move]  += g;
+        sa_count[curr->step_id][curr->step_move] += 1; 
+        // 即用即弃
+        free(curr);
+        first = first->next;
+    }
+    return 0;
+}
+
 static int __explor_sampling(agent_t* agent, int start_id, move_t move,  int steps, float* reward, float gamma, float (*returns)[MOVE_TYPE_NUM], int (*sa_count)[MOVE_TYPE_NUM])
 {
+
+    
     
     // 往前走一步，
     consequence_t consequence = agent_move(agent, start_id, move);
@@ -83,9 +133,10 @@ static int __explor_sampling(agent_t* agent, int start_id, move_t move,  int ste
 }
 
 
+
 static int __explor_epsilon_sampling(agent_t* agent, int start_id, int steps, float* g, float gamma, float (*returns)[MOVE_TYPE_NUM], int (*sa_count)[MOVE_TYPE_NUM]) 
 {
-    move_t move               = agent_take_action(agent, start_id);
+    move_t move               = policy_take_action(agent->policy->actions[start_id]);
     consequence_t consequence = agent_move(agent, start_id, move);
     steps--;
 
@@ -520,18 +571,23 @@ int agent_policy_iteration_bese_on_monte_carlo_exploring_start(agent_t* agent, m
 
         // 这里很重要。必须要跟着改变当前 random 选择的 state 的 move。一些回弹的动作：
         // 例如：原地不动，撞墙的。只会执行一次。
+        
+        // 这里对选中的 state 的动作进行了修改。原则上来说，所有的 state 的 action 的修改。
+        // 应该是在计算完 Qas table 后，根据 Qas table 的值来进行调整。但是这里我的
+        // Qas table 我只记录了最大的 Q 值，也就是说，当用新行动进行采样，采样后的 Q 值不如
+        // 原来的 Q 值大，那么这个动动作就会改回原来的旧动作。
         agent->policy->actions[start_id]->move = start_move;
 
-        //sa_hit[start_id][start_move] += 1;
+        // float reward    = 0;
 
-        float reward    = 0;
+        // if (start_id == 3 && start_move == e_stay) {
+        //     int debug_stop_here = 0;
+        // }
 
-        if (start_id == 3 && start_move == e_stay) {
-            int debug_stop_here = 0;
-        }
+        // 这种递归求解 action value 也是不可取，当单次采样超过 100 万步，那么系统就会崩溃。这里也是需要改动，改为将结果用盏的形式保存。
         // policy evaluation
         // int print_debug = 0 && (start_id == 16 && start_move == e_go_right && agent->policy->actions[17]->move == e_stay);
-        __explor_sampling(agent, start_id, start_move, trajectory_length, &reward, gamma, returns, sa_count);
+        __exploring(agent, start_id, trajectory_length, gamma, returns, sa_count);
         //if (print_debug) printf("\n\n");
         //printf("reward %0.2f \n", reward);
         // policy imporve
@@ -574,14 +630,14 @@ int agent_policy_iteration_bese_on_monte_carlo_exploring_start(agent_t* agent, m
     //     }
     //     printf("\n");
     // }
-    // printf("\n");
-    // for (i=0; i<state_number; ++i) {
-    //     printf("state %d: ", i);
-    //     for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
-    //         printf("%0.2f ", Qas[i][j]);
-    //     }
-    //     printf("\n");
-    // }
+    printf("\n");
+    for (i=0; i<state_number; ++i) {
+        printf("state %d: ", i);
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            printf("%0.2f ", Qas[i][j]);
+        }
+        printf("\n");
+    }
 
     (*state_value) = Vs_k;
 
@@ -617,25 +673,41 @@ int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* agent, ma
 
     srand(time(NULL));
 
-    // 初始化 agent policy
+    
 
     for (i=0; i<state_number; ++i) {
 
         // 随机选中一个主要的前进方向，给予最大 probability。
-        greedy_move = rand() % (MOVE_TYPE_NUM-1) + 1;
+        // greedy_move = rand() % (MOVE_TYPE_NUM-1) + 1;
 
-        action_t** act_link = &agent->policy->actions[i];
+        // action_t** act_link = &agent->policy->actions[i];
         
+        // for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+
+        //     action_t* act = (action_t*) malloc (sizeof(action_t));
+        //     act->move = j;
+        //     act->probability = (j==greedy_move)? greedy_probility : other_probility;
+        //     act->next = (*act_link);
+        //     // 挂到链表上。
+        //     (*act_link) = act;
+        // }
+
+        // 初始化 agent policy, 所有的 action 分配相同概率。
+        action_t** act_link = &agent->policy->actions[i];
         for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
 
             action_t* act = (action_t*) malloc (sizeof(action_t));
             act->move = j;
-            act->probability = (j==greedy_move)? greedy_probility : other_probility;
+            act->probability = 1.f / (MOVE_TYPE_NUM-1) ;
             act->next = (*act_link);
             // 挂到链表上。
             (*act_link) = act;
         }
     }
+
+    // printf("\n");
+    // agent_display_policy2(agent);
+    // printf("\n");
     
     // 清空所有的 action value
     for (i=0; i<state_number; ++i) {
@@ -652,7 +724,6 @@ int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* agent, ma
         // 随机选一个主要的 action。
         greedy_move = rand() % (MOVE_TYPE_NUM-1) + 1;
         // 选中的这个把它的 action 模型改掉。
-
         action_t* first = agent->policy->actions[start_id];
 
         while (first)
@@ -674,7 +745,8 @@ int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* agent, ma
         
         float g = 0;
 
-        __explor_epsilon_sampling(agent, start_id, trajectory_length, &g, gamma, returns, sa_count);
+        //__explor_epsilon_sampling(agent, start_id, trajectory_length, &g, gamma, returns, sa_count);
+        __exploring(agent, start_id, trajectory_length, gamma, returns, sa_count);
 
         // prolicy imporve
         for (i=0; i<state_number; ++i) {
@@ -716,7 +788,7 @@ int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* agent, ma
     (*state_value) = Vs;
 
     printf("\n");
-    
+
     for (i=0; i<state_number; ++i) {
         printf("state %d: ", i);
         for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
@@ -803,40 +875,40 @@ consequence_t agent_move(agent_t* agent, int start_id, move_t move)
         cell_t cell = agent->world->cells[x * agent->world->cols + y];
         return (consequence_t){
             .reward = cell_reward(cell.cell_type),
-            .stay_id = cell.id,
+            .stay_id = cell.id
         };
     } else {
         return (consequence_t) {
             .reward = cell_reward(e_null),
-            .stay_id = start_id,
+            .stay_id = start_id
         };
     }
 }
-/**
- * @brief 按照 action 中的 move 之间的概率来返回 move
- * 
- * @param agent 
- * @param state_id 
- * @return move_t 
- */
-move_t agent_take_action(agent_t* agent, int state_id)
-{
-    // 在 0 ～ 1 之间获取一个平均分布的数。
+// /**
+//  * @brief 按照 action 中的 move 之间的概率来返回 move
+//  * 
+//  * @param agent 
+//  * @param state_id 
+//  * @return move_t 
+//  */
+// move_t agent_take_action(agent_t* agent, int state_id)
+// {
+//     // 在 0 ～ 1 之间获取一个平均分布的数。
 
-    float p     = (double) rand() / (double)RAND_MAX;
-    float range = 0.f;
-    action_t* act = agent->policy->actions[state_id];
+//     float p     = (double) rand() / (double)RAND_MAX;
+//     float range = 0.f;
+//     action_t* act = agent->policy->actions[state_id];
 
-    while(act) {
-        range += act->probability;
+//     while(act) {
+//         range += act->probability;
 
-        if (range - p >=0 ) 
-            return act->move;
+//         if (range - p >=0 ) 
+//             return act->move;
 
-        act = act->next;
-    }
-    return e_idle;
-}
+//         act = act->next;
+//     }
+//     return e_idle;
+// }
 
 
 

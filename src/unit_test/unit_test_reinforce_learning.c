@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-12 21:57:04
+ * @LastEditTime: 2025-09-14 23:13:57
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -170,7 +170,7 @@ static void test_boe_policy_iteration_base_mc_exploring(void)
     agent_load(grid_path, NULL, &agent);
     printf("\n");
     agent_display_gridworld(&agent);
-    agent_policy_iteration_bese_on_monte_carlo_exploring_start(&agent, &state_value, 10000, 10, 0.9);
+    agent_policy_iteration_bese_on_monte_carlo_exploring_start(&agent, &state_value, 10000, 15, 0.9);
     printf("\n");
     agent_display_policy(&agent);
     printf("\n");
@@ -183,32 +183,47 @@ static void test_boe_policy_iteration_base_mc_exploring(void)
 
 static void test_action_probability(void) 
 {
+    const int TEST_NUM = 10000;
+    float epsilon = 0.2;
+    float p_choose = 1 - epsilon * (MOVE_TYPE_NUM - 2) / (MOVE_TYPE_NUM-1);
+    float p_other  = epsilon / (MOVE_TYPE_NUM-1);
+
     agent_t agent;
     agent_init(&agent);
     agent.policy->actions = (action_t**) malloc (sizeof(action_t*));
 
     action_t* act1 = (action_t*) malloc(sizeof(action_t));
     act1->move = e_go_up;
-    act1->probability = 0.f;
+    act1->probability = p_other;
     act1->next = NULL;
 
     action_t* act2 = (action_t*) malloc (sizeof(action_t));
     act2->move = e_go_right;
-    act2->probability = 1.f;
+    act2->probability = p_other;
     act2->next = act1;
 
     action_t* act3 = (action_t*) malloc (sizeof(action_t));
     act3->move = e_go_down;
-    act3->probability = 0.f;
+    act3->probability = p_other;
     act3->next = act2;
+
+    action_t* act4 = (action_t*) malloc (sizeof(action_t));
+    act4->move = e_go_left;
+    act4->probability = p_other;
+    act4->next = act3;
+
+    action_t* act5 = (action_t*) malloc (sizeof(action_t));
+    act5->move = e_stay;
+    act5->probability = p_choose;
+    act5->next = act4;
     
-    agent.policy->actions[0] = act3;
+    agent.policy->actions[0] = act5;
 
     srand(time(NULL));
 
-    int num_up = 0, num_right = 0, num_down = 0;
-    for (int i=0; i<1000; ++i) {
-        move_t move = agent_take_action(&agent, 0);
+    int num_up = 0, num_right = 0, num_down = 0, num_left = 0, num_stay = 0;
+    for (int i=0; i<TEST_NUM; ++i) {
+        move_t move = policy_take_action(agent.policy->actions[0]);
         switch (move)
         {
         case e_go_up:
@@ -220,15 +235,30 @@ static void test_action_probability(void)
         case e_go_right:
             num_right++;
             break;
+        case e_go_left:
+            num_left++;
+            break;
+        case e_stay:
+            num_stay++;
+            break;
         default:
             break;
         }
     }
-    float p_up    = (float) num_up / (float) 1000;
-    float p_right = (float) num_right / (float ) 1000;
-    float p_down  = (float) num_down / (float) 1000;
+    float p_up    = (float) num_up / (float) TEST_NUM;
+    float p_right = (float) num_right / (float ) TEST_NUM;
+    float p_down  = (float) num_down / (float) TEST_NUM;
+    float p_left  = (float) num_left / (float) TEST_NUM;
+    float p_stay  = (float) num_stay / (float) TEST_NUM;
 
-    printf("up: %d / 1000 = %0.2f, right: %d / 1000 = %0.2f , down: %d / 1000 = %0.2f \n", num_up, num_right, num_down, p_up, p_right, p_down);
+    printf("\n");
+    printf("choose probability: %0.2f, other probability: %0.2f\n", p_choose, p_other);
+    printf("up: %d / %d = %0.2f, right: %d / %d = %0.2f , down: %d / %d = %0.2f, left: %d / %d = %0.2f, stay: %d / %d = %0.2f\n", \
+        num_up, TEST_NUM, p_up, \
+        num_right, TEST_NUM, p_right, \
+        num_down, TEST_NUM,  p_down, \
+        num_left, TEST_NUM, p_left, \
+        num_stay, TEST_NUM, p_stay);
     
     agent_reset(&agent);
 }
@@ -243,11 +273,13 @@ static void test_boe_policy_iteration_epsilon_greedy_exploring (void)
     agent_load(grid_path, NULL, &agent);
     printf("\n");
     agent_display_gridworld(&agent);
+    // printf("\n");
+    // agent_display_policy2(&agent);
     agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(&agent, &state_value, 10000, 15, 0.1f, 0.9);
+    // printf("\n");
+    // agent_display_policy(&agent);
     printf("\n");
     agent_display_policy(&agent);
-    printf("\n");
-    agent_display_policy2(&agent);
     printf("\n");
     MAT2_INSPECT(state_value);
     Mat2_destroy(state_value);

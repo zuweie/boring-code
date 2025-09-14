@@ -153,6 +153,30 @@ action_t* action_get_max(action_t* first)
     return max_act;
 }
 
+/**
+ * @brief 根据各个 action 之间的概率返回 move。
+ * 
+ * @param act_link 
+ * @return move_t 
+ */
+move_t policy_take_action(action_t* act_link)
+{
+    float p         = (double) rand() / (double)RAND_MAX;
+    float range     = 0.f;
+    action_t* first = act_link;
+
+    while(first) {
+
+        range += first->probability;
+
+        if (range - p >=0 ) 
+            return first->move;
+
+        first = first->next;
+    }
+    return e_idle;
+}
+
 int action_display(action_t* act)
 {
     switch (act->move)
