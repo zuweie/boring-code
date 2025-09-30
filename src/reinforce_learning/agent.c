@@ -206,6 +206,65 @@ int agent_calculate_state_values(agent_t* agent, matrix2_t** state_values, matri
     return 0;
 }
 
+/**
+ * @brief 赵世钰老师的 《强化学习的数学原理》第七章的 TD 算法，主要是这玩意使用 sochastic approximate 中 RM 算法去逼近真实的
+ * state value 并不需要任何模型，只需要数据即可。
+ * 
+ * @param agent 
+ * @param state_values 
+ * @return int 
+ */
+int agent_temporal_difference_for_state_value(agent_t* agent, matrix2_t** state_values, float alpha, float gamma, int episodes)
+{
+    float vt_st;
+    float vt_st1;
+    float vt1_st;
+
+    float r_1;
+    
+    int   iter          = 0;
+    int   world_rows    = agent->world->rows;
+    int   world_cols    = agent->world->cols;
+    int   state_number  = world_rows * world_cols;
+
+
+    consequence_t consequence;
+    move_t        move;
+    matrix2_t*    Vs = Mat2_create(world_rows, world_cols);
+
+    Mat2_fill(Vs, 0.f);
+    // policy_take_action 需要预先提前设置 rand seed。
+    srand(time(NULL));
+
+    do {
+
+        for (int i=0; i<state_number; ++i) {
+            
+            // 获取出在当前的 state 下的 action 中 move 的概率获取下一个move。
+            move = policy_take_action(agent->policy->actions[i]);
+
+            // 然后动一下看看结果如何。
+            consequence = agent_move(agent, i, move);
+            
+            // 本轮的 state
+            vt_st  = Mat2_get(Vs, i/world_cols, i%world_cols);
+            // 本轮的 state take action 后，跳转的 state 的 value
+            vt_st1 = Mat2_get(Vs, consequence.stay_id/world_cols, consequence.stay_id%world_cols);
+
+            // 逼近下一轮的 state value
+            vt1_st = vt_st - alpha * ( vt_st - (consequence.reward + gamma * vt_st1));
+            
+            // 计算完的 state value 跟新原来的 state value
+            Mat2_put(Vs, i/world_cols, i%world_cols, vt1_st);
+        }
+
+    } while (iter++ < episodes);
+
+    (*state_values) = Vs;
+
+    return 0;
+}
+
 
 /**
  * @brief 赵世钰老师的《强化学习的数学原理》第四章的 value iteration 算法
@@ -608,6 +667,8 @@ int agent_policy_iteration_bese_on_monte_carlo_exploring_start(agent_t* agent, m
                     // 与历史记录比较，如果大于历史记录，那么将更新成当前的 Qas。如果不进行与最佳历史记录比对，那么当前算出的动作
                     // 会冲刷掉历史最佳动作。这些细节，在《强化学习的数学原理》中是没有提及的。书中只有算法的大概实现方向。
                     if (Cur_Qas > Qas[i][j]) Qas[i][j] = Cur_Qas;
+
+                    //Qas[i][j] = returns[i][j] / sa_count[i][j];
                 } 
 
                 if (Qas[i][j] > Max_Qas) {
@@ -787,15 +848,15 @@ int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* agent, ma
 
     (*state_value) = Vs;
 
-    printf("\n");
+    // printf("\n");
 
-    for (i=0; i<state_number; ++i) {
-        printf("state %d: ", i);
-        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
-            printf("%0.2f ", Qas[i][j]);
-        }
-        printf("\n");
-    }
+    // for (i=0; i<state_number; ++i) {
+    //     printf("state %d: ", i);
+    //     for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+    //         printf("%0.2f ", Qas[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
     return 0;
 }
@@ -884,31 +945,154 @@ consequence_t agent_move(agent_t* agent, int start_id, move_t move)
         };
     }
 }
-// /**
-//  * @brief 按照 action 中的 move 之间的概率来返回 move
-//  * 
-//  * @param agent 
-//  * @param state_id 
-//  * @return move_t 
-//  */
-// move_t agent_take_action(agent_t* agent, int state_id)
-// {
-//     // 在 0 ～ 1 之间获取一个平均分布的数。
 
-//     float p     = (double) rand() / (double)RAND_MAX;
-//     float range = 0.f;
-//     action_t* act = agent->policy->actions[state_id];
+/**
+ * @brief 这是赵世钰老师的 《强化学习的数学原理》中第七章 td 算法用于估计 action value 和 impove 的 policy 的。
+ * 
+ * @param agent 
+ * @param state_value 
+ * @param episodes 
+ * @param trajectory_length 
+ * @param gamma 
+ * @return int 
+ */
+int agent_temporal_difference_for_boe_sarsa(agent_t* agent, int start_id, int episodes, int trajectory_length, float epsilon, float gamma, float alpha)
+{
+    int i,j,k;
+    int iter      = 0;
+    int traj_iter = 0;
+    int world_rows   = agent->world->rows;
+    int world_cols   = agent->world->cols;
+    int state_number = world_rows * world_cols;
+    float qt1_stat, qt_stat, qt_st1at1;
+    float Q_table[state_number][MOVE_TYPE_NUM];
+    
+    float Max_Qsa;
+    move_t Max_move;
 
-//     while(act) {
-//         range += act->probability;
+    action_t* at;
+    move_t    mt;
 
-//         if (range - p >=0 ) 
-//             return act->move;
+    action_t* at1;
+    move_t    mt1;
 
-//         act = act->next;
-//     }
-//     return e_idle;
-// }
+    int st, st1;
+    
+    srand(time(NULL));
+
+    agent->policy->rows = world_rows;
+    agent->policy->cols = world_cols;
+    // 先申请一堆内存处理指针。
+    agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
+    // 置为空指针，等待使用。应为从来未
+    memset(agent->policy->actions, NULL, world_rows*world_cols*sizeof(action_t));
+
+    // 初始化 Q table，用于更新 policy
+    for (i=0; i<state_number; ++i) {
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            Q_table[i][j] = 0.f;
+        }
+    }
+
+    // 从 start 开始。
+    while (iter++ < episodes) {
+
+        st        = start_id;
+        traj_iter = 0;
+        
+        //printf("%d -", st);
+        
+        // 在开始前，将所有的的 state 的 action 还原为 0.2 的概率。
+        // 算法开始从指定的 state 开始，丢想不到怎么写下去
+        while (agent->world->cells[st].cell_type != e_target && traj_iter++ < trajectory_length) {
+
+            if (agent->policy->actions[st] == NULL) {
+                // 如果这个点的 action 为空，那么我们给上一个添加一个随机的 actions
+                policy_set_random_moves(&agent->policy->actions[st], 1);
+            } 
+
+            // 将这个 action 取出来
+            at = agent->policy->actions[st];
+            // 执行这个 action 查看执行后的 reward
+            mt = policy_take_action(at);
+            consequence_t consequence = agent_move(agent, st, mt);
+
+            st1 = consequence.stay_id;
+
+            if (agent->policy->actions[st1] == NULL) {
+                // 当这个 state 的 action 为空的时候，我们初始化为平均概率。
+                policy_set_random_moves(&agent->policy->actions[st1], 1);
+            }
+
+            at1 = agent->policy->actions[st1];
+            mt1 = policy_take_action(at1);
+
+            // 得到结果后开始评估这个 action value
+            // todo: 1 把当前的 qa 值拿到。
+            qt_stat   = Q_table[st][mt];
+            qt_st1at1 = Q_table[st1][mt1];
+
+            // 根据书中 7.2.1 节中的算法描述，式子 7.12 
+
+            qt1_stat = qt_stat - alpha * ( qt_stat - (consequence.reward + (gamma * qt_st1at1)));
+            // 更新 Q table, 这玩意可能又是要做那个最大值记忆。
+            Q_table[st][mt]  = qt1_stat;
+            
+            // 马上根据 Q table 更新 policy
+            Max_Qsa = -FLT_MAX;
+            Max_move = e_idle;
+
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+                
+                if (Max_Qsa < Q_table[st][j] ) {
+                    Max_Qsa  = Q_table[st][j];
+                    Max_move = j;
+                }
+            }
+            // update policy
+            policy_update_greedy_move(agent->policy->actions[st], Max_move, epsilon);
+            st = st1;
+        }
+
+    };
+
+    printf("\n");
+
+    for (i=0; i<state_number; ++i) {
+        printf("state %d: ", i);
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            printf("%0.2f ", Q_table[i][j]);
+        }
+        printf("\n");
+    }
+    // printf("\n");
+    // for (i=0; i<state_number; ++i) {
+    //     printf("state %d: ", i);
+    //     for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+    //         printf("%d ", Q_touch[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+
+    return 0;
+}
+
+/**
+ * @brief 这个赵世钰老师的 《强化学习的数学原理》中第七中 td 算法中用于估计 action value 的改进版 Q learning。但是现在还是不太确定它的原理是什么，
+ * 
+ * @param agent 
+ * @param state_value 
+ * @param episodes 
+ * @param trajectory_length 
+ * @param gamma 
+ * @return int 
+ */
+int agent_temporal_difference_for_boe_Q_learning(agent_t* agent, matrix2_t** state_value, int episodes, int trajectory_length, float gamma)
+{
+    
+    return 0;
+}
+
 
 
 

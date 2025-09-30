@@ -177,29 +177,82 @@ move_t policy_take_action(action_t* act_link)
     return e_idle;
 }
 
+/**
+ * @brief 为一个 policy 的中 state 的点挂上主随机动作
+ * 
+ * @return int 
+ */
+int policy_set_random_moves(action_t** link_ref, float epsilon)
+{
+    move_t greedy_move      = rand() % (MOVE_TYPE_NUM-1) + 1;
+    float  greedy_probility = 1 - (epsilon * (MOVE_TYPE_NUM-2)) / (MOVE_TYPE_NUM-1);
+    float  other_probility  = epsilon / (MOVE_TYPE_NUM-1);
+
+    if (*link_ref == NULL) {
+        // 若是空的，那么新建一堆 action
+        for (int j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            action_t* act = (action_t*) malloc (sizeof(action_t));
+            act->move = j;
+            act->probability = (j==greedy_move)? greedy_probility : other_probility;
+            act->next = (*link_ref);
+            // 挂到链表上。
+            (*link_ref) = act;
+        }
+    } else {
+        // 重置每个 action 的 probility
+
+        action_t* first = *link_ref;
+        while(first) {
+            first->probability = (first->move == greedy_move)? greedy_probility : other_probility;
+            first = first->next;
+        }
+    }
+    return 0;
+}
+
+int policy_update_greedy_move(action_t* link, move_t move, float epsilon)
+{
+    float  greedy_probility = 1 - (epsilon * (MOVE_TYPE_NUM-2)) / (MOVE_TYPE_NUM-1);
+    float  other_probility  = epsilon / (MOVE_TYPE_NUM-1);
+
+    action_t* first = link;
+    while (first) {
+        
+        first->probability = (first->move == move) ? greedy_probility : other_probility;
+        first = first->next;
+    }
+
+    return 0;
+}
+
+
 int action_display(action_t* act)
 {
-    switch (act->move)
-    {
-    case e_go_up:
-        /* code */
-        wprintf(L"\u2191@%0.2f;", act->probability);
-        break;
-    case e_go_right:
-        wprintf(L"\u2192@%0.2f;", act->probability);
-        break;
-    case e_go_down:
-        wprintf(L"\u2193@%0.2f;", act->probability);
-        break;
-    case e_go_left:
-        wprintf(L"\u2190@%0.2f;", act->probability);
-        break;
-    case e_stay:
-        printf("o@%0.2f;", act->probability);
-        break;
-    default:
-        printf("**");
-        break;
+    if (act == NULL){
+        printf("*@0.00;");
+    } else {
+        switch (act->move)
+        {
+        case e_go_up:
+            /* code */
+            wprintf(L"\u2191@%0.2f;", act->probability);
+            break;
+        case e_go_right:
+            wprintf(L"\u2192@%0.2f;", act->probability);
+            break;
+        case e_go_down:
+            wprintf(L"\u2193@%0.2f;", act->probability);
+            break;
+        case e_go_left:
+            wprintf(L"\u2190@%0.2f;", act->probability);
+            break;
+        case e_stay:
+            printf("o@%0.2f;", act->probability);
+            break;
+        default:
+            printf("*@0.00;");
+            break;
+        }
     }
     return 0;
 }
