@@ -14,7 +14,6 @@
 #include "policy.h"
 #include "agent.h"
 
-
 /**
  * @brief 计算立即奖励，和状态转移矩阵。
  * 
@@ -878,9 +877,9 @@ int agent_reset(agent_t* agent)
     return 0;
 }
 
-int agent_load(const char* grid_path, const char* policy_path, agent_t* agent)
+int agent_load(const char* grid_path, float (*cell_reward)(cell_clazz_t), const char* policy_path, agent_t* agent)
 {
-    int ret = grid_world_load(grid_path, agent->world);
+    int ret = grid_world_load(grid_path, agent->world, cell_reward);
 
     // 如果 policy 的路径 null，那么我门
     if (policy_path && ret == 0) {
@@ -935,12 +934,12 @@ consequence_t agent_move(agent_t* agent, int start_id, move_t move)
     if (x >=0 && x < agent->world->rows && y >=0 && y < agent->world->cols) {
         cell_t cell = agent->world->cells[x * agent->world->cols + y];
         return (consequence_t){
-            .reward = cell_reward(cell.cell_type),
+            .reward = agent->world->cell_reward(cell.cell_type),
             .stay_id = cell.id
         };
     } else {
         return (consequence_t) {
-            .reward = cell_reward(e_null),
+            .reward  = agent->world->cell_reward(e_null),
             .stay_id = start_id
         };
     }
@@ -956,11 +955,11 @@ consequence_t agent_move(agent_t* agent, int start_id, move_t move)
  * @param gamma 
  * @return int 
  */
-int agent_temporal_difference_for_boe_sarsa(agent_t* agent, int start_id, int episodes, int trajectory_length, float epsilon, float gamma, float alpha)
+int agent_temporal_difference_of_sarsa(agent_t* agent, int start_id, int episodes, int max_trajectory_length, float epsilon, float gamma, float alpha)
 {
     int i,j,k;
-    int iter      = 0;
-    int traj_iter = 0;
+    int iter = 0;
+    int step = 0;
     int world_rows   = agent->world->rows;
     int world_cols   = agent->world->cols;
     int state_number = world_rows * world_cols;
@@ -997,14 +996,14 @@ int agent_temporal_difference_for_boe_sarsa(agent_t* agent, int start_id, int ep
     // 从 start 开始。
     while (iter++ < episodes) {
 
-        st        = start_id;
-        traj_iter = 0;
-        
+        st   = start_id;
+        step = 0;
+
         //printf("%d -", st);
         
         // 在开始前，将所有的的 state 的 action 还原为 0.2 的概率。
         // 算法开始从指定的 state 开始，丢想不到怎么写下去
-        while (agent->world->cells[st].cell_type != e_target && traj_iter++ < trajectory_length) {
+        while (agent->world->cells[st].cell_type != e_target && step++ < max_trajectory_length) {
 
             if (agent->policy->actions[st] == NULL) {
                 // 如果这个点的 action 为空，那么我们给上一个添加一个随机的 actions
@@ -1056,15 +1055,15 @@ int agent_temporal_difference_for_boe_sarsa(agent_t* agent, int start_id, int ep
 
     };
 
-    printf("\n");
+    // printf("\n");
 
-    for (i=0; i<state_number; ++i) {
-        printf("state %d: ", i);
-        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
-            printf("%0.2f ", Q_table[i][j]);
-        }
-        printf("\n");
-    }
+    // for (i=0; i<state_number; ++i) {
+    //     printf("state %d: ", i);
+    //     for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+    //         printf("%0.2f ", Q_table[i][j]);
+    //     }
+    //     printf("\n");
+    // }
     // printf("\n");
     // for (i=0; i<state_number; ++i) {
     //     printf("state %d: ", i);
@@ -1087,9 +1086,120 @@ int agent_temporal_difference_for_boe_sarsa(agent_t* agent, int start_id, int ep
  * @param gamma 
  * @return int 
  */
-int agent_temporal_difference_for_boe_Q_learning(agent_t* agent, matrix2_t** state_value, int episodes, int trajectory_length, float gamma)
+int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id, int episodes, int max_trajectory_length, float epsilon, float gamma, float alpha)
 {
     
+    // 这个算法第一步是使用 0.2 的平均策略进行采样需要采样非常多步，然后再使用 RM 算法去找出最优的策略。之所以叫 off-policy。
+    // 原因是我行为策略产生的行为策略和目标策略不是同一个东西，这里行为策略只为产生随机样本，然后目标策略在经过样本的毒打后产生
+    // 最优的策略。
+
+    int i,j,k;
+    int iter = 0; 
+    int step = 0;
+    int st, st1;
+    float qt1_stat, qt_stat, qt_st1a;
+    float max_st1_act_value;
+    
+    action_t* at;
+    move_t    mt;
+    consequence_t consequence;
+
+    float  Max_Qas;
+    move_t Max_move;
+
+    int world_rows   = agent->world->rows;
+    int world_cols   = agent->world->cols;
+
+    int state_number = world_rows * world_cols;
+
+    float Q_table[state_number][MOVE_TYPE_NUM];
+
+    // 初始化 所有的参数
+    agent->policy->rows    = world_rows;
+    agent->policy->cols    = world_cols;
+    agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
+    memset(agent->policy->actions, NULL, world_rows * world_cols * sizeof(action_t*));
+
+    for (i=0; i<state_number; ++i) {
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            Q_table[i][j] = 0.f;
+        }
+    }
+
+    srand(time(NULL));
+
+
+    while (iter++ < episodes) {
+
+        st   = start_id;
+        step = 0;
+
+        while (agent->world->cells[st].cell_type != e_target && step++ < max_trajectory_length) {
+
+            if (agent->policy->actions[st] == NULL) {
+                policy_set_random_moves(&agent->policy->actions[st], 1);
+            }
+
+            at = agent->policy->actions[st];
+            mt = policy_take_action(at);
+
+            qt_stat = Q_table[st][mt];
+
+            consequence = agent_move(agent, st, mt);
+            st1 = consequence.stay_id;
+
+            // 找到 st1 中 最大的那个 action value
+            max_st1_act_value = -FLT_MAX;
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+                if (max_st1_act_value < Q_table[st1][j]) {
+                    max_st1_act_value = Q_table[st1][j];
+                }
+            }
+
+            // 根据《强化学习的数学原理》第 7.4.3 节的算法实现。
+            qt1_stat = qt_stat - alpha * (qt_stat - (consequence.reward + gamma * (max_st1_act_value)));
+            Q_table[st][mt] = qt1_stat;
+
+
+            // 马上立刻更新 update policy
+            Max_Qas  = - FLT_MAX;
+            Max_move = e_idle;
+
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+                if (Max_Qas < Q_table[st][j]) {
+                    Max_Qas = Q_table[st][j];
+                    Max_move = j;
+                }
+            }
+
+            // 马上更新那个变态的 policy
+            policy_update_greedy_move(agent->policy->actions[st], Max_move, epsilon);
+
+            st = st1;
+
+            if (agent->world->cells[st].cell_type == e_target) {
+                printf("reach target after go %d steps\n ", step);
+            }
+        }
+    }
+
+    // printf("\n");
+
+    // for (i=0; i<state_number; ++i) {
+    //     printf("state %d: ", i);
+    //     for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+    //         printf("%0.2f ", Q_table[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("\n");
+    // for (i=0; i<state_number; ++i) {
+    //     printf("state %d: ", i);
+    //     for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+    //         printf("%d ", Q_touch[i][j]);
+    //     }
+    //     printf("\n");
+    // }
     return 0;
 }
 

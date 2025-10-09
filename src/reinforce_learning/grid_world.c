@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-22 09:45:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-04 10:46:58
+ * @LastEditTime: 2025-10-09 14:27:06
  * @FilePath: /boring-code/src/reinforce_learning/grid_world.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,7 +13,7 @@
 
 #include "grid_world.h"
 #include "policy.h"
-static const float enter_reward[4] = {-1., 0, -10., 1};
+//static const float enter_reward[4] = {-1., 0, -10., 1};
 
 
 
@@ -43,7 +43,7 @@ static int __read_grid_size(FILE* file, grid_world_t* grid)
     return grid->rows > 0 && grid->cols > 0;
 }
 
-static int __build_grid_world(FILE* file, grid_world_t* grid) 
+static int __build_grid_world(FILE* file, grid_world_t* grid, float (*cell_reward)(cell_clazz_t)) 
 {
     if (__read_grid_size(file, grid)) {
 
@@ -66,18 +66,15 @@ static int __build_grid_world(FILE* file, grid_world_t* grid)
                 
                 cell_t* cell = &grid->cells[row * grid->cols + col];
 
-                //cell->x = row;
-                //cell->y = col;
                 cell->cell_type = atoi(token);
                 cell->id        = index++;
-
                 token = strtok_r(NULL, " \t\n", &last);
 
                 col++;
             }
             row ++;
         }
-
+        grid->cell_reward = cell_reward;
         return 0;
     }
     
@@ -85,10 +82,7 @@ static int __build_grid_world(FILE* file, grid_world_t* grid)
 
 }
 
-float cell_reward(cell_clazz_t cell_type)
-{
-    return enter_reward[cell_type];
-}
+
 
 /**
  * @brief 从文件中读取 grid world 的数据。
@@ -97,14 +91,16 @@ float cell_reward(cell_clazz_t cell_type)
  * @param grid 
  * @return int 
  */
-int grid_world_load(const char* path, grid_world_t* grid)
+int grid_world_load(const char* path, grid_world_t* grid, float (*cell_reward)(cell_clazz_t))
 {
     // 将 grid 的对象清空。
 
     FILE* file = fopen(path, "r");
     int ret = -1;
     if (file) {
-        ret = __build_grid_world(file, grid);
+        ret = __build_grid_world(file, grid, cell_reward);
+        // 配装上 reward 函数。
+        
     } else {
         printf("file open error: %s \n",  strerror(errno));
     }

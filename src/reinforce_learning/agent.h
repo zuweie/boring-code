@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-25 07:50:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-09-28 18:28:40
+ * @LastEditTime: 2025-10-09 15:47:24
  * @FilePath: /boring-code/src/reinforce_learning/agent.h
  * @Description: 本算法是基于 B 站 赵世钰 老师的公开课《强化学习的数学原理》而实现的。除了公开课，他还有一个同名的电子书《强化学习的数学原理》。
  */
@@ -35,7 +35,7 @@ typedef struct trajectory {
 
 int agent_init(agent_t* agent);
 int agent_reset(agent_t* agent);
-int agent_load(const char* grid_path, const char* policy_path, agent_t* agent);
+int agent_load(const char* grid_path, float (*cell_reward)(cell_clazz_t), const char* policy_path, agent_t* agent);
 int agent_display_policy(agent_t* agent);
 int agent_display_policy2(agent_t* agent);
 int agent_display_gridworld(agent_t* agent);
@@ -47,7 +47,7 @@ int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, float gamma)
 int agent_policy_iteration_bese_on_monte_carlo_basic(agent_t* agent, matrix2_t** state_value, int epsiodes, int trajectory_length, float gamma);
 int agent_policy_iteration_bese_on_monte_carlo_exploring_start(agent_t* agent, matrix2_t** state_value, int episodes, int trajectory_length, float gamma);
 int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* aent, matrix2_t** state_value, int episodes, int trajectory_length, float epsilon, float gamma);
-int agent_temporal_difference_for_boe_sarsa(agent_t* agent, int start_id, int episodes, int trajectory_length, float epsilon, float gamma, float alpha);
-int agent_temporal_difference_for_boe_Q_learning(agent_t* agent, matrix2_t** state_value, int episodes, int trajectory_length, float gamma);
-
+int agent_temporal_difference_of_sarsa(agent_t* agent, int start_id, int episodes, int trajectory_length, float epsilon, float gamma, float alpha);
+int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id, int episodes, int max_trajectory_length, float epsilon, float gamma, float alpha);
+int agent_temporal_difference_of_Q_learning_offline(agent_t* agent, int start_id, int episodes, int max_trajectory_length, float epsilon, float gamma, float alpha);
 #endif
