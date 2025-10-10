@@ -178,13 +178,18 @@ move_t policy_take_action(action_t* act_link)
 }
 
 /**
- * @brief 为一个 policy 的中 state 的点挂上主随机动作
+ * @brief 为每个 action 点挂上动作，当 move != e_idel 时候，move 为 epsilon-greedy。当 move 为 e_idle 时，move 随机生成一个，设为 epsilon-greedy。
  * 
+ * @param link_ref 
+ * @param move 
+ * @param epsilon 
  * @return int 
  */
-int policy_set_random_moves(action_t** link_ref, float epsilon)
+int policy_set_random_moves(action_t** link_ref, move_t move, float epsilon)
 {
-    move_t greedy_move      = rand() % (MOVE_TYPE_NUM-1) + 1;
+    if (move >= MOVE_TYPE_NUM) return -1;
+    
+    move_t greedy_move      = (move == e_idle) ? (rand() % (MOVE_TYPE_NUM-1) + 1): move;
     float  greedy_probility = 1 - (epsilon * (MOVE_TYPE_NUM-2)) / (MOVE_TYPE_NUM-1);
     float  other_probility  = epsilon / (MOVE_TYPE_NUM-1);
 

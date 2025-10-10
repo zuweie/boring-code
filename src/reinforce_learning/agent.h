@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-25 07:50:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-09 15:47:24
+ * @LastEditTime: 2025-10-10 13:05:15
  * @FilePath: /boring-code/src/reinforce_learning/agent.h
  * @Description: 本算法是基于 B 站 赵世钰 老师的公开课《强化学习的数学原理》而实现的。除了公开课，他还有一个同名的电子书《强化学习的数学原理》。
  */

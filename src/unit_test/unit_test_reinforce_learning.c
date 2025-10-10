@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-09 15:51:32
+ * @LastEditTime: 2025-10-10 13:46:52
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -22,6 +22,8 @@
 
 static const float cell_reward_1[4]   = {-1., 0, -10., 1};
 static const float cell_reward_ql[4]  = {-10., -1., -10., 0.,};
+static const float cell_reward_ql_offline[4] = {-10., 0, -10, 10};
+
 static int  suite_success_init (void) 
 {
     printf("\n RL suite success init\n");
@@ -39,6 +41,10 @@ static float cell_reward_a(cell_clazz_t cell_type) {
 
 static float cell_reward_b(cell_clazz_t cell_type) {
     return cell_reward_ql[cell_type];
+}
+
+static float cell_reward_c(cell_clazz_t cell_type) {
+    return cell_reward_ql_offline[cell_type];
 }
 
 static void display_state_value(agent_t* agent, matrix2_t* state_value) 
@@ -348,6 +354,20 @@ static void test_Q_learning_online(void)
     return;
 }
 
+static void test_Q_learning_offline(void) 
+{
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    agent_init(&agent);
+    agent_load(grid_path, &cell_reward_c, NULL, &agent);
+    agent_temporal_difference_of_Q_learning_offline(&agent, 0, 500, 10000, 0.1, 0.9, 0.1);
+    printf("\n");
+    agent_display_gridworld(&agent);
+    agent_display_policy2(&agent);
+    agent_reset(&agent);
+    return;
+}
+
 
 int do_reinforce_learning_test(void) 
 {
@@ -415,7 +435,12 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "templor diffrence", test_Q_learning_online) ) {
+    // if (NULL == CU_add_test(pSuite, "templor diffrence", test_Q_learning_online) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "templor diffrence", test_Q_learning_offline) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

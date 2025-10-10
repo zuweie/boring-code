@@ -1007,7 +1007,7 @@ int agent_temporal_difference_of_sarsa(agent_t* agent, int start_id, int episode
 
             if (agent->policy->actions[st] == NULL) {
                 // 如果这个点的 action 为空，那么我们给上一个添加一个随机的 actions
-                policy_set_random_moves(&agent->policy->actions[st], 1);
+                policy_set_random_moves(&agent->policy->actions[st], e_idle, 1);
             } 
 
             // 将这个 action 取出来
@@ -1020,7 +1020,7 @@ int agent_temporal_difference_of_sarsa(agent_t* agent, int start_id, int episode
 
             if (agent->policy->actions[st1] == NULL) {
                 // 当这个 state 的 action 为空的时候，我们初始化为平均概率。
-                policy_set_random_moves(&agent->policy->actions[st1], 1);
+                policy_set_random_moves(&agent->policy->actions[st1], e_idle, 1);
             }
 
             at1 = agent->policy->actions[st1];
@@ -1098,7 +1098,7 @@ int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id
     int step = 0;
     int st, st1;
     float qt1_stat, qt_stat, qt_st1a;
-    float max_st1_act_value;
+    float max_st1a;
     
     action_t* at;
     move_t    mt;
@@ -1137,7 +1137,7 @@ int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id
         while (agent->world->cells[st].cell_type != e_target && step++ < max_trajectory_length) {
 
             if (agent->policy->actions[st] == NULL) {
-                policy_set_random_moves(&agent->policy->actions[st], 1);
+                policy_set_random_moves(&agent->policy->actions[st], e_idle, 1);
             }
 
             at = agent->policy->actions[st];
@@ -1149,15 +1149,15 @@ int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id
             st1 = consequence.stay_id;
 
             // 找到 st1 中 最大的那个 action value
-            max_st1_act_value = -FLT_MAX;
+            max_st1a = -FLT_MAX;
             for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
-                if (max_st1_act_value < Q_table[st1][j]) {
-                    max_st1_act_value = Q_table[st1][j];
+                if (max_st1a < Q_table[st1][j]) {
+                    max_st1a = Q_table[st1][j];
                 }
             }
 
             // 根据《强化学习的数学原理》第 7.4.3 节的算法实现。
-            qt1_stat = qt_stat - alpha * (qt_stat - (consequence.reward + gamma * (max_st1_act_value)));
+            qt1_stat = qt_stat - alpha * (qt_stat - (consequence.reward + gamma * (max_st1a)));
             Q_table[st][mt] = qt1_stat;
 
 
@@ -1200,6 +1200,138 @@ int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id
     //     }
     //     printf("\n");
     // }
+    return 0;
+}
+
+
+/**
+ * @brief 根据 《强化学习的数学原理》 的中，7.4 节中算法 7.3 的实现，这里实现跟书中有点不一致，书中算法是在每一个 episode 中更新 target policy 的。
+ * 本人的算法实实现是在所有 episode 都跑完后再更新 target policy 的。因为 offline 版本的算法中 target policy 根本不参与 behavior，
+ * 所有的 behavior 都在 uniform disturb 的 policy 产生，那么 target policy 根本没必要在每个 episode 都更新。
+ * 
+ * @param agent 
+ * @param start_id 
+ * @param episodes 
+ * @param max_trajectory_length 
+ * @param epsilon 
+ * @param gamma 
+ * @param alpha 
+ * @return int 
+ */
+int agent_temporal_difference_of_Q_learning_offline(agent_t* agent, int start_id, int episodes, int max_trajectory_length, float epsilon, float gamma, float alpha)
+{
+    int i,j,k;
+    int iter=0, step=0;
+    int st, st1;
+    float qt1_stat, qt_stat, qt_st1a;
+    float max_qt_st1a;
+    float Max_Qas;
+    move_t Max_move;
+    action_t* at;
+    move_t    mt;
+    consequence_t consequence;
+    
+
+    int world_rows = agent->world->rows;
+    int world_cols = agent->world->cols;
+    int state_number = world_rows * world_cols;
+    float Q_table[state_number][MOVE_TYPE_NUM];
+
+    for (i=0; i<state_number; ++i) {
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            Q_table[i][j] = 0.f;
+        }
+    }
+
+    //新建一个 behavior policy 用于每个 epsiode 超长采样
+    policy_t behavior_policy;
+    behavior_policy.rows = world_rows;
+    behavior_policy.cols = world_cols;
+    behavior_policy.actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
+    memset(behavior_policy.actions, NULL, world_rows * world_cols * sizeof(action_t*));
+
+    agent->policy->rows = world_rows;
+    agent->policy->cols = world_cols;
+    agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
+    memset(agent->policy->actions, NULL, world_rows * world_cols * sizeof(action_t*));
+    
+    policy_t* target_policy = agent->policy;
+
+    // 将当前的 agent 的 policy 设置为 behavior policy。用于产生足够多的采样。
+    // behavior policy 的 action 采用 uniform disturb （平均分布）
+
+    agent->policy = &behavior_policy;
+    for (i=0; i<state_number; ++i) {
+        policy_set_random_moves(&agent->policy->actions[i], e_idle, 1);
+    }
+
+    for (i=0; i<state_number; ++i) {
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+            Q_table[i][j] = 0.f;
+        }
+    }
+
+    while (iter++ < episodes) {
+
+        // 每次  epsiodes 的时候，用 behavior policy 走 behavior policy sampling length 步来采样。
+        st = start_id;
+        while (agent->world->cells[st].cell_type != e_target &&  step++ < max_trajectory_length ) {
+
+            // 此时的 agent 身上挂着的是 uniform disturb 的 policy，进行均匀的随机采样。
+
+            at = agent->policy->actions[st];
+
+            mt = policy_take_action(at);
+
+            consequence = agent_move(agent, st, mt);
+
+            st1 = consequence.stay_id;
+
+            max_qt_st1a = -FLT_MAX;
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+                
+                if (max_qt_st1a < Q_table[st1][j]) {
+                    max_qt_st1a = Q_table[st1][j];
+                }
+            }
+
+            qt_stat = Q_table[st][mt];
+
+            // 根据 《强化学习的数学原理》中算法 7.3 来实现。 Q learning 的 offline 版本。
+            qt1_stat = qt_stat - alpha * ( qt_stat - (consequence.reward + gamma * max_qt_st1a));
+
+            Q_table[st][mt] = qt1_stat;
+
+            st = st1;
+
+            if (agent->world->cells[st].cell_type == e_target) {
+                printf("reach target after going %d steps\n", step);
+            }
+        }
+    }
+
+    // 最后使用训练过的 Q_table 统一更新 target policy 
+    
+    for (i=0; i<state_number; ++i) {
+        Max_Qas  = -FLT_MAX;
+        Max_move = e_idle;
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+
+            if ( Max_Qas < Q_table[i][j]) {
+                Max_Qas = Q_table[i][j];
+                Max_move = j;
+            }
+        }
+
+        // 使用绝对的概率跟新最大动作。
+        //policy_update_greedy_move(target_policy->actions[i], Max_move, 0);
+        policy_set_random_moves(&target_policy->actions[i], Max_move, 0);
+    }
+
+    // 把 target policy 挂回去。
+    agent->policy = target_policy;
+    
+    policy_reset(&behavior_policy);
     return 0;
 }
 
