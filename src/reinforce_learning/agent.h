@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-25 07:50:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-10 13:05:15
+ * @LastEditTime: 2025-10-14 17:34:45
  * @FilePath: /boring-code/src/reinforce_learning/agent.h
  * @Description: 本算法是基于 B 站 赵世钰 老师的公开课《强化学习的数学原理》而实现的。除了公开课，他还有一个同名的电子书《强化学习的数学原理》。
  */
@@ -50,4 +50,7 @@ int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* aent, mat
 int agent_temporal_difference_of_sarsa(agent_t* agent, int start_id, int episodes, int trajectory_length, float epsilon, float gamma, float alpha);
 int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id, int episodes, int max_trajectory_length, float epsilon, float gamma, float alpha);
 int agent_temporal_difference_of_Q_learning_offline(agent_t* agent, int start_id, int episodes, int max_trajectory_length, float epsilon, float gamma, float alpha);
+int agent_value_function_approximation_of_td_state_value_with_linear_function(agent_t* agent, matrix2_t** state_values, int epsiodes, int trajctory_length, matrix2_t** W_out, int dimens, int (*S_figure)(matrix2_t*, int, int), float alpha, float gamma);
+int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent, matrix2_t** W_out, int start_id, int episodes, int trajectory_length, int dimens, int (*Q_figure)(matrix2_t*, int, int, int), float alpah, float gamma, float epsilon);
+
 #endif

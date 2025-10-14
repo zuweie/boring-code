@@ -281,9 +281,9 @@ int agent_value_iteration(agent_t* agent, matrix2_t** state_values, float gamma)
     
 
     // todo 0: 给 agent 的 policy 申请空间。
-    agent->policy->rows = agent->world->rows;
-    agent->policy->cols = agent->world->cols;
-    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+    // agent->policy->rows = agent->world->rows;
+    // agent->policy->cols = agent->world->cols;
+    // agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
 
     int state_number = agent->world->rows * agent->world->cols;
     
@@ -384,9 +384,9 @@ int agent_policy_itreation(agent_t* agent, matrix2_t** state_value, float gamma)
     move_t Max_move;
     consequence_t consequence;
 
-    agent->policy->rows = agent->world->rows;
-    agent->policy->cols = agent->world->cols;
-    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+    // agent->policy->rows = agent->world->rows;
+    // agent->policy->cols = agent->world->cols;
+    // agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
     
     int state_number = agent->world->rows * agent->world->cols;
     
@@ -477,9 +477,9 @@ int agent_policy_iteration_bese_on_monte_carlo_basic(agent_t* agent, matrix2_t**
 
     move_t Max_move;
     consequence_t consequence;
-    agent->policy->rows = agent->world->rows;
-    agent->policy->cols = agent->world->cols;
-    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+    // agent->policy->rows = agent->world->rows;
+    // agent->policy->cols = agent->world->cols;
+    // agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
 
     int state_number  = agent->world->rows * agent->world->cols;
     matrix2_t* Vs_k   = Mat2_create(state_number, 1);
@@ -572,9 +572,9 @@ int agent_policy_iteration_bese_on_monte_carlo_exploring_start(agent_t* agent, m
     int is_close = 0;
     int iter = 0;
     
-    agent->policy->rows = agent->world->rows;
-    agent->policy->cols = agent->world->cols;
-    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+    // agent->policy->rows = agent->world->rows;
+    // agent->policy->cols = agent->world->cols;
+    // agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
 
     int state_number = agent->world->rows * agent->world->cols;
 
@@ -709,11 +709,11 @@ int agent_policy_iteration_base_on_monte_carlo_epsilon_greedy(agent_t* agent, ma
     int i, j, k;
     int iter = 0;
 
-    agent->policy->rows = agent->world->rows;
-    agent->policy->cols = agent->world->cols;
-    agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
+    // agent->policy->rows = agent->world->rows;
+    // agent->policy->cols = agent->world->cols;
+    // agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof(action_t*));
 
-    memset(agent->policy->actions, NULL, agent->world->rows * agent->world->cols * sizeof(action_t*));
+    // memset(agent->policy->actions, NULL, agent->world->rows * agent->world->cols * sizeof(action_t*));
 
     move_t greedy_move      = e_idle;
     float  greedy_probility = 1 - (epsilon * (MOVE_TYPE_NUM-2)) / (MOVE_TYPE_NUM-1);
@@ -882,12 +882,17 @@ int agent_load(const char* grid_path, float (*cell_reward)(cell_clazz_t), const 
     int ret = grid_world_load(grid_path, agent->world, cell_reward);
 
     // 如果 policy 的路径 null，那么我门
-    if (policy_path && ret == 0) {
+    if (ret == 0) {
 
         agent->policy->rows = agent->world->rows;
         agent->policy->cols = agent->world->cols;
-
-        ret = policy_load(policy_path, agent->policy);
+        if (policy_path) {
+            ret = policy_load(policy_path, agent->policy);
+        } else {
+            // 申请一堆 action 的指针表格。
+            agent->policy->actions = (action_t**) malloc (agent->world->rows * agent->world->cols * sizeof (action_t*));
+            memset(agent->policy->actions, NULL, agent->world->rows * agent->world->cols * sizeof (action_t*));
+        }
     }
     return ret;
 }
@@ -979,12 +984,12 @@ int agent_temporal_difference_of_sarsa(agent_t* agent, int start_id, int episode
     
     srand(time(NULL));
 
-    agent->policy->rows = world_rows;
-    agent->policy->cols = world_cols;
-    // 先申请一堆内存处理指针。
-    agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
-    // 置为空指针，等待使用。应为从来未
-    memset(agent->policy->actions, NULL, world_rows*world_cols*sizeof(action_t));
+    // agent->policy->rows = world_rows;
+    // agent->policy->cols = world_cols;
+    // // 先申请一堆内存处理指针。
+    // agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
+    // // 置为空指针，等待使用。应为从来未
+    // memset(agent->policy->actions, NULL, world_rows*world_cols*sizeof(action_t));
 
     // 初始化 Q table，用于更新 policy
     for (i=0; i<state_number; ++i) {
@@ -1114,11 +1119,11 @@ int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id
 
     float Q_table[state_number][MOVE_TYPE_NUM];
 
-    // 初始化 所有的参数
-    agent->policy->rows    = world_rows;
-    agent->policy->cols    = world_cols;
-    agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
-    memset(agent->policy->actions, NULL, world_rows * world_cols * sizeof(action_t*));
+    // // 初始化 所有的参数
+    // agent->policy->rows    = world_rows;
+    // agent->policy->cols    = world_cols;
+    // agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
+    // memset(agent->policy->actions, NULL, world_rows * world_cols * sizeof(action_t*));
 
     for (i=0; i<state_number; ++i) {
         for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
@@ -1207,7 +1212,7 @@ int agent_temporal_difference_of_Q_learning_online(agent_t* agent,  int start_id
 /**
  * @brief 根据 《强化学习的数学原理》 的中，7.4 节中算法 7.3 的实现，这里实现跟书中有点不一致，书中算法是在每一个 episode 中更新 target policy 的。
  * 本人的算法实实现是在所有 episode 都跑完后再更新 target policy 的。因为 offline 版本的算法中 target policy 根本不参与 behavior，
- * 所有的 behavior 都在 uniform disturb 的 policy 产生，那么 target policy 根本没必要在每个 episode 都更新。
+ * 所有的 behavior 都在 uniform distribute 的 policy 产生，那么 target policy 根本没必要在每个 episode 都更新。
  * 
  * @param agent 
  * @param start_id 
@@ -1250,10 +1255,10 @@ int agent_temporal_difference_of_Q_learning_offline(agent_t* agent, int start_id
     behavior_policy.actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
     memset(behavior_policy.actions, NULL, world_rows * world_cols * sizeof(action_t*));
 
-    agent->policy->rows = world_rows;
-    agent->policy->cols = world_cols;
-    agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
-    memset(agent->policy->actions, NULL, world_rows * world_cols * sizeof(action_t*));
+    // agent->policy->rows = world_rows;
+    // agent->policy->cols = world_cols;
+    // agent->policy->actions = (action_t**) malloc (world_rows * world_cols * sizeof(action_t*));
+    // memset(agent->policy->actions, NULL, world_rows * world_cols * sizeof(action_t*));
     
     policy_t* target_policy = agent->policy;
 
@@ -1274,10 +1279,11 @@ int agent_temporal_difference_of_Q_learning_offline(agent_t* agent, int start_id
     while (iter++ < episodes) {
 
         // 每次  epsiodes 的时候，用 behavior policy 走 behavior policy sampling length 步来采样。
-        st = start_id;
+        st   = start_id;
+        step = 0;
         while (agent->world->cells[st].cell_type != e_target &&  step++ < max_trajectory_length ) {
 
-            // 此时的 agent 身上挂着的是 uniform disturb 的 policy，进行均匀的随机采样。
+            // 此时的 agent 身上挂着的是 uniform distribute 的 policy，进行均匀的随机采样。
 
             at = agent->policy->actions[st];
 
@@ -1334,6 +1340,257 @@ int agent_temporal_difference_of_Q_learning_offline(agent_t* agent, int start_id
     policy_reset(&behavior_policy);
     return 0;
 }
+
+/**
+ * @brief 此函数使用 function approximator 来进行 state value 逼近算法，《强化学习的数学原理》第八章 8.2 中的算法 8.1。
+ * 
+ * @param agent 
+ * @param state_values 
+ * @param W 
+ * @param start_id 
+ * @param epsiodes 
+ * @param epsilon 
+ * @param gamma 
+ * @return int 
+ */
+int agent_value_function_approximation_of_td_state_value_with_linear_function(agent_t* agent, matrix2_t** state_values_out, int epsiodes, int trajctory_length, matrix2_t** W_out, int dimens, int (*S_figure)(matrix2_t*, int, int), float alpha, float gamma)
+{
+    int i,j,k;
+    int iter = 0, step = 0;
+    int S_id;
+    int S1_id;
+    float SdotW;
+    float S1dotW;
+    int world_rows = agent->world->rows;
+    int world_cols = agent->world->cols;
+
+    int state_number = world_rows * world_cols;
+
+    matrix2_t* Vs = Mat2_create(world_rows, world_cols);
+    matrix2_t* S  = Mat2_create(1, dimens);
+    matrix2_t* S1 = Mat2_create(1, dimens);
+    matrix2_t* W  = Mat2_create(dimens, 1);
+    matrix2_t* delta_W = Mat2_create(dimens, 1);
+
+    consequence_t consequence;
+    action_t*     at;
+    move_t        mt;
+    
+    Mat2_fill_random(W, 0,1);
+
+    srand(time(NULL));
+
+    while (iter++ <epsiodes) {
+
+        step = 0;
+        S_id = 0;
+        while (step++ < trajctory_length) {
+
+            at = agent->policy->actions[S_id];
+            mt = policy_take_action(at);
+
+            consequence = agent_move(agent, S_id, mt);
+            S1_id = consequence.stay_id;
+
+            S_figure(S, S_id/world_cols, S_id%world_cols);
+            S_figure(S1, S1_id/world_cols, S1_id%world_cols);
+
+            // 8.2 章节中，式子（8.13）中 delta V_hat, 在线性函数情况下，直接就是 S。
+            Mat2_cpy(delta_W, S);
+
+            Mat2_T(delta_W);
+
+            Mat2_dot(S, W);
+            Mat2_dot(S1, W);
+
+            SdotW  = S->pool[0];
+            S1dotW = S1->pool[0];
+
+            // 
+            float state_error = consequence.reward + gamma * S1dotW - SdotW;
+            //printf("state_error : %0.3f\n", state_error);
+
+            Mat2_scalar_multiply(delta_W, alpha * state_error);
+
+            Mat2_add(W, delta_W);
+
+            // 在经过 S 与 W 的点乘，S1 与 W 点乘后，S 变成了标量，于是只能把他的形状变回去。
+            Mat2_reshape(S, 1, dimens);
+            Mat2_reshape(S1, 1 , dimens);
+
+            // 往前走。
+            S_id = S1_id;
+        }
+
+    }
+
+    // 计算完 W 后，我们开始使用 W 来推算 stat value
+    Mat2_reshape(S, 1, dimens);
+
+    for (i=0; i<world_rows; ++i) {
+
+        for (j=0; j<world_cols; ++j) {
+
+            S_figure(S, i, j);
+
+            Mat2_dot(S, W);
+
+            Mat2_put(Vs, i, j, S->pool[0]);
+            
+            Mat2_reshape(S, 1, dimens);
+        }
+
+    }
+
+    // 删除用过的中间变量。
+    Mat2_destroy(S);
+    Mat2_destroy(S1);
+    Mat2_destroy(delta_W);
+
+    // 将结果输出到外面。
+    *state_values_out = Vs;
+    *W_out            = W;
+
+    return 0;
+}
+
+/**
+ * @brief 《强化学习的数学原理》中算法 8.3.1，使用函数逼近 action value。这里是 sarsa 算法。
+ * 
+ * @param agent 
+ * @param W_out 
+ * @param start_id 
+ * @param episodes 
+ * @param trajectory_length 
+ * @param dimens 
+ * @param S_transform 
+ * @param alpah 
+ * @param gamma 
+ * @return int 
+ */
+int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent, matrix2_t** W_out, int start_id, int episodes, int trajectory_length, int dimens, int (*Q_figure)(matrix2_t*, int, int, int), float alpah, float gamma, float epsilon)
+{
+    int i,j,k;
+    int st, st1;
+    int iter = 0, step = 0;
+    
+    int world_rows = agent->world->rows;
+    int world_cols = agent->world->cols;
+    int state_number = world_rows * world_cols;
+
+    float QdotW;
+    float Q1dotW;
+    float qa_error = 0.f;
+    float last_qa_error = 0.f;
+
+    float  Max_Qas;
+    move_t Max_move;
+
+    action_t*     at;
+    action_t*     at1;
+    move_t        mt;
+    move_t        mt1;
+    consequence_t consequence;
+    
+    matrix2_t* Q  = Mat2_create(1, dimens); 
+    matrix2_t* Q1 = Mat2_create(1, dimens);
+    matrix2_t* W  = Mat2_create(dimens, 1);
+    matrix2_t* delta_W = Mat2_create(dimens, 1);
+    Mat2_fill_random(W, 0, 1);
+    srand(time(NULL));
+
+    for (i=0;i<state_number; ++i) {
+        policy_set_random_moves(&agent->policy->actions[i], e_go_up, 1);
+    }
+
+    while (iter++ < episodes) {
+
+        step = 0;
+        st = start_id;
+        while ( agent->world->cells[st].cell_type != e_target && step++ < trajectory_length ) {
+
+            // 用之前塑形。
+            Mat2_reshape(Q, 1, dimens);
+            Mat2_reshape(Q1, 1, dimens);
+
+            at = agent->policy->actions[st];
+            mt = policy_take_action(at);
+
+            consequence = agent_move(agent, st, mt);
+            st1 = consequence.stay_id;
+
+            at1 = agent->policy->actions[st1];
+            mt1 = policy_take_action(at1);
+
+            Q_figure(Q, st/world_cols, st%world_cols, mt);
+            Q_figure(Q1, st1/world_cols, st1%world_cols, mt1);
+
+            // 如果 Q_hat 是线性函数，那么我们他的导数就是Q，因为 delta(Q dot W) = Q;
+            Mat2_cpy(delta_W, Q);
+            Mat2_T(delta_W);
+            
+            Mat2_dot(Q, W);
+            Mat2_dot(Q1, W);
+
+            QdotW  = Q->pool[0];
+            Q1dotW = Q1->pool[0];
+            
+            qa_error = consequence.reward + gamma * Q1dotW - QdotW;
+
+            /* for debug */
+            float convergence_error = sqrt((last_qa_error - qa_error)*(last_qa_error - qa_error));
+            printf("St: %d, St1: %d, QdotW: %0.2f, Q1dotW: %0.2f, reward: %0.2f, last_error: %0.3f, curr_error: %0.3f, error convergence: %0.3f \n", \ 
+                st, st1, QdotW, Q1dotW, consequence.reward, last_qa_error, qa_error, convergence_error \
+            );
+            last_qa_error = qa_error;
+            /* for debug */
+
+            Mat2_scalar_multiply(delta_W, alpah * qa_error);
+
+            // 更新 W 权重参数。
+            Mat2_add(W, delta_W);
+
+            // 更新 W 后开始跟新 policy。
+            Max_Qas  = -FLT_MAX;
+            Max_move = e_idle;
+            
+            for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+
+                Mat2_reshape(Q, 1, dimens);
+                
+                Q_figure(Q, st/world_rows, st%world_cols, j);
+                
+                Mat2_dot(Q, W);
+
+                QdotW = Q->pool[0];
+
+                if (Max_Qas < QdotW) {
+                    Max_Qas = QdotW;
+                    Max_move = j;
+                }
+            }
+
+            // 更新这个 policy。
+            policy_update_greedy_move(agent->policy->actions[st], Max_move, epsilon);
+            // 继续下一个点的计算。
+
+            st = st1;
+
+            if (agent->world->cells[st].cell_type == e_target) {
+                printf("reach target after %d steps \n", step);
+            }
+
+        }
+    }
+
+    Mat2_destroy(Q);
+    Mat2_destroy(Q1);
+    Mat2_destroy(delta_W);
+    (*W_out) = W;
+    return 0;
+}
+
+
 
 
 

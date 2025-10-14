@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-10 13:46:52
+ * @LastEditTime: 2025-10-14 17:36:18
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -23,6 +23,8 @@
 static const float cell_reward_1[4]   = {-1., 0, -10., 1};
 static const float cell_reward_ql[4]  = {-10., -1., -10., 0.,};
 static const float cell_reward_ql_offline[4] = {-10., 0, -10, 10};
+static const float cell_reward_fa_td[4] = {-1, 0, -1, 1};
+static const float cell_reward_fa_sarsa[4] = {-10.f, 0.f, -10.f, 1.f};
 
 static int  suite_success_init (void) 
 {
@@ -47,6 +49,51 @@ static float cell_reward_c(cell_clazz_t cell_type) {
     return cell_reward_ql_offline[cell_type];
 }
 
+static float cell_reward_d(cell_clazz_t cell_type) {
+    return cell_reward_fa_td[cell_type];
+}
+
+static float cell_reward_e(cell_clazz_t cell_type) {
+    return cell_reward_fa_sarsa[cell_type];
+}
+
+static int S_3_dimens_transform (matrix2_t* S, int x, int y) 
+{
+    S->pool[0] = 1.0f;
+    S->pool[1] = x;
+    S->pool[2] = y;
+    return 0;
+}
+
+static int S_6_dimens_transform(matrix2_t* S, int x, int y) 
+{
+    S->pool[0] = 1.f;
+    S->pool[1] = (float)x / (float) 4;
+    S->pool[2] = (float)y / (float) 4;
+    S->pool[3] = (float)(x*x) / (float) (4*4) ;
+    S->pool[4] = (float)(y*y) / (float) (4*4);
+    S->pool[5] = (float)(x*y) / (float) (4*4);
+    return 0;
+}
+
+static int Q_4_dimen_figure(matrix2_t* Q, int x, int y, int mt) 
+{
+    Q->pool[0] = 1.f;
+    // Q->pool[1] = (float)x/4;
+    // Q->pool[2] = (float)y/4;
+    // Q->pool[3] = (float)mt/5;
+    Q->pool[1] = x;
+    Q->pool[2] = y;
+    Q->pool[3] = mt;
+    return 0;
+}
+
+static int S_2_dimens_transform(matrix2_t* S, int x, int y) 
+{
+    S->pool[0] = x;
+    S->pool[1] = y;
+    return 0;
+}
 static void display_state_value(agent_t* agent, matrix2_t* state_value) 
 {
     for (int i=0; i<agent->world->rows; ++i) {
@@ -368,6 +415,86 @@ static void test_Q_learning_offline(void)
     return;
 }
 
+static void test_function_approximation_of_td_state_value(void) 
+{
+    matrix2_t* state_value = NULL;
+    matrix2_t* state_value2 = NULL;
+    matrix2_t* state_value3 = NULL;
+    matrix2_t* reward = NULL;
+    matrix2_t* transform = NULL;
+    matrix2_t* W_out = NULL;
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    agent_init(&agent);
+    agent_load(grid_path, &cell_reward_d, NULL, &agent);
+
+    // 
+    // srand(time(NULL));
+    int state_number = agent.policy->rows * agent.policy->cols;
+
+    for (int i=0; i<state_number; ++i) {
+        policy_set_random_moves(&agent.policy->actions[i], e_go_up, 1);
+    }
+
+    agent_calculate_state_values(&agent, &state_value3, &reward, &transform, 1000, 0.9);
+
+    agent_temporal_difference_for_state_value(&agent, &state_value, 0.1, 0.9, 1000);
+
+    agent_value_function_approximation_of_td_state_value_with_linear_function(     \
+        &agent, &state_value2, 500, 500, &W_out, 3, &S_3_dimens_transform, 0.1, 0.9 \
+    );
+
+    printf("\n");
+
+    agent_display_gridworld(&agent);
+    agent_display_policy2(&agent);
+
+    Mat2_reshape(state_value3, 5, 5);
+
+    MAT2_INSPECT(state_value3);
+    MAT2_INSPECT(state_value);
+    MAT2_INSPECT(state_value2);
+
+    MAT2_INSPECT(W_out);
+
+    Mat2_destroy(state_value);
+    Mat2_destroy(state_value2);
+    Mat2_destroy(state_value3);
+    Mat2_destroy(reward);
+    Mat2_destroy(transform);
+    Mat2_destroy(W_out);
+
+    agent_reset(&agent);
+
+    return;
+
+}
+
+static void test_function_approximation_of_sarsa(void) 
+{
+    matrix2_t* W_out;
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    agent_init(&agent);
+    agent_load(grid_path, &cell_reward_e, NULL, &agent);
+
+    agent_value_function_approximation_sarsa_with_linear_function(           \
+        &agent, &W_out, 0, 100, 50000, 4, &Q_4_dimen_figure, 0.001, 0.9, 0.1 \
+    );
+
+    printf("\n");
+
+    agent_display_gridworld(&agent);
+    agent_display_policy2(&agent);
+
+    MAT2_INSPECT(W_out);
+
+    Mat2_destroy(W_out);
+
+    agent_reset(&agent);
+
+    return;
+}
 
 int do_reinforce_learning_test(void) 
 {
@@ -440,7 +567,17 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "templor diffrence", test_Q_learning_offline) ) {
+    // if (NULL == CU_add_test(pSuite, "templor diffrence", test_Q_learning_offline) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    // if (NULL == CU_add_test(pSuite, "function approximation td state value", test_function_approximation_of_td_state_value) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "functin approximation sarsa", test_function_approximation_of_sarsa) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
