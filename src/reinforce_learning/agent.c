@@ -1353,7 +1353,7 @@ int agent_temporal_difference_of_Q_learning_offline(agent_t* agent, int start_id
  * @param gamma 
  * @return int 
  */
-int agent_value_function_approximation_of_td_state_value_with_linear_function(agent_t* agent, matrix2_t** state_values_out, int epsiodes, int trajctory_length, matrix2_t** W_out, int dimens, int (*S_figure)(matrix2_t*, int, int), float alpha, float gamma)
+int agent_value_function_approximation_of_td_state_value_with_linear_function(agent_t* agent, matrix2_t** state_values_out, int epsiodes, int trajctory_length, matrix2_t** W_out, int feature_dimens, int (*S_feature)(matrix2_t*, int, int), float alpha, float gamma)
 {
     int i,j,k;
     int iter = 0, step = 0;
@@ -1367,16 +1367,17 @@ int agent_value_function_approximation_of_td_state_value_with_linear_function(ag
     int state_number = world_rows * world_cols;
 
     matrix2_t* Vs = Mat2_create(world_rows, world_cols);
-    matrix2_t* S  = Mat2_create(1, dimens);
-    matrix2_t* S1 = Mat2_create(1, dimens);
-    matrix2_t* W  = Mat2_create(dimens, 1);
-    matrix2_t* delta_W = Mat2_create(dimens, 1);
+    matrix2_t* S  = Mat2_create(1, feature_dimens);
+    matrix2_t* S1 = Mat2_create(1, feature_dimens);
+    matrix2_t* W  = Mat2_create(feature_dimens, 1);
+    matrix2_t* delta_W = Mat2_create(feature_dimens, 1);
 
     consequence_t consequence;
     action_t*     at;
     move_t        mt;
     
-    Mat2_fill_random(W, 0,1);
+    //Mat2_fill_random(W, 0,1);
+    Mat2_fill(W, 0.f);
 
     srand(time(NULL));
 
@@ -1392,8 +1393,8 @@ int agent_value_function_approximation_of_td_state_value_with_linear_function(ag
             consequence = agent_move(agent, S_id, mt);
             S1_id = consequence.stay_id;
 
-            S_figure(S, S_id/world_cols, S_id%world_cols);
-            S_figure(S1, S1_id/world_cols, S1_id%world_cols);
+            S_feature(S, S_id/world_cols, S_id%world_cols);
+            S_feature(S1, S1_id/world_cols, S1_id%world_cols);
 
             // 8.2 章节中，式子（8.13）中 delta V_hat, 在线性函数情况下，直接就是 S。
             Mat2_cpy(delta_W, S);
@@ -1415,8 +1416,8 @@ int agent_value_function_approximation_of_td_state_value_with_linear_function(ag
             Mat2_add(W, delta_W);
 
             // 在经过 S 与 W 的点乘，S1 与 W 点乘后，S 变成了标量，于是只能把他的形状变回去。
-            Mat2_reshape(S, 1, dimens);
-            Mat2_reshape(S1, 1 , dimens);
+            Mat2_reshape(S, 1, feature_dimens);
+            Mat2_reshape(S1, 1 , feature_dimens);
 
             // 往前走。
             S_id = S1_id;
@@ -1425,21 +1426,20 @@ int agent_value_function_approximation_of_td_state_value_with_linear_function(ag
     }
 
     // 计算完 W 后，我们开始使用 W 来推算 stat value
-    Mat2_reshape(S, 1, dimens);
+    //Mat2_reshape(S, 1, feature_dimens);
 
     for (i=0; i<world_rows; ++i) {
 
         for (j=0; j<world_cols; ++j) {
 
-            S_figure(S, i, j);
+            Mat2_reshape(S, 1, feature_dimens);
+
+            S_feature(S, i, j);
 
             Mat2_dot(S, W);
 
             Mat2_put(Vs, i, j, S->pool[0]);
-            
-            Mat2_reshape(S, 1, dimens);
         }
-
     }
 
     // 删除用过的中间变量。
@@ -1456,6 +1456,14 @@ int agent_value_function_approximation_of_td_state_value_with_linear_function(ag
 
 /**
  * @brief 《强化学习的数学原理》中算法 8.3.1，使用函数逼近 action value。这里是 sarsa 算法。
+ * 妈的受不了了!!!
+ * 
+ * 重要提示：这个算法需要的 feature 的构造函数非常重要，记录如下：feature 函数，在 reinforce 的 test case 源文件中实现。
+ * 
+ * 这个傅立叶是非常他妈的重要的吊他娘娘的，搞了三天，一直忽视这个函数，导致调试了三天才能算出收敛的 policy。操他妈个逼。自己就是大傻逼。
+ * 《强化学习的数学原理》书中 8.2 节中关于线性逼近函数的 feature，如何构造的。书上只是展示了输入是 2 个参数的情况，当输入为 3个 或者更多的时候，例如本本例子实现中，
+ * 我需要输入 x、y、at 这三个参数，那么整个 feature 的维度则为 (q+1)^3, q 是指为每个输入的参数提供 q+1 种的系数，例如：q 为 2。
+ * 那么有 0*x，1*x，2*x，这三种系数组合，加上有 3 个输入参数，那么总共的组合有 (2 + 1)^3 = 9, feature 的维度为 9.
  * 
  * @param agent 
  * @param W_out 
@@ -1468,7 +1476,7 @@ int agent_value_function_approximation_of_td_state_value_with_linear_function(ag
  * @param gamma 
  * @return int 
  */
-int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent, matrix2_t** W_out, int start_id, int episodes, int trajectory_length, int dimens, int (*Q_figure)(matrix2_t*, int, int, int), float alpah, float gamma, float epsilon)
+int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent, matrix2_t** W_out, int start_id, int episodes, int trajectory_length, int feature_dimens, int (*Q_feature)(matrix2_t*, int, int, int), float alpah, float gamma, float epsilon)
 {
     int i,j,k;
     int st, st1;
@@ -1492,11 +1500,14 @@ int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent
     move_t        mt1;
     consequence_t consequence;
     
-    matrix2_t* Q  = Mat2_create(1, dimens); 
-    matrix2_t* Q1 = Mat2_create(1, dimens);
-    matrix2_t* W  = Mat2_create(dimens, 1);
-    matrix2_t* delta_W = Mat2_create(dimens, 1);
-    Mat2_fill_random(W, 0, 1);
+    matrix2_t* Q  = Mat2_create(1, feature_dimens); 
+    matrix2_t* Q1 = Mat2_create(1, feature_dimens);
+    matrix2_t* W  = Mat2_create(feature_dimens, 1);
+    matrix2_t* delta_W = Mat2_create(feature_dimens, 1);
+    //matrix2_t* W_last = Mat2_create(feature_dimens, 1);
+
+    //Mat2_fill_random(W, 0, 1);
+    Mat2_fill(W, 0);
     srand(time(NULL));
 
     for (i=0;i<state_number; ++i) {
@@ -1510,8 +1521,8 @@ int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent
         while ( agent->world->cells[st].cell_type != e_target && step++ < trajectory_length ) {
 
             // 用之前塑形。
-            Mat2_reshape(Q, 1, dimens);
-            Mat2_reshape(Q1, 1, dimens);
+            Mat2_reshape(Q, 1, feature_dimens);
+            Mat2_reshape(Q1, 1, feature_dimens);
 
             at = agent->policy->actions[st];
             mt = policy_take_action(at);
@@ -1522,8 +1533,8 @@ int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent
             at1 = agent->policy->actions[st1];
             mt1 = policy_take_action(at1);
 
-            Q_figure(Q, st/world_cols, st%world_cols, mt);
-            Q_figure(Q1, st1/world_cols, st1%world_cols, mt1);
+            Q_feature(Q, st/world_cols, st%world_cols, mt);
+            Q_feature(Q1, st1/world_cols, st1%world_cols, mt1);
 
             // 如果 Q_hat 是线性函数，那么我们他的导数就是Q，因为 delta(Q dot W) = Q;
             Mat2_cpy(delta_W, Q);
@@ -1535,17 +1546,9 @@ int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent
             QdotW  = Q->pool[0];
             Q1dotW = Q1->pool[0];
             
-            qa_error = consequence.reward + gamma * Q1dotW - QdotW;
+            qa_error = alpah * ( consequence.reward + gamma * Q1dotW - QdotW);
 
-            /* for debug */
-            float convergence_error = sqrt((last_qa_error - qa_error)*(last_qa_error - qa_error));
-            printf("St: %d, St1: %d, QdotW: %0.2f, Q1dotW: %0.2f, reward: %0.2f, last_error: %0.3f, curr_error: %0.3f, error convergence: %0.3f \n", \ 
-                st, st1, QdotW, Q1dotW, consequence.reward, last_qa_error, qa_error, convergence_error \
-            );
-            last_qa_error = qa_error;
-            /* for debug */
-
-            Mat2_scalar_multiply(delta_W, alpah * qa_error);
+            Mat2_scalar_multiply(delta_W, qa_error);
 
             // 更新 W 权重参数。
             Mat2_add(W, delta_W);
@@ -1556,14 +1559,13 @@ int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent
             
             for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
 
-                Mat2_reshape(Q, 1, dimens);
-                
-                Q_figure(Q, st/world_rows, st%world_cols, j);
+                Mat2_reshape(Q, 1, feature_dimens);                
+                Q_feature(Q, st/world_rows, st%world_cols, j);
                 
                 Mat2_dot(Q, W);
 
                 QdotW = Q->pool[0];
-
+                
                 if (Max_Qas < QdotW) {
                     Max_Qas = QdotW;
                     Max_move = j;
@@ -1579,14 +1581,34 @@ int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent
             if (agent->world->cells[st].cell_type == e_target) {
                 printf("reach target after %d steps \n", step);
             }
-
         }
     }
 
     Mat2_destroy(Q);
     Mat2_destroy(Q1);
     Mat2_destroy(delta_W);
+    //Mat2_destroy(W_last);
     (*W_out) = W;
+    return 0;
+}
+
+/**
+ * @brief 
+ * 
+ * @param agent 
+ * @param W_out 
+ * @param start_id 
+ * @param episodes 
+ * @param trajectory_length 
+ * @param feature_dimens 
+ * @param Q_feature 
+ * @param alpah 
+ * @param gamma 
+ * @param epsilon 
+ * @return int 
+ */
+int agent_value_function_approximation_of_Q_learning_off_policy_neural_network(agent_t* agent, matrix2_t** W_out, int start_id, int episodes, int trajectory_length, int feature_dimens, int (*Q_feature)(matrix2_t*, int, int, int), float alpah, float gamma, float epsilon) 
+{
     return 0;
 }
 

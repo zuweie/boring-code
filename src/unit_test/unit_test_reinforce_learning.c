@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-14 17:36:18
+ * @LastEditTime: 2025-10-15 16:38:14
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -76,15 +76,77 @@ static int S_6_dimens_transform(matrix2_t* S, int x, int y)
     return 0;
 }
 
-static int Q_4_dimen_figure(matrix2_t* Q, int x, int y, int mt) 
+static int Q_4_dimens_feature(matrix2_t* Q, int x, int y, int mt) 
 {
-    Q->pool[0] = 1.f;
+    Q->pool[3] = 1.f;
     // Q->pool[1] = (float)x/4;
     // Q->pool[2] = (float)y/4;
     // Q->pool[3] = (float)mt/5;
-    Q->pool[1] = x;
-    Q->pool[2] = y;
-    Q->pool[3] = mt;
+    Q->pool[0] = x;
+    Q->pool[1] = y;
+    Q->pool[2] = mt;
+    return 0;
+}
+
+static int Q_8_dimens_fourier_feature(matrix2_t* Q, int x, int y, int mt)
+{   const float pi = 3.1415926;
+    float fx = (float) x / 4.f;
+    float fy = (float) y / 4.f;
+    float fmt = (float) (mt -1) / 4.f;
+    Q->pool[0] = cos(pi * (0*fx + 0*fy + 0*fmt));
+    Q->pool[1] = cos(pi * (0*fx + 0*fy + 1*fmt));
+    Q->pool[2] = cos(pi * (0*fx + 1*fy + 0*fmt));
+    Q->pool[3] = cos(pi * (0*fx + 1*fy + 1*fmt));
+    Q->pool[4] = cos(pi * (1*fx + 0*fy + 0*fmt));
+    Q->pool[5] = cos(pi * (1*fx + 0*fy + 1*fmt));
+    Q->pool[6] = cos(pi * (1*fx + 1*fy + 0*fmt));
+    Q->pool[7] = cos(pi * (1*fx + 1*fy + 1*fmt));
+    return 0;
+}   
+
+/**
+ * @brief 这个傅立叶是非常他妈的重要的吊他娘娘的，搞了三天，一直忽视这个函数，导致调试了三天才能算出收敛的 policy。操他妈个逼。自己就是大傻逼。
+ * 《强化学习的数学原理》书中 8.2 节中关于线性逼近函数的 feature，如何构造的。书上只是展示了输入是 2 的情况，当输入为 3 的时候，例如本本例子中，
+ * 我需要输入 x y 和 at 这三个参数，那么整个 feature 的维度则为 (q+1)^3, q 是指为每个输入的参数提供 q+1 种的系数，例如：输入为 x1，x2, x3.
+ * q 为 2， x1 有 0*x1，1*x1，2*x3，这三种系数组合，加上有 3 个输入参数，那么总共的组合有 (2 + 1)^3 = 9, feature 的维度为 9.
+ * @param Q 
+ * @param x 
+ * @param y 
+ * @param mt 
+ * @return int 
+ */
+static int Q_x_dimens_fourier_feature(matrix2_t* Q, int x, int y, int mt) 
+{
+    const float pi = 3.1415926;
+    float fx = (float) x / 4.f;
+    float fy = (float) y / 4.f;
+    float fmt = (float) (mt-1) / 4.f;
+
+    int dimens = Q->rows * Q->cols;
+    int q = pow(dimens, 1.f/3.f) - 1;
+
+    int i=0;
+    for (int c1=0; c1<q+1; c1++) {
+        for (int c2=0; c2<q+1; c2++) {
+            for (int c3=0; c3<q+1; c3++) {
+                Q->pool[i++] = cos ( pi * (c1*fx + c2*fy + c3*fmt) );
+            }
+        }
+    }
+    return 0;
+}
+
+static int Q_9_dimens_feature(matrix2_t* Q, int x, int y, int mt) 
+{
+    Q->pool[0] = 1.f;
+    Q->pool[1] = (float) (x) / (float) 4;
+    Q->pool[2] = (float) (y) / (float) 4;
+    Q->pool[3] = (float) (mt) / (float) 5;
+    Q->pool[4] = (float) (x*x) / (float)(4*4);
+    Q->pool[5] = (float) (y*y) / (float)(4*4);
+    Q->pool[6] = (float) (mt*mt) / (float)(5*5);
+    Q->pool[7] = (float) (x*y) / (float)(4*4);
+    Q->pool[8] = (float) (x*mt) / (float)(4*5);
     return 0;
 }
 
@@ -477,18 +539,17 @@ static void test_function_approximation_of_sarsa(void)
     agent_t agent;
     agent_init(&agent);
     agent_load(grid_path, &cell_reward_e, NULL, &agent);
-
+    printf("\n\n");
     agent_value_function_approximation_sarsa_with_linear_function(           \
-        &agent, &W_out, 0, 100, 50000, 4, &Q_4_dimen_figure, 0.001, 0.9, 0.1 \
+        &agent, &W_out, 0, 500, 10000, pow((6+1), 3), &Q_x_dimens_fourier_feature, 0.001, 0.9, 0.1 \
     );
 
     printf("\n");
-
-    agent_display_gridworld(&agent);
-    agent_display_policy2(&agent);
-
     MAT2_INSPECT(W_out);
 
+    agent_display_gridworld(&agent);
+    printf("\n");
+    agent_display_policy2(&agent);
     Mat2_destroy(W_out);
 
     agent_reset(&agent);
