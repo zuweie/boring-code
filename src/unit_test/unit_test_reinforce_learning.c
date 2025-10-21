@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-15 16:38:14
+ * @LastEditTime: 2025-10-21 16:29:20
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,11 +14,10 @@
 #include "reinforce_learning/grid_world.h"
 #include "reinforce_learning/policy.h"
 #include "reinforce_learning/agent.h"
+#include "reinforce_learning/neural_network.h"
+#include "reinforce_learning/neural_network_functions.h"
 
-    // e_null = 0,
-    // e_normel,
-    // e_forbitten,
-    // e_target
+
 
 static const float cell_reward_1[4]   = {-1., 0, -10., 1};
 static const float cell_reward_ql[4]  = {-10., -1., -10., 0.,};
@@ -557,6 +556,163 @@ static void test_function_approximation_of_sarsa(void)
     return;
 }
 
+static void nn_progress(const char* log_str, float err, int step) 
+{
+    char buffer[1024];
+    memset(buffer, 0x0, sizeof(buffer));
+    sprintf(buffer, "%s step: %d, error: %0.2f", log_str, step, err);
+    printf("%s\r", buffer);
+    fflush(stdout);
+}
+
+static void test_nn(void) 
+{
+    #define x_data_row 60
+    #define x_data_col 4
+
+    #define y_data_row 60
+    #define y_data_col 3
+
+    vfloat_t trainingDatas[x_data_row][x_data_col] ={
+    /************* S *************/
+        {5.1f, 3.5f, 1.4f, 0.2f}, 
+        {4.9f, 3.0f, 1.4f, 0.2f}, 
+        {4.7f, 3.2f, 1.3f, 0.2f},
+
+        {4.6f, 3.1f, 1.5f, 0.2f}, 
+        {5.0f, 3.6f, 1.4f, 0.2f}, 
+        {5.4f, 3.9f, 1.7f, 0.4f},
+
+        {4.6f, 3.4f, 1.4f, 0.3f}, 
+        {5.0f, 3.4f, 1.5f, 0.2f}, 
+        {4.4f, 2.9f, 1.4f, 0.2f},
+
+        {4.9f, 3.1f, 1.5f, 0.1f}, 
+        {5.4f, 3.4f, 1.5f, 0.2f}, 
+        {4.8f, 3.4f, 1.6f, 0.2f},
+
+        {4.8f, 3.0f, 1.4f, 0.1f}, 
+        {4.3f, 3.0f, 1.1f, 0.1f}, 
+        {5.8f, 4.0f, 1.2f, 0.2f},
+
+        {5.7f, 4.4f, 1.5f, 0.4f}, 
+        {5.4f, 3.9f, 1.3f, 0.4f}, 
+        {5.1f, 3.5f, 1.4f, 0.3f},
+
+        {5.7f, 3.8f, 1.7f, 0.3f}, 
+        {5.1f, 3.8f, 1.5f, 0.3f},
+    /************* v ************/
+        {7.0f, 3.2f, 4.7f, 1.4f}, 
+        {6.4f, 3.2f, 4.5f, 1.5f}, 
+        {6.9f, 3.1f, 4.9f, 1.5f},
+
+        {5.5f, 2.3f, 4.0f, 1.3f}, 
+        {6.5f, 2.8f, 4.6f, 1.5f}, 
+        {5.7f, 2.8f, 4.5f, 1.3f}, 
+
+        {6.3f, 3.3f, 4.7f, 1.6f}, 
+        {4.9f, 2.4f, 3.3f, 1.0f}, 
+        {6.6f, 2.9f, 4.6f, 1.3f},
+
+        {5.2f, 2.7f, 3.9f, 1.4f}, 
+        {5.0f, 2.0f, 3.5f, 1.0f}, 
+        {5.9f, 3.0f, 4.2f, 1.5f}, 
+
+        {6.0f, 2.2f, 4.0f, 1.0f}, 
+        {6.1f, 2.9f, 4.7f, 1.4f}, 
+        {5.6f, 2.9f, 3.6f, 1.3f}, 
+
+        {6.7f, 3.1f, 4.4f, 1.4f}, 
+        {5.6f, 3.0f, 4.5f, 1.5f}, 
+        {5.8f, 2.7f, 4.1f, 1.0f},
+
+        {6.2f, 2.2f, 4.5f, 1.5f}, 
+        {5.6f, 2.5f, 3.9f, 1.1f},
+    /*********** R **************/
+        {6.3f, 3.3f, 6.0f, 2.5f}, 
+        {5.8f, 2.7f, 5.1f, 1.9f}, 
+        {7.1f, 3.0f, 5.9f, 2.1f},
+
+        {6.3f, 2.9f, 5.6f, 1.8f}, 
+        {6.5f, 3.0f, 5.8f, 2.2f}, 
+        {7.6f, 3.0f, 6.6f, 2.1f},
+
+        {4.9f, 2.5f, 4.5f, 1.7f}, 
+        {7.3f, 2.9f, 6.3f, 1.8f}, 
+        {6.7f, 2.5f, 5.8f, 1.8f}, 
+
+        {7.2f, 3.6f, 6.1f, 2.5f}, 
+        {6.5f, 3.2f, 5.1f, 2.0f}, 
+        {6.4f, 2.7f, 5.3f, 1.9f}, 
+
+        {6.8f, 3.0f, 5.5f, 2.1f}, 
+        {5.7f, 2.5f, 5.0f, 2.0f}, 
+        {5.8f, 2.8f, 5.1f, 2.4f},
+
+        {6.4f, 3.2f, 5.3f, 2.3f}, 
+        {6.5f, 3.0f, 5.5f, 1.8f}, 
+        {7.7f, 3.8f, 6.7f, 2.2f}, 
+        
+        {7.7f, 2.6f, 6.9f, 2.3f}, 
+        {6.0f, 2.2f, 5.0f, 1.5f} 
+    };
+    // fucking data
+    vfloat_t labelDatas[y_data_row][y_data_col] = {
+        {1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},
+        {1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},{1.,0.,0.},
+        {0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},
+        {0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},{0.,1.,0.},
+        {0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},
+        {0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.},{0.,0.,1.}
+    };
+
+    vfloat_t _sample [4] = {
+        4.6f, 3.2f, 1.3f, 0.2f
+    };
+
+    matrix2_t* datas = Mat2_create(1,1);
+    matrix2_t* labels = Mat2_create(1,1);
+    matrix2_t* _Input = Mat2_create(1,1);
+    matrix2_t* predict = Mat2_create(1,1);
+
+    Mat2_load_on_shape(datas, trainingDatas, x_data_row, x_data_col);
+    Mat2_load_on_shape(labels, labelDatas, y_data_row, y_data_col);
+    Mat2_load_on_shape(_Input, _sample, 4, 1);
+
+    Mat2_T(datas);
+    Mat2_T(labels);
+    //Mat2_T(_Input);
+
+    nn_t nn;
+    int neruals[] = {3, 5, 4};
+    int input_dimens  = 4;
+    int output_dimens = 3;
+    int batch         = 20;
+    int max_iter      = 600000;
+    int alpha         = 0.0001;
+    int epsilon       = 0.001;
+    int layers        = 3;
+
+    nn_build(&nn, input_dimens, output_dimens, batch, max_iter, alpha, epsilon, layers, neruals, \
+        relu, gradient_relu, softmax1, gradient_softmax1, crossentropy, gradient_corssentropy    \
+    );
+
+    nn_feed(&nn, datas, labels);
+    // train the data
+    nn_fit(&nn, &nn_progress);
+
+    nn_perdict(&nn, _Input, predict);
+
+    MAT2_INSPECT(predict);
+
+    Mat2_destroy(datas);
+    Mat2_destroy(labels);
+    Mat2_destroy(_Input);
+    Mat2_destroy(predict);
+
+    return;
+}
+
 int do_reinforce_learning_test(void) 
 {
 
@@ -638,11 +794,15 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "functin approximation sarsa", test_function_approximation_of_sarsa) ) {
+    // if (NULL == CU_add_test(pSuite, "functin approximation sarsa", test_function_approximation_of_sarsa) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test nn", test_nn) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-
     return 0;
 
 }

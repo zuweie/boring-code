@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-03 13:26:02
+ * @LastEditTime: 2025-10-18 11:41:07
  * @FilePath: /boring-code/src/statistical_learning/matrix2_operator.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -23,6 +23,8 @@ do{ \
     } \
 } while(0)
 
+int __mat2_rows_cpy(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int dest_row_idx, int src_row_idx, int src_row_open_end);
+int __mat2_cols_cpy(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int dest_col_idx, int src_row_idx, int src_col_open_end);
 int __mat2_dot(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3);
 int __mat2_hadamard_product(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, vfloat_t* m3, size_t rows3, size_t cols3);
 vfloat_t __mat2_vect_dot(vfloat_t* v1, vfloat_t* v2, size_t n);

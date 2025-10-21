@@ -1,0 +1,75 @@
+#ifndef __NEURAL_NETWORK_H__
+#define __NEURAL_NETWORK_H__
+
+typedef struct matrix2 matrix2_t;
+
+typedef struct znode {
+
+    int id;
+    int in_dimens;
+    int out_dimens;
+    int is_output;
+    matrix2_t* z;
+    matrix2_t* W;
+    matrix2_t* b;
+    matrix2_t* x;
+    struct znode* next;
+    struct znode* prev;
+
+} znode_t;
+
+typedef struct nn {
+
+    int     batch;
+    int     max_iter;
+    float   epsilon;
+
+    // 学习曲率
+    float   alpha;
+
+    matrix2_t* trains_datas;
+    matrix2_t* labels;
+
+    znode_t znode_head;
+
+
+    int (*active)(matrix2_t*);
+    int (*gradient_active)(matrix2_t*);
+    int (*output)(matrix2_t*);
+    int (*gradient_output)(matrix2_t*);
+    float (*loss)(matrix2_t*, matrix2_t*);
+    int (*gradient_loss)(matrix2_t*, matrix2_t*);
+    
+} nn_t;
+
+static inline znode_t* znode_first(nn_t* nn) 
+{
+    return nn->znode_head.next;
+}
+
+static inline znode_t* znode_last(nn_t* nn) 
+{
+    return nn->znode_head.prev;
+}
+
+static inline znode_t* znode_head(nn_t* nn) {
+    return &nn->znode_head;
+}
+
+static inline znode_t* znode_tail(nn_t* nn) {
+    return &nn->znode_head;
+}
+
+int nn_build(nn_t* nn, \
+    int input_dimens, int output_dimens, int batch, int max_iter, float alpha, float epsilon, \
+    int layers, int neruals[], \
+    int (*active)(matrix2_t*), int (*gradient_active)(matrix2_t*), \
+    int (*output)(matrix2_t*), int (*gradient_output)(matrix2_t*), \
+    float (*loss)(matrix2_t*, matrix2_t*), int (*gradient_loss)(matrix2_t*, matrix2_t*)
+);
+
+int nn_feed(nn_t *nn, matrix2_t* train_dates, matrix2_t* labels);
+int nn_fit(nn_t* nn, void (*progress)(const char* log_str, float err, int step));
+int nn_perdict(nn_t*nn, matrix2_t* Input, matrix2_t* perdict);
+
+#endif

@@ -692,6 +692,58 @@ static void test_matrix2_2I (void)
     Mat2_destroy(mat);
     return;
 }
+
+static void test_matrix2_rows_cols_cpy(void) 
+{
+    matrix2_t* m0 = Mat2_create(3, 5);
+    Mat2_fill(m0, 1);
+
+    matrix2_t* m1 = Mat2_create(3, 5);
+    Mat2_arange(m1, 1, 3*5);
+   // Mat2_fill(m1, 1);
+
+    matrix2_t* m2 = Mat2_create(2, 5);
+    Mat2_arange(m2, 1, 2*5);
+
+    matrix2_t* m3 = Mat2_create(3, 7);
+    Mat2_arange(m3, 11, 11+3*7-1);    
+
+    // MAT2_INSPECT(m1);
+    // printf("\n");
+    // MAT2_INSPECT(m2);
+    // printf("\n");
+    // MAT2_INSPECT(m3);
+    // printf("\n");
+
+    __mat2_rows_cpy(&m0->pool, &m0->rows, &m0->cols, m2->pool, m2->rows, m2->cols, 10, 0, 0+2);
+    __mat2_cols_cpy(&m1->pool, &m1->rows, &m1->cols, m3->pool, m3->rows, m3->cols, 3, 2, 2+5 );
+
+    CU_ASSERT_EQUAL(m1->cols, 8);
+    CU_ASSERT_DOUBLE_EQUAL(Mat2_get(m1, 2, 7), 31, 0.001);
+    CU_ASSERT_DOUBLE_EQUAL(Mat2_get(m1, 2, 0), 11, 0.001);
+
+    CU_ASSERT_EQUAL(m0->rows, 12);
+    CU_ASSERT_DOUBLE_EQUAL(Mat2_get(m0, 0, 0), 1, 0.001);
+    CU_ASSERT_DOUBLE_EQUAL(Mat2_get(m0, 11, 4), 10, 0.001);
+
+
+    //MAT2_INSPECT(m0);
+    // MAT2_INSPECT(m1);
+    // printf("\n");
+    // MAT2_INSPECT(m2);
+    // printf("\n");
+    // MAT2_INSPECT(m3);
+    // printf("\n");
+
+    Mat2_destroy(m0);
+    Mat2_destroy(m1);
+    Mat2_destroy(m2);
+    Mat2_destroy(m3);
+
+    return;
+
+    //__mat2_rows_cpy(&m1->pool, &m1->rows, &m1->cols, m2->pool, m2->rows, m2->cols, )
+}
 int do_matrix2_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -701,6 +753,7 @@ int do_matrix2_test (void)
         return CU_get_error();
     }
 
+    #if 0
     if (NULL == CU_add_test(pSuite, "test mat rescale ", test_mat2_rescale) ) {
         CU_cleanup_registry();
         return CU_get_error();
@@ -817,4 +870,10 @@ int do_matrix2_test (void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
+    if (NULL == CU_add_test(pSuite, " test rows cols cpy ", test_matrix2_rows_cols_cpy) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    
 }

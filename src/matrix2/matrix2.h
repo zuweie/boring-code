@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-08-31 16:12:31
+ * @LastEditTime: 2025-10-21 15:49:05
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,7 +12,7 @@
 #include "matrix2_operator.h"
 #include "vtype/vfloat_type.h"
 
-typedef struct {
+typedef struct matrix2{
 
     vfloat_t* pool;
     size_t rows;
@@ -38,6 +38,8 @@ int Mat2_is_close(matrix2_t* m1, matrix2_t* m2, float epsilon);
 int Mat2_fill(matrix2_t* mat, vfloat_t v);
 int Mat2_fill_random(matrix2_t* mat, double from, double to);
 int Mat2_cpy(matrix2_t* dest, matrix2_t* src);
+int Mat2_cpy_rows_to(matrix2_t* dest, int dest_row_idx, matrix2_t* src, int src_row_idx);
+int Mat2_cpy_cols_to(matrix2_t* dest, int dest_col_idx, matrix2_t* src, int src_col_idx);
 int Mat2_slice_row_to(matrix2_t* dest, matrix2_t* src, int row_idx);
 int Mat2_slice_rows_to(matrix2_t* dest, matrix2_t* src, int begin, int open_end);
 int Mat2_slice_col_to(matrix2_t* dest, matrix2_t* src, int col_idx);

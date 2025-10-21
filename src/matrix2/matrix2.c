@@ -44,6 +44,52 @@ int Mat2_cpy(matrix2_t* dest, matrix2_t* src)
     return 0;
 }
 
+int Mat2_cpy_rows_to(matrix2_t* dest, int dest_row_idx, matrix2_t* src, int src_row_idx)
+{
+    if (dest_row_idx >=0 
+        && src_row_idx >=0 
+        && src_row_idx < src->rows 
+        && dest->cols == src->cols) {
+
+        return __mat2_rows_cpy(
+            &dest->pool,
+            &dest->rows,
+            &dest->cols,
+            src->pool,
+            src->rows, 
+            src->cols,
+            dest_row_idx,
+            src_row_idx,
+            src_row_idx + 1
+        );
+        
+    }
+
+    return -1;
+}
+
+int Mat2_cpy_cols_to(matrix2_t* dest, int dest_col_idx, matrix2_t* src, int src_col_idx)
+{
+    if (dest_col_idx >=0 
+        && src_col_idx >=0 
+        && src_col_idx < src->cols 
+        && dest->rows == src->rows) {
+
+        return __mat2_cols_cpy(
+            &dest->pool,
+            &dest->rows,
+            &dest->cols,
+            src->pool,
+            src->rows,
+            src->cols,
+            dest_col_idx, 
+            src_col_idx,
+            src_col_idx + 1
+        );
+    }
+    return -1;
+}
+
 int Mat2_slice_row_to(matrix2_t* dest, matrix2_t* src, int row_idx)
 {
     return Mat2_slice_rows_to(dest, src, row_idx, row_idx+1);

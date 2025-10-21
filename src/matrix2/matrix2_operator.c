@@ -978,3 +978,100 @@ int __mat2_eigenvector(vfloat_t** eigen_vector, vfloat_t* a,  vfloat_t eigen_val
     return 0;
 }
 
+/**
+ * @brief 从 m2 复制 cpy number 行数据到 m1
+ * 
+ * @param m1 
+ * @param rows1 
+ * @param cols1 
+ * @param m2 
+ * @param rows2 
+ * @param cols2 
+ * @param dest_row_idx 
+ * @param src_row_idx 
+ * @param cpy_number 
+ * @return int 
+ */
+int __mat2_rows_cpy(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int dest_row_idx, int src_row_idx, int src_row_open_end)
+{
+
+    int cpy_number = src_row_open_end - src_row_idx;
+    int rows_need  = cpy_number - (*rows1 - (dest_row_idx)) ;
+
+    if (rows_need > 0) {
+        (*rows1) += rows_need;
+        (*m1) = realloc((*m1), (*rows1) * (*cols1) * sizeof(vfloat_t));
+    }
+
+    vfloat_t (*m1_ptr) [*cols1] = (*m1);
+    vfloat_t (*m2_ptr) [cols2]  = (m2);
+
+    // 行复制，可以整批复制。
+    memcpy(&m1_ptr[dest_row_idx][0],  &m2_ptr[src_row_idx][0], cpy_number * (*cols1) * sizeof(vfloat_t));
+
+    return 0;
+
+}
+
+/**
+ * @brief 从 m2 copy 某些列到 m1 指定位置，当黏贴数据超过 m1 容量，m1 会扩容，扩容会导致 m1 没被覆盖的数据出现错误。他妈的这个就很难搞。 
+ * 
+ * @param m1 
+ * @param rows1 
+ * @param cols1 
+ * @param m2 
+ * @param rows2 
+ * @param cols2 
+ * @param dest_col_idx 
+ * @param src_row_idx 
+ * @param cpy_number 
+ * @return int 
+ */
+int __mat2_cols_cpy(vfloat_t** m1, size_t* rows1, size_t* cols1, vfloat_t* m2, size_t rows2, size_t cols2, int dest_col_idx, int src_col_idx, int src_col_open_end)
+{
+
+    int cpy_number = src_col_open_end - src_col_idx;
+    int cols_need  = cpy_number - ( *cols1 - (dest_col_idx) ) ;
+
+    if (cols_need > 0) {
+
+        (*cols1) += cols_need;
+        (*m1) = realloc ((*m1), (*rows1) * (*cols1) * sizeof(vfloat_t));
+
+        // 在填入 m2 的数据前把， 扩容后，弄乱的数据整理好。
+
+        int fix_up_cols = dest_col_idx < (*cols1) ? dest_col_idx : (*cols1);
+        if (fix_up_cols > 0) {
+            int  old_cols = (*cols1) - cols_need;
+
+            vfloat_t (*ptr1)[*cols1]   = (*m1);
+            vfloat_t (*ptr2)[old_cols] = (*m1);
+
+            // 从最后一行开始 copy，copy 到第 2 行的位置，因为第一行不会 被改动。
+            for (int i=(*rows1-1); i>=1; --i) {
+                memcpy( &ptr1[i][0], &ptr2[i][0], fix_up_cols * sizeof(vfloat_t));
+            }
+        }
+
+    }
+    
+    vfloat_t (*m1_ptr)[*cols1] = (*m1);
+    vfloat_t (*m2_ptr)[cols2]  = (m2);
+    
+    // value copy
+    int i,j;
+
+    for (i=0; i<(*rows1); ++i) {
+        
+        if (cpy_number > 1) {
+            // 多于一个我们使用整块内存复制。
+            memcpy( &m1_ptr[i][dest_col_idx], &m2_ptr[i][src_col_idx], cpy_number * sizeof(vfloat_t));
+        } else {
+            // 只有一个 cpy number 直接赋值
+            m1_ptr[i][dest_col_idx] = m2_ptr[i][src_col_idx];
+        }
+    }
+
+    return 0;
+}
+
