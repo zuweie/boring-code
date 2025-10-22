@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-10-20 09:53:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-21 15:10:03
+ * @LastEditTime: 2025-10-22 11:06:12
  * @FilePath: /boring-code/src/reinforce_learning/neural_network_functions.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,6 +10,7 @@
 #include <math.h>
 #include "matrix2/matrix2.h"
 #include "neural_network_functions.h" 
+
 
 static const float relu_alpha = 1.f;
 
@@ -19,6 +20,11 @@ static inline float __relu (float v, float alpha)
     float res = alpha * (ev - 1);
     return res;
 }
+
+static inline float __sigmoid(float x) {
+    return 1.f / (1 + exp( -x ));
+}
+
 int relu(matrix2_t* m)
 {
     int number = m->rows * m->cols;
@@ -41,6 +47,28 @@ int gradient_relu(matrix2_t* m)
     }
     return 0;
 }
+
+int sigmoid1 (matrix2_t* vec)
+{
+    int length = vec->rows * vec->cols;
+
+    for (int i=0; i<length; ++i) {
+        vec->pool[i] = __sigmoid(vec->pool[i]);
+    }
+    return 0;
+}
+
+int gradient_sigmoid1 (matrix2_t* vec)
+{
+    int length = vec->rows * vec->cols;
+
+    for (int i=0; i<length; ++i) {
+        double sigmoid = __sigmoid(vec->pool[i]);
+        vec->pool[i] = sigmoid * ( 1 - sigmoid );
+    }
+    return 0;
+}
+
 
 int useless_output(matrix2_t* m)
 {

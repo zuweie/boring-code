@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <math.h>
 #include "matrix2_operator.h"
 #include "matrix2.h"
@@ -158,7 +157,7 @@ int Mat2_fill(matrix2_t* mat, vfloat_t v)
 
 int Mat2_fill_random(matrix2_t* mat, double from, double to)
 {
-    srand(time(0));
+    //srand(time(0));
     size_t mat_size = mat->rows * mat->cols;
 
     for (size_t i=0; i<mat_size; ++i)

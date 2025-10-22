@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-21 16:29:20
+ * @LastEditTime: 2025-10-22 11:29:22
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -28,12 +28,14 @@ static const float cell_reward_fa_sarsa[4] = {-10.f, 0.f, -10.f, 1.f};
 static int  suite_success_init (void) 
 {
     printf("\n RL suite success init\n");
+    return 0;
 }
 
 
 static int suite_success_clean (void) 
 {   
     printf("\n RL suite success clean\n");
+    return 0;
 }
 
 static float cell_reward_a(cell_clazz_t cell_type) {
@@ -683,18 +685,20 @@ static void test_nn(void)
     Mat2_T(labels);
     //Mat2_T(_Input);
 
+    srand(time(NULL));
+
     nn_t nn;
-    int neruals[] = {3, 5, 4};
+    int layers        = 1;
+    int neruals[]     = {3, 5, 3};
     int input_dimens  = 4;
     int output_dimens = 3;
-    int batch         = 20;
-    int max_iter      = 600000;
-    int alpha         = 0.0001;
-    int epsilon       = 0.001;
-    int layers        = 3;
+    int batch         = 10;
+    int max_iter      = 10000;
+    float alpha       = 0.1;
+    float epsilon     = 0.01;
 
     nn_build(&nn, input_dimens, output_dimens, batch, max_iter, alpha, epsilon, layers, neruals, \
-        relu, gradient_relu, softmax1, gradient_softmax1, crossentropy, gradient_corssentropy    \
+        sigmoid1, gradient_sigmoid1, softmax1, gradient_softmax1, crossentropy, gradient_corssentropy    \
     );
 
     nn_feed(&nn, datas, labels);
@@ -709,6 +713,8 @@ static void test_nn(void)
     Mat2_destroy(labels);
     Mat2_destroy(_Input);
     Mat2_destroy(predict);
+
+    nn_reset(&nn);
 
     return;
 }

@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <float.h>
 #include <math.h>
 #include "matrix2/matrix2.h"
@@ -23,6 +22,10 @@ static znode_t* __znode_create(int in_dimens, int out_dimens, int id, int is_out
     Mat2_fill_random(z->W, 0, 1);
     Mat2_fill_random(z->b, 0, 1);
 
+    // printf("%d,\n", id);
+    // MAT2_INSPECT(z->W);
+    // MAT2_INSPECT(z->b);
+
     return z;
 }
 
@@ -34,6 +37,7 @@ static int __fetch_train_datas(matrix2_t* dest_datas, matrix2_t* dest_labels, ma
     for (int i=0; i<batch; ++i) {
 
         random_index = rand() % total_cols;
+
         Mat2_cpy_cols_to(dest_datas,  i, src_datas,  random_index);
         Mat2_cpy_cols_to(dest_labels, i, src_labels, random_index);
 
@@ -47,13 +51,13 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
     matrix2_t* z;
     matrix2_t* W;
     matrix2_t* x;
-    matrix2_t* b;
     matrix2_t* ones  = Mat2_create(1,1);
+    matrix2_t* bias  = Mat2_create(1,1);
 
     znode_t* first = znode_first(nn);
     znode_t* tail  = znode_tail(nn);
     
-    first->x = inputs;
+    Mat2_cpy(first->x, inputs);
     // 把 outputs 挂在 tail x 上，最后算出的结果，直接输出到 outputs 上, 那么在最后一次运算的时候可以不用额外的判断了。
     tail->x  = outputs;
 
@@ -62,7 +66,6 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
         z = first->z;
         W = first->W;
         x = first->x;
-        b = first->b;
 
         // W
         Mat2_cpy(z, W);
@@ -77,21 +80,27 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
         // MAT2_INSPECT(x);
         
 
-        // bias ： x->cols X 1 这里还未搞完，明天继续。
-        if (x->cols > 1) {
-            // 若是 x 多于一条 input，那么 bias 则需要扩容。
-            Mat2_reshape(ones, 1, x->cols);
-            Mat2_fill(ones, 1.f);
-            // bias ; x->cols * batch
-            Mat2_dot(b, ones);
-        }
+        // bias ：
+        Mat2_cpy(bias, first->b);
+        
+        Mat2_reshape(ones, 1, x->cols);
+        Mat2_fill(ones, 1.f);
+        Mat2_dot(bias, ones);
+
+        // if (x->cols > 1) {
+        //     // 若是 x 多于一条 input，那么 bias 则需要扩容。
+        //     Mat2_reshape(ones, 1, x->cols);
+        //     Mat2_fill(ones, 1.f);
+        //     // 将 bias 扩展多个相同的列。
+        //     Mat2_dot(bias, ones);
+        // } 
 
         // printf("\n bbbb");
         // MAT2_INSPECT(b);
 
 
         // W dot X + bias
-        Mat2_add(z, b);
+        Mat2_add(z, bias);
 
         // printf("\n zzzz");
         // MAT2_INSPECT(z);
@@ -117,7 +126,7 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
     
 
     Mat2_destroy(ones);
-
+    Mat2_destroy(bias);
     return 0;
 }
 
@@ -143,6 +152,8 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
     // printf("\n delta_y");
     // MAT2_INSPECT(delta_y);
 
+    // printf("\n labels");
+    // MAT2_INSPECT(labels);
 
     nn->gradient_loss(delta_y, labels);
 
@@ -173,7 +184,8 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
 
         Mat2_hadamard_product(delta_y, delta_z);
 
-
+        // printf("\n delta_y");
+        // MAT2_INSPECT(delta_y);
 
         // 计算 delta_W
         Mat2_cpy(delta_W, delta_y);
@@ -186,11 +198,20 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
 
         // 计算 delta b
         Mat2_cpy(delta_b, delta_y);
-        if (last->b->cols > 1) {
-            // 这个是经过扩容的。
-            Mat2_reshape(ones, last->b->cols, 1);
-            Mat2_dot(delta_b, ones);
-        }
+        
+        // printf("\n delta_b before close\n");
+        // MAT2_INSPECT(delta_b);
+
+        Mat2_reshape(ones, delta_b->cols, 1);
+        Mat2_dot(delta_b, ones);
+
+        // if (delta_b->cols > 1) {
+        //     // 这个是经过扩容的。
+            
+        // }
+
+        // printf("\n delta_b after close\n");
+        // MAT2_INSPECT(delta_b);
 
         // printf("\n delta_b");
         // MAT2_INSPECT(delta_b);
@@ -363,18 +384,17 @@ int nn_fit(nn_t* nn, void (*progress)(const char* log_str, float err, int step))
     float last_error = FLT_MAX;
     float error      = FLT_MAX;
     int   step       = 0;
-    int   stable_count = 0;
-
+    int   stable     = 0;
     matrix2_t* m_inputs  = Mat2_create(nn->trains_datas->rows, nn->batch);
     matrix2_t* m_outputs = Mat2_create(1,1);
     matrix2_t* m_labels  = Mat2_create(nn->labels->rows, nn->batch);
 
-    srand(time(NULL));
+    //srand(time(NULL));
 
     // 重 train_datas 中随机抽取 batch 条数据，进行训练。
     
 
-    while ( stable_count < 5/*error > nn->epsilon*/ && step++ < nn->max_iter ) {
+    while ( stable <= 1/*error > nn->epsilon*/ && step++ < nn->max_iter ) {
 
         __fetch_train_datas(m_inputs, m_labels, nn->trains_datas, nn->labels, nn->batch);
 
@@ -395,9 +415,9 @@ int nn_fit(nn_t* nn, void (*progress)(const char* log_str, float err, int step))
         last_error = curr_error;
 
         if (error < nn->epsilon) {
-            stable_count++;
-        } else {
-            stable_count = 0;
+            stable++;
+        } else if (stable > 0) {
+            stable--;
         }
 
         if (progress)

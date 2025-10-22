@@ -70,6 +70,7 @@ int nn_build(nn_t* nn, \
 
 int nn_feed(nn_t *nn, matrix2_t* train_dates, matrix2_t* labels);
 int nn_fit(nn_t* nn, void (*progress)(const char* log_str, float err, int step));
+int nn_reset(nn_t* nn);
 int nn_perdict(nn_t*nn, matrix2_t* Input, matrix2_t* perdict);
 
 #endif
