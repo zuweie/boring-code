@@ -5,8 +5,6 @@
 #include "matrix2/matrix2.h"
 #include "neural_network.h"
 
-
-
 static znode_t* __znode_create(int in_dimens, int out_dimens, int id, int is_output) 
 {
     znode_t* z = (znode_t*) malloc (sizeof(znode_t));
@@ -74,10 +72,10 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
         
         // printf("--------------- layer %d -----------------------\n\n", first->id+1);
 
-        // printf("\n W");
-        // MAT2_INSPECT(W);
-        // printf("\n xxxxx");
-        // MAT2_INSPECT(x);
+        printf("\n W");
+        MAT2_INSPECT(W);
+        printf("\n xxxxx");
+        MAT2_INSPECT(x);
         
 
         // bias ：
@@ -95,8 +93,8 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
         //     Mat2_dot(bias, ones);
         // } 
 
-        // printf("\n bbbb");
-        // MAT2_INSPECT(b);
+        printf("\n bbbb");
+        MAT2_INSPECT(bias);
 
 
         // W dot X + bias
@@ -109,8 +107,8 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
 
         Mat2_cpy(first->next->x, z);
 
-        // printf("\n z:");
-        // MAT2_INSPECT(z);
+        printf("\n z:");
+        MAT2_INSPECT(z);
 
         // do the active to z, z became x of next znode
         // 若果
@@ -148,18 +146,7 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
 
     Mat2_cpy(delta_y, outputs);
 
-    // for debug
-    // printf("\n delta_y");
-    // MAT2_INSPECT(delta_y);
-
-    // printf("\n labels");
-    // MAT2_INSPECT(labels);
-
     nn->gradient_loss(delta_y, labels);
-
-    // for debug
-    // printf("\n delta_y - labels");
-    // MAT2_INSPECT(delta_y);
     
     while (last != znode_head(nn)) 
     {
@@ -168,7 +155,8 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
         delta_z = last->z;
         // 激活函数的导数
         if (last->is_output) {
-            // 输出层使用输出层的导数，正常是没有任何动作，
+            // 输出层使用输出函数，例如 softmax， 但是softmax + crossentropy 的导数在上一层已经做好了，所以此处可以直接，
+            // 可以直接将 delta_z 变成1，再圆叉进去，即可，1 圆叉到 delta_y 还是 delta_y 正常是没有任何动作，
             nn->gradient_output(delta_z);
         } else {
             // 非输出层，按照正常流程来计算。
@@ -176,16 +164,8 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
             // y` 圆乘 z`    
         }
 
-        // printf("\n delta_y");
-        // MAT2_INSPECT(delta_y);
-        
-        // printf("\n delta_z");
-        // MAT2_INSPECT(delta_z);
-
+        // delta_y 圆叉 delta_active_function
         Mat2_hadamard_product(delta_y, delta_z);
-
-        // printf("\n delta_y");
-        // MAT2_INSPECT(delta_y);
 
         // 计算 delta_W
         Mat2_cpy(delta_W, delta_y);
@@ -193,56 +173,30 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
         Mat2_T(x_T);
         Mat2_dot(delta_W, x_T);
 
-        // printf("\n x_T");
-        // MAT2_INSPECT(x_T);
-
         // 计算 delta b
         Mat2_cpy(delta_b, delta_y);
-        
-        // printf("\n delta_b before close\n");
-        // MAT2_INSPECT(delta_b);
 
         Mat2_reshape(ones, delta_b->cols, 1);
         Mat2_dot(delta_b, ones);
 
-        // if (delta_b->cols > 1) {
-        //     // 这个是经过扩容的。
-            
-        // }
-
-        // printf("\n delta_b after close\n");
-        // MAT2_INSPECT(delta_b);
-
-        // printf("\n delta_b");
-        // MAT2_INSPECT(delta_b);
         
         // 计算 delta x，本层的 delta x 就是下层的 delta y
         Mat2_cpy(W_T, last->W);
         Mat2_T(W_T);
 
-        // printf("\n W_T");
-        // MAT2_INSPECT(W_T);
 
         Mat2_dot(W_T, delta_y);
         // 将结果返回给 delta_y,作为下一个的上级导数。
         Mat2_cpy(delta_y, W_T);
 
-        
-        // printf("\n delta_W before alpha");
-        // MAT2_INSPECT(delta_W);
-        
-
         // 更新 W 和 b
         Mat2_scalar_multiply(delta_W, nn->alpha);
         Mat2_scalar_multiply(delta_b, nn->alpha);
 
-        // printf("\n delta_W after alpha");
-        // MAT2_INSPECT(delta_W);
 
         Mat2_sub(last->W, delta_W);
         Mat2_sub(last->b, delta_b);
 
-        // printf("\n----------------- bp layer %d ----------------\n", last->id);
 
         last = last->prev;
     }
@@ -259,8 +213,8 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
 }
 
 int nn_build(nn_t* nn, \
-    int input_dimens, int output_dimens, int batch, int max_iter, float alpha, float epsilon, \
-    int layers, int neruals[], \
+    int input_dimens, int output_dimens, int batch, int max_iter, int err_stable, float alpha, float epsilon, \
+    int layers, int neurals[], \
     int (*active)(matrix2_t*), int (*gradient_active)(matrix2_t*), \
     int (*output)(matrix2_t*), int (*gradient_output)(matrix2_t*), \
     float (*loss)(matrix2_t*, matrix2_t*), int (*gradient_loss)(matrix2_t*, matrix2_t*)
@@ -276,7 +230,7 @@ int nn_build(nn_t* nn, \
     znode_t* tail;
     for (i=0; i<layers; ++i) {
 
-        out_dimens = neruals[i];
+        out_dimens = neurals[i];
 
         z = __znode_create(in_dimens, out_dimens, i, 0);
         // 将新建的插入双向链表的后面, tail 的前面
@@ -308,6 +262,7 @@ int nn_build(nn_t* nn, \
     nn->epsilon       = epsilon;
     nn->alpha         = alpha;
     nn->batch         = batch;
+    nn->err_stable    = err_stable;
 
     // 注册各种所需要的函数。
     nn->active           = active;
@@ -376,52 +331,40 @@ int nn_feed(nn_t* nn, matrix2_t* train_datas, matrix2_t* labels)
     return -1;
 }
 
-int nn_fit(nn_t* nn, void (*progress)(const char* log_str, float err, int step))
+int nn_fit(nn_t* nn, void (*progress)(const char* log_str, int step,  int stable, float err ))
 {
     // 第一步，申请 batch 多个列的数据。
 
-    float curr_error = FLT_MAX;
-    float last_error = FLT_MAX;
-    float error      = FLT_MAX;
-    int   step       = 0;
-    int   stable     = 0;
+    float curr_error     = FLT_MAX;
+    float last_error     = FLT_MAX;
+    float error          = FLT_MAX;
+    int   step           = 0;
+    int   stable_state   = 0;
+
     matrix2_t* m_inputs  = Mat2_create(nn->trains_datas->rows, nn->batch);
     matrix2_t* m_outputs = Mat2_create(1,1);
     matrix2_t* m_labels  = Mat2_create(nn->labels->rows, nn->batch);
 
-    //srand(time(NULL));
-
-    // 重 train_datas 中随机抽取 batch 条数据，进行训练。
-    
-
-    while ( stable <= 1/*error > nn->epsilon*/ && step++ < nn->max_iter ) {
+    while ( stable_state <= nn->err_stable && step++ < nn->max_iter ) {
 
         __fetch_train_datas(m_inputs, m_labels, nn->trains_datas, nn->labels, nn->batch);
 
         __do_forward_propagate(nn, m_inputs, m_outputs);
-
-        // for debug
-        // printf("\n output:");
-        // MAT2_INSPECT(m_outputs);
-
-        // printf("\n m_labels:");
-        // MAT2_INSPECT(m_labels);
-
-        // printf("\n\n");
         
         curr_error = nn->loss(m_labels, m_outputs);
 
+        // 计算每次训练后得到的 error 数值是否趋于稳定，当 error 的值趋于稳定，那么证明训练已经完成。
         error = sqrtf( (curr_error - last_error) * (curr_error - last_error));
         last_error = curr_error;
 
         if (error < nn->epsilon) {
-            stable++;
-        } else if (stable > 0) {
-            stable--;
+            stable_state++;
+        } else if (stable_state > 0) {
+            stable_state--;
         }
 
         if (progress)
-            progress("fitting ... ", error, step);
+            progress("fitting ... ", step, stable_state, error);
 
         __do_backward_propagate(nn, m_labels, m_outputs);
     }
@@ -435,4 +378,85 @@ int nn_fit(nn_t* nn, void (*progress)(const char* log_str, float err, int step))
 int nn_perdict(nn_t* nn, matrix2_t* Input, matrix2_t* perdict)
 {
     return __do_forward_propagate(nn, Input, perdict);
+}
+
+/**
+ * @brief 复制一个一摸一样的 神经网络
+ * 
+ * @param nn 
+ * @return int
+ */
+int nn_cpy(nn_t* dest, nn_t* src)
+{
+    // znode_t znode_head;
+    // 训练时的结束条件。
+    dest->batch      = src->batch;
+    dest->max_iter   = src->max_iter;
+    dest->epsilon    = src->epsilon;
+    dest->alpha      = src->alpha;
+    dest->err_stable = src->err_stable;
+
+    dest->trains_datas = NULL;
+    dest->labels       = NULL;
+
+    dest->active = src->active;
+    dest->gradient_active = src->gradient_active;
+
+    dest->output = src->output;
+    dest->gradient_output = src->gradient_output;
+
+    dest->loss = src->loss;
+    dest->gradient_loss = src->gradient_loss;
+
+    dest->znode_head.next = &dest->znode_head;
+    dest->znode_head.prev = &dest->znode_head;
+
+    znode_t* src_first = znode_first(src);
+    while (src_first != znode_tail(src)) {
+        
+        
+        // create and cpy the weight;
+        znode_t* z = __znode_create(src_first->in_dimens, src_first->out_dimens, src_first->id, src_first->is_output);
+
+        Mat2_cpy(z->z, src_first->z);
+        Mat2_cpy(z->W, src_first->W);
+        Mat2_cpy(z->x, src_first->x);
+        Mat2_cpy(z->b, src_first->b);
+
+        znode_t* dest_tail = znode_tail(dest);
+
+        z->prev = dest_tail->prev;
+        z->next = dest_tail;
+
+        dest_tail->prev->next = z;
+        dest_tail->prev       = z;
+
+        src_first = src_first->next;
+
+    }
+    return 0;
+}
+
+/**
+ * @brief 将 src 神经网络的参数复制到 dest 的神经网络。
+ * 
+ * @param dest 
+ * @param src 
+ * @return int 
+ */
+int nn_cpy_weight(nn_t* dest, nn_t* src)
+{
+    znode_t* dest_first = znode_first(dest);
+    znode_t* src_first  = znode_first(src);
+
+    while (src_first != znode_tail(src)) {
+
+        Mat2_cpy(dest_first->W, src_first->W);
+        Mat2_cpy(dest_first->b, src_first->b);
+
+        src_first  = src_first->next;
+        dest_first = dest_first->next;
+    }
+
+    return 0;
 }

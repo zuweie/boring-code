@@ -23,6 +23,7 @@ typedef struct nn {
     int     batch;
     int     max_iter;
     float   epsilon;
+    int     err_stable;
 
     // 学习曲率
     float   alpha;
@@ -61,7 +62,7 @@ static inline znode_t* znode_tail(nn_t* nn) {
 }
 
 int nn_build(nn_t* nn, \
-    int input_dimens, int output_dimens, int batch, int max_iter, float alpha, float epsilon, \
+    int input_dimens, int output_dimens, int batch, int max_iter, int err_stable, float alpha, float epsilon, \
     int layers, int neruals[], \
     int (*active)(matrix2_t*), int (*gradient_active)(matrix2_t*), \
     int (*output)(matrix2_t*), int (*gradient_output)(matrix2_t*), \
@@ -69,8 +70,9 @@ int nn_build(nn_t* nn, \
 );
 
 int nn_feed(nn_t *nn, matrix2_t* train_dates, matrix2_t* labels);
-int nn_fit(nn_t* nn, void (*progress)(const char* log_str, float err, int step));
+int nn_fit(nn_t* nn, void (*progress)(const char* log_str, int step, int stable, float err));
 int nn_reset(nn_t* nn);
 int nn_perdict(nn_t*nn, matrix2_t* Input, matrix2_t* perdict);
-
+int nn_cpy(nn_t* dest, nn_t* src);
+int nn_cpy_weight(nn_t* dest, nn_t* src);
 #endif

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-22 11:29:22
+ * @LastEditTime: 2025-10-27 13:31:15
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -558,13 +558,26 @@ static void test_function_approximation_of_sarsa(void)
     return;
 }
 
-static void nn_progress(const char* log_str, float err, int step) 
+static void nn_progress(const char* log_str, int step, int err_stable, float err) 
 {
-    char buffer[1024];
-    memset(buffer, 0x0, sizeof(buffer));
-    sprintf(buffer, "%s step: %d, error: %0.2f", log_str, step, err);
-    printf("%s\r", buffer);
-    fflush(stdout);
+    // char buffer[1024];
+    // memset(buffer, 0x0, sizeof(buffer));
+    // sprintf(buffer, "%s step: %d, error: %0.2f", log_str, step, err_stable,  err);
+    // printf("%s\r", buffer);
+    // fflush(stdout);
+
+    printf("step: %d, stable: %d, error : %0.4f\n", step, err_stable, err);
+}
+
+static void nn_progress2(const char* log_str, int step, int err_stable, float err) 
+{
+    // char buffer[1024];
+    // memset(buffer, 0x0, sizeof(buffer));
+    // sprintf(buffer, "%s step: %d, error: %0.2f", log_str, step, err_stable,  err);
+    // printf("%s\r", buffer);
+    // fflush(stdout);
+
+    printf("step: %d, stable: %d, error : %0.4f\n", step, err_stable, err);
 }
 
 static void test_nn(void) 
@@ -672,6 +685,10 @@ static void test_nn(void)
         4.6f, 3.2f, 1.3f, 0.2f
     };
 
+    vfloat_t _sample2[4] = {
+        6.4f, 3.05f, 4.01f, 1.39f 
+    };
+
     matrix2_t* datas = Mat2_create(1,1);
     matrix2_t* labels = Mat2_create(1,1);
     matrix2_t* _Input = Mat2_create(1,1);
@@ -679,7 +696,8 @@ static void test_nn(void)
 
     Mat2_load_on_shape(datas, trainingDatas, x_data_row, x_data_col);
     Mat2_load_on_shape(labels, labelDatas, y_data_row, y_data_col);
-    Mat2_load_on_shape(_Input, _sample, 4, 1);
+    //Mat2_load_on_shape(_Input, _sample, 4, 1);
+    Mat2_load_on_shape(_Input, _sample2, 4, 1);
 
     Mat2_T(datas);
     Mat2_T(labels);
@@ -692,12 +710,14 @@ static void test_nn(void)
     int neruals[]     = {3, 5, 3};
     int input_dimens  = 4;
     int output_dimens = 3;
-    int batch         = 10;
-    int max_iter      = 10000;
-    float alpha       = 0.1;
+    int batch         = 20;
+    int max_iter      = 100000;
+    int err_stable    = 10;
+    float alpha       = 0.001;
     float epsilon     = 0.01;
+    
 
-    nn_build(&nn, input_dimens, output_dimens, batch, max_iter, alpha, epsilon, layers, neruals, \
+    nn_build(&nn, input_dimens, output_dimens, batch, max_iter, err_stable, alpha, epsilon, layers, neruals, \
         sigmoid1, gradient_sigmoid1, softmax1, gradient_softmax1, crossentropy, gradient_corssentropy    \
     );
 
@@ -715,6 +735,52 @@ static void test_nn(void)
     Mat2_destroy(predict);
 
     nn_reset(&nn);
+
+    return;
+}
+
+/**
+ * @brief DQN
+ * 
+ */
+static void test_function_approximation_for_Q_learning_with_nn(void) 
+{
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    agent_init(&agent);
+    agent_load(grid_path, &cell_reward_e, NULL, &agent);
+    printf("\n\n");
+
+    // dqn 建立两个网络用于 approximation Q value
+    nn_t target_nn, main_nn;
+
+    int input_dimens  = pow((1+1), 3.f);
+    int output_dimens = 1;
+    int batch         = 100;
+    int max_iter      = 5;
+    int err_statble   = 10;
+    float alpha       = 0.0001;
+    float epsilon     = 0.1;
+    int layers        = 1;
+    int neurals[]     = {100};
+    
+    nn_build(\
+        &main_nn, input_dimens, output_dimens, batch, max_iter, err_statble, alpha, epsilon, layers, neurals,\
+        sigmoid1, gradient_sigmoid1, useless_output, gradient_useless_output, mse, gradient_mse\
+    );
+
+    nn_cpy(&target_nn, &main_nn);
+    
+    agent_value_function_approximation_of_Q_learning_off_policy_with_neural_network(
+        &agent, 0, 1, 1000, 0.9, 0, pow((1+1), 3.f), Q_x_dimens_fourier_feature, \
+        &target_nn, &main_nn, nn_progress2\
+    );
+
+    agent_display_gridworld(&agent);
+    printf("\n");
+
+    agent_display_policy2(&agent);
+    agent_reset(&agent);
 
     return;
 }
@@ -805,10 +871,20 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test nn", test_nn) ) {
+    // if (NULL == CU_add_test(pSuite, "test nn", test_nn) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test nn Q-learning", test_function_approximation_for_Q_learning_with_nn) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    // if (NULL == CU_add_test(pSuite, "test nn", test_nn) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     return 0;
 
 }

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-10-20 09:53:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-22 11:06:12
+ * @LastEditTime: 2025-10-22 14:45:46
  * @FilePath: /boring-code/src/reinforce_learning/neural_network_functions.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,9 +16,7 @@ static const float relu_alpha = 1.f;
 
 static inline float __relu (float v, float alpha) 
 {
-    double ev = exp(v);
-    float res = alpha * (ev - 1);
-    return res;
+    return alpha * (exp(v) - 1);
 }
 
 static inline float __sigmoid(float x) {
@@ -30,8 +28,7 @@ int relu(matrix2_t* m)
     int number = m->rows * m->cols;
     for (int i=0; i<number; ++i) {
         if (m->pool[i] < 0) {
-            float res = __relu(m->pool[i], relu_alpha);
-            m->pool[i] = res;
+            m->pool[i] = __relu(m->pool[i], relu_alpha);
         }
     }
     return 0;
@@ -41,8 +38,7 @@ int gradient_relu(matrix2_t* m)
     int number = m->rows * m->cols;
     for (int i=0; i<number; ++i) {
         if (m->pool[i] < 0) {
-            float v    = __relu(m->pool[i], relu_alpha) + relu_alpha;
-            m->pool[i] = v;
+            m->pool[i] = __relu(m->pool[i], relu_alpha) + relu_alpha;
         }
     }
     return 0;
@@ -128,17 +124,11 @@ int softmax1(matrix2_t* m1)
         }
 
         for (i=0; i<m1->rows; ++i) {
-            double v = m1_ptr[i][j] - max_v;
-            double ev = exp(v);
-            total += ev;
-            //total += exp(m1_ptr[i][j]);
+            total += exp(m1_ptr[i][j] - max_v);
         }
 
         for (i=0; i<m1->rows; ++i) {
-            double v = m1_ptr[i][j] - max_v;
-            double ev = exp(v);
-            double res = ev / total;
-            m1_ptr[i][j] = res < 1e-10 ? 1e-10 : res;
+            m1_ptr[i][j] = exp(m1_ptr[i][j] - max_v) / total ;
         }
     }
 

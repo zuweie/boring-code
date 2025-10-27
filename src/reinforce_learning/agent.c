@@ -10,6 +10,8 @@
 #include <math.h>
 
 #include "matrix2/matrix2.h"
+#include "neural_network.h"
+#include "neural_network_functions.h"
 #include "grid_world.h"
 #include "policy.h"
 #include "agent.h"
@@ -151,6 +153,146 @@ static int __explor_epsilon_sampling(agent_t* agent, int start_id, int steps, fl
     return 0;
 }
 
+
+/**
+ * @brief 这里想到了一很棒的链表添加逻辑，声明一个 ** 指针，让其代入 xx->next 指针的角度,添加数据，以前怎么一直没哟想到了呢
+ * 
+ * @param agent 
+ * @param start_id 
+ * @param head 
+ * @param trajectory_length 
+ * @return int 
+ */
+static int __cruise(agent_t* agent, int start_id, trajectory_t** head, int trajectory_length) 
+{
+    int st = start_id;
+
+    move_t    mt;
+    action_t* at;
+    consequence_t consequence;
+
+    trajectory_t** next = head;
+    trajectory_t* tj;
+
+    while (trajectory_length--) {
+        
+        at = agent->policy->actions[st];
+        mt = policy_take_action(at);
+
+        consequence = agent_move(agent, st, mt);
+        
+        if (*next == NULL) {
+            tj = (trajectory_t*) malloc (sizeof(trajectory_t));
+            tj->next = NULL;
+            // 将新的 tj 挂到链上去。
+            *next = tj;
+        } else {
+            // 如果不为空，将该指针的对象提取，那么新的数据即可存放于旧的对象中。
+            tj = *next;
+        }
+        tj->consequence = consequence;
+        tj->step_id     = st;
+        tj->step_move   = mt;
+
+        // 这一步非常关键，
+        next = &tj->next;
+        
+        st = consequence.stay_id;
+    }
+
+    // 如果尾巴有多余的 trajectory， 将他们情况，释放内存,
+    // 这是为了保证在将 trajectory 数据转换成训练数据的时候不会被，多余的 trajectory 数据污染
+    // 虽然多余的 trajectory 一般不会发生。
+    if (*next != NULL) {
+
+        trajectory_t* first = *next;
+        trajectory_t* del;
+        *next = NULL;
+
+        while (first)
+        {
+            /* code */
+            del = first;
+            first = first->next;
+            free(del);
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief 将 trajectory 转变成训练数据及 labels。
+ * 
+ * @param datas 
+ * @param labels 
+ * @param trajectories 
+ * @param trajectories_length 
+ * @return int 
+ */
+static int __sampling(agent_t* agent, matrix2_t* datas, matrix2_t* labels, nn_t* target_nn, \
+    int feature_dimens, int (*Q_feature)(matrix2_t* input, int x, int y, int a), \
+    trajectory_t* trajectories, int trajectory_length, float gamma) 
+{
+
+    int world_cols  = agent->world->cols;
+    int col_index   = 0;
+    int st, st1;
+
+    float Max_Qas;
+    move_t Max_move;
+    move_t move;
+    trajectory_t* first   = trajectories;
+
+    matrix2_t* input = Mat2_create(feature_dimens, 1);
+    matrix2_t* predict = Mat2_create(1,1);
+
+    Mat2_reshape(datas, feature_dimens, trajectory_length);
+    Mat2_reshape(labels, 1, trajectory_length);
+
+    // 这个训练 main 网络的数据。
+    while (first && col_index < trajectory_length) {
+
+        st   = first->step_id;
+        move = first->step_move;
+
+        Q_feature(input, st/world_cols, st%world_cols, move);
+        Mat2_cpy_cols_to(datas, col_index, input, 0);
+
+        col_index++;
+        first = first->next;
+    }
+
+    col_index = 0;
+    first     = trajectories;
+    // 使用 当下的 target nn 来产生 labels
+    while (first && col_index < trajectory_length) 
+    {
+        st1     = first->consequence.stay_id;
+        Max_Qas = -FLT_MAX;
+        
+        for (int j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+
+            Q_feature(input, st1/world_cols, st1%world_cols, j);
+
+            nn_perdict(target_nn, input, predict);
+
+            if (Max_Qas < predict->pool[0]) {
+                Max_Qas = predict->pool[0];
+            }
+        }
+        // 把算出来的最大的那个 Q 值作为 labels，然后让 main nn 去训练。
+        // 这个就是 第八章中最后一个章节中伪代码中的 yhat。
+        labels->pool[col_index] = first->consequence.reward  + gamma * Max_Qas;
+        
+        col_index++;
+        first = first->next;
+    }
+
+    Mat2_destroy(input);
+    Mat2_destroy(predict);
+    return 0;
+}
 /**
  * @brief 根据赵世钰老师的《强化学习的数学原理》中的 state values 迭代算法求解法。具体是《第二章贝尔曼公式的向量形式与求解》中的算法。
  * 
@@ -1593,7 +1735,7 @@ int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent
 }
 
 /**
- * @brief 
+ * @brief Deep Q_learning networks, 这是强化学习跟 神经网络结合的案例。
  * 
  * @param agent 
  * @param W_out 
@@ -1607,13 +1749,120 @@ int agent_value_function_approximation_sarsa_with_linear_function(agent_t* agent
  * @param epsilon 
  * @return int 
  */
-int agent_value_function_approximation_of_Q_learning_off_policy_neural_network(agent_t* agent, matrix2_t** W_out, int start_id, int episodes, int trajectory_length, int feature_dimens, int (*Q_feature)(matrix2_t*, int, int, int), float alpah, float gamma, float epsilon) 
+int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_network(\
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float greed_epsilon, \
+    int feature_dimens, int (*Q_feature)(matrix2_t*, int, int, int), nn_t* target_nn, nn_t* main_nn, void (*progress)(const char* str, int, int, float)\
+) 
 {
+    // todo1:  使用 uniform distribute 产生足够多的样本。
+    int i,j,k;
+    int st, st1;
+    int step = 0, iter = 0;
+
+    int world_rows = agent->world->rows;
+    int world_cols = agent->world->cols;
+    int state_number = world_rows * world_cols;
+
+    float  Max_qas;
+    move_t Max_move;
+
+    move_t    mt;
+    action_t* at;
+    consequence_t consequence;
+    trajectory_t* head  = NULL;
+    trajectory_t** next;
+
+    // nn_t target_nn;
+    // nn_t main_nn;
+
+    // int input_dimens  = feature_dimens;
+    // int output_dimens = 1;
+    // int batch         = 100;
+    // int max_iter      = 1000;
+    // int layers        = 1;
+    // int nerual[]      = {100};
+    // float alpha       = 0.5;
+    // float epsilon     = 0.01;
+
+    matrix2_t* trajectories_datas = Mat2_create(1,1);
+    matrix2_t* labels             = Mat2_create(1,1);
+
+    matrix2_t* inputs             = Mat2_create(1,1);
+    matrix2_t* predict            = Mat2_create(1,1); 
+
+    srand(time(NULL));
+
+    for (i=0; i<state_number; ++i) {
+        policy_set_random_moves(&agent->policy->actions[i], e_go_up, 1);
+    }
+
+    // nn_build(&main_nn, input_dimens, output_dimens, batch, max_iter, alpha, epsilon, layers, nerual,\
+    //     sigmoid1, gradient_sigmoid1, useless_output, gradient_useless_output, mse, gradient_mse \
+    // );
+
+    // nn_cpy(&target_nn, &main_nn);
+    
+    while (iter++ < episodes) {
+
+        st   = start_id;
+        // 走 trajectory_length 步，然后采样的到 {s, a, r, s`}
+        __cruise(agent, st, &head, trajectory_length);
+
+    //     static int __sampling(agent_t* agent, matrix2_t* datas, matrix2_t* labels, nn_t* target_nn, \
+    // int feature_dimens, int (*Q_feature)(matrix2_t* input, int x, int y, int a), \
+    // trajectory_t* trajectories, int trajectory_length, float gamma) 
+
+        // 将 {s, a, r, s`} 转成训练数据,和标签。
+        __sampling(agent, trajectories_datas, labels, target_nn,\
+            feature_dimens, Q_feature, head, trajectory_length, gamma);
+
+        // for debug
+        /* ----------- labels ------------- */
+        printf("labels \n");
+        MAT2_INSPECT(labels);
+
+        printf("traject data\n");
+        MAT2_INSPECT(trajectories_datas);
+
+        // 将虚拟蓝数据和标签注入神经网络
+        nn_feed(main_nn, trajectories_datas, labels);
+
+        // 开始训练 main 网络。
+        nn_fit(main_nn, progress); 
+
+        // 训练完后，将那个 main_nn 的 weight 复制到 targe_nn 上。
+        nn_cpy_weight(target_nn, main_nn);
+    }
+
+    // 在所有的训练完成后，更新 agent 身上的 policy。
+
+    for (i=0; i<state_number; ++i) {
+
+        Max_qas  = -FLT_MAX;
+        Max_move = e_idle;
+
+        for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+
+            Q_feature(inputs, i/world_cols, i%world_cols, j);
+
+            nn_perdict(target_nn, inputs, predict);
+
+            if (Max_qas < predict->pool[0]) {
+                Max_qas = predict->pool[0];
+                Max_move = j;
+            }
+        }
+
+        // 因为这里是 offline policy， 所以直接 greed_epsilon 直接为 0 即可。
+        policy_update_greedy_move(agent->policy->actions[i], Max_move, greed_epsilon);
+
+    }
+
+    // 更希望 policy 删除所有 Matrix 
+    Mat2_destroy(trajectories_datas);
+    Mat2_destroy(labels);
+    Mat2_destroy(inputs);
+    Mat2_destroy(predict);
+
     return 0;
 }
-
-
-
-
-
-
