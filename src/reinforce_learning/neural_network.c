@@ -72,15 +72,24 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
         
         // printf("--------------- layer %d -----------------------\n\n", first->id+1);
 
-        printf("\n W");
-        MAT2_INSPECT(W);
-        printf("\n xxxxx");
-        MAT2_INSPECT(x);
+        // printf("\n W");
+        // MAT2_INSPECT(W);
+        // printf("\n xxxxx");
+        // MAT2_INSPECT(x);
         
 
         // bias ：
         Mat2_cpy(bias, first->b);
         
+        // printf("\n layer: %d, bbbb ", first->id);
+        // MAT2_INSPECT(bias);
+
+        // if (bias->pool[19] > 10000)
+        // {
+        //     int whatthefuck = 0;
+        //     whatthefuck++;
+        // }
+
         Mat2_reshape(ones, 1, x->cols);
         Mat2_fill(ones, 1.f);
         Mat2_dot(bias, ones);
@@ -93,12 +102,12 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
         //     Mat2_dot(bias, ones);
         // } 
 
-        printf("\n bbbb");
-        MAT2_INSPECT(bias);
+
 
 
         // W dot X + bias
         Mat2_add(z, bias);
+
 
         // printf("\n zzzz");
         // MAT2_INSPECT(z);
@@ -107,8 +116,8 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
 
         Mat2_cpy(first->next->x, z);
 
-        printf("\n z:");
-        MAT2_INSPECT(z);
+        // printf("\n before z:");
+        // MAT2_INSPECT(z);
 
         // do the active to z, z became x of next znode
         // 若果
@@ -118,6 +127,8 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
             nn->active(first->next->x);
         }
         
+        // printf("\n after active z:");
+        // MAT2_INSPECT(first->next->x);
         // calculate the next node.
         first = first->next;
     }
@@ -167,6 +178,10 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
         // delta_y 圆叉 delta_active_function
         Mat2_hadamard_product(delta_y, delta_z);
 
+        // for debug
+        // printf("layer: %d, delta_y\n", last->id);
+        // MAT2_INSPECT(delta_y);
+
         // 计算 delta_W
         Mat2_cpy(delta_W, delta_y);
         Mat2_cpy(x_T, last->x);
@@ -176,7 +191,10 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
         // 计算 delta b
         Mat2_cpy(delta_b, delta_y);
 
+        // 将 delta dot 1^T 压缩回去原来的大小。
         Mat2_reshape(ones, delta_b->cols, 1);
+        Mat2_fill(ones, 1.f);
+
         Mat2_dot(delta_b, ones);
 
         
@@ -197,6 +215,11 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
         Mat2_sub(last->W, delta_W);
         Mat2_sub(last->b, delta_b);
 
+        // for debug
+        // printf("\n\nlayer %d, delat_W", last->id);
+        // MAT2_INSPECT(delta_W);
+        // printf("\n\nlayer %d, delat_b", last->id);
+        // MAT2_INSPECT(delta_b);
 
         last = last->prev;
     }
@@ -363,6 +386,8 @@ int nn_fit(nn_t* nn, void (*progress)(const char* log_str, int step,  int stable
             stable_state--;
         }
 
+        // for debug 
+
         if (progress)
             progress("fitting ... ", step, stable_state, error);
 
@@ -458,5 +483,19 @@ int nn_cpy_weight(nn_t* dest, nn_t* src)
         dest_first = dest_first->next;
     }
 
+    return 0;
+}
+
+int nn_show_weights(nn_t* nn)
+{
+    znode_t* first = znode_first(nn);
+    while (first != znode_tail(nn)) {
+
+        printf("\n <%d> Weight:", first->id);
+        MAT2_INSPECT(first->W);
+        printf("\n <%d> bias:", first->id);
+        MAT2_INSPECT(first->b);
+        first = first->next;
+    }
     return 0;
 }

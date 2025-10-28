@@ -1,3 +1,11 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2025-10-17 12:36:24
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2025-10-28 11:47:24
+ * @FilePath: /boring-code/src/reinforce_learning/neural_network.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef __NEURAL_NETWORK_H__
 #define __NEURAL_NETWORK_H__
 
@@ -75,4 +83,5 @@ int nn_reset(nn_t* nn);
 int nn_perdict(nn_t*nn, matrix2_t* Input, matrix2_t* perdict);
 int nn_cpy(nn_t* dest, nn_t* src);
 int nn_cpy_weight(nn_t* dest, nn_t* src);
+int nn_show_weights(nn_t* nn);
 #endif

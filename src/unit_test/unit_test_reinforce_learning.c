@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-27 13:31:15
+ * @LastEditTime: 2025-10-28 12:12:38
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -157,6 +157,14 @@ static int S_2_dimens_transform(matrix2_t* S, int x, int y)
     S->pool[1] = y;
     return 0;
 }
+static int Q_3_dimens_feature(matrix2_t* Q, int x, int y, int mt) 
+{
+    Q->pool[0] = x;
+    Q->pool[1] = y;
+    Q->pool[2] = mt;
+    return 0;
+}
+
 static void display_state_value(agent_t* agent, matrix2_t* state_value) 
 {
     for (int i=0; i<agent->world->rows; ++i) {
@@ -571,13 +579,13 @@ static void nn_progress(const char* log_str, int step, int err_stable, float err
 
 static void nn_progress2(const char* log_str, int step, int err_stable, float err) 
 {
-    // char buffer[1024];
-    // memset(buffer, 0x0, sizeof(buffer));
-    // sprintf(buffer, "%s step: %d, error: %0.2f", log_str, step, err_stable,  err);
-    // printf("%s\r", buffer);
-    // fflush(stdout);
+    char buffer[1024];
+    memset(buffer, 0x0, sizeof(buffer));
+    sprintf(buffer, "%s step: %d, stable:%d, error: %0.4f", log_str, step, err_stable, err);
+    printf("%s\r", buffer);
+    fflush(stdout);
 
-    printf("step: %d, stable: %d, error : %0.4f\n", step, err_stable, err);
+    //printf("-------------------- step: %d, stable: %d, error : %0.4f ------------------- \n", step, err_stable, err);
 }
 
 static void test_nn(void) 
@@ -754,15 +762,24 @@ static void test_function_approximation_for_Q_learning_with_nn(void)
     // dqn 建立两个网络用于 approximation Q value
     nn_t target_nn, main_nn;
 
+    //int input_dimens  = 3;
     int input_dimens  = pow((1+1), 3.f);
     int output_dimens = 1;
     int batch         = 100;
-    int max_iter      = 5;
-    int err_statble   = 10;
-    float alpha       = 0.0001;
+    int max_iter      = 10000000000000;
+    int err_statble   = 3;
+    float alpha       = 0.01;
     float epsilon     = 0.1;
     int layers        = 1;
     int neurals[]     = {100};
+
+    int start_id      = 0;
+    int episodes      = 1000;
+    int trajectories  = 1000;
+    float gamma       = 0.9;
+    float greedy_epsilon = 0.f;
+    typedef (*Q_feature) (matrix2_t* Q, int, int, int);
+    Q_feature qf = Q_x_dimens_fourier_feature;
     
     nn_build(\
         &main_nn, input_dimens, output_dimens, batch, max_iter, err_statble, alpha, epsilon, layers, neurals,\
@@ -772,7 +789,7 @@ static void test_function_approximation_for_Q_learning_with_nn(void)
     nn_cpy(&target_nn, &main_nn);
     
     agent_value_function_approximation_of_Q_learning_off_policy_with_neural_network(
-        &agent, 0, 1, 1000, 0.9, 0, pow((1+1), 3.f), Q_x_dimens_fourier_feature, \
+        &agent, start_id, episodes, trajectories, gamma, greedy_epsilon, input_dimens, qf, \
         &target_nn, &main_nn, nn_progress2\
     );
 

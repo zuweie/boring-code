@@ -1787,7 +1787,7 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
     matrix2_t* trajectories_datas = Mat2_create(1,1);
     matrix2_t* labels             = Mat2_create(1,1);
 
-    matrix2_t* inputs             = Mat2_create(1,1);
+    matrix2_t* inputs             = Mat2_create(feature_dimens,1);
     matrix2_t* predict            = Mat2_create(1,1); 
 
     srand(time(NULL));
@@ -1818,11 +1818,11 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
 
         // for debug
         /* ----------- labels ------------- */
-        printf("labels \n");
-        MAT2_INSPECT(labels);
+        // printf("labels \n");
+        // MAT2_INSPECT(labels);
 
-        printf("traject data\n");
-        MAT2_INSPECT(trajectories_datas);
+        // printf("traject data\n");
+        // MAT2_INSPECT(trajectories_datas);
 
         // 将虚拟蓝数据和标签注入神经网络
         nn_feed(main_nn, trajectories_datas, labels);
@@ -1832,6 +1832,9 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
 
         // 训练完后，将那个 main_nn 的 weight 复制到 targe_nn 上。
         nn_cpy_weight(target_nn, main_nn);
+        
+        // 查看一下他的 weights 是否有变化。
+        //nn_show_weights(target_nn);
     }
 
     // 在所有的训练完成后，更新 agent 身上的 policy。
@@ -1844,15 +1847,18 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
         for (j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
 
             Q_feature(inputs, i/world_cols, i%world_cols, j);
-
+            // for debug
+            // printf("\ninputs");
+            // MAT2_INSPECT(inputs);
             nn_perdict(target_nn, inputs, predict);
 
             if (Max_qas < predict->pool[0]) {
                 Max_qas = predict->pool[0];
                 Max_move = j;
             }
+            printf("state: %d, move: %d, qas:%0.4f ", i, j, predict->pool[0]);
         }
-
+        printf("\n");
         // 因为这里是 offline policy， 所以直接 greed_epsilon 直接为 0 即可。
         policy_update_greedy_move(agent->policy->actions[i], Max_move, greed_epsilon);
 
