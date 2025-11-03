@@ -201,8 +201,7 @@ static int __do_backward_propagate(nn_t* nn, matrix2_t* labels, matrix2_t* outpu
         // 计算 delta x，本层的 delta x 就是下层的 delta y
         Mat2_cpy(W_T, last->W);
         Mat2_T(W_T);
-
-
+        
         Mat2_dot(W_T, delta_y);
         // 将结果返回给 delta_y,作为下一个的上级导数。
         Mat2_cpy(delta_y, W_T);
@@ -400,9 +399,9 @@ int nn_fit(nn_t* nn, void (*progress)(const char* log_str, int step,  int stable
     
 }
 
-int nn_perdict(nn_t* nn, matrix2_t* Input, matrix2_t* perdict)
+int nn_predict(nn_t* nn, matrix2_t* Input, matrix2_t* predict)
 {
-    return __do_forward_propagate(nn, Input, perdict);
+    return __do_forward_propagate(nn, Input, predict);
 }
 
 /**
@@ -499,3 +498,4 @@ int nn_show_weights(nn_t* nn)
     }
     return 0;
 }
+

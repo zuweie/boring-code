@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-10-20 09:53:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-22 14:45:46
+ * @LastEditTime: 2025-11-03 16:36:46
  * @FilePath: /boring-code/src/reinforce_learning/neural_network_functions.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -141,6 +141,7 @@ int gradient_softmax1(matrix2_t* m)
     return 0;
 }
 
+
 float crossentropy (matrix2_t* yk, matrix2_t* ak) 
 {
     
@@ -167,6 +168,16 @@ float crossentropy (matrix2_t* yk, matrix2_t* ak)
 int gradient_corssentropy(matrix2_t* ak, matrix2_t* yk)
 {
     Mat2_sub(ak, yk);
+    return 0;
+}
+
+int useless_loss(matrix2_t* y_hat, matrix2_t* y)
+{
+    return 0;
+}
+
+int gradient_useless_loss(matrix2_t* y_hat, matrix2_t* y)
+{
     return 0;
 }
 

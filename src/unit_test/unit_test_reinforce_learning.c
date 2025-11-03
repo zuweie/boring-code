@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-28 12:12:38
+ * @LastEditTime: 2025-11-03 18:05:57
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -104,6 +104,25 @@ static int Q_8_dimens_fourier_feature(matrix2_t* Q, int x, int y, int mt)
     Q->pool[7] = cos(pi * (1*fx + 1*fy + 1*fmt));
     return 0;
 }   
+
+static int S_x_dimens_fourier_feature(matrix2_t* S, int x, int y) 
+{
+    const float pi = 3.1415926;
+    float fx = (float) x / 4.f;
+    float fy = (float) y / 4.f;
+
+    int dimens = Q->rows * Q->cols;
+    int q = pow(dimens, 1.f/2.f) - 1;
+
+    int i=0;
+
+    for (int c1=0; c1<q+1; ++c1) {
+        for (int c2=0; c2<q+1; ++c2) {
+            S->pool[i++] = cos (pi * (c1 * fx + c2 * fy));
+        }
+    }
+    return 0;
+}
 
 /**
  * @brief 这个傅立叶是非常他妈的重要的吊他娘娘的，搞了三天，一直忽视这个函数，导致调试了三天才能算出收敛的 policy。操他妈个逼。自己就是大傻逼。
@@ -802,6 +821,59 @@ static void test_function_approximation_for_Q_learning_with_nn(void)
     return;
 }
 
+
+static void test_a2c(void) 
+{
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    agent_init(&agent);
+    agent_load(grid_path, &cell_reward_e, NULL, &agent);
+    printf("\n\n");
+
+    nn_t pi_nn;
+    typedef (*S_feature)(matrix2_t*, int, int);
+    S_feature sf = S_x_dimens_fourier_feature;
+    
+    int input_dimens  = pow((1+4), 2.f);
+    int output_dimens = 1;
+    int batch         = 100;
+    int max_iter      = 10000000000000;
+    int err_statble   = 3;
+    float alpha       = 0.01;
+    float epsilon     = 0.1;
+    int layers        = 1;
+    int neurals[]     = {100};
+
+    int start_id      = 0;
+    int episodes      = 1;
+    int trajectories  = 10000;
+    float gamma       = 0.9;
+    float alpha_W     = 0.001;
+    float alpha_theta = 0.001;
+
+    nn_build(\
+        &pi, input_dimens, output_dimens, batch, max_iter, err_statble, alpha, epsilon, layers, neurals,\
+        sigmoid1, gradient_sigmoid1, softmax1, gradient_softmax1, useless_loss, gradient_useless_loss\
+    );
+
+
+    // advantage actor critics 算法。
+    agent_policy_gradient_advantage_actor_critics(\ 
+        &agent, start_id, episodes, trajectories, gamma, alpha_W, alpha_theta, input_dimens, sf, &pi_nn
+    );
+
+    // 打印训练的结果。
+    printf("\n");
+    agent_display_gridworld(&agent);
+
+    printf("\n");
+    agent_display_policy2(&agent);
+
+    agent_reset(&agent);
+
+    return;
+}
+
 int do_reinforce_learning_test(void) 
 {
 
@@ -893,11 +965,16 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test nn Q-learning", test_function_approximation_for_Q_learning_with_nn) ) {
+    // if (NULL == CU_add_test(pSuite, "test nn Q-learning", test_function_approximation_for_Q_learning_with_nn) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+
+    if (NULL == CU_add_test(pSuite, "test a2c ", test_a2c) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
-
     // if (NULL == CU_add_test(pSuite, "test nn", test_nn) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();

@@ -293,6 +293,107 @@ static int __sampling(agent_t* agent, matrix2_t* datas, matrix2_t* labels, nn_t*
     Mat2_destroy(predict);
     return 0;
 }
+
+move_t __predict_move(matrix2_t* mv_predict) 
+{
+    int num            = mv_predict->rows * mv_predict->cols;
+    float probability  = -FLT_MAX;
+    move_t max_move    = e_idle;
+
+    for (int j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
+        if (probability < mv_predict->pool[j]) {
+            probability = mv_predict->pool[j];
+            max_move    = j;
+        }
+    }
+    return max_move;
+}
+
+
+void __set_move_hot(matrix2_t* mv_hot, move_t move) 
+{
+    Mat2_fill(mv_hot, 0.f);
+    mv_hot->pool[move] = 1.f;
+    return;
+}
+
+/**
+ * @brief 这里做 theta_t1 = theta_t + alpha * delat_q * \delta lnpi(at|st, theta_t) 网络的梯度上升算法，也就是 actor 部分。
+ * nn 的 ouput 函数必须是 softmax 函数，否则算法将不再准确。
+ * @param nn 
+ * @return int 
+ */
+int __theta_gradient_ascent(nn_t* nn, matrix2_t* move_hot, matrix2_t* s_predict, float alpha_theta, float delta_q) 
+{
+    
+    znode_t* last      = znode_last(nn);
+
+    matrix2_t* delta_W = Mat2_create(1,1);
+    matrix2_t* delta_b = Mat2_create(1,1);
+    matrix2_t* delta_y = Mat2_create(1,1);
+    matrix2_t* x_T     = Mat2_create(1,1);
+    matrix2_t* W_T     = Mat2_create(1,1);
+    matrix2_t* delta_z;
+
+
+    // 计算最上层 lnPi(at|st, theta_t) 对 zi(线性输出) 的梯度。
+    // 梯度的结果很简单，就是 e_a - pi(st)
+    // 其中 e_a 是 action 的 one_hot.
+    // 也就是当 a 是 up 的时候 e_a 为 [0,1,0,0,0,0].
+    // pi 是 nn 在某一个 st 的情况的对 move 的预测，预测结果为 softmax 的概率。
+
+    Mat2_cpy(delta_y, move_hot);
+    Mat2_sub(delta_y, s_predict);
+    
+    
+    while (last != znode_head(nn)){
+
+        delta_z = last->z;
+
+        if (last->is_output) {
+            nn->gradient_output(delta_z);
+        } else {
+            nn->gradient_active(delta_z);
+        }
+
+        Mat2_hadamard_product(delta_y, delta_z);
+
+        // 计算 delta W
+        Mat2_cpy(x_T, last->x);
+        Mat2_T(x_T);
+
+        Mat2_cpy(delta_W, delta_y);
+        Mat2_dot(delta_W, x_T);
+
+        // 计算 delta b。因为这里我们采用的  SG，也就是单条的梯度上升，所以就不存在将 b 弄胖再弄瘦的问题，b 一直都这么瘦。
+        Mat2_cpy(delta_b, delta_y);
+
+        // 计算对 x 的导数，这层的 x 是上一层的输出。
+        
+        Mat2_cpy(W_T, last->W);
+        Mat2_T(W_T);
+        Mat2_dot(W_T, delta_y);
+        Mat2_cpy(delta_y, W_T);
+
+        // 更新 参数，这里是做 ascent。
+        Mat2_scalar_multiply(delta_W, alpha_theta * delta_q);
+        Mat2_scalar_multiply(delta_b, alpha_theta * delta_q);
+
+        Mat2_add(last->W, delta_W);
+        Mat2_add(last->b, delta_b);
+
+        last = last->prev;
+    }
+
+    matrix2_t* delta_W = Mat2_create(1,1);
+    matrix2_t* delta_b = Mat2_create(1,1);
+    matrix2_t* delta_y = Mat2_create(1,1);
+    matrix2_t* x_T     = Mat2_create(1,1);
+    matrix2_t* W_T     = Mat2_create(1,1);
+
+    return 0;
+}
+
 /**
  * @brief 根据赵世钰老师的《强化学习的数学原理》中的 state values 迭代算法求解法。具体是《第二章贝尔曼公式的向量形式与求解》中的算法。
  * 
@@ -1870,5 +1971,105 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
     Mat2_destroy(inputs);
     Mat2_destroy(predict);
 
+    return 0;
+}
+
+/**
+ * @brief 这里是 《强化学习的数学原理》最后一个章节的算法实现，本章节一共可能需要实现两个算法，一个是 a2c 算法，另外一个是 dAC算法。
+ * 这里是 a2c 算法, 也叫 td 的 ac 算法，主要是有两个梯度需要计算.其中神经网络用于计算 pi() 的输出概率，所以输出层为 softmax。
+ * 之前写的神经网络，需要拆开，好好改造。
+ * @param agent 
+ * @param start_id 
+ * @param episode 
+ * @param trajectory_length 
+ * @param gamma 
+ * @param greedy_epsilon 
+ * @return int 
+ */
+int agent_policy_gradient_advantage_actor_critic( \
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float alpha_w,\
+    int feature_dimens, int (*S_feature)(matrix2_t*, int, int), nn_t* pi_nn
+)
+{
+    int i,j,k;
+    int iter=0, step=0;
+    int st, st1;
+    action_t* at;
+    move_t mt;
+    float qt, qt1;
+    float delta_q;
+    int state_number = agent->world->rows * agent->world->cols;
+    int world_cols = agent->world->cols;
+    consequence_t consequence;
+    // 在大循环中进行 ac 算法。
+
+    // 这是 delta 线性函数使用的 变量。
+    matrix2_t* q          = Mat2_create(1,1);
+    matrix2_t* feature    = Mat2_create(1, feature_dimens);
+    matrix2_t* W          = Mat2_create(feature_dimens, 1);
+    
+    matrix2_t* mv_predict = Mat2_create(MOVE_TYPE_NUM, 1);
+    matrix2_t* mv_hot     = Mat2_create(MOVE_TYPE_NUM, 1);
+    
+    while (iter++ < episodes) {
+
+        step = 0;
+        st = start_id;
+        while (step++ < trajectory_length){
+            // step 0， 通过 pi_nn 预测 at， 执行 at 的到 st1 和 reward。
+            
+            S_feature(feature, st/world_cols, st%world_cols);
+            nn_predict(pi_nn, feature, mv_predict);
+            mt = __predict_move(mv_predict);
+
+            consequence = agent_move(agent, st, mt);
+            st1 = consequence.stay_id;
+
+            // step 1, 计算 td error
+            // Advantage:
+            mat2_cpy(q, feature);
+            Mat2_dot(q, W);
+            qt = q->pool[0];
+
+            S_feature(feature, st1/world_cols, st1%world_cols);
+            
+            mat2_cpy(q, feature);
+            Mat2_dot(q, W);
+            qt1 = q->pool[0];
+
+            delta_q = consequence.reward + gamma * qt1 - qt;
+            
+            // step 2 梯度上升计算。
+            // actor （policy update）
+            __set_move_hot(mv_hot, mt);
+            __theta_gradient_ascent(nn,  mv_hot, mv_predict, alpha_theta, delta_q);
+
+            // step 3 更新 q value。
+            // critics
+            Mat2_scalar_multiply(feature, alpha_w * delta_q);
+            Mat2_sum(W, feature)
+        }
+    }
+
+    // 训练完毕设置 agent 的 target policy
+
+    for (i=0; i<state_number; ++i) {
+
+        S_feature(feature, i/world_cols, i%world_cols);
+        nn_predict(pi, feature, mv_predict);
+
+        mv = __predict_move(mv_predict);
+        at = agent->policy->action[i];
+        
+        policy_set_random_moves(at, mv, 0);
+    }
+
+
+    Mat2_destroy(q);
+    Mat2_destroy(feature);
+    Mat2_destroy(W);
+    Mat2_destroy(mv_predict);
+    Mat2_destroy(mv_hot);
+    
     return 0;
 }
