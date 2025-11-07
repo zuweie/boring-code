@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-10-21 15:49:05
+ * @LastEditTime: 2025-11-06 09:39:57
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -77,7 +77,8 @@ int Mat2_sum(matrix2_t* mat, int axis);
 double Mat2_norm(matrix2_t* mat);
 
 int Mat2_normalize_on_col(matrix2_t* mat);
-
+vfloat_t Mat2_max(matrix2_t* mat);
+vfloat_t Mat2_min(matrix2_t* mat);
 
 #define MAT2_POOL_PTR(mat, ptr_name) vfloat_t(*ptr_name)[(mat)->cols]=(mat)->pool
 #define MAT2_DIFF_LIST_PTR(diff_ptr) 

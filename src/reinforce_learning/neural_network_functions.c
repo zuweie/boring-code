@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-10-20 09:53:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-03 16:36:46
+ * @LastEditTime: 2025-11-06 15:38:40
  * @FilePath: /boring-code/src/reinforce_learning/neural_network_functions.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,12 +12,6 @@
 #include "neural_network_functions.h" 
 
 
-static const float relu_alpha = 1.f;
-
-static inline float __relu (float v, float alpha) 
-{
-    return alpha * (exp(v) - 1);
-}
 
 static inline float __sigmoid(float x) {
     return 1.f / (1 + exp( -x ));
@@ -27,8 +21,8 @@ int relu(matrix2_t* m)
 {
     int number = m->rows * m->cols;
     for (int i=0; i<number; ++i) {
-        if (m->pool[i] < 0) {
-            m->pool[i] = __relu(m->pool[i], relu_alpha);
+        if (m->pool[i] <= 0.f) {
+            m->pool[i] = 0;
         }
     }
     return 0;
@@ -37,8 +31,10 @@ int gradient_relu(matrix2_t* m)
 {
     int number = m->rows * m->cols;
     for (int i=0; i<number; ++i) {
-        if (m->pool[i] < 0) {
-            m->pool[i] = __relu(m->pool[i], relu_alpha) + relu_alpha;
+        if (m->pool[i] <= 0.f) {
+            m->pool[i] = 0;
+        } else {
+            m->pool[i] = 1;
         }
     }
     return 0;
@@ -129,6 +125,29 @@ int softmax1(matrix2_t* m1)
 
         for (i=0; i<m1->rows; ++i) {
             m1_ptr[i][j] = exp(m1_ptr[i][j] - max_v) / total ;
+        }
+    }
+
+    return 0;
+}
+
+int softmax2(matrix2_t* m1)
+{
+    
+    float total = 0.f;
+    MAT2_POOL_PTR(m1, m1_ptr);
+
+    int i,j;
+    for (j=0; j<m1->cols; ++j) {
+        total = 0.f;
+
+
+        for (i=0; i<m1->rows; ++i) {
+            total += exp(m1_ptr[i][j]);
+        }
+
+        for (i=0; i<m1->rows; ++i) {
+            m1_ptr[i][j] = exp(m1_ptr[i][j]) / total ;
         }
     }
 

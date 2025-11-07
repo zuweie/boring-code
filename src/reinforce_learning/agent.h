@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-25 07:50:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-03 16:40:08
+ * @LastEditTime: 2025-11-05 17:09:24
  * @FilePath: /boring-code/src/reinforce_learning/agent.h
  * @Description: 本算法是基于 B 站 赵世钰 老师的公开课《强化学习的数学原理》而实现的。除了公开课，他还有一个同名的电子书《强化学习的数学原理》。
  */
@@ -58,7 +58,7 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
     int feature_dimens, int (*Q_feature)(matrix2_t*, int, int, int), nn_t* target_nn, nn_t* main_nn, void (*progress)(const char* str, int, int, float)\
 );
 int agent_policy_gradient_advantage_actor_critic( \
-    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float alpha_w,\
-    int feature_dimens, int (*S_feature)(matrix2_t*, int, int), nn_t* pi_nn
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float bate, float alpha_w,\
+    int feature_dimens, int (*S_feature)(matrix2_t*, int, int), nn_t* pi_nn, nn_t* v_nn
 );
 #endif

@@ -17,13 +17,12 @@ static znode_t* __znode_create(int in_dimens, int out_dimens, int id, int is_out
     z->b = Mat2_create(out_dimens, 1);
     z->x = Mat2_create(1,1);
 
-    Mat2_fill_random(z->W, 0, 1);
-    Mat2_fill_random(z->b, 0, 1);
-
-    // printf("%d,\n", id);
-    // MAT2_INSPECT(z->W);
-    // MAT2_INSPECT(z->b);
-
+    if (!is_output) {
+        Mat2_fill(z->b, 0.1f);
+    } else {
+        Mat2_fill(z->b, 0.f);
+    }
+    
     return z;
 }
 
@@ -84,12 +83,6 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
         // printf("\n layer: %d, bbbb ", first->id);
         // MAT2_INSPECT(bias);
 
-        // if (bias->pool[19] > 10000)
-        // {
-        //     int whatthefuck = 0;
-        //     whatthefuck++;
-        // }
-
         Mat2_reshape(ones, 1, x->cols);
         Mat2_fill(ones, 1.f);
         Mat2_dot(bias, ones);
@@ -101,9 +94,6 @@ static int __do_forward_propagate(nn_t* nn, matrix2_t* inputs, matrix2_t* output
         //     // 将 bias 扩展多个相同的列。
         //     Mat2_dot(bias, ones);
         // } 
-
-
-
 
         // W dot X + bias
         Mat2_add(z, bias);
@@ -299,6 +289,70 @@ int nn_build(nn_t* nn, \
     return 0;
 }
 
+/**
+ * @brief 此函数是建立简易版的神经网络，并不具备训练的条件。只能用作推理，请勿乱用。
+ * 
+ */
+int nn_build2(nn_t* nn, 
+    int input_dimens, int output_dimens, int layers, int neurals[], \
+    int (*active) (matrix2_t*), int (*gradient_active)(matrix2_t*),\
+    int (*output) (matrix2_t*), int (*gradient_output)(matrix2_t*)
+)                                    
+{
+    nn->znode_head.next = znode_tail(nn);
+    nn->znode_head.prev = znode_head(nn);
+    int in_dimens = input_dimens;
+    int out_dimens;
+    znode_t* z;
+    znode_t* tail;
+
+    int i;
+    for (i=0; i<layers; ++i) {
+        out_dimens = neurals[i];
+
+        z = __znode_create(in_dimens, out_dimens, i, 0);
+        // 将新建的插入双向链表的后面, tail 的前面
+        tail = znode_tail(nn);
+
+        z->prev = tail->prev;
+        z->next = tail;
+
+        tail->prev->next = z;
+        tail->prev       = z;
+
+        in_dimens = out_dimens;
+    }
+
+    // setup output layers;
+    out_dimens = output_dimens;
+
+    z = __znode_create(in_dimens, out_dimens, i, 1);
+    tail = znode_tail(nn);
+
+    z->prev = tail->prev;
+    z->next = tail;
+
+    tail->prev->next = z;
+    tail->prev       = z;
+
+    nn->max_iter      = 0;
+    nn->epsilon       = 0.f;
+    nn->alpha         = 0.f;
+    nn->batch         = 0.f;
+    nn->err_stable    = 0;
+
+    nn->active           = active;
+    nn->gradient_active  = gradient_active;
+
+    nn->output           = output;
+    nn->gradient_output  = gradient_output;
+
+    nn->loss             = NULL;
+    nn->gradient_loss    = NULL;
+
+    return 0;
+}
+
 int nn_reset(nn_t* nn)
 {
     znode_t* first = znode_first(nn);
@@ -401,7 +455,12 @@ int nn_fit(nn_t* nn, void (*progress)(const char* log_str, int step,  int stable
 
 int nn_predict(nn_t* nn, matrix2_t* Input, matrix2_t* predict)
 {
-    return __do_forward_propagate(nn, Input, predict);
+    // 需要检查输入的数据的 dimens 是否正确。
+    znode_t* first = znode_first(nn);
+    if (Input->rows == first->in_dimens) {    
+        return __do_forward_propagate(nn, Input, predict);
+    }
+    return -1;
 }
 
 /**
@@ -489,11 +548,125 @@ int nn_show_weights(nn_t* nn)
 {
     znode_t* first = znode_first(nn);
     while (first != znode_tail(nn)) {
-
         printf("\n <%d> Weight:", first->id);
         MAT2_INSPECT(first->W);
         printf("\n <%d> bias:", first->id);
         MAT2_INSPECT(first->b);
+        first = first->next;
+    }
+    return 0;
+}
+
+/**
+ * @brief 这是一个基本隐藏层的梯度更新。
+ * 
+ * @param nn 
+ * @param delta_y 
+ * @param alpha 
+ * @return int 
+ */
+int nn_sg(nn_t* nn, const matrix2_t* delta_y_hat, float alpha)
+{
+    znode_t* last      = znode_last(nn);
+    
+    matrix2_t* delta_W = Mat2_create(1,1);
+    matrix2_t* delta_b = Mat2_create(1,1);
+
+    matrix2_t* x_T     = Mat2_create(1,1);
+    matrix2_t* W_T     = Mat2_create(1,1);
+
+    matrix2_t* delta_y = Mat2_create_cpy(delta_y_hat);
+
+    matrix2_t* delta_z;
+
+    
+    while (last != znode_head(nn)) 
+    {
+        //printf("\n----------------- bp layer %d ----------------\n", last->id);
+        // 计算本节点的
+        delta_z = last->z;
+        // 激活函数的导数
+        if (last->is_output) {
+            // output 最 delta_z 的梯度一并弄到 delta_y 中去。
+            Mat2_fill(delta_z, 1.f);
+        } else {
+            // 隐藏层，按照正常流程来计算。
+            nn->gradient_active(delta_z);  
+        }
+
+        // delta_y 圆叉 delta_active_function
+        Mat2_hadamard_product(delta_y, delta_z);
+        // 计算 delta_W
+        Mat2_cpy(delta_W, delta_y);
+        Mat2_cpy(x_T, last->x);
+        Mat2_T(x_T);
+        Mat2_dot(delta_W, x_T);
+
+        // 计算 delta b
+        Mat2_cpy(delta_b, delta_y);
+        
+        // 计算 delta x，本层的 delta x 就是下层的 delta y
+        Mat2_cpy(W_T, last->W);
+        Mat2_T(W_T);
+        Mat2_dot(W_T, delta_y);
+        // 将结果返回给 delta_y,作为下一个的上级导数。
+        Mat2_cpy(delta_y, W_T);
+
+        // 更新 W 和 b
+        Mat2_scalar_multiply(delta_W, alpha);
+        Mat2_scalar_multiply(delta_b, alpha);
+
+        // printf("\n delta_W");
+        // MAT2_INSPECT(delta_W);
+
+        // printf("\n delta_b");
+        // MAT2_INSPECT(delta_b);
+
+        Mat2_add(last->W, delta_W);
+        Mat2_add(last->b, delta_b);
+
+        last = last->prev;
+    }
+
+    Mat2_destroy(delta_y);
+    Mat2_destroy(delta_W);
+    Mat2_destroy(delta_b);
+    Mat2_destroy(x_T);
+    Mat2_destroy(W_T);
+    return 0;
+}
+
+/**
+ * @brief 对 nn 的 weight 进行 xaiver 的初始化，这个非常总要
+ * 
+ * @param nn
+ * @return int 
+ */
+int nn_weights_xaiver_uniform(nn_t* nn)
+{
+    znode_t* first = znode_first(nn);
+    while (first != znode_tail(nn))
+    {
+        float arange = sqrt(6.f / (first->in_dimens + first->out_dimens));
+        Mat2_fill_random(first->W, -arange, arange);
+        first = first->next;
+    }
+    return 0;
+}
+
+/**
+ * @brief 对 nn 的 weights 进行 he 初始化，这个非常重要
+ * 
+ * @param nn 
+ * @return int 
+ */
+int nn_weights_he_uniform(nn_t* nn)
+{   
+    znode_t* first = znode_first(nn);
+    while(first != znode_tail(nn)) {
+        
+        float arange = sqrt(6.f / (first->in_dimens));
+        Mat2_fill_random(first->W, -arange, arange);
         first = first->next;
     }
     return 0;

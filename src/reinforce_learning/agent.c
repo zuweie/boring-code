@@ -275,7 +275,7 @@ static int __sampling(agent_t* agent, matrix2_t* datas, matrix2_t* labels, nn_t*
 
             Q_feature(input, st1/world_cols, st1%world_cols, j);
 
-            nn_perdict(target_nn, input, predict);
+            nn_predict(target_nn, input, predict);
 
             if (Max_Qas < predict->pool[0]) {
                 Max_Qas = predict->pool[0];
@@ -294,15 +294,15 @@ static int __sampling(agent_t* agent, matrix2_t* datas, matrix2_t* labels, nn_t*
     return 0;
 }
 
-move_t __predict_move(matrix2_t* mv_predict) 
+move_t __predict_move(matrix2_t* mt_probability) 
 {
-    int num            = mv_predict->rows * mv_predict->cols;
+    int num            = mt_probability->rows * mt_probability->cols;
     float probability  = -FLT_MAX;
     move_t max_move    = e_idle;
 
-    for (int j=e_go_up; j<MOVE_TYPE_NUM; ++j) {
-        if (probability < mv_predict->pool[j]) {
-            probability = mv_predict->pool[j];
+    for (int j=e_idle; j<MOVE_TYPE_NUM; ++j) {
+        if (probability < mt_probability->pool[j]) {
+            probability = mt_probability->pool[j];
             max_move    = j;
         }
     }
@@ -310,10 +310,10 @@ move_t __predict_move(matrix2_t* mv_predict)
 }
 
 
-void __set_move_hot(matrix2_t* mv_hot, move_t move) 
+void __set_move_hot(matrix2_t* mt_hot, move_t move) 
 {
-    Mat2_fill(mv_hot, 0.f);
-    mv_hot->pool[move] = 1.f;
+    Mat2_fill(mt_hot, 0.f);
+    mt_hot->pool[move] = 1.f;
     return;
 }
 
@@ -365,7 +365,7 @@ int __theta_gradient_ascent(nn_t* nn, matrix2_t* move_hot, matrix2_t* s_predict,
         Mat2_cpy(delta_W, delta_y);
         Mat2_dot(delta_W, x_T);
 
-        // 计算 delta b。因为这里我们采用的  SG，也就是单条的梯度上升，所以就不存在将 b 弄胖再弄瘦的问题，b 一直都这么瘦。
+        // 计算 delta b。因为这里我们采用的 SGA，也就是单条的梯度上升，所以就不存在将 b 弄胖再弄瘦的问题，b 一直都这么瘦。
         Mat2_cpy(delta_b, delta_y);
 
         // 计算对 x 的导数，这层的 x 是上一层的输出。
@@ -385,11 +385,11 @@ int __theta_gradient_ascent(nn_t* nn, matrix2_t* move_hot, matrix2_t* s_predict,
         last = last->prev;
     }
 
-    matrix2_t* delta_W = Mat2_create(1,1);
-    matrix2_t* delta_b = Mat2_create(1,1);
-    matrix2_t* delta_y = Mat2_create(1,1);
-    matrix2_t* x_T     = Mat2_create(1,1);
-    matrix2_t* W_T     = Mat2_create(1,1);
+    Mat2_destroy(delta_W);
+    Mat2_destroy(delta_b);
+    Mat2_destroy(delta_y);
+    Mat2_destroy(x_T);
+    Mat2_destroy(W_T);
 
     return 0;
 }
@@ -1951,7 +1951,7 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
             // for debug
             // printf("\ninputs");
             // MAT2_INSPECT(inputs);
-            nn_perdict(target_nn, inputs, predict);
+            nn_predict(target_nn, inputs, predict);
 
             if (Max_qas < predict->pool[0]) {
                 Max_qas = predict->pool[0];
@@ -1976,19 +1976,21 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
 
 /**
  * @brief 这里是 《强化学习的数学原理》最后一个章节的算法实现，本章节一共可能需要实现两个算法，一个是 a2c 算法，另外一个是 dAC算法。
- * 这里是 a2c 算法, 也叫 td 的 ac 算法，主要是有两个梯度需要计算.其中神经网络用于计算 pi() 的输出概率，所以输出层为 softmax。
+ * 这里是 a2c 算法, 也叫 td 的 ac 算法，主要是有两个梯度需要计算.其中神经网络用于计算 pi 的输出概率，所以输出层为 softmax。
  * 之前写的神经网络，需要拆开，好好改造。
+ * 
+ * 1 在的代码实现过程中，我发现 td_error 很容易变成零。一旦这个玩意变成了零，W 与 theta 的更新就进入了停滞状态，进入一个“在某个 state 中只取 某个 action”
+ * 的死循环。这里需要加入 theta 的更新中添加正则项。是的 td_error 在变为零的时候依然，能够更新 theta。
+ * 
+ * 2 此算法有个感觉非常别扭的地方，算法第一步通过 pi 网络得到 at，然后将 at 变成 one-hot。然后在进行对 ln\pi 进行 导数的时候，最外层的导数就是 at-hot - pi
+ * 那么这玩意就很容易变成零。一旦外层导数是零，那么系数是啥玩意都没有用。有什么办法解决呢？这就是说明此路不通？换另外一个 state 继续跑一下？试试看吧
+ * 
  * @param agent 
- * @param start_id 
- * @param episode 
- * @param trajectory_length 
- * @param gamma 
- * @param greedy_epsilon 
  * @return int 
  */
 int agent_policy_gradient_advantage_actor_critic( \
-    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float alpha_w,\
-    int feature_dimens, int (*S_feature)(matrix2_t*, int, int), nn_t* pi_nn
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta, float alpha_w,\
+    int feature_dimens, int (*S_feature)(matrix2_t*, int, int), nn_t* pi_nn, nn_t* v_nn
 )
 {
     int i,j,k;
@@ -2000,76 +2002,168 @@ int agent_policy_gradient_advantage_actor_critic( \
     float delta_q;
     int state_number = agent->world->rows * agent->world->cols;
     int world_cols = agent->world->cols;
+    float ALPHA;
+    float max_probability;
     consequence_t consequence;
     // 在大循环中进行 ac 算法。
 
     // 这是 delta 线性函数使用的 变量。
-    matrix2_t* q          = Mat2_create(1,1);
-    matrix2_t* feature    = Mat2_create(1, feature_dimens);
-    matrix2_t* W          = Mat2_create(feature_dimens, 1);
+    matrix2_t* q              = Mat2_create(1,1);
+    matrix2_t* state_feature  = Mat2_create(feature_dimens, 1);
     
-    matrix2_t* mv_predict = Mat2_create(MOVE_TYPE_NUM, 1);
-    matrix2_t* mv_hot     = Mat2_create(MOVE_TYPE_NUM, 1);
+    matrix2_t* mt_probability = Mat2_create(1,1);
+    matrix2_t* state_predict  = Mat2_create(1,1);
+    //matrix2_t* mt_hot         = Mat2_create(MOVE_TYPE_NUM, 1);
+
+    // pi nn 所使用的 matrix2
+    matrix2_t *pi_delta_y_hat = Mat2_create(MOVE_TYPE_NUM, 1);
+    matrix2_t *v_delta_y_hat  = Mat2_create(1,1);
+
+    srand(time(NULL));
     
     while (iter++ < episodes) {
 
         step = 0;
-        st = start_id;
+        st = rand() % state_number;
+        //st = start_id;
+        printf("start the new st(%d)\n", st);
         while (step++ < trajectory_length){
+
             // step 0， 通过 pi_nn 预测 at， 执行 at 的到 st1 和 reward。
             
-            S_feature(feature, st/world_cols, st%world_cols);
-            nn_predict(pi_nn, feature, mv_predict);
-            mt = __predict_move(mv_predict);
+            S_feature(state_feature, st/world_cols, st%world_cols);
+
+            nn_predict(pi_nn, state_feature, mt_probability);
+
+            max_probability = Mat2_max(mt_probability);
+            
+            printf("\n probability");
+            MAT2_INSPECT(mt_probability);
+
+            if (max_probability > 0.98f) {
+                printf(" max_probability(%0.4f) > 0.98, gradient gone? \n", max_probability);
+                //printf("\n probability");
+                //MAT2_INSPECT(mt_probability);
+                //nn_show_weights(pi_nn);
+                //break;
+            }
+
+            // printf("\n mt_probability ");
+            // MAT2_INSPECT(mt_probability);
+            // printf("\n nn weights:");
+            // nn_show_weights(pi_nn);
+            // printf("\n");
+
+            mt = __predict_move(mt_probability);
 
             consequence = agent_move(agent, st, mt);
+            // st1 的下一步。
             st1 = consequence.stay_id;
 
             // step 1, 计算 td error
             // Advantage:
-            mat2_cpy(q, feature);
-            Mat2_dot(q, W);
-            qt = q->pool[0];
 
-            S_feature(feature, st1/world_cols, st1%world_cols);
-            
-            mat2_cpy(q, feature);
-            Mat2_dot(q, W);
-            qt1 = q->pool[0];
+            nn_predict(v_nn, state_feature, state_predict);
+            qt = state_predict->pool[0];
+
+            S_feature(state_feature, st1/world_cols, st1%world_cols);
+            nn_predict(v_nn, state_feature, state_predict);
+            qt1 = state_predict->pool[0];
 
             delta_q = consequence.reward + gamma * qt1 - qt;
             
+            printf("delta_q: %0.2f = %0.2f + (%0.2f) * (%0.2f) - (%0.2f) \n", delta_q, consequence.reward, gamma, qt1, qt);
+
             // step 2 梯度上升计算。
             // actor （policy update）
-            __set_move_hot(mv_hot, mt);
-            __theta_gradient_ascent(nn,  mv_hot, mv_predict, alpha_theta, delta_q);
 
-            // step 3 更新 q value。
-            // critics
-            Mat2_scalar_multiply(feature, alpha_w * delta_q);
-            Mat2_sum(W, feature)
+            // 为什么这个 alpha 要大写，因为这玩意很重要！！！很复杂。
+
+            // 计算最上层 lnPi(at|st, theta_t) 对 zi(线性输出) 的梯度。
+            // 梯度的结果很简单，就是 e_a - pi(st)
+            // 其中 e_a 是 action 的 one_hot.
+            // 也就是当 a 是 up 的时候 e_a 为 [0,1,0,0,0,0].
+            // pi 是 nn 在某一个 st 的情况的对 move 的预测，预测结果为 softmax 的概率。
+            
+            // delta_y_hat 变成 one-hat。
+            __set_move_hot(pi_delta_y_hat, mt);
+
+            // printf("\n mt_probability");
+            // MAT2_INSPECT(mt_probability);
+
+            // printf("\n before sub delta_y_hat ");
+            // MAT2_INSPECT(pi_delta_y_hat);
+
+            // 将 delta_y_hat 减去 move 的 probability 就是 \theta ln\Pi(at|st,\theta_t);
+            Mat2_sub(pi_delta_y_hat, mt_probability);
+
+            // printf("\n after sub delta_y_hat");
+            // MAT2_INSPECT(pi_delta_y_hat);
+
+            // 很他妈的重要！！！！
+            // 他奶奶的昨天弄了一天，丢距个嘿，发现 delta td 是很容易变成 0 了，问了 deepseek ，
+            // 然后他认为需要的 \theta_t 的更新过程中加入一个正则项 H = -\Sigema \Pi(at|st,\theta_t) lnPi(at|st, \theta_t).
+            // 然后对 H 对 \theta 做偏导得：
+            // \delta H = -\delta ln\Pi(at|st, \theta_t)(ln\Pi(at|st, \theta_t) + 1);
+            // 代入原始式子得到：
+            // \theta_{t+1} = \theta_t + \alpha_\theta[\delta_t - \bate(ln\Pi(at|st, \theta_t)+1)] \deltaln\Pi(at|st, \theta_t)
+
+            // 原来的 \delta ln\Pi(at|st, \theta_t) 的参数值哟 \alpha,
+            // 现在换成这一坨东西：
+            // \alpha_\theta[\delta_t - \bate(ln\Pi(at|st, \theta_t)+1)] 
+
+            // float mt_prob = mt_probability->pool[mt];
+            //ALPHA = alpha_theta * ( delta_q - beta * (log(mt_prob) + 1) );
+            //printf("ALPHA: %0.4f = %0.2f * (%0.2f - %0.2f * (%0.2f (%0.2f) + 1)) \n", ALPHA, alpha_theta, delta_q, beta, log(mt_prob), mt_prob);
+            // 单步 sg
+
+            // 调试过程中，发现 log\pi(at) 又可能是负一
+
+            // printf("\n before update:");
+            // nn_show_weights(pi_nn);
+            nn_sg(pi_nn, pi_delta_y_hat, ALPHA);
+            // printf("\n after update:");
+            // nn_show_weights(pi_nn);
+
+            // step 3 更新 q value, 也就是 W 的参数。
+            // critic
+            // S_feature(state_feature, st/world_cols, st%world_cols);
+            // Mat2_scalar_multiply(state_feature, alpha_w * delta_q);
+            // Mat2_add(W, state_feature);
+
+            Mat2_fill(v_delta_y_hat, 1.f);
+            nn_sg(v_nn, v_delta_y_hat, (alpha_w * delta_q));
+            printf("alpha_w: %0.4f * %0.4f = %0.4f\n", alpha_w, delta_q, (alpha_w * delta_q));
+
+            // printf("\n feature w");
+            // MAT2_INSPECT(W);
+            // 把 st 换成下一步。
+            //if (step % 1 == 0) printf("\n");
+
+            printf("result, st: %d, mt: %d ,reward: %0.2f, delta_q: %0.2f \n\n", st, mt, consequence.reward, delta_q);
+            st = st1;
         }
     }
 
-    // 训练完毕设置 agent 的 target policy
+    // 训练完毕, 设置 agent 的 target policy
+
+    //nn_show_weights(pi_nn);
 
     for (i=0; i<state_number; ++i) {
 
-        S_feature(feature, i/world_cols, i%world_cols);
-        nn_predict(pi, feature, mv_predict);
+        S_feature(state_feature, i/world_cols, i%world_cols);
+        nn_predict(pi_nn, state_feature, mt_probability);
 
-        mv = __predict_move(mv_predict);
-        at = agent->policy->action[i];
-        
-        policy_set_random_moves(at, mv, 0);
+        mt = __predict_move(mt_probability);
+        policy_set_random_moves(&agent->policy->actions[i], mt, 0);
     }
 
 
     Mat2_destroy(q);
-    Mat2_destroy(feature);
-    Mat2_destroy(W);
-    Mat2_destroy(mv_predict);
-    Mat2_destroy(mv_hot);
-    
+    Mat2_destroy(state_feature);
+    Mat2_destroy(mt_probability);
+    Mat2_destroy(state_predict);
+    Mat2_destroy(pi_delta_y_hat);
+    Mat2_destroy(v_delta_y_hat);
     return 0;
 }

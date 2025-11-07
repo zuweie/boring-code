@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
 #include <math.h>
 #include "matrix2_operator.h"
 #include "matrix2.h"
@@ -851,4 +852,27 @@ int Mat2_normalize_on_col(matrix2_t* mat)
         }
    }
    return 0;
+}
+
+vfloat_t Mat2_max(matrix2_t* mat)
+{
+    int num      = mat->rows * mat->cols;
+    vfloat_t max = -FLT_MAX;
+    for (int i=0; i<num; ++i) {
+        if (max < mat->pool[i]) {
+            max = mat->pool[i];
+        }
+    }
+    return max;
+}
+vfloat_t Mat2_min(matrix2_t* mat)
+{
+    int num      = mat->rows * mat->cols;
+    vfloat_t min = FLT_MAX;
+    for (int i=0; i<num; ++i) {
+        if (min > mat->pool[i]) {
+            min = mat->pool[i];
+        }
+    }
+    return min;
 }

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-03 18:05:57
+ * @LastEditTime: 2025-11-07 13:38:20
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -111,7 +111,7 @@ static int S_x_dimens_fourier_feature(matrix2_t* S, int x, int y)
     float fx = (float) x / 4.f;
     float fy = (float) y / 4.f;
 
-    int dimens = Q->rows * Q->cols;
+    int dimens = S->rows * S->cols;
     int q = pow(dimens, 1.f/2.f) - 1;
 
     int i=0;
@@ -752,7 +752,7 @@ static void test_nn(void)
     // train the data
     nn_fit(&nn, &nn_progress);
 
-    nn_perdict(&nn, _Input, predict);
+    nn_predict(&nn, _Input, predict);
 
     MAT2_INSPECT(predict);
 
@@ -782,10 +782,10 @@ static void test_function_approximation_for_Q_learning_with_nn(void)
     nn_t target_nn, main_nn;
 
     //int input_dimens  = 3;
-    int input_dimens  = pow((1+1), 3.f);
+    int input_dimens  = pow((1+9), 3.f);
     int output_dimens = 1;
     int batch         = 100;
-    int max_iter      = 10000000000000;
+    int max_iter      = INT_MAX;
     int err_statble   = 3;
     float alpha       = 0.01;
     float epsilon     = 0.1;
@@ -797,7 +797,7 @@ static void test_function_approximation_for_Q_learning_with_nn(void)
     int trajectories  = 1000;
     float gamma       = 0.9;
     float greedy_epsilon = 0.f;
-    typedef (*Q_feature) (matrix2_t* Q, int, int, int);
+    typedef int (*Q_feature) (matrix2_t* Q, int, int, int);
     Q_feature qf = Q_x_dimens_fourier_feature;
     
     nn_build(\
@@ -830,36 +830,46 @@ static void test_a2c(void)
     agent_load(grid_path, &cell_reward_e, NULL, &agent);
     printf("\n\n");
 
-    nn_t pi_nn;
-    typedef (*S_feature)(matrix2_t*, int, int);
-    S_feature sf = S_x_dimens_fourier_feature;
-    
-    int input_dimens  = pow((1+4), 2.f);
-    int output_dimens = 1;
-    int batch         = 100;
-    int max_iter      = 10000000000000;
-    int err_statble   = 3;
-    float alpha       = 0.01;
-    float epsilon     = 0.1;
-    int layers        = 1;
-    int neurals[]     = {100};
+    nn_t pi_nn, v_nn;
+        
+    int pi_input_dimens  = pow((1+7), 2.f);
+    int pi_output_dimens = MOVE_TYPE_NUM;
+    int pi_layers        = 1;
+    int pi_neurals[]     = {64};
 
+    int v_input_dimens   = pi_input_dimens;
+    int v_output_dimens  = 1;
+    int v_layers         = 1;
+    int v_neurals[]      = {64};
+ 
     int start_id      = 0;
     int episodes      = 1;
     int trajectories  = 10000;
-    float gamma       = 0.9;
-    float alpha_W     = 0.001;
-    float alpha_theta = 0.001;
+    float gamma       = 0.9f;
+    float beta        = 0.00f;
+    float alpha_theta = 0.01f;
+    float alpha_W     = 0.01f;
 
-    nn_build(\
-        &pi, input_dimens, output_dimens, batch, max_iter, err_statble, alpha, epsilon, layers, neurals,\
-        sigmoid1, gradient_sigmoid1, softmax1, gradient_softmax1, useless_loss, gradient_useless_loss\
+    typedef int (*S_feature)(matrix2_t*, int, int);
+    S_feature sf = S_x_dimens_fourier_feature;
+    int feature_diemns = pi_input_dimens;
+
+    nn_build2( \
+        &pi_nn, pi_input_dimens, pi_output_dimens, pi_layers, pi_neurals, \
+        relu, gradient_relu, softmax1, NULL
     );
 
-
+    nn_build2 (
+        &v_nn, v_input_dimens, v_output_dimens, v_layers, v_neurals,\
+        sigmoid1, gradient_sigmoid1, useless_output, NULL
+    );
+    
+    nn_weights_he_uniform(&pi_nn);
+    nn_weights_xaiver_uniform(&v_nn);
+    
     // advantage actor critics 算法。
-    agent_policy_gradient_advantage_actor_critics(\ 
-        &agent, start_id, episodes, trajectories, gamma, alpha_W, alpha_theta, input_dimens, sf, &pi_nn
+    agent_policy_gradient_advantage_actor_critic( \
+        &agent, start_id, episodes, trajectories, gamma, alpha_theta, beta, alpha_W, feature_diemns, sf, &pi_nn, &v_nn \
     );
 
     // 打印训练的结果。
@@ -869,6 +879,8 @@ static void test_a2c(void)
     printf("\n");
     agent_display_policy2(&agent);
 
+    nn_reset(&pi_nn);
+    nn_reset(&v_nn);
     agent_reset(&agent);
 
     return;
