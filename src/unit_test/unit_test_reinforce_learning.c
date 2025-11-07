@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-07 13:38:20
+ * @LastEditTime: 2025-11-08 01:27:38
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -23,7 +23,7 @@ static const float cell_reward_1[4]   = {-1., 0, -10., 1};
 static const float cell_reward_ql[4]  = {-10., -1., -10., 0.,};
 static const float cell_reward_ql_offline[4] = {-10., 0, -10, 10};
 static const float cell_reward_fa_td[4] = {-1, 0, -1, 1};
-static const float cell_reward_fa_sarsa[4] = {-10.f, 0.f, -10.f, 1.f};
+static const float cell_reward_fa_sarsa[4] = {-9.f, 0.f, -5.f, 10.f};
 
 static int  suite_success_init (void) 
 {
@@ -832,10 +832,11 @@ static void test_a2c(void)
 
     nn_t pi_nn, v_nn;
         
-    int pi_input_dimens  = pow((1+7), 2.f);
-    int pi_output_dimens = MOVE_TYPE_NUM;
+    int pi_input_dimens  = pow((1+1), 2.f);
+    // 受不了，必须把 e_idle 和 e_stay 排除在外，必须让它走起来，不能趴窝不动。
+    int pi_output_dimens = MOVE_TYPE_NUM-2;
     int pi_layers        = 1;
-    int pi_neurals[]     = {64};
+    int pi_neurals[]     = {128};
 
     int v_input_dimens   = pi_input_dimens;
     int v_output_dimens  = 1;
@@ -844,11 +845,11 @@ static void test_a2c(void)
  
     int start_id      = 0;
     int episodes      = 1;
-    int trajectories  = 10000;
-    float gamma       = 0.9f;
-    float beta        = 0.00f;
-    float alpha_theta = 0.01f;
-    float alpha_W     = 0.01f;
+    int trajectories  = 15000;
+    float gamma       = 0.8659f;
+    float beta        = 0.01f;
+    float alpha_theta = 0.002f;
+    float alpha_W     = 0.004f;
 
     typedef int (*S_feature)(matrix2_t*, int, int);
     S_feature sf = S_x_dimens_fourier_feature;
@@ -861,7 +862,7 @@ static void test_a2c(void)
 
     nn_build2 (
         &v_nn, v_input_dimens, v_output_dimens, v_layers, v_neurals,\
-        sigmoid1, gradient_sigmoid1, useless_output, NULL
+        relu, gradient_relu, useless_output, NULL
     );
     
     nn_weights_he_uniform(&pi_nn);

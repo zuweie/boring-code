@@ -298,11 +298,11 @@ move_t __predict_move(matrix2_t* mt_probability)
 {
     int num            = mt_probability->rows * mt_probability->cols;
     float probability  = -FLT_MAX;
-    move_t max_move    = e_idle;
+    move_t max_move    = e_go_up;
 
-    for (int j=e_idle; j<MOVE_TYPE_NUM; ++j) {
-        if (probability < mt_probability->pool[j]) {
-            probability = mt_probability->pool[j];
+    for (int j=e_go_up; j<MOVE_TYPE_NUM-1; ++j) {
+        if (probability < mt_probability->pool[j-1]) {
+            probability = mt_probability->pool[j-1];
             max_move    = j;
         }
     }
@@ -313,7 +313,7 @@ move_t __predict_move(matrix2_t* mt_probability)
 void __set_move_hot(matrix2_t* mt_hot, move_t move) 
 {
     Mat2_fill(mt_hot, 0.f);
-    mt_hot->pool[move] = 1.f;
+    mt_hot->pool[move-1] = 1.f;
     return;
 }
 
@@ -2013,10 +2013,9 @@ int agent_policy_gradient_advantage_actor_critic( \
     
     matrix2_t* mt_probability = Mat2_create(1,1);
     matrix2_t* state_predict  = Mat2_create(1,1);
-    //matrix2_t* mt_hot         = Mat2_create(MOVE_TYPE_NUM, 1);
 
     // pi nn 所使用的 matrix2
-    matrix2_t *pi_delta_y_hat = Mat2_create(MOVE_TYPE_NUM, 1);
+    matrix2_t *pi_delta_y_hat = Mat2_create(MOVE_TYPE_NUM-2, 1);
     matrix2_t *v_delta_y_hat  = Mat2_create(1,1);
 
     srand(time(NULL));
@@ -2072,7 +2071,7 @@ int agent_policy_gradient_advantage_actor_critic( \
 
             delta_q = consequence.reward + gamma * qt1 - qt;
             
-            printf("delta_q: %0.2f = %0.2f + (%0.2f) * (%0.2f) - (%0.2f) \n", delta_q, consequence.reward, gamma, qt1, qt);
+            printf("delta_q: %0.4f = %0.3f + (%0.4f) * (%0.4f) - (%0.4f) \n", delta_q, consequence.reward, gamma, qt1, qt);
 
             // step 2 梯度上升计算。
             // actor （policy update）
@@ -2112,12 +2111,21 @@ int agent_policy_gradient_advantage_actor_critic( \
             // 现在换成这一坨东西：
             // \alpha_\theta[\delta_t - \bate(ln\Pi(at|st, \theta_t)+1)] 
 
-            // float mt_prob = mt_probability->pool[mt];
-            //ALPHA = alpha_theta * ( delta_q - beta * (log(mt_prob) + 1) );
+            float mt_prob = mt_probability->pool[mt-1];
+            float log_pi  = log(mt_prob);
+            if (fabs(delta_q) <  1e-4 && fabs((log_pi + 1.f)) < 1e-4) {
+                // 当 delta_q 也为 0 的时候 且 log_pi 为 -1 的时候，全部的梯度都会变成 0，此时需要额外加点变量让它继续跑。
+                printf("log_pi is %0.4f and (log_pi + 1): %0.4f is too small ", log_pi, (log_pi + 1.f));
+                log_pi += 0.5f;
+                printf("make log_pi to %0.4f, and (log_pi + 1) is %0.4f\n", log_pi, (log_pi+1.f));
+
+            }
+            ALPHA = alpha_theta * ( delta_q - beta * (log_pi + 1) );
             //printf("ALPHA: %0.4f = %0.2f * (%0.2f - %0.2f * (%0.2f (%0.2f) + 1)) \n", ALPHA, alpha_theta, delta_q, beta, log(mt_prob), mt_prob);
+            printf("ALPHA: %0.4f = %0.2f * ( %0.2f - %0.2f * ( (%0.2f) + 1) )\n", ALPHA, alpha_theta, delta_q, beta, log_pi);
             // 单步 sg
 
-            // 调试过程中，发现 log\pi(at) 又可能是负一
+            // 调试过程中，发现 log\pi(at) 又可能是负的情况。
 
             // printf("\n before update:");
             // nn_show_weights(pi_nn);
@@ -2140,7 +2148,7 @@ int agent_policy_gradient_advantage_actor_critic( \
             // 把 st 换成下一步。
             //if (step % 1 == 0) printf("\n");
 
-            printf("result, st: %d, mt: %d ,reward: %0.2f, delta_q: %0.2f \n\n", st, mt, consequence.reward, delta_q);
+            printf("result, st: %d, st1: %d, mt: %d ,reward: %0.2f, delta_q: %0.2f \n\n", st, st1, mt, consequence.reward, delta_q);
             st = st1;
         }
     }
