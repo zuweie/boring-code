@@ -676,6 +676,15 @@ int Mat2_reshape(matrix2_t* mat, size_t new_rows, size_t new_cols)
     return 0;
 }
 
+int Mat2_same_shape(matrix2_t* m1, matrix2_t* m2)
+{
+    return m1->rows == m2->rows && m1->cols == m2->cols;
+}
+int Mat2_reshape_as(matrix2_t* dest, matrix2_t* src)
+{
+    return Mat2_reshape(dest, src->rows, src->cols);
+}
+
 /**
  * @brief 矩阵的 QR 分解
  * 

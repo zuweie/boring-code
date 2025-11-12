@@ -87,6 +87,15 @@ int policy_load(const char* path, policy_t* policy)
     return ret;
 }
 
+int policy_init(policy_t* policy, int rows, int cols)
+{
+    *policy = (policy_t) {
+        .rows    = rows, 
+        .cols    = cols, 
+        .actions = (policy_t*) malloc (rows * cols* sizeof(action_t*))};
+    return 0;
+}
+
 int policy_reset(policy_t* policy)
 { 
     if (policy->actions) {
@@ -175,6 +184,18 @@ move_t policy_take_action(action_t* act_link)
         first = first->next;
     }
     return e_idle;
+}
+
+float policy_get_action_probability(action_t* link, move_t mt)
+{
+    action_t* first = link;
+    while (first) {
+        if (first->move == mt) {
+            return first->probability;
+        }
+        first = first->next;
+    }
+    return 0.f;
 }
 
 /**

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-08 01:27:38
+ * @LastEditTime: 2025-11-12 09:33:13
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -23,7 +23,7 @@ static const float cell_reward_1[4]   = {-1., 0, -10., 1};
 static const float cell_reward_ql[4]  = {-10., -1., -10., 0.,};
 static const float cell_reward_ql_offline[4] = {-10., 0, -10, 10};
 static const float cell_reward_fa_td[4] = {-1, 0, -1, 1};
-static const float cell_reward_fa_sarsa[4] = {-9.f, 0.f, -5.f, 10.f};
+static const float cell_reward_fa_sarsa[4] = {-10.f, 0.f, -10.f, 10.f};
 
 static int  suite_success_init (void) 
 {
@@ -832,27 +832,30 @@ static void test_a2c(void)
 
     nn_t pi_nn, v_nn;
         
-    int pi_input_dimens  = pow((1+1), 2.f);
+    int pi_input_dimens  = pow((1+5), 2.f);
+    //int pi_input_dimens  = 2;
     // 受不了，必须把 e_idle 和 e_stay 排除在外，必须让它走起来，不能趴窝不动。
     int pi_output_dimens = MOVE_TYPE_NUM-2;
-    int pi_layers        = 1;
-    int pi_neurals[]     = {128};
+    int pi_layers        = 2;
+    int pi_neurals[]     = {512, 521};
 
     int v_input_dimens   = pi_input_dimens;
     int v_output_dimens  = 1;
     int v_layers         = 1;
-    int v_neurals[]      = {64};
+    int v_neurals[]      = {256};
  
     int start_id      = 0;
     int episodes      = 1;
-    int trajectories  = 15000;
-    float gamma       = 0.8659f;
-    float beta        = 0.01f;
-    float alpha_theta = 0.002f;
-    float alpha_W     = 0.004f;
+    int trajectories  = 5000;
+    float gamma       = 0.8865f;
+    float beta        = 0.001f;
+    float alpha_theta = 0.001f;
+    float alpha_W     = 0.001f;
 
     typedef int (*S_feature)(matrix2_t*, int, int);
     S_feature sf = S_x_dimens_fourier_feature;
+    //S_feature sf = S_2_dimens_transform;
+
     int feature_diemns = pi_input_dimens;
 
     nn_build2( \
@@ -885,6 +888,68 @@ static void test_a2c(void)
     agent_reset(&agent);
 
     return;
+}
+
+static test_a2c_offline(void) 
+{
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    agent_init(&agent);
+    agent_load(grid_path, &cell_reward_e, NULL, &agent);
+    printf("\n\n");
+    
+    nn_t pi_nn, v_nn;
+
+    int pi_input_dimens  = pow((1+5), 2.f);
+    //int pi_input_dimens  = 2;
+    // 受不了，必须把 e_idle 和 e_stay 排除在外，必须让它走起来，不能趴窝不动。
+    int pi_output_dimens = MOVE_TYPE_NUM-2;
+    int pi_layers        = 1;
+    int pi_neurals[]     = {1024};
+
+    int v_input_dimens   = pi_input_dimens;
+    int v_output_dimens  = 1;
+    int v_layers         = 1;
+    int v_neurals[]      = {128};
+ 
+    int start_id      = 0;
+    int episodes      = 1;
+    int trajectories  = 15000;
+    float gamma       = 0.8865f;
+    float beta        = 0.001f;
+    float alpha_theta = 0.00001f;
+    float alpha_W     = 0.00001f;
+
+    typedef int (*S_feature)(matrix2_t*, int, int);
+    S_feature sf = S_x_dimens_fourier_feature;
+    int feature_diemns = pi_input_dimens;
+
+    nn_build2( \
+        &pi_nn, pi_input_dimens, pi_output_dimens, pi_layers, pi_neurals, \
+        relu, gradient_relu, softmax1, NULL
+    );
+
+    nn_build2 (
+        &v_nn, v_input_dimens, v_output_dimens, v_layers, v_neurals,\
+        relu, gradient_relu, useless_output, NULL
+    );
+
+        // advantage actor critics 算法。
+    agent_policy_gradient_advantage_actor_critic_offline( \
+        &agent, start_id, episodes, trajectories, gamma, alpha_theta, beta, alpha_W, 1, feature_diemns, sf, &pi_nn, &v_nn \
+    );
+
+    printf("\n");
+    agent_display_gridworld(&agent);
+
+    printf("\n");
+    agent_display_policy2(&agent);
+
+    nn_reset(&pi_nn);
+    nn_reset(&v_nn);
+    agent_reset(&agent);
+    return 0;
+
 }
 
 int do_reinforce_learning_test(void) 
@@ -988,6 +1053,11 @@ int do_reinforce_learning_test(void)
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    // if (NULL == CU_add_test(pSuite, "test a2c offline", test_a2c_offline) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     // if (NULL == CU_add_test(pSuite, "test nn", test_nn) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2023-06-15 16:10:10
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-06 09:39:57
+ * @LastEditTime: 2025-11-11 15:23:29
  * @FilePath: /boring-code/src/statistical_learning/matrix2.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -57,6 +57,8 @@ int Mat2_T(matrix2_t* mat);
 int Mat2_merge_rows(matrix2_t* mat1, matrix2_t* mat2);
 int Mat2_merge_cols(matrix2_t* mat1, matrix2_t* mat2);
 int Mat2_reshape(matrix2_t* mat, size_t new_rows, size_t new_cols);
+int Mat2_same_shape(matrix2_t* m1, matrix2_t* m2);
+int Mat2_reshape_as(matrix2_t* dest, matrix2_t* src);
 
 vfloat_t Mat2_get(matrix2_t* mat, size_t i, size_t j);
 int Mat2_put(matrix2_t* mat, size_t i, size_t j, vfloat_t v);

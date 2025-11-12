@@ -565,7 +565,7 @@ int nn_show_weights(nn_t* nn)
  * @param alpha 
  * @return int 
  */
-int nn_sg(nn_t* nn, const matrix2_t* delta_y_hat, float alpha)
+int nn_sg(nn_t* nn,  int (*gradient)(matrix2_t*, matrix2_t*, float), matrix2_t* m1, matrix2_t* m2, float alpha, float gradient_param)
 {
     znode_t* last      = znode_last(nn);
     
@@ -575,10 +575,11 @@ int nn_sg(nn_t* nn, const matrix2_t* delta_y_hat, float alpha)
     matrix2_t* x_T     = Mat2_create(1,1);
     matrix2_t* W_T     = Mat2_create(1,1);
 
-    matrix2_t* delta_y = Mat2_create_cpy(delta_y_hat);
-
+    matrix2_t* delta_y = Mat2_create_cpy(m1);
     matrix2_t* delta_z;
 
+    // 做了隐藏层之前的所有的梯度，将做好的梯度传到隐藏层做，向后传播。
+    gradient(delta_y, m2, gradient_param);
     
     while (last != znode_head(nn)) 
     {

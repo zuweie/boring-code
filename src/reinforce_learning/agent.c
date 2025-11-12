@@ -294,103 +294,60 @@ static int __sampling(agent_t* agent, matrix2_t* datas, matrix2_t* labels, nn_t*
     return 0;
 }
 
-move_t __predict_move(matrix2_t* mt_probability) 
+move_t __get_mt_from_probs(matrix2_t* mt_probs) 
 {
-    int num            = mt_probability->rows * mt_probability->cols;
+    int num            = mt_probs->rows * mt_probs->cols;
     float probability  = -FLT_MAX;
     move_t max_move    = e_go_up;
 
-    for (int j=e_go_up; j<MOVE_TYPE_NUM-1; ++j) {
-        if (probability < mt_probability->pool[j-1]) {
-            probability = mt_probability->pool[j-1];
+    for (int j=e_go_up; j<num+1; ++j) {
+        if (probability < mt_probs->pool[j-1]) {
+            probability = mt_probs->pool[j-1];
             max_move    = j;
         }
     }
     return max_move;
 }
 
+float __get_prob_from_probs(matrix2_t* mt_probs, move_t mt) 
+{
+    return mt_probs->pool[mt-1];
+}
 
-void __set_move_hot(matrix2_t* mt_hot, move_t move) 
+
+// move_t __predict_move(matrix2_t* mt_probability) 
+// {
+//     int num            = mt_probability->rows * mt_probability->cols;
+//     float probability  = -FLT_MAX;
+//     move_t max_move    = e_go_up;
+
+//     for (int j=e_go_up; j<MOVE_TYPE_NUM-1; ++j) {
+//         if (probability < mt_probability->pool[j-1]) {
+//             probability = mt_probability->pool[j-1];
+//             max_move    = j;
+//         }
+//     }
+//     return max_move;
+// }
+
+
+void __set_move_hot(matrix2_t* mt_hot, move_t mt) 
 {
     Mat2_fill(mt_hot, 0.f);
-    mt_hot->pool[move-1] = 1.f;
+    mt_hot->pool[mt-1] = 1.f;
     return;
 }
 
-/**
- * @brief 这里做 theta_t1 = theta_t + alpha * delat_q * \delta lnpi(at|st, theta_t) 网络的梯度上升算法，也就是 actor 部分。
- * nn 的 ouput 函数必须是 softmax 函数，否则算法将不再准确。
- * @param nn 
- * @return int 
- */
-int __theta_gradient_ascent(nn_t* nn, matrix2_t* move_hot, matrix2_t* s_predict, float alpha_theta, float delta_q) 
+int __gradient_lnpi(matrix2_t* mt_hot, matrix2_t* mt_probability, float v) 
 {
-    
-    znode_t* last      = znode_last(nn);
+    Mat2_sub(mt_hot, mt_probability);
+    Mat2_scalar_multiply(mt_hot, v);
+    return 0;
+}
 
-    matrix2_t* delta_W = Mat2_create(1,1);
-    matrix2_t* delta_b = Mat2_create(1,1);
-    matrix2_t* delta_y = Mat2_create(1,1);
-    matrix2_t* x_T     = Mat2_create(1,1);
-    matrix2_t* W_T     = Mat2_create(1,1);
-    matrix2_t* delta_z;
-
-
-    // 计算最上层 lnPi(at|st, theta_t) 对 zi(线性输出) 的梯度。
-    // 梯度的结果很简单，就是 e_a - pi(st)
-    // 其中 e_a 是 action 的 one_hot.
-    // 也就是当 a 是 up 的时候 e_a 为 [0,1,0,0,0,0].
-    // pi 是 nn 在某一个 st 的情况的对 move 的预测，预测结果为 softmax 的概率。
-
-    Mat2_cpy(delta_y, move_hot);
-    Mat2_sub(delta_y, s_predict);
-    
-    
-    while (last != znode_head(nn)){
-
-        delta_z = last->z;
-
-        if (last->is_output) {
-            nn->gradient_output(delta_z);
-        } else {
-            nn->gradient_active(delta_z);
-        }
-
-        Mat2_hadamard_product(delta_y, delta_z);
-
-        // 计算 delta W
-        Mat2_cpy(x_T, last->x);
-        Mat2_T(x_T);
-
-        Mat2_cpy(delta_W, delta_y);
-        Mat2_dot(delta_W, x_T);
-
-        // 计算 delta b。因为这里我们采用的 SGA，也就是单条的梯度上升，所以就不存在将 b 弄胖再弄瘦的问题，b 一直都这么瘦。
-        Mat2_cpy(delta_b, delta_y);
-
-        // 计算对 x 的导数，这层的 x 是上一层的输出。
-        
-        Mat2_cpy(W_T, last->W);
-        Mat2_T(W_T);
-        Mat2_dot(W_T, delta_y);
-        Mat2_cpy(delta_y, W_T);
-
-        // 更新 参数，这里是做 ascent。
-        Mat2_scalar_multiply(delta_W, alpha_theta * delta_q);
-        Mat2_scalar_multiply(delta_b, alpha_theta * delta_q);
-
-        Mat2_add(last->W, delta_W);
-        Mat2_add(last->b, delta_b);
-
-        last = last->prev;
-    }
-
-    Mat2_destroy(delta_W);
-    Mat2_destroy(delta_b);
-    Mat2_destroy(delta_y);
-    Mat2_destroy(x_T);
-    Mat2_destroy(W_T);
-
+int __gradient_z(matrix2_t* z, matrix2_t* no_use, float v)
+{
+    Mat2_fill(z, v);
     return 0;
 }
 
@@ -1129,6 +1086,7 @@ int agent_load(const char* grid_path, float (*cell_reward)(cell_clazz_t), const 
 
         agent->policy->rows = agent->world->rows;
         agent->policy->cols = agent->world->cols;
+
         if (policy_path) {
             ret = policy_load(policy_path, agent->policy);
         } else {
@@ -1990,7 +1948,8 @@ int agent_value_function_approximation_of_Q_learning_off_policy_with_neural_netw
  */
 int agent_policy_gradient_advantage_actor_critic( \
     agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta, float alpha_w,\
-    int feature_dimens, int (*S_feature)(matrix2_t*, int, int), nn_t* pi_nn, nn_t* v_nn
+    int feature_dimens, int (*S_feature)(matrix2_t*, int, int), \
+    nn_t* pi_nn, nn_t* v_nn
 )
 {
     int i,j,k;
@@ -2004,27 +1963,28 @@ int agent_policy_gradient_advantage_actor_critic( \
     int world_cols = agent->world->cols;
     float ALPHA;
     float max_probability;
+    float log_pi;
     consequence_t consequence;
     // 在大循环中进行 ac 算法。
 
     // 这是 delta 线性函数使用的 变量。
-    matrix2_t* q              = Mat2_create(1,1);
-    matrix2_t* state_feature  = Mat2_create(feature_dimens, 1);
-    
-    matrix2_t* mt_probability = Mat2_create(1,1);
-    matrix2_t* state_predict  = Mat2_create(1,1);
+    matrix2_t* state_feature    = Mat2_create(feature_dimens, 1);
+    matrix2_t* mt_probabilities = Mat2_create(1,1);
+    matrix2_t* state_predict    = Mat2_create(1,1);
 
     // pi nn 所使用的 matrix2
-    matrix2_t *pi_delta_y_hat = Mat2_create(MOVE_TYPE_NUM-2, 1);
-    matrix2_t *v_delta_y_hat  = Mat2_create(1,1);
+    matrix2_t *delta_pi = Mat2_create(1, 1);
+    matrix2_t *delta_v  = Mat2_create(1,1);
+
+    // 直接将 nn 集成到函数里面去，不在
 
     srand(time(NULL));
     
     while (iter++ < episodes) {
 
         step = 0;
-        st = rand() % state_number;
-        //st = start_id;
+        //st = rand() % state_number;
+        st = start_id;
         printf("start the new st(%d)\n", st);
         while (step++ < trajectory_length){
 
@@ -2032,20 +1992,20 @@ int agent_policy_gradient_advantage_actor_critic( \
             
             S_feature(state_feature, st/world_cols, st%world_cols);
 
-            nn_predict(pi_nn, state_feature, mt_probability);
+            nn_predict(pi_nn, state_feature, mt_probabilities);
 
-            max_probability = Mat2_max(mt_probability);
+            // max_probability = Mat2_max(mt_probabilities);
             
-            printf("\n probability");
-            MAT2_INSPECT(mt_probability);
+            // printf("\n probability");
+            // MAT2_INSPECT(mt_probabilities);
 
-            if (max_probability > 0.98f) {
-                printf(" max_probability(%0.4f) > 0.98, gradient gone? \n", max_probability);
-                //printf("\n probability");
-                //MAT2_INSPECT(mt_probability);
-                //nn_show_weights(pi_nn);
-                //break;
-            }
+            // if (max_probability > 0.98f) {
+            //     printf(" max_probability(%0.4f) > 0.98, gradient gone? \n", max_probability);
+            //     //printf("\n probability");
+            //     //MAT2_INSPECT(mt_probability);
+            //     //nn_show_weights(pi_nn);
+            //     //break;
+            // }
 
             // printf("\n mt_probability ");
             // MAT2_INSPECT(mt_probability);
@@ -2053,8 +2013,7 @@ int agent_policy_gradient_advantage_actor_critic( \
             // nn_show_weights(pi_nn);
             // printf("\n");
 
-            mt = __predict_move(mt_probability);
-
+            mt = __get_mt_from_probs(mt_probabilities);
             consequence = agent_move(agent, st, mt);
             // st1 的下一步。
             st1 = consequence.stay_id;
@@ -2084,8 +2043,8 @@ int agent_policy_gradient_advantage_actor_critic( \
             // 也就是当 a 是 up 的时候 e_a 为 [0,1,0,0,0,0].
             // pi 是 nn 在某一个 st 的情况的对 move 的预测，预测结果为 softmax 的概率。
             
-            // delta_y_hat 变成 one-hat。
-            __set_move_hot(pi_delta_y_hat, mt);
+
+            // 设置
 
             // printf("\n mt_probability");
             // MAT2_INSPECT(mt_probability);
@@ -2094,7 +2053,7 @@ int agent_policy_gradient_advantage_actor_critic( \
             // MAT2_INSPECT(pi_delta_y_hat);
 
             // 将 delta_y_hat 减去 move 的 probability 就是 \theta ln\Pi(at|st,\theta_t);
-            Mat2_sub(pi_delta_y_hat, mt_probability);
+            //Mat2_sub(pi_delta_y_hat, mt_probability);
 
             // printf("\n after sub delta_y_hat");
             // MAT2_INSPECT(pi_delta_y_hat);
@@ -2111,25 +2070,36 @@ int agent_policy_gradient_advantage_actor_critic( \
             // 现在换成这一坨东西：
             // \alpha_\theta[\delta_t - \bate(ln\Pi(at|st, \theta_t)+1)] 
 
-            float mt_prob = mt_probability->pool[mt-1];
-            float log_pi  = log(mt_prob);
-            if (fabs(delta_q) <  1e-4 && fabs((log_pi + 1.f)) < 1e-4) {
-                // 当 delta_q 也为 0 的时候 且 log_pi 为 -1 的时候，全部的梯度都会变成 0，此时需要额外加点变量让它继续跑。
-                printf("log_pi is %0.4f and (log_pi + 1): %0.4f is too small ", log_pi, (log_pi + 1.f));
-                log_pi += 0.5f;
-                printf("make log_pi to %0.4f, and (log_pi + 1) is %0.4f\n", log_pi, (log_pi+1.f));
+            // float mt_prob = mt_probability->pool[mt-1];
+            // float log_pi  = log(mt_prob);
+            // if (fabs(delta_q) <  1e-4 && fabs((log_pi + 1.f)) < 1e-4) {
+            //     // 当 delta_q 也为 0 的时候 且 log_pi 为 -1 的时候，全部的梯度都会变成 0，此时需要额外加点变量让它继续跑。
+            //     printf("log_pi is %0.4f and (log_pi + 1): %0.4f is too small ", log_pi, (log_pi + 1.f));
+            //     log_pi += 0.5f;
+            //     printf("make log_pi to %0.4f, and (log_pi + 1) is %0.4f\n", log_pi, (log_pi+1.f));
 
-            }
-            ALPHA = alpha_theta * ( delta_q - beta * (log_pi + 1) );
+            // }
+
+            // 计算正则项的的概率。
+            log_pi = __get_prob_from_probs(mt_probabilities, mt); //log(mt_probability->pool[mt-1]);
+            log_pi = log(log_pi);
+            //ALPHA  = alpha_theta * ( delta_q - beta * (log_pi + 1) );
+            ALPHA = alpha_theta;
             //printf("ALPHA: %0.4f = %0.2f * (%0.2f - %0.2f * (%0.2f (%0.2f) + 1)) \n", ALPHA, alpha_theta, delta_q, beta, log(mt_prob), mt_prob);
-            printf("ALPHA: %0.4f = %0.2f * ( %0.2f - %0.2f * ( (%0.2f) + 1) )\n", ALPHA, alpha_theta, delta_q, beta, log_pi);
+            printf("ALPHA: %0.4f = %0.4f * ( %0.4f - %0.4f * ( (%0.4f) + 1) )\n", ALPHA, alpha_theta, delta_q, beta, log_pi);
             // 单步 sg
 
             // 调试过程中，发现 log\pi(at) 又可能是负的情况。
 
             // printf("\n before update:");
-            // nn_show_weights(pi_nn);
-            nn_sg(pi_nn, pi_delta_y_hat, ALPHA);
+            // 将 pi_delta_y_hat 调成与 mt_probability 相同的形状。
+
+            Mat2_reshape_as(delta_pi, mt_probabilities);
+            __set_move_hot(delta_pi, mt);
+
+
+            nn_sg(pi_nn, __gradient_lnpi, delta_pi, mt_probabilities, ALPHA, (delta_q - beta * (log_pi +1)));
+
             // printf("\n after update:");
             // nn_show_weights(pi_nn);
 
@@ -2139,16 +2109,19 @@ int agent_policy_gradient_advantage_actor_critic( \
             // Mat2_scalar_multiply(state_feature, alpha_w * delta_q);
             // Mat2_add(W, state_feature);
 
-            Mat2_fill(v_delta_y_hat, 1.f);
-            nn_sg(v_nn, v_delta_y_hat, (alpha_w * delta_q));
-            printf("alpha_w: %0.4f * %0.4f = %0.4f\n", alpha_w, delta_q, (alpha_w * delta_q));
+            //Mat2_fill(v_delta_y_hat, 1.f);
+            //nn_sg(v_nn, v_delta_y_hat, (alpha_w * delta_q));
+            nn_sg(v_nn, __gradient_z, delta_v, NULL, alpha_w, delta_q);
+
+            printf("alpha_w: %0.4f, delta_q: %0.4f\n", alpha_w, delta_q);
+            //printf("alpha_w: %0.4f * %0.4f = %0.4f\n", alpha_w, delta_q, (alpha_w * delta_q));
 
             // printf("\n feature w");
             // MAT2_INSPECT(W);
             // 把 st 换成下一步。
             //if (step % 1 == 0) printf("\n");
 
-            printf("result, st: %d, st1: %d, mt: %d ,reward: %0.2f, delta_q: %0.2f \n\n", st, st1, mt, consequence.reward, delta_q);
+            printf("result, st: %d, st1: %d, mt: %d ,reward: %0.2f, delta_q: %0.4f, ALPHA: %0.4f \n\n", st, st1, mt, consequence.reward, delta_q, ALPHA);
             st = st1;
         }
     }
@@ -2160,18 +2133,148 @@ int agent_policy_gradient_advantage_actor_critic( \
     for (i=0; i<state_number; ++i) {
 
         S_feature(state_feature, i/world_cols, i%world_cols);
-        nn_predict(pi_nn, state_feature, mt_probability);
+        nn_predict(pi_nn, state_feature, mt_probabilities);
 
-        mt = __predict_move(mt_probability);
+        mt = __get_mt_from_probs(mt_probabilities); //__predict_move(mt_probability);
         policy_set_random_moves(&agent->policy->actions[i], mt, 0);
     }
 
 
-    Mat2_destroy(q);
     Mat2_destroy(state_feature);
-    Mat2_destroy(mt_probability);
+    Mat2_destroy(mt_probabilities);
     Mat2_destroy(state_predict);
-    Mat2_destroy(pi_delta_y_hat);
-    Mat2_destroy(v_delta_y_hat);
+    Mat2_destroy(delta_pi);
+    Mat2_destroy(delta_v);
     return 0;
+}
+
+/**
+ * @brief 本算法是 《强化学习的数学原理》中倒数第二个算法，是 a2c 版本的算法的 offline 版本。online 实在是太难，搞不定，只能搞出了 目标十字星。
+ * 只能寄希望于这个 offline 版本的 a2c 了。感觉学这个 《强化学习的数学原理》感觉要学到吐血了。
+ * 
+ */
+int agent_policy_gradient_advantage_actor_critic_offline(
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta, float alpha_w, float behavior_greedy, \
+    int feature_diemns, int (*S_to_feature)(matrix2_t*, int, int), nn_t* pi_nn, nn_t* v_nn\
+)
+{
+    int i,j,k;
+    int st, st1;
+    int step=0, iter=0;
+
+    move_t    mt;
+    action_t* at;
+    consequence_t consequence;
+
+    int world_rows = agent->world->rows;
+    int world_cols = agent->world->cols;
+    int state_number = world_rows * world_cols;
+
+    float delta_q;
+    float qt, qt1;
+
+    float ALPHA_THETA;
+    float ALPHA_W;
+
+    float mt_prob;
+    float behave_mt_prob;
+
+    float log_pi;
+
+    matrix2_t* v_predict = Mat2_create(1,1);
+    matrix2_t* a_predict = Mat2_create(1,1);
+    matrix2_t* s_feature = Mat2_create(feature_diemns,1);
+    matrix2_t* mt_probabilities = Mat2_create(1,1);
+    matrix2_t* delta_pi = Mat2_create(1,1);
+    matrix2_t* delta_v  = Mat2_create(1,1);
+
+    srand(time(NULL));
+
+    // 建立一个随机的 behavior policy，然后让这个 policy 去采样。
+
+    policy_t behavior_policy;
+    policy_init(&behavior_policy, world_rows, world_cols);
+
+    for (i=0; i<state_number; ++i) {
+
+        // 初始化一个随机的概率。
+        policy_set_random_moves(&behavior_policy.actions[i], e_idle, behavior_greedy);
+    }
+
+    while (iter++ < episodes) {
+
+        st   = start_id;
+        step = 0;
+        while (step++ < trajectory_length) {
+
+            // offline 版本的 a2c 
+            // todo 0: 通过 beta behavior 生成 action 
+
+            mt = policy_take_action(behavior_policy.actions[st]);
+            consequence = agent_move(agent, st, mt);
+
+            st1 = consequence.stay_id;
+
+            S_to_feature(s_feature, st/world_cols, st%world_cols);
+            nn_predict(v_nn, s_feature, v_predict);
+            
+            qt =  v_predict->pool[0];
+
+            S_to_feature(s_feature, st1/world_cols, st1%world_cols);
+            nn_predict(v_nn, s_feature, v_predict);
+
+            qt1 = v_predict->pool[0];
+
+            // todo 1: 计算 delta_q 
+            delta_q = consequence.reward + gamma * qt1 - qt;
+
+            // todo 2: actor
+            S_to_feature(s_feature, st/world_cols, st%world_cols);
+            nn_predict(pi_nn, s_feature, mt_probabilities);
+
+            mt_prob = __get_prob_from_probs(mt_probabilities, mt);
+            behave_mt_prob = policy_get_action_probability(behavior_policy.actions[st], mt);
+
+            // 加入正则项。
+            log_pi = __get_prob_from_probs(mt_probabilities, mt); //log(mt_probability->pool[mt-1]);
+            log_pi = log(log_pi);
+            ALPHA_THETA = alpha_theta * (mt_prob / behave_mt_prob) * ( delta_q - beta * (log_pi + 1) );
+
+            // 把 mt_hot 形状设置成雨 mt_probabilities 一致的。
+            Mat2_reshape_as(delta_pi, mt_probabilities);
+            // 把当前的 
+            __set_move_hot(delta_pi, mt);
+            nn_sg(pi_nn, __gradient_lnpi, delta_pi, mt_probabilities, ALPHA_THETA, 0.f);
+            
+            
+            // todo 3: critics
+            ALPHA_W = alpha_w * (mt_prob / behave_mt_prob) * delta_q;
+            nn_sg(v_nn, __gradient_z, delta_v, NULL, ALPHA_W, 0.f);
+
+            // 继续下一步。
+            st = st1;
+        }
+    }
+
+    // 最后生成策略。
+    for (i=0; i<state_number; ++i) {
+
+        S_to_feature(s_feature, i/world_cols, i%world_cols);
+        nn_predict(pi_nn, s_feature, mt_probabilities);
+
+        mt = __get_mt_from_probs(mt_probabilities);
+        policy_set_random_moves(&agent->policy->actions[i], mt, 0);
+    }
+
+    // 释放掉 behavior policy
+    policy_reset(&behavior_policy);
+    Mat2_destroy(v_predict);
+    Mat2_destroy(a_predict);
+    Mat2_destroy(s_feature);
+    Mat2_destroy(mt_probabilities);
+    Mat2_destroy(delta_pi);
+    Mat2_destroy(delta_v);
+
+    return 0;
+
 }
