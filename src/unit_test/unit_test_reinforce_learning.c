@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-12 09:33:13
+ * @LastEditTime: 2025-11-12 16:43:25
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -23,7 +23,7 @@ static const float cell_reward_1[4]   = {-1., 0, -10., 1};
 static const float cell_reward_ql[4]  = {-10., -1., -10., 0.,};
 static const float cell_reward_ql_offline[4] = {-10., 0, -10, 10};
 static const float cell_reward_fa_td[4] = {-1, 0, -1, 1};
-static const float cell_reward_fa_sarsa[4] = {-10.f, 0.f, -10.f, 10.f};
+static const float cell_reward_fa_sarsa[4] = {-10.f, -1.f, -10.f, 5.f};
 
 static int  suite_success_init (void) 
 {
@@ -900,10 +900,10 @@ static test_a2c_offline(void)
     
     nn_t pi_nn, v_nn;
 
-    int pi_input_dimens  = pow((1+5), 2.f);
+    int pi_input_dimens  = pow((1+1), 2.f);
     //int pi_input_dimens  = 2;
     // 受不了，必须把 e_idle 和 e_stay 排除在外，必须让它走起来，不能趴窝不动。
-    int pi_output_dimens = MOVE_TYPE_NUM-2;
+    int pi_output_dimens = MOVE_TYPE_NUM-1;
     int pi_layers        = 1;
     int pi_neurals[]     = {1024};
 
@@ -914,11 +914,11 @@ static test_a2c_offline(void)
  
     int start_id      = 0;
     int episodes      = 1;
-    int trajectories  = 15000;
+    int trajectories  = 30000;
     float gamma       = 0.8865f;
-    float beta        = 0.001f;
-    float alpha_theta = 0.00001f;
-    float alpha_W     = 0.00001f;
+    float beta        = 0.01f;
+    float alpha_theta = 0.0001f;
+    float alpha_W     = 0.0001f;
 
     typedef int (*S_feature)(matrix2_t*, int, int);
     S_feature sf = S_x_dimens_fourier_feature;
@@ -934,7 +934,10 @@ static test_a2c_offline(void)
         relu, gradient_relu, useless_output, NULL
     );
 
-        // advantage actor critics 算法。
+    nn_weights_he_uniform(&pi_nn);
+    nn_weights_xaiver_uniform(&v_nn);
+    
+    // advantage actor critics offline version
     agent_policy_gradient_advantage_actor_critic_offline( \
         &agent, start_id, episodes, trajectories, gamma, alpha_theta, beta, alpha_W, 1, feature_diemns, sf, &pi_nn, &v_nn \
     );
@@ -1049,15 +1052,16 @@ int do_reinforce_learning_test(void)
     // }
 
 
-    if (NULL == CU_add_test(pSuite, "test a2c ", test_a2c) ) {
+    // if (NULL == CU_add_test(pSuite, "test a2c ", test_a2c) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test a2c offline", test_a2c_offline) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
-    // if (NULL == CU_add_test(pSuite, "test a2c offline", test_a2c_offline) ) {
-    //     CU_cleanup_registry();
-    //     return CU_get_error();
-    // }
     // if (NULL == CU_add_test(pSuite, "test nn", test_nn) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();

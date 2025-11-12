@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-25 07:50:35
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-11 17:26:44
+ * @LastEditTime: 2025-11-12 17:06:46
  * @FilePath: /boring-code/src/reinforce_learning/agent.h
  * @Description: 本算法是基于 B 站 赵世钰 老师的公开课《强化学习的数学原理》而实现的。除了公开课，他还有一个同名的电子书《强化学习的数学原理》。
  */
@@ -67,8 +67,9 @@ int agent_policy_gradient_advantage_actor_critic_offline(
     int feature_diemns, int (*S_to_feature)(matrix2_t*, int, int), nn_t* pi_nn, nn_t* v_nn\
 );
 
-// int agent_policy_gradient_determinstic_actor_critic (
-    
-// );
+int agent_policy_gradient_deterministic_actor_critic(
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta,\
+    int feature_dimens, int (*Q_to_feature)(matrix2_t*, int, int), nn_t* mu_nn, nn_t* q_nn\
+);
 
 #endif

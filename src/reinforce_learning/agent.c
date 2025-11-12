@@ -2083,8 +2083,8 @@ int agent_policy_gradient_advantage_actor_critic( \
             // 计算正则项的的概率。
             log_pi = __get_prob_from_probs(mt_probabilities, mt); //log(mt_probability->pool[mt-1]);
             log_pi = log(log_pi);
-            //ALPHA  = alpha_theta * ( delta_q - beta * (log_pi + 1) );
-            ALPHA = alpha_theta;
+            ALPHA  = alpha_theta * ( delta_q - beta * (log_pi + 1) );
+            //ALPHA = alpha_theta;
             //printf("ALPHA: %0.4f = %0.2f * (%0.2f - %0.2f * (%0.2f (%0.2f) + 1)) \n", ALPHA, alpha_theta, delta_q, beta, log(mt_prob), mt_prob);
             printf("ALPHA: %0.4f = %0.4f * ( %0.4f - %0.4f * ( (%0.4f) + 1) )\n", ALPHA, alpha_theta, delta_q, beta, log_pi);
             // 单步 sg
@@ -2098,7 +2098,7 @@ int agent_policy_gradient_advantage_actor_critic( \
             __set_move_hot(delta_pi, mt);
 
 
-            nn_sg(pi_nn, __gradient_lnpi, delta_pi, mt_probabilities, ALPHA, (delta_q - beta * (log_pi +1)));
+            nn_sg(pi_nn, __gradient_lnpi, delta_pi, mt_probabilities, ALPHA);
 
             // printf("\n after update:");
             // nn_show_weights(pi_nn);
@@ -2111,7 +2111,7 @@ int agent_policy_gradient_advantage_actor_critic( \
 
             //Mat2_fill(v_delta_y_hat, 1.f);
             //nn_sg(v_nn, v_delta_y_hat, (alpha_w * delta_q));
-            nn_sg(v_nn, __gradient_z, delta_v, NULL, alpha_w, delta_q);
+            nn_sg(v_nn, __gradient_z, delta_v, NULL, (alpha_w * delta_q));
 
             printf("alpha_w: %0.4f, delta_q: %0.4f\n", alpha_w, delta_q);
             //printf("alpha_w: %0.4f * %0.4f = %0.4f\n", alpha_w, delta_q, (alpha_w * delta_q));
@@ -2180,6 +2180,7 @@ int agent_policy_gradient_advantage_actor_critic_offline(
     float behave_mt_prob;
 
     float log_pi;
+    float prob_ratio;
 
     matrix2_t* v_predict = Mat2_create(1,1);
     matrix2_t* a_predict = Mat2_create(1,1);
@@ -2215,6 +2216,8 @@ int agent_policy_gradient_advantage_actor_critic_offline(
 
             st1 = consequence.stay_id;
 
+            printf("st(%d) take mt(%d) -> st1(%d)\n", st, mt, st1);
+
             S_to_feature(s_feature, st/world_cols, st%world_cols);
             nn_predict(v_nn, s_feature, v_predict);
             
@@ -2227,36 +2230,52 @@ int agent_policy_gradient_advantage_actor_critic_offline(
 
             // todo 1: 计算 delta_q 
             delta_q = consequence.reward + gamma * qt1 - qt;
+            printf("delta_q: %0.4f = (%0.4f) + (%0.4f) * (%0.4f) - (%0.4f)\n", delta_q, consequence.reward, gamma, qt1,qt);
 
             // todo 2: actor
             S_to_feature(s_feature, st/world_cols, st%world_cols);
             nn_predict(pi_nn, s_feature, mt_probabilities);
 
-            mt_prob = __get_prob_from_probs(mt_probabilities, mt);
+            printf("\n mt probabilities:");
+            MAT2_INSPECT(mt_probabilities);
+            printf("\n");
+
+            mt_prob        = __get_prob_from_probs(mt_probabilities, mt);
             behave_mt_prob = policy_get_action_probability(behavior_policy.actions[st], mt);
+            prob_ratio = mt_prob / behave_mt_prob;
 
             // 加入正则项。
-            log_pi = __get_prob_from_probs(mt_probabilities, mt); //log(mt_probability->pool[mt-1]);
-            log_pi = log(log_pi);
-            ALPHA_THETA = alpha_theta * (mt_prob / behave_mt_prob) * ( delta_q - beta * (log_pi + 1) );
+            log_pi = log(mt_prob); //log(mt_probability->pool[mt-1]);
+            //ALPHA_THETA = alpha_theta * (mt_prob / behave_mt_prob) * ( delta_q - beta * (log_pi + 1) );
+            
+            printf("prob_ratio: %0.4f = (%0.4f) / (%0.4f) \n", prob_ratio, mt_prob, behave_mt_prob);
+
+            ALPHA_THETA = alpha_theta * prob_ratio * (delta_q - beta * (log_pi + 1));
 
             // 把 mt_hot 形状设置成雨 mt_probabilities 一致的。
             Mat2_reshape_as(delta_pi, mt_probabilities);
             // 把当前的 
             __set_move_hot(delta_pi, mt);
-            nn_sg(pi_nn, __gradient_lnpi, delta_pi, mt_probabilities, ALPHA_THETA, 0.f);
+            nn_sg(pi_nn, __gradient_lnpi, delta_pi, mt_probabilities, ALPHA_THETA);
             
             
             // todo 3: critics
-            ALPHA_W = alpha_w * (mt_prob / behave_mt_prob) * delta_q;
-            nn_sg(v_nn, __gradient_z, delta_v, NULL, ALPHA_W, 0.f);
+            ALPHA_W = alpha_w * prob_ratio * delta_q;
 
+            nn_sg(v_nn, __gradient_z, delta_v, NULL, ALPHA_W);
+
+            printf(\
+                "summary, st: %d, st1: %d, mt: %d, qt: %0.4f, qt1: %0.4f, delta_q: %0.4f, ALPHA_THETA: %0.4f, ALPHA_W: %0.4F, reward: %0.4f, \n", \
+                st, st1, mt, qt, qt1, delta_q, ALPHA_THETA, ALPHA_W, consequence.reward\
+            );
+            printf("\n\n");
             // 继续下一步。
             st = st1;
         }
     }
 
     // 最后生成策略。
+    
     for (i=0; i<state_number; ++i) {
 
         S_to_feature(s_feature, i/world_cols, i%world_cols);
@@ -2276,5 +2295,17 @@ int agent_policy_gradient_advantage_actor_critic_offline(
     Mat2_destroy(delta_v);
 
     return 0;
+
+}
+
+/**
+ * @brief 《强化学习的数学》最后一个算法 -- 确定性的 ac 算法，前面的两个算法都已经，调试不出个所以然。所一个这个也只能保证算法不错，其他不能解决了，能把
+ * 
+ */
+int agent_policy_gradient_deterministic_actor_critic(
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta,\
+    int feature_dimens, int (*Q_to_feature)(matrix2_t*, int, int), nn_t* mu_nn, nn_t* q_nn\
+)
+{
 
 }
