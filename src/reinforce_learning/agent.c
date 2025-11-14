@@ -338,16 +338,20 @@ void __set_move_hot(matrix2_t* mt_hot, move_t mt)
     return;
 }
 
-int __gradient_lnpi(matrix2_t* mt_hot, matrix2_t* mt_probability, float v) 
+int __gradient_lnpi(matrix2_t* mt_hot, matrix2_t* mt_probability) 
 {
     Mat2_sub(mt_hot, mt_probability);
-    Mat2_scalar_multiply(mt_hot, v);
     return 0;
 }
 
-int __gradient_z(matrix2_t* z, matrix2_t* no_use, float v)
+int __gradient_z(matrix2_t* z, matrix2_t* no_use)
 {
-    Mat2_fill(z, v);
+    Mat2_fill(z, 1.f);
+    return 0;
+}
+
+int __gradient_nouse(matrix2_t* m1, matrix2_t* m2)
+{
     return 0;
 }
 
@@ -2299,13 +2303,110 @@ int agent_policy_gradient_advantage_actor_critic_offline(
 }
 
 /**
- * @brief 《强化学习的数学》最后一个算法 -- 确定性的 ac 算法，前面的两个算法都已经，调试不出个所以然。所一个这个也只能保证算法不错，其他不能解决了，能把
+ * @brief 《强化学习的数学》最后一个算法 -- 确定性的 ac 算法，前面的两个算法都已经，调试不出个所以然。所一个这个也只能保证算法不错，其他不能解决了
  * 
  */
 int agent_policy_gradient_deterministic_actor_critic(
-    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta,\
-    int feature_dimens, int (*Q_to_feature)(matrix2_t*, int, int), nn_t* mu_nn, nn_t* q_nn\
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta, float alpha_w, float behavior_greedy,\
+    int Q_featrue_dimens, int (*Q_to_feature)(matrix2_t*, float, float, float), int (*Delta_feature_to_delta_a)(matrix2_t*),\
+    int S_feature_dimens, int (*S_to_feature)(matrix2_t*, int, int),
+    nn_t* mu_nn, nn_t* q_nn\
 )
 {
+    int i;
+    int step=0, iter=0;
+    int st, st1;
+    int world_rows = agent->world->rows;
+    int world_cols = agent->world->cols;
+    int state_number = world_rows * world_cols;
 
+    float delta_q;
+    float qt, qt1;
+
+    float ALHPA_THETA;
+    float ALPHA_W;
+
+    move_t mt;
+    float wavy_mt1;
+    consequence_t consequence;
+
+    matrix2_t* s_featrue = Mat2_create(S_feature_dimens, 1);
+    matrix2_t* q_feature = Mat2_create(Q_featrue_dimens, 1);
+
+    matrix2_t* wavy_mt_predict = Mat2_create(1,1);
+    matrix2_t* q_predict       = Mat2_create(1,1);
+
+    matrix2_t* delta_qz        = Mat2_create(1,1);
+    matrix2_t* delta_qx        = Mat2_create(1,1);
+
+
+    srand(time(NULL));
+
+    policy_t behavior_policy;
+    policy_init(&behavior_policy, world_rows, world_cols);
+
+    for (int i=0; i<state_number; ++i) {
+        policy_set_random_moves(&behavior_policy.actions[i], e_idle, behavior_greedy);
+    }
+
+
+    while (iter++ < episodes) {
+
+        st   = start_id;
+        step = 0;
+
+        while (step++ < trajectory_length) {
+
+            // todo 0: 使用 behavior policy 产生一个 action
+            mt = policy_take_action(behavior_policy.actions[st]);
+            // 使用 action 产生 st1, rt1
+            consequence = agent_move(agent, st, mt);
+            st1 = consequence.stay_id;
+            // 使用 mu nn 输入 st1 产生 ～a 。
+            S_to_feature(s_featrue, st1/world_rows, st1%world_cols);
+            nn_predict(mu_nn, s_featrue, wavy_mt_predict);
+
+            wavy_mt1 = wavy_mt_predict->pool[0];
+            
+            Q_to_feature(q_feature, (float)(st/world_cols), st%world_cols, (float)mt);
+            nn_predict(q_nn, q_feature, q_predict);
+            qt = q_predict->pool[0];
+
+            Q_to_feature(q_feature, (float)(st1/world_cols), (float)(st1%world_cols), wavy_mt1);
+            nn_predict(q_nn, q_feature, q_predict);
+            qt1 = q_predict->pool[0];
+
+            // todo 1 计算 td error
+            delta_q = consequence.reward + gamma * qt1 - qt;
+
+            // todo 2 actor update policy
+            // 第一个步计算 delta_a Q, 计算 Q 网络中关于 a 的梯度，因为 s 和 a 合并到一起 X[sx, sy, at] 输入到 Q 网络。
+            // 所以要对 Q 对 X 的梯度 [dq\dsx, dq\dsy, dq\dat]. 
+            // 取出对 at (dq\dat) 的梯度那一部分。
+
+            nn_znode_gradient(q_nn, 0, __gradient_z, delta_qz, NULL, NULL, delta_qx, NULL);
+
+            // 从 delta_qx 中抽出 delta, 为什么要将这个把此功能写成诗参数函数形式。
+            // 是因为，x 的组装是由外部代码弄的，那么拆散这个 x 也应该由这外面的逻辑进行。
+            ALHPA_THETA = alpha_theta; 
+            Delta_feature_to_delta_a(delta_qx);
+            nn_sg(mu_nn, __gradient_nouse, delta_qx, NULL, ALHPA_THETA);
+
+            // todo 3 critics update q value
+            ALPHA_W = alpha_w * delta_q;
+            nn_sg(q_nn, __gradient_z, delta_qz, NULL, ALPHA_W);
+
+            // 继续下一步。
+            st = st1;
+        }
+    }
+    
+    Mat2_destroy(s_featrue);
+    Mat2_destroy(q_feature);
+    Mat2_destroy(wavy_mt_predict);
+    Mat2_destroy(q_predict);
+    Mat2_destroy(delta_qz);
+    Mat2_destroy(delta_qx);
+    
+    return 0;
 }

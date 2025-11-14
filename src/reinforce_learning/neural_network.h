@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-10-17 12:36:24
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-12 19:47:04
+ * @LastEditTime: 2025-11-13 15:36:00
  * @FilePath: /boring-code/src/reinforce_learning/neural_network.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -89,7 +89,11 @@ int nn_predict(nn_t*nn, matrix2_t* Input, matrix2_t* predict);
 int nn_cpy(nn_t* dest, nn_t* src);
 int nn_cpy_weight(nn_t* dest, nn_t* src);
 int nn_show_weights(nn_t* nn);
-int nn_sg(nn_t* nn,  int (*gradient)(matrix2_t*, matrix2_t*), matrix2_t* m1, matrix2_t* m2, float alpha);
+int nn_sg(nn_t* nn,  int (*head_gradient)(matrix2_t*, matrix2_t*), matrix2_t* m1, matrix2_t* m2, float alpha);
+int nn_znode_gradient (\
+    nn_t* nn, int znode_id, int (*head_gradient)(matrix2_t*, matrix2_t*), matrix2_t* m1, matrix2_t* m2,\
+    matrix2_t* delta_w, matrix2_t* delta_x, matrix2_t* delta_b\
+);
 int nn_weights_xaiver_uniform(nn_t*);
 int nn_weights_he_uniform(nn_t*);
 #endif

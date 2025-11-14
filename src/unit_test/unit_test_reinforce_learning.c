@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-12 16:43:25
+ * @LastEditTime: 2025-11-15 00:30:06
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -890,7 +890,7 @@ static void test_a2c(void)
     return;
 }
 
-static test_a2c_offline(void) 
+static void test_a2c_offline(void) 
 {
     const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
     agent_t agent;
@@ -914,11 +914,11 @@ static test_a2c_offline(void)
  
     int start_id      = 0;
     int episodes      = 1;
-    int trajectories  = 30000;
+    int trajectories  = 15000;
     float gamma       = 0.8865f;
     float beta        = 0.01f;
-    float alpha_theta = 0.0001f;
-    float alpha_W     = 0.0001f;
+    float alpha_theta = 0.00006f;
+    float alpha_W     = 0.00008f;
 
     typedef int (*S_feature)(matrix2_t*, int, int);
     S_feature sf = S_x_dimens_fourier_feature;
@@ -954,6 +954,68 @@ static test_a2c_offline(void)
     return 0;
 
 }
+
+static void test_deterministic_a2c (void)
+{
+    const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
+    agent_t agent;
+    agent_init(&agent);
+    agent_load(grid_path, &cell_reward_e, NULL, &agent);
+    printf("\n\n");
+    
+    int pi_input_dimens;
+    int pi_output_dimens;
+    int pi_layers = 1;
+    int pi_neurals[1024];
+
+    int q_input_dimens;
+    int q_output_dimens;
+    int q_layers = 1;
+    int q_neurals[128];
+
+    int start_id = 0;
+    int episodes = 1;
+    int trajectory_length = 12000;
+    
+    float gamma = 0.856;
+    float alpha_theta = 0.00001;
+    float alpha_w     = 0.00001;
+
+    nn_t pi_nn, q_nn;
+
+    nn_build2( \
+        &pi_nn, pi_input_dimens, pi_output_dimens, pi_layers, pi_neurals, \
+        relu, gradient_relu, softmax1, NULL
+    );
+
+    nn_build2 (
+        &q_nn, q_input_dimens, q_output_dimens, q_layers, q_neurals,\
+        relu, gradient_relu, useless_output, NULL
+    );
+
+    nn_weights_he_uniform(&pi_nn);
+    nn_weights_xaiver_uniform(&q_nn);
+
+    agent_policy_gradient_deterministic_actor_critic(
+    // agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta, float alpha_w, float behavior_greedy,\
+    // int Q_featrue_dimens, int (*Q_to_feature)(matrix2_t*, float, float, float), int (*Delta_feature_to_delta_a)(matrix2_t*),\
+    // int S_feature_dimens, int (*S_to_feature)(matrix2_t*, int, int),
+    // nn_t* mu_nn, nn_t* q_nn
+        &agent, 0, episodes, trajectory_length, gamma, alpha_theta, 
+    )
+
+    printf("\n");
+    agent_display_gridworld(&agent);
+
+    // printf("\n");
+    // agent_display_policy2(&agent);
+
+    nn_reset(&pi_nn);
+    nn_reset(&q_nn);
+    agent_reset(&agent);
+    return 0;
+}
+
 
 int do_reinforce_learning_test(void) 
 {

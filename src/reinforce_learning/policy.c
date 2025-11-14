@@ -93,6 +93,9 @@ int policy_init(policy_t* policy, int rows, int cols)
         .rows    = rows, 
         .cols    = cols, 
         .actions = (policy_t*) malloc (rows * cols* sizeof(action_t*))};
+    
+    memset(policy->actions, (void*)0, rows * cols * sizeof(action_t*));
+
     return 0;
 }
 

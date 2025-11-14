@@ -638,6 +638,81 @@ int nn_sg(nn_t* nn,  int (*gradient)(matrix2_t*, matrix2_t*), matrix2_t* m1, mat
 }
 
 /**
+ * @brief 获取某个 znode(id) 上 W X，与 b 的梯度。
+ * 
+ */
+int nn_znode_gradient (\
+    nn_t* nn, int znode_id, int (*head_gradient)(matrix2_t*, matrix2_t*), matrix2_t* m1, matrix2_t* m2,\
+    matrix2_t* gradient_W, matrix2_t* gradient_x, matrix2_t* gradient_b\
+)
+{
+    znode_t* last      = znode_last(nn);
+    //matrix2_t* delta_W = Mat2_create(1,1);
+    //matrix2_t* delta_b = Mat2_create(1,1);
+
+    matrix2_t* x_T     = Mat2_create(1,1);
+    matrix2_t* W_T     = Mat2_create(1,1);
+
+    matrix2_t* delta_y = Mat2_create_cpy(m1);
+    
+    matrix2_t* delta_z;
+
+    head_gradient(delta_y, m2);
+
+    do {
+        
+        delta_z = last->z;
+
+        if (last->is_output) {
+            Mat2_fill(delta_z, 1.f);
+        } else {
+            nn->gradient_active(delta_z);
+        }
+        
+        // delta_y 圆叉 delta_active_function
+        Mat2_hadamard_product(delta_y, delta_z);
+
+        if (last->id == znode_id) {
+
+            
+            // 计算 delta_W
+            if (gradient_W) {
+                Mat2_cpy(gradient_W, delta_y);
+                Mat2_cpy(x_T, last->x);
+                Mat2_T(x_T);
+                Mat2_dot(gradient_W, x_T);
+            }
+
+
+            // 计算 delta b
+            if (gradient_b)
+                Mat2_cpy(gradient_b, delta_y);
+        }
+
+        
+        // 计算 delta x，本层的 delta x 就是下层的 delta y
+        Mat2_cpy(W_T, last->W);
+        Mat2_T(W_T);
+        Mat2_dot(W_T, delta_y);
+        // 将结果返回给 delta_y,作为下一个的上级导数。
+        Mat2_cpy(delta_y, W_T);
+
+        last = last->prev;
+
+     } while (last != znode_head(nn) && last->id != znode_id);
+
+    if (gradient_x) {
+        Mat2_cpy(gradient_x, delta_y);
+    }
+
+    Mat2_destroy(x_T);
+    Mat2_destroy(W_T);
+    Mat2_destroy(delta_y);
+
+    return 0;
+}
+
+/**
  * @brief 对 nn 的 weight 进行 xaiver 的初始化，这个非常总要
  * 
  * @param nn
