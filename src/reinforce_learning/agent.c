@@ -2307,7 +2307,7 @@ int agent_policy_gradient_advantage_actor_critic_offline(
  * 
  */
 int agent_policy_gradient_deterministic_actor_critic(
-    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta, float alpha_w, float behavior_greedy,\
+    agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float alpha_w, float behavior_greedy,\
     int Q_featrue_dimens, int (*Q_to_feature)(matrix2_t*, float, float, float), int (*Delta_feature_to_delta_a)(matrix2_t*),\
     int S_feature_dimens, int (*S_to_feature)(matrix2_t*, int, int),
     nn_t* mu_nn, nn_t* q_nn\
@@ -2345,6 +2345,7 @@ int agent_policy_gradient_deterministic_actor_critic(
     policy_t behavior_policy;
     policy_init(&behavior_policy, world_rows, world_cols);
 
+    // 弄一个 均匀分布的 policy
     for (int i=0; i<state_number; ++i) {
         policy_set_random_moves(&behavior_policy.actions[i], e_idle, behavior_greedy);
     }

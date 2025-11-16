@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-15 00:30:06
+ * @LastEditTime: 2025-11-15 10:43:43
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -79,15 +79,17 @@ static int S_6_dimens_transform(matrix2_t* S, int x, int y)
 
 static int Q_4_dimens_feature(matrix2_t* Q, int x, int y, int mt) 
 {
-    Q->pool[3] = 1.f;
+    Q->pool[0] = 1.f;
     // Q->pool[1] = (float)x/4;
     // Q->pool[2] = (float)y/4;
     // Q->pool[3] = (float)mt/5;
-    Q->pool[0] = x;
-    Q->pool[1] = y;
-    Q->pool[2] = mt;
+    Q->pool[1] = x;
+    Q->pool[2] = y;
+    Q->pool[3] = mt;
     return 0;
 }
+
+
 
 static int Q_8_dimens_fourier_feature(matrix2_t* Q, int x, int y, int mt)
 {   const float pi = 3.1415926;
@@ -181,6 +183,39 @@ static int Q_3_dimens_feature(matrix2_t* Q, int x, int y, int mt)
     Q->pool[0] = x;
     Q->pool[1] = y;
     Q->pool[2] = mt;
+    return 0;
+}
+
+static int Q_x_s_dimens_fourier_feature(matrix2_t* Q, int x, int y, int mt) 
+{
+    // 此处只对 sx, sy 的输入作傅立叶变换
+    const float pi = 3.1415926;
+    float fx = (float) x / 4.f;
+    float fy = (float) y / 4.f;
+
+    int s_dimens = Q->rows * Q->cols - 1;
+    int q = pow(s_dimens, 1.f/2.f) - 1;
+
+    int i=0;
+    for (int c1=0; c1<q+1; c1++) {
+        for (int c2=0; c2<q+1; c2++) {
+            Q->pool[i++] = cos ( pi * (c1*fx + c2*fy) );
+        }
+    }
+    Q->pool[i] = mt;
+    return 0;
+}
+
+static int Delta_Q_to_delta_at(matrix2_t* delta_qx) 
+{
+    // 最后一个是他妈的 mt
+    //float mt = delta_qx->pool[2];
+    //Mat2_reshape(delta_qx, 1, 1);
+    //delta_qx->pool[0] = mt;
+    int num  = delta_qx->rows * delta_qx->cols;
+    float mt = delta_qx->pool[num - 1];
+    Mat2_reshape(delta_qx, 1, 1);
+    delta_qx->pool[0] = mt;
     return 0;
 }
 
@@ -951,7 +986,7 @@ static void test_a2c_offline(void)
     nn_reset(&pi_nn);
     nn_reset(&v_nn);
     agent_reset(&agent);
-    return 0;
+    return;
 
 }
 
@@ -962,14 +997,15 @@ static void test_deterministic_a2c (void)
     agent_init(&agent);
     agent_load(grid_path, &cell_reward_e, NULL, &agent);
     printf("\n\n");
-    
-    int pi_input_dimens;
-    int pi_output_dimens;
-    int pi_layers = 1;
-    int pi_neurals[1024];
+    int state_num = agent.world->rows * agent.world->cols;
 
-    int q_input_dimens;
-    int q_output_dimens;
+    int mu_input_dimens = pow((1+1), 2.f);
+    int mu_output_dimens = 1;
+    int mu_layers = 1;
+    int mu_neurals[1024];
+
+    int q_input_dimens = mu_input_dimens + 1;
+    int q_output_dimens = 1;
     int q_layers = 1;
     int q_neurals[128];
 
@@ -980,11 +1016,13 @@ static void test_deterministic_a2c (void)
     float gamma = 0.856;
     float alpha_theta = 0.00001;
     float alpha_w     = 0.00001;
-
-    nn_t pi_nn, q_nn;
+    float behavior_greedy = 1.f;
+    nn_t mu_nn, q_nn;
+    matrix2_t* s_feature = Mat2_create(mu_input_dimens, 1);
+    matrix2_t* mt_predict = Mat2_create(1,1);
 
     nn_build2( \
-        &pi_nn, pi_input_dimens, pi_output_dimens, pi_layers, pi_neurals, \
+        &mu_nn, mu_input_dimens, mu_output_dimens, mu_layers, mu_neurals, \
         relu, gradient_relu, softmax1, NULL
     );
 
@@ -993,27 +1031,36 @@ static void test_deterministic_a2c (void)
         relu, gradient_relu, useless_output, NULL
     );
 
-    nn_weights_he_uniform(&pi_nn);
-    nn_weights_xaiver_uniform(&q_nn);
+    nn_weights_he_uniform(&mu_nn);
+    nn_weights_he_uniform(&q_nn);
 
     agent_policy_gradient_deterministic_actor_critic(
-    // agent_t* agent, int start_id, int episodes, int trajectory_length, float gamma, float alpha_theta, float beta, float alpha_w, float behavior_greedy,\
-    // int Q_featrue_dimens, int (*Q_to_feature)(matrix2_t*, float, float, float), int (*Delta_feature_to_delta_a)(matrix2_t*),\
-    // int S_feature_dimens, int (*S_to_feature)(matrix2_t*, int, int),
-    // nn_t* mu_nn, nn_t* q_nn
-        &agent, 0, episodes, trajectory_length, gamma, alpha_theta, 
-    )
+        &agent, 0, episodes, trajectory_length, gamma, alpha_theta, alpha_w, behavior_greedy,\
+        q_input_dimens, Q_x_s_dimens_fourier_feature, Delta_Q_to_delta_at,\
+        mu_input_dimens, S_x_dimens_fourier_feature,\
+        &mu_nn, &q_nn\
+    );
 
     printf("\n");
     agent_display_gridworld(&agent);
 
     // printf("\n");
     // agent_display_policy2(&agent);
+    for (int i=0; i<state_num; ++i) {
+        S_x_dimens_fourier_feature(s_feature, i/agent.world->cols, i%agent.world->cols);
+        nn_predict(&mu_nn, s_feature, mt_predict);
+        float at = mt_predict->pool[0];
+        printf("s(%d):at(%0.2f) ", i, at);
+        if (i%5==0) printf("\n");
+    }
 
-    nn_reset(&pi_nn);
+    nn_reset(&mu_nn);
     nn_reset(&q_nn);
+    Mat2_destroy(s_feature);
+    Mat2_destroy(mt_predict);
+
     agent_reset(&agent);
-    return 0;
+    return;
 }
 
 
