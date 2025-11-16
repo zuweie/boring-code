@@ -646,7 +646,7 @@ int nn_znode_gradient (\
     matrix2_t* gradient_W, matrix2_t* gradient_x, matrix2_t* gradient_b\
 )
 {
-    znode_t* last      = znode_last(nn);
+    znode_t* last      = znode_tail(nn);
     //matrix2_t* delta_W = Mat2_create(1,1);
     //matrix2_t* delta_b = Mat2_create(1,1);
 
@@ -660,7 +660,9 @@ int nn_znode_gradient (\
     head_gradient(delta_y, m2);
 
     do {
-        
+
+        last = last->prev;
+
         delta_z = last->z;
 
         if (last->is_output) {
@@ -696,10 +698,8 @@ int nn_znode_gradient (\
         Mat2_dot(W_T, delta_y);
         // 将结果返回给 delta_y,作为下一个的上级导数。
         Mat2_cpy(delta_y, W_T);
-
-        last = last->prev;
-
-     } while (last != znode_head(nn) && last->id != znode_id);
+        
+    } while (last != znode_head(nn) && last->id != znode_id);
 
     if (gradient_x) {
         Mat2_cpy(gradient_x, delta_y);

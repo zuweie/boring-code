@@ -2346,7 +2346,7 @@ int agent_policy_gradient_deterministic_actor_critic(
     policy_init(&behavior_policy, world_rows, world_cols);
 
     // 弄一个 均匀分布的 policy
-    for (int i=0; i<state_number; ++i) {
+    for (i=0; i<state_number; ++i) {
         policy_set_random_moves(&behavior_policy.actions[i], e_idle, behavior_greedy);
     }
 

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-15 10:43:43
+ * @LastEditTime: 2025-11-16 18:41:50
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -186,12 +186,12 @@ static int Q_3_dimens_feature(matrix2_t* Q, int x, int y, int mt)
     return 0;
 }
 
-static int Q_x_s_dimens_fourier_feature(matrix2_t* Q, int x, int y, int mt) 
+static int Q_x_s_dimens_fourier_feature(matrix2_t* Q, float x, float y, float mt) 
 {
     // 此处只对 sx, sy 的输入作傅立叶变换
     const float pi = 3.1415926;
-    float fx = (float) x / 4.f;
-    float fy = (float) y / 4.f;
+    float fx = x / 4.f;
+    float fy = y / 4.f;
 
     int s_dimens = Q->rows * Q->cols - 1;
     int q = pow(s_dimens, 1.f/2.f) - 1;
@@ -1002,16 +1002,16 @@ static void test_deterministic_a2c (void)
     int mu_input_dimens = pow((1+1), 2.f);
     int mu_output_dimens = 1;
     int mu_layers = 1;
-    int mu_neurals[1024];
+    int mu_neurals[] = {1024};
 
     int q_input_dimens = mu_input_dimens + 1;
     int q_output_dimens = 1;
     int q_layers = 1;
-    int q_neurals[128];
+    int q_neurals[] = {128};
 
     int start_id = 0;
     int episodes = 1;
-    int trajectory_length = 12000;
+    int trajectory_length = 50000;
     
     float gamma = 0.856;
     float alpha_theta = 0.00001;
@@ -1023,7 +1023,7 @@ static void test_deterministic_a2c (void)
 
     nn_build2( \
         &mu_nn, mu_input_dimens, mu_output_dimens, mu_layers, mu_neurals, \
-        relu, gradient_relu, softmax1, NULL
+        relu, gradient_relu, useless_output, NULL
     );
 
     nn_build2 (
@@ -1050,8 +1050,8 @@ static void test_deterministic_a2c (void)
         S_x_dimens_fourier_feature(s_feature, i/agent.world->cols, i%agent.world->cols);
         nn_predict(&mu_nn, s_feature, mt_predict);
         float at = mt_predict->pool[0];
-        printf("s(%d):at(%0.2f) ", i, at);
-        if (i%5==0) printf("\n");
+        printf("s(%02d):at(%0.2f) ", i, at);
+        if ((i+1)%5==0) printf("\n");
     }
 
     nn_reset(&mu_nn);
@@ -1166,15 +1166,20 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test a2c offline", test_a2c_offline) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    // if (NULL == CU_add_test(pSuite, "test a2c offline", test_a2c_offline) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
 
     // if (NULL == CU_add_test(pSuite, "test nn", test_nn) ) {
     //     CU_cleanup_registry();
     //     return CU_get_error();
     // }
+
+    if (NULL == CU_add_test(pSuite, "test deterministic actor crtic", test_deterministic_a2c) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     return 0;
 
 }
