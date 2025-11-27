@@ -98,8 +98,8 @@ set (SOURCE
     src/reinforce_learning/grid_world.c
     src/reinforce_learning/policy.c
     src/reinforce_learning/agent.c
-    src/reinforce_learning/neural_network.c
-    src/reinforce_learning/neural_network_functions.c
+    src/reinforce_learning/nn.c
+    src/reinforce_learning/nn_functions.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c

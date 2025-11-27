@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-16 18:41:50
+ * @LastEditTime: 2025-11-27 15:22:46
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,8 +14,9 @@
 #include "reinforce_learning/grid_world.h"
 #include "reinforce_learning/policy.h"
 #include "reinforce_learning/agent.h"
-#include "reinforce_learning/neural_network.h"
-#include "reinforce_learning/neural_network_functions.h"
+#include "reinforce_learning/nn.h"
+#include "reinforce_learning/nn_functions.h"
+#include "reinforce_learning/nn2.h"
 
 
 
@@ -1063,6 +1064,30 @@ static void test_deterministic_a2c (void)
     return;
 }
 
+static void test_nn2(void)
+{
+    matrix2_t* z       = Mat2_create(1,1);
+    matrix2_t* delta_z = Mat2_create(1,1);
+
+    nn2_t nn2;
+    nn2_init(&nn2);
+
+    nn2_forward(&nn2, z);
+    nn2_backward(&nn2, delta_z);
+
+    printf("\nz:");
+    MAT2_INSPECT(z);
+
+    printf("\ndelta_z:");
+    MAT2_INSPECT(delta_z);
+
+    Mat2_destroy(z);
+    Mat2_destroy(delta_z);
+
+    nn2_reset(&nn2);
+    return;
+}
+
 
 int do_reinforce_learning_test(void) 
 {
@@ -1176,7 +1201,12 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test deterministic actor crtic", test_deterministic_a2c) ) {
+    // if (NULL == CU_add_test(pSuite, "test deterministic actor crtic", test_deterministic_a2c) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
+
+    if (NULL == CU_add_test(pSuite, "test nn2 ", test_nn2) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }

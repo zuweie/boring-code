@@ -2,14 +2,14 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-10-20 09:53:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-06 15:38:40
+ * @LastEditTime: 2025-11-26 07:49:46
  * @FilePath: /boring-code/src/reinforce_learning/neural_network_functions.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include <float.h>
 #include <math.h>
 #include "matrix2/matrix2.h"
-#include "neural_network_functions.h" 
+#include "nn_functions.h" 
 
 
 

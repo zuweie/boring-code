@@ -3,7 +3,7 @@
 #include <float.h>
 #include <math.h>
 #include "matrix2/matrix2.h"
-#include "neural_network.h"
+#include "nn.h"
 
 static znode_t* __znode_create(int in_dimens, int out_dimens, int id, int is_output) 
 {

@@ -10,8 +10,8 @@
 #include <math.h>
 
 #include "matrix2/matrix2.h"
-#include "neural_network.h"
-#include "neural_network_functions.h"
+#include "nn.h"
+#include "nn_functions.h"
 #include "grid_world.h"
 #include "policy.h"
 #include "agent.h"
