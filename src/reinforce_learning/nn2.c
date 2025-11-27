@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "nn2_znode.h"
 #include "nn2.h"
+
 static int __endpoint_calculate(znode2_t* node, matrix2_t* z)
 {
     printf("%s, do nothing calculating\n", node->name);
@@ -14,22 +15,36 @@ static int __endpoint_gradient(znode2_t* node, matrix2_t* delta_z)
     return 0;
 }
 
-static int __do_backward(nn2_t* nn2, znode2_t* node, matrix2_t* delta_z)
+static int __do_backward(znode2_t* J, znode2_t* respect)
 {
-    if (node != layer_tail(nn2)) {
-        __do_backward(nn2, node->next, node->gradient);
-    }
-    node->gradient(node, delta_z);
+    znode2_t* g_node   = J;
+    matrix2_t* delta_z = NULL;
+
+    do {
+
+        g_node->gradient(g_node, delta_z);
+        delta_z = g_node->Gx;
+        g_node  = g_node->prev;
+
+    } while (g_node != respect->prev);
     return 0;
 }   
 
-static int __do_forward(nn2_t* nn2, znode2_t* node, matrix2_t* z)
-{   
-    if (node != layer_head(nn2)) {
-        __do_forward(nn2, node->prev, node->x);
-    }
-    node->calculate(node, z);
-    return 0;
+static int __do_forward(znode2_t* start, znode2_t* final, matrix2_t* output)
+{
+    znode2_t*  g_node = start;
+    matrix2_t* z      = NULL;
+    
+    do {
+
+        z = (g_node == final ? output : g_node->next->x);
+        g_node->calculate(g_node, z);
+        g_node = g_node->next;
+
+   } while (g_node != final->next);
+
+   return 0;
+   
 }
 
 int nn2_init(nn2_t* nn2)
@@ -65,9 +80,10 @@ int nn2_linear(nn2_t* nn2, int in_dimens, int out_dimens)
     char name[128];
     sprintf(name, "<linear %d>", ++nn2->znode_counter);
     znode2_t* linear = create_linear(name);
-    layer_insert(layer_tail(nn2), linear)
+    layer_insert(layer_tail(nn2), linear);
     return 0;
 }
+
 int nn2_relu(nn2_t* nn2)
 {
     char name[128];
@@ -76,6 +92,7 @@ int nn2_relu(nn2_t* nn2)
     layer_insert(layer_tail(nn2), relu);
     return 0;
 }
+
 int nn2_softmax(nn2_t* nn2)
 {
     char name[128];
@@ -106,14 +123,20 @@ int nn2_crossentropy(nn2_t* nn2)
 int nn2_forward(nn2_t* nn2, matrix2_t* z)
 {
     znode2_t* last = layer_last(nn2);
-    __do_forward(nn2, last, z);
+    znode2_t* first = layer_first(nn2);
+
+    __do_forward(first, last, z);
+
     return 0;
 }
 
-int nn2_backward(nn2_t* nn2, matrix2_t* delta_z)
+int nn2_backward(nn2_t* nn2)
 {
     znode2_t* first = layer_first(nn2);
-    __do_forward(nn2, first, delta_z);
+    znode2_t* last  = layer_last(nn2);
+
+    __do_backward(last, first);
+
     return 0;
 }
 

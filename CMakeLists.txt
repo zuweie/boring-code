@@ -100,6 +100,8 @@ set (SOURCE
     src/reinforce_learning/agent.c
     src/reinforce_learning/nn.c
     src/reinforce_learning/nn_functions.c
+    src/reinforce_learning/nn2.c
+    src/reinforce_learning/nn2_znode.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c

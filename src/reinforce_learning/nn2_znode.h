@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-11-26 08:17:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-27 13:35:26
+ * @LastEditTime: 2025-11-27 15:31:25
  * @FilePath: /boring-code/src/reinforce_learning/nn2_znode.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,7 +26,7 @@ typedef struct linear {
 }linear_t;
 
 typedef struct relu {
-    znode_t base;
+    znode2_t base;
 }relu_t;
 
 typedef struct softmax {

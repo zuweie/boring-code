@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-27 15:22:46
+ * @LastEditTime: 2025-11-27 19:34:30
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1067,23 +1067,31 @@ static void test_deterministic_a2c (void)
 static void test_nn2(void)
 {
     matrix2_t* z       = Mat2_create(1,1);
-    matrix2_t* delta_z = Mat2_create(1,1);
+    Mat2_fill(z, 0.f);
 
     nn2_t nn2;
     nn2_init(&nn2);
 
+    nn2_linear(&nn2, 1, 1);
+    nn2_relu(&nn2);
+    nn2_linear(&nn2, 2, 2);
+    nn2_relu(&nn2);
+    nn2_linear(&nn2, 3, 5);
+    
+    nn2_softmax(&nn2);
+    //nn2_mse(&nn2);
+    nn2_crossentropy(&nn2);
+
+    printf("\n forward:\n");
     nn2_forward(&nn2, z);
-    nn2_backward(&nn2, delta_z);
+
+    printf("\n\n backward: \n");
+    nn2_backward(&nn2);
 
     printf("\nz:");
     MAT2_INSPECT(z);
 
-    printf("\ndelta_z:");
-    MAT2_INSPECT(delta_z);
-
     Mat2_destroy(z);
-    Mat2_destroy(delta_z);
-
     nn2_reset(&nn2);
     return;
 }
