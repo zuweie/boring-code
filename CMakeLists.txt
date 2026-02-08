@@ -95,13 +95,13 @@ set (SOURCE
     src/deep_learning/cg_ann/cg_ann_opt.c
     src/deep_learning/cg_ann/cg_ann_znode.c
     src/deep_learning/cg_ann/cg_ann.c
+    src/deep_learning/nn2/nn2_znode.c
+    src/deep_learning/nn2/nn2.c
     src/reinforce_learning/grid_world.c
     src/reinforce_learning/policy.c
     src/reinforce_learning/agent.c
     src/reinforce_learning/nn.c
     src/reinforce_learning/nn_functions.c
-    src/reinforce_learning/nn2.c
-    src/reinforce_learning/nn2_znode.c
     src/leetcode/lcs.c
     src/leetcode/kmp.c
     src/leetcode/regexp.c
