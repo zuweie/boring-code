@@ -22,7 +22,7 @@ static int __do_backward(znode2_t* J, znode2_t* respect)
 
     do {
 
-        g_node->gradient(g_node, delta_z);
+        g_node->gradient(g_node, delta_z, NULL);
         delta_z = g_node->Gx;
         g_node  = g_node->prev;
 
@@ -38,7 +38,7 @@ static int __do_forward(znode2_t* start, znode2_t* final, matrix2_t* output)
     do {
 
         z = (g_node == final ? output : g_node->next->x);
-        g_node->calculate(g_node, z);
+        g_node->calculate(g_node, z, NULL);
         g_node = g_node->next;
 
    } while (g_node != final->next);
@@ -79,7 +79,7 @@ int nn2_linear(nn2_t* nn2, int in_dimens, int out_dimens)
 {   
     char name[128];
     sprintf(name, "<linear %d>", ++nn2->znode_counter);
-    znode2_t* linear = create_linear(name);
+    znode2_t* linear = create_linear(out_dimens, in_dimens, name);
     layer_insert(layer_tail(nn2), linear);
     return 0;
 }
@@ -106,7 +106,7 @@ int nn2_mse(nn2_t* nn2)
 {
     char name[128];
     sprintf(name, "<mse %d>", ++nn2->znode_counter);
-    znode2_t* mse = create_mse(name);
+    znode2_t* mse = create_mse_loss(name);
     layer_insert(layer_tail(nn2), mse);
     return 0;
 }
@@ -115,7 +115,7 @@ int nn2_crossentropy(nn2_t* nn2)
 {
     char name[128];
     sprintf(name, "<crossentropy %d>", ++nn2->znode_counter);
-    znode2_t* crossentropy = create_crossentropy(name);
+    znode2_t* crossentropy = create_crossentropy_loss(name);
     layer_insert(layer_tail(nn2), crossentropy);
     return 0;
 }

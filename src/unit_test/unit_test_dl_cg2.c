@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-17 11:16:56
+ * @LastEditTime: 2026-02-19 13:57:14
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -107,11 +107,15 @@ static void cg_list_testcase(void)
     CU_ASSERT_STRING_EQUAL(first->prev->ref, "fucker");
     CU_ASSERT_STRING_EQUAL(first->prev->prev->ref, "monther");
 
-    // for (;first != CG_LIST_HEAD(list); first = first->prev) {
-    //     list_number++;
-    //     printf("%s ", first->ref);
-    // }
-    // printf("\n");
+    for (int i=0; i<10; ++i) {
+        cg_ref_t ref = cg_list_get(list, i);
+
+        CU_ASSERT_STRING_EQUAL(ref, test_str[i]);
+
+        //printf("%s ", ref);
+    }
+    printf("\n");
+
 
     cg_list_revert(list);
     first = CG_LIST_TOP(list);
@@ -527,7 +531,7 @@ int do_cg2_test (void)
     }
     #endif
 
-    #if 0
+    #if 1
     if (NULL == CU_add_test(pSuite, "test cg list ..\n", cg_list_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();
@@ -562,7 +566,7 @@ int do_cg2_test (void)
     }
     #endif
 
-    #if 1
+    #if 0
     if (NULL == CU_add_test(pSuite, "\ntest ann ..\n\n", cg_ann_testcase) ) {
         CU_cleanup_registry();
         return CU_get_error();

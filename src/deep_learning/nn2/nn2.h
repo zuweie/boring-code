@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-11-26 08:07:16
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-27 19:48:28
+ * @LastEditTime: 2026-02-19 13:48:54
  * @FilePath: /boring-code/src/reinforce_learning/nn2.h
  * @Description: 实现一个可以线性组装的简单人工神经网络，例如：linear + relu + linear + softmax + crossentorpy。但是计算和求导部分只用简单的 printf 来替代。
  */

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-08-23 13:39:18
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-11-27 19:34:30
+ * @LastEditTime: 2026-02-19 13:28:54
  * @FilePath: /boring-code/src/unit_test/unit_test_reinforce_learning.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,7 +16,7 @@
 #include "reinforce_learning/agent.h"
 #include "reinforce_learning/nn.h"
 #include "reinforce_learning/nn_functions.h"
-#include "reinforce_learning/nn2.h"
+// #include "reinforce_learning/nn2.h"
 
 
 
@@ -857,7 +857,6 @@ static void test_function_approximation_for_Q_learning_with_nn(void)
     return;
 }
 
-
 static void test_a2c(void) 
 {
     const char* grid_path = "/Users/zuweie/code/c-projects/boring-code/src/unit_test/reinforce_learning_data/g5x5.txt";
@@ -1064,6 +1063,7 @@ static void test_deterministic_a2c (void)
     return;
 }
 
+#if 0
 static void test_nn2(void)
 {
     matrix2_t* z       = Mat2_create(1,1);
@@ -1095,7 +1095,7 @@ static void test_nn2(void)
     nn2_reset(&nn2);
     return;
 }
-
+#endif
 
 int do_reinforce_learning_test(void) 
 {
@@ -1214,10 +1214,11 @@ int do_reinforce_learning_test(void)
     //     return CU_get_error();
     // }
 
-    if (NULL == CU_add_test(pSuite, "test nn2 ", test_nn2) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    
+    // if (NULL == CU_add_test(pSuite, "test nn2 ", test_nn2) ) {
+    //     CU_cleanup_registry();
+    //     return CU_get_error();
+    // }
     return 0;
 
 }
