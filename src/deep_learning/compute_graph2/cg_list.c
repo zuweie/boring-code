@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2024-09-02 14:07:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-02-19 22:22:10
+ * @LastEditTime: 2026-02-22 12:23:53
  * @FilePath: /boring-code/src/deep_learning/compute_garph/cg_list.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -121,7 +121,7 @@ cg_list_node_t* cg_list_get(cg_list_t* p_list, int index)
     int pos = cg_list_size(p_list) - index;
     cg_list_node_t* p_pop = pos >=0 ? CG_LIST_TOP(p_list) : NULL;
 
-    while ( -- pos && pos >0 ) {
+    while ( -- pos && pos > 0 ) {
         p_pop = p_pop->prev;
     }
     return p_pop ? p_pop->ref : NULL;

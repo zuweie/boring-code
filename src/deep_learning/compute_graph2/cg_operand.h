@@ -9,21 +9,15 @@ typedef struct cg_operand {
     cg_node_t _base;
     cg_ref_t x;
     cg_ref_t Gx;
-    int version;
+    
 } cg_operand_t;
 
 static inline int cg_operand_init(
     cg_operand_t* thiz, 
-    const char* id, 
-    cg_ref_t (*operand)(cg_node_t*), 
-    cg_ref_t (*gradient)(cg_node_t*)
+    const char* id,
 ) 
 {
     cg_node_init(&thiz->_base, id);
-    *thiz = (cg_operand_t) {
-        .operand  = operand,
-        .gradient = gradient 
-    };
     return 0;
 }   
 
@@ -33,4 +27,8 @@ static inline int cg_operand_reset(cg_operand_t* thiz)
     return 0;
 }
 
+static inline cg_node_t* cg_operand_get_operator(cg_operand_t* thiz) 
+{
+    cg_list_get(thiz->_base.vertex.in, 0)
+}
 #endif
