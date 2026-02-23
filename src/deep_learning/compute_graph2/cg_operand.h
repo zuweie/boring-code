@@ -12,10 +12,7 @@ typedef struct cg_operand {
     
 } cg_operand_t;
 
-static inline int cg_operand_init(
-    cg_operand_t* thiz, 
-    const char* id,
-) 
+static inline int cg_operand_init(cg_operand_t* thiz, const char* id)
 {
     cg_node_init(&thiz->_base, id);
     return 0;
@@ -29,6 +26,11 @@ static inline int cg_operand_reset(cg_operand_t* thiz)
 
 static inline cg_node_t* cg_operand_get_operator(cg_operand_t* thiz) 
 {
-    cg_list_get(thiz->_base.vertex.in, 0)
+    if (thiz->_base.node_type == e_operand) {
+        return cg_list_get(thiz->_base.vertex.in, 0);
+    } else {
+        CG_DEBUG("ERROR: cg_operand_get_operator, thiz is not a operand [%d]", __LINE__);
+    }
+    return NULL;
 }
 #endif
