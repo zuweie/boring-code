@@ -38,7 +38,7 @@ static inline int __differentiate(cg_node_t* thiz, cg_node_t* variant, cg_ref_t 
     return 0;
 }
 
-static inline relu_opt_t* relu_opt_create(cg_operator_t* thiz, const char* id, cg_operand_t* variant)
+static inline relu_opt_t* relu_opt_create(const char* id, cg_operand_t* variant)
 {
     relu_opt_t* relu_opt = (relu_opt_t*) malloc (sizeof(relu_opt_t));
     relu_opt->variant    = variant;
@@ -46,7 +46,7 @@ static inline relu_opt_t* relu_opt_create(cg_operator_t* thiz, const char* id, c
     return relu_opt;
 }
 
-static inline int relut_opt_recycle(cg_operator_t* thiz) 
+static inline int relut_opt_recycle(relu_opt_t* thiz) 
 {
     cg_operator_reset(thiz);
     free(thiz);

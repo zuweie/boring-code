@@ -37,7 +37,7 @@ static inline int __differentiate(cg_node_t* thiz, cg_node_t* variant, cg_ref_t 
     return 0;
 }
 
-static inline softmax_opt_t* softmax_opt_create(cg_operator_t* thiz, const char* id, cg_operand_t* variant)
+static inline softmax_opt_t* softmax_opt_create(const char* id, cg_operand_t* variant)
 {
     softmax_opt_t* softmax_opt = (softmax_opt_t*) malloc (sizeof(softmax_opt_t));
     softmax_opt->variant       = variant;

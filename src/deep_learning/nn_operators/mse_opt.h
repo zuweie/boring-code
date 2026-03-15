@@ -41,7 +41,7 @@ static inline int __differentiate(cg_node_t* thiz, cg_node_t* variant, cg_ref_t 
     return 0;
 }
 
-static inline mse_opt_t* mse_opt_create(cg_operator_t* thiz, const char* id, cg_operand_t* variant, cg_operand_t* labels) {
+static inline mse_opt_t* mse_opt_create(const char* id, cg_operand_t* variant, cg_operand_t* labels) {
 
     mse_opt_t* operator = (mse_opt_t*) malloc (sizeof(mse_opt_t));
 
@@ -50,6 +50,12 @@ static inline mse_opt_t* mse_opt_create(cg_operator_t* thiz, const char* id, cg_
     operator->variant   = variant;
     operator->labels    = labels;
     return operator;
+}
+
+static inline int mse_opt_recycle(mse_opt_t* thiz) {
+    cg_operator_reset(thiz);
+    free(thiz);
+    return 0;
 }
 
 #endif
