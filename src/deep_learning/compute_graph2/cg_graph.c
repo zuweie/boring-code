@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:57:53
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-02-19 22:30:07
+ * @LastEditTime: 2026-03-15 11:34:27
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_graph.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%A
  */
@@ -45,22 +45,22 @@ static int __marker_cmp(void* k1, void* k2)
     return strcmp(k1, k2);
 }
 
-static int __vertexes_recycle(cg_ref_t ref) 
-{
-    cg_vertex_t* vertex = (cg_vertex_t*)ref;
+// static int __vertexes_recycle(cg_ref_t ref) 
+// {
+//     cg_vertex_t* vertex = (cg_vertex_t*)ref;
 
-    if (vertex->in) {
-        cg_list_recycle(vertex->in, NULL);
-        vertex->in = NULL;
-    }
+//     if (vertex->in) {
+//         cg_list_recycle(vertex->in, NULL);
+//         vertex->in = NULL;
+//     }
 
-    if (vertex->out) {
-        cg_list_recycle(vertex->out, NULL);
-        vertex->out = NULL;
-    }
+//     if (vertex->out) {
+//         cg_list_recycle(vertex->out, NULL);
+//         vertex->out = NULL;
+//     }
     
-    return 0;
-}
+//     return 0;
+// }
 
 static int __deep_first_search(cg_vertex_t* p_start, cg_vertex_t* p_end, cg_hash_t* p_marker, cg_list_t* p_searching, cg_list_t* p_paths)
 {
@@ -100,7 +100,7 @@ int cg_graph_init(cg_graph_t* p_graph)
 int cg_graph_reset(cg_graph_t* p_graph)
 {
     // 此 graph 的 vertex 对象并不需要 graph 来维护。
-    return cg_hash_recycle(p_graph->vertexes, __vertexes_recycle);
+    return cg_hash_recycle(p_graph->vertexes, NULL);
 }
 
 int cg_graph_link(cg_vertex_t* p_from, cg_vertex_t* p_to)
@@ -113,20 +113,28 @@ int cg_graph_link(cg_vertex_t* p_from, cg_vertex_t* p_to)
     return 0;
 }
 
-int cg_graph_combine(cg_vertex_t* vertex, cg_list_t* outs, cg_list_t* ins)
+/**
+ * @brief 将输入节点，和输出节点节点连接到当前节点，输入list，以及输出的 list 会被 pop。注意输入节点顺序。
+ * 
+ * @param vertex 当前节点
+ * @param exports 输出的节点
+ * @param import 输入节点
+ * @return int 
+ */
+int cg_graph_combine(cg_vertex_t* vertex, cg_list_t* exports, cg_list_t* imports)
 {
     int i;
-    if (cg_list_size(outs) > 0 && cg_list_size(ins) >0) {
+    if (cg_list_size(exports) > 0 && cg_list_size(imports) >0) {
         // 连接 ins
         cg_vertex_t* from;
         cg_vertex_t* to;
-        for (i=0; i<cg_list_size(ins); ++i) {
-            from = (cg_vertex_t*) cg_list_get(ins, i);
+        for (i=0; i<cg_list_size(imports); ++i) {
+            from = (cg_vertex_t*) cg_list_pop(imports, i);
             cg_graph_link(from, vertex);
         }
 
         for (i=0; i<cg_list_size(outs); ++i) {
-            to  = (cg_vertex_t*) cg_list_get(outs, i);
+            to  = (cg_vertex_t*) cg_list_pop(exports, i);
             cg_graph_link(vertex, to);
         }
         return 0;

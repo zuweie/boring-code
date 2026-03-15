@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-16 16:07:02
+ * @LastEditTime: 2026-03-15 08:32:46
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,32 +11,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include "cg_debug.h"
+#include "cg_sub_tensor.h"
 #include "cg_tensor.h"
-
-static float __assign_scalar(float e, float scalar) 
-{
-    return scalar;
-}
-
-static float __mulit_scalar(float e, float scalar) 
-{
-    return e * scalar;
-}
-
-static float __add_opt(float e1, float e2)
-{
-    return e1 + e2;
-}
-
-static float __mulit_opt(float e1, float e2) 
-{
-    return e1 * e2;
-}
-
-static float __subtract_opt(float e1, float e2) 
-{
-    return e1 - e2;
-}
 
 static void* __coordinate_router(const void* base, const int* strides, int axes, int* coordinate) 
 {
@@ -45,66 +21,6 @@ static void* __coordinate_router(const void* base, const int* strides, int axes,
         dist += coordinate[i] * strides[i] * TENSOR_ELEM_SIZE;
     }
     return dist;
-}
-
-static __sub_tensor_t __get_sub_tensor(const __sub_tensor_t* sub_t1, int axes, int* coord) 
-{   
-    if (sub_t1->sub_axes >= axes) {
-        void* sub_elems  = __coordinate_router(sub_t1->sub_elems, sub_t1->sub_stride, axes, coord);
-        int   sub_axes   = sub_t1->sub_axes - axes;
-        int*  sub_dimens = &(sub_t1->sub_dimens[axes]);
-        int*  sub_stride = &(sub_t1->sub_stride[axes]);
-        return (__sub_tensor_t){.sub_elems=sub_elems, .sub_axes=sub_axes, .sub_dimens=sub_dimens, .sub_stride=sub_stride};
-    }
-    return (__sub_tensor_t) {.sub_elems=NULL, .sub_axes=-1, .sub_dimens=NULL, .sub_stride=NULL};
-}
-
-static __sub_tensor_t __to_sub_tensor(const cg_tensor_t* tensor) 
-{
-    return (__sub_tensor_t){.sub_elems=tensor->elems, .sub_axes=TENSOR_AXES(tensor), .sub_dimens=&TENSOR_DIMEN(tensor,0), .sub_stride=&TENSOR_STRIDE(tensor, 0)};
-}
-
-static int __sub_tensor_opt_scalar(const __sub_tensor_t* sub, float scalar, float (*opt)(float e, float scalar))
-{
-    float* p_elems  = sub->sub_elems;
-    int size        = sub->sub_dimens[0] * sub->sub_stride[0];
-    for (int i = 0; i<size; ++i) {
-        p_elems[i] = opt(p_elems[i], scalar);
-    }
-    return 0;
-}
-
-static int __sub_tensor_opt(const __sub_tensor_t* dist, const __sub_tensor_t* sub_t1, const __sub_tensor_t* sub_t2, float(*opt)(float e1, float e2))
-{
-    float* p_dist_elems = dist->sub_elems;
-    float* p_t1_elems   = sub_t1->sub_elems;
-    float* p_t2_elems   = sub_t2->sub_elems;
-
-    int size = dist->sub_dimens[0] * dist->sub_stride[0];
-
-    for (int i=0; i<size; ++i) {
-        p_dist_elems[i] = opt(p_t1_elems[i], p_t2_elems[i]);
-    }
-    return 0;
-}
-
-static int __sub_tensor_dot(const __sub_tensor_t* dist, const __sub_tensor_t* sub_t1, const  __sub_tensor_t* sub_t2) 
-{
-    float* p_dist = dist->sub_elems;
-    float* p_m1   = sub_t1->sub_elems;
-    float* p_m2   = sub_t2->sub_elems;
-    int    r1     = sub_t1->sub_dimens[0];
-    int    c1     = sub_t1->sub_dimens[1];
-    int    r2     = sub_t2->sub_dimens[0];
-    int    c2     = sub_t2->sub_dimens[1];
-    int    k      = 0;
-
-    for (int i=0; i<r1; ++i) {
-        for (int j=0; j<c2; ++j) {
-            p_dist[k++] = p_m1[i*c1+j] * p_m2[j*r2+i];
-        }
-    }
-    return 0;
 }
 
 static int __reshape(char** target_elems, int** target_dimens, int new_axes, int new_dimensions[], cg_allocator_t* alloc) 
@@ -133,7 +49,7 @@ static int __reshape(char** target_elems, int** target_dimens, int new_axes, int
         _D_STRIDE(*target_dimens, i)  = _D_DIMEN(*target_dimens, i+1) * _D_STRIDE(*target_dimens, i+1);
     }
 
-    // 跟新 element 池子大小 
+    // 更新 element 池子大小 
     if (_D_SIZE(*target_dimens) > old_size) {
 
         void *old_elems = *target_elems;
@@ -166,7 +82,7 @@ static cg_tensor_t* __create_tensor_cpy(const cg_tensor_t* thiz)
     return tensor;
 }
 
-static int __do_slice(void** dist, const __sub_tensor_t* sub_src, const int slice[], int curr_axis, int src_coord[]) 
+static int __do_slice(void** dist, const sub_tensor_t* sub_src, const int slice[], int curr_axis, int src_coord[]) 
 {
     if (curr_axis == sub_src->sub_axes -1) {
         int axes = curr_axis + 1;
@@ -189,7 +105,7 @@ static int __do_slice(void** dist, const __sub_tensor_t* sub_src, const int slic
 }
 
 // 一种新的 padding 算法, 复杂而又巧妙，简直就是艺术品的算法。nice
-static int __do_padding(const __sub_tensor_t* dist, const __sub_tensor_t* src, float fill, int* padding, int curr_axis) 
+static int __do_padding(const sub_tensor_t* dist, const sub_tensor_t* src, float fill, int* padding, int curr_axis) 
 {
 
     int i, j;
@@ -210,7 +126,7 @@ static int __do_padding(const __sub_tensor_t* dist, const __sub_tensor_t* src, f
     for (i = padding_left_start; i < padding_left_end; ++i)
     {
         sub_dist_index[0] = i;
-        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_dist_index);
+        sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_dist_index);
         if (sub_dist.sub_axes == 0) {
             // 只有一个元素，那么直接赋值
             *((float*)sub_dist.sub_elems) = fill;
@@ -224,7 +140,7 @@ static int __do_padding(const __sub_tensor_t* dist, const __sub_tensor_t* src, f
     {
         // fill
         sub_dist_index[0] = i;
-        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_dist_index);
+        sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_dist_index);
         if (sub_dist.sub_axes == 0) {
             // 只有一个元素，那么直接赋值
             *((float*)sub_dist.sub_elems) = fill;
@@ -239,8 +155,8 @@ static int __do_padding(const __sub_tensor_t* dist, const __sub_tensor_t* src, f
         sub_dist_index[0] = i;
         sub_src_index[0]  = sub_dist_index[0] - padding[curr_axis * 2];
 
-        __sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_dist_index);
-        __sub_tensor_t sub_src  = __get_sub_tensor(src,  1, sub_src_index);
+        sub_tensor_t sub_dist = __get_sub_tensor(dist, 1, sub_dist_index);
+        sub_tensor_t sub_src  = __get_sub_tensor(src,  1, sub_src_index);
 
         if (sub_dist.sub_axes == 0){
             // 单个元素直接 copy
@@ -255,7 +171,7 @@ static int __do_padding(const __sub_tensor_t* dist, const __sub_tensor_t* src, f
     return 0;
 }
 
-static int __do_doting(const __sub_tensor_t* dist, const __sub_tensor_t* sub1, const __sub_tensor_t* sub2, int curr_axis, int* dist_coord) 
+static int __do_doting(const sub_tensor_t* dist, const sub_tensor_t* sub1, const sub_tensor_t* sub2, int curr_axis, int* dist_coord) 
 {
     if (curr_axis == dist->sub_axes-2) {
         int axes = curr_axis + 1;
@@ -267,9 +183,9 @@ static int __do_doting(const __sub_tensor_t* dist, const __sub_tensor_t* sub1, c
             sub1_coord[i] = (sub1_coord[i] == 1 ? sub1_coord[i] : dist_coord[i]);
             sub2_coord[i] = (sub2_coord[i] == 1 ? sub2_coord[i] : dist_coord[i]);
         }
-        __sub_tensor_t sub_dist = __get_sub_tensor(dist, axes, dist_coord);
-        __sub_tensor_t sub_sub1 = __get_sub_tensor(sub1, axes, sub1_coord);
-        __sub_tensor_t sub_sub2 = __get_sub_tensor(sub2, axes, sub2_coord);
+        sub_tensor_t sub_dist = __get_sub_tensor(dist, axes, dist_coord);
+        sub_tensor_t sub_sub1 = __get_sub_tensor(sub1, axes, sub1_coord);
+        sub_tensor_t sub_sub2 = __get_sub_tensor(sub2, axes, sub2_coord);
 
         return __sub_tensor_dot(&sub_dist, &sub_sub1, &sub_sub2);
 
@@ -283,7 +199,7 @@ static int __do_doting(const __sub_tensor_t* dist, const __sub_tensor_t* sub1, c
 }
 
 
-static int __do_T(const __sub_tensor_t* dist, const __sub_tensor_t* src, int curr_axis, int* src_coord, int* transform_axes) 
+static int __do_T(const sub_tensor_t* dist, const sub_tensor_t* src, int curr_axis, int* src_coord, int* transform_axes) 
 {
     int i, j;
     if (curr_axis == src->sub_axes-1) {
@@ -352,7 +268,7 @@ static int __display_elems(cg_tensor_t* t, int curr_axis, int coord[]) {
     return 0;
 }
 
-static int __sub_to_sub(__sub_tensor_t* dist, const __sub_tensor_t* src)
+static int __sub_to_sub(sub_tensor_t* dist, const sub_tensor_t* src)
 {
     int src_number  = src->sub_dimens[0] * src->sub_stride[0];
     int dist_number = dist->sub_dimens[0] * dist->sub_stride[0];
@@ -409,7 +325,7 @@ cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...)
     // copy 数据
     int coordinate[TENSOR_AXES(thiz)];
     void* dist = tensor->elems;
-    __sub_tensor_t sub_thiz = __to_sub_tensor(thiz);
+    sub_tensor_t sub_thiz = __to_sub_tensor(thiz);
     __do_slice(&dist, &sub_thiz, slice, 0, coordinate);
     return tensor;
 }
@@ -429,8 +345,8 @@ cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, float fill, int padding_axes, 
     
     cg_tensor_t* tensor = __create_tensor(TENSOR_AXES(thiz), new_dimens, thiz->allocator);
 
-    __sub_tensor_t sub_tensor = __to_sub_tensor(tensor);
-    __sub_tensor_t sub_thiz   = __to_sub_tensor(thiz);
+    sub_tensor_t sub_tensor = __to_sub_tensor(tensor);
+    sub_tensor_t sub_thiz   = __to_sub_tensor(thiz);
 
     __do_padding(&sub_tensor, &sub_thiz, fill, padding, 0);
 
@@ -465,13 +381,12 @@ int cg_tensor_dot(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
     for (int i=0; i<TENSOR_AXES(t1); ++i) {
         new_dimens[i] = TENSOR_DIMEN(t1, i) > TENSOR_DIMEN(t2, i) ? TENSOR_DIMEN(t1, i) : TENSOR_DIMEN(t2, i);
     }
-
-
+    
     __reshape(r->elems, &r->dimensions, TENSOR_AXES(t1), new_dimens, t1->allocator);
 
-    __sub_tensor_t sub_dist = __to_sub_tensor(r);
-    __sub_tensor_t sub_t1   = __to_sub_tensor(t1);
-    __sub_tensor_t sub_t2   = __to_sub_tensor(t2);
+    sub_tensor_t sub_dist = __to_sub_tensor(r);
+    sub_tensor_t sub_t1   = __to_sub_tensor(t1);
+    sub_tensor_t sub_t2   = __to_sub_tensor(t2);
     
     return __do_doting(&sub_dist, &sub_t1, &sub_t2, 0, coordinate);
 }
@@ -495,9 +410,9 @@ int cg_tensor_sum(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
 
     // reshap the r
     // TODO: do sum.
-    __sub_tensor_t sub_dist = __to_sub_tensor(r);
-    __sub_tensor_t sub_t1   = __to_sub_tensor(t1);
-    __sub_tensor_t sub_t2   = __to_sub_tensor(t2);
+    sub_tensor_t sub_dist = __to_sub_tensor(r);
+    sub_tensor_t sub_t1   = __to_sub_tensor(t1);
+    sub_tensor_t sub_t2   = __to_sub_tensor(t2);
 
     __sub_tensor_opt(&sub_dist, &sub_t1, &sub_t2, __add_opt);
     return 0;
@@ -521,9 +436,9 @@ int cg_tensor_subtract(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
 
     // reshap the r
     // TODO: do sum.
-    __sub_tensor_t sub_dist = __to_sub_tensor(r);
-    __sub_tensor_t sub_t1   = __to_sub_tensor(t1);
-    __sub_tensor_t sub_t2   = __to_sub_tensor(t2);
+    sub_tensor_t sub_dist = __to_sub_tensor(r);
+    sub_tensor_t sub_t1   = __to_sub_tensor(t1);
+    sub_tensor_t sub_t2   = __to_sub_tensor(t2);
 
     __sub_tensor_opt(&sub_dist, &sub_t1, &sub_t2, __subtract_opt);
     return 0;
@@ -531,14 +446,14 @@ int cg_tensor_subtract(cg_tensor_t* r, cg_tensor_t* t1, cg_tensor_t* t2)
 
 int cg_tensor_scale(cg_tensor_t* t, float scalar)
 {
-    __sub_tensor_t sub_t = __to_sub_tensor(t);
+    sub_tensor_t sub_t = __to_sub_tensor(t);
     return __sub_tensor_opt_scalar(&sub_t, scalar, __mulit_scalar);
 }
 
 
 int cg_tensor_fill(cg_tensor_t* t, float fill)
 {
-    __sub_tensor_t sub_t = __to_sub_tensor(t);
+    sub_tensor_t sub_t = __to_sub_tensor(t);
     return __sub_tensor_opt_scalar(&sub_t, fill, __assign_scalar);
 }
 
@@ -621,8 +536,8 @@ int cg_tensor_T(cg_tensor_t* thiz, ...)
 
     __reshape(&thiz->elems, &thiz->dimensions, axes, new_dimens, thiz->allocator);
 
-    __sub_tensor_t sub_thiz = __to_sub_tensor(thiz);
-    __sub_tensor_t sub_cpy  = __to_sub_tensor(tensor_cpy);
+    sub_tensor_t sub_thiz = __to_sub_tensor(thiz);
+    sub_tensor_t sub_cpy  = __to_sub_tensor(tensor_cpy);
     __do_T(&sub_thiz, &sub_cpy, 0, src_coord, trans_axes);
 
     // 回收临时申请的内存。
@@ -631,7 +546,7 @@ int cg_tensor_T(cg_tensor_t* thiz, ...)
     return 0;
 }
 
-__sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...)
+sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...)
 {
     int coord[axes];
     va_list vargs;
@@ -641,25 +556,25 @@ __sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...)
     }
     va_end(vargs);
 
-    __sub_tensor_t sub_thiz = __to_sub_tensor(thiz);
+    sub_tensor_t sub_thiz = __to_sub_tensor(thiz);
     return __get_sub_tensor(&sub_thiz, axes, coord);
 }
 
-int cg_tensor_sub_to_sub(__sub_tensor_t dist, __sub_tensor_t src)
+int cg_tensor_sub_to_sub(sub_tensor_t dist, sub_tensor_t src)
 {
     return __sub_to_sub(&dist, &src);
 }
 
 int cg_tensor_to_tensor(cg_tensor_t* dist, const cg_tensor_t* src)
 {
-    __sub_tensor_t sub_dist = __to_sub_tensor(dist);
-    __sub_tensor_t sub_src  = __to_sub_tensor(src);
+    sub_tensor_t sub_dist = __to_sub_tensor(dist);
+    sub_tensor_t sub_src  = __to_sub_tensor(src);
     return __sub_to_sub(&sub_dist, &sub_src);
 }
 
-int cg_tensor_sub_to_tensor(cg_tensor_t* dist, __sub_tensor_t src)
+int cg_tensor_sub_to_tensor(cg_tensor_t* dist, sub_tensor_t src)
 {
-    __sub_tensor_t sub_dist = __to_sub_tensor(dist);
+    sub_tensor_t sub_dist = __to_sub_tensor(dist);
     return __sub_to_sub(&sub_dist, &src);
 }
 

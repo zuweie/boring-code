@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2025-06-15 08:41:12
+ * @LastEditTime: 2026-03-15 07:59:46
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -29,19 +29,19 @@ typedef struct cg_tensor {
     int*            dimensions;
 } cg_tensor_t;
 
-typedef struct __sub_tensor {
+typedef struct sub_tensor {
     void* sub_elems;
     int*  sub_stride;
     int*  sub_dimens;
     int   sub_axes;
-} __sub_tensor_t;
+} sub_tensor_t;
 
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...);
 cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz);
 int cg_tensor_recycle(cg_tensor_t* thiz);
 
 cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int axes, ...);
-cg_tensor_t* cg_tensor_padding(cg_tensor_t* this, float fill, int padding_axes, ...);
+cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, float fill, int padding_axes, ...);
 
 int cg_tensor_dot(cg_tensor_t*, cg_tensor_t*, cg_tensor_t* );
 int cg_tensor_sum(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );
@@ -52,9 +52,9 @@ int cg_tensor_arange(cg_tensor_t*, float, float);
 int cg_tensor_inspect(cg_tensor_t*);
 float* cg_tensor_get(cg_tensor_t*, ...);
 
-__sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...);
-int cg_tensor_sub_to_sub(__sub_tensor_t dist, __sub_tensor_t src);
-int cg_tensor_sub_to_tensor(cg_tensor_t* dist, __sub_tensor_t src);
+sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...);
+int cg_tensor_sub_to_sub(sub_tensor_t dist, sub_tensor_t src);
+int cg_tensor_sub_to_tensor(cg_tensor_t* dist, sub_tensor_t src);
 int cg_tensor_to_tensor(cg_tensor_t*, const cg_tensor_t*);
 int cg_tensor_set(cg_tensor_t*, float val, ...);
 int cg_tensor_T(cg_tensor_t*, ...);

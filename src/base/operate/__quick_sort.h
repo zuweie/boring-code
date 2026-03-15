@@ -8,6 +8,5 @@
 #ifndef __QUICK_SORT_H__
 #define __QUICK_SORT_H__
 
-int quick_sort(iterator_t, iterator_t, int(*)(type_value_t*, type_value_t*));
-
+int quick_sort(iterator_t p, iterator_t r, int(*compare)(type_value_t*, type_value_t*));
 #endif

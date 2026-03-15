@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-02-23 10:20:37
+ * @LastEditTime: 2026-03-15 16:16:15
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -41,7 +41,7 @@ static int __recycle_path(cg_ref_t path)
 static int __prepare_tickets (cg_node_t* znode, cg_hash_t* marker) 
 {
     // 拥有小弟，才能给小弟派导数券
-    if (znode->node_type == e_operand) {
+    if (CG_NODE_TYPE(znode) == e_operand znode->node_type == e_operand) {
         if (cg_node_is_respect(znode)) {
 
             cg_operator_t*  operator = cg_operand_get_operator(znode);
@@ -72,7 +72,7 @@ static int __prepare_tickets (cg_node_t* znode, cg_hash_t* marker)
 static int __do_calculate(cg_node_t* znode, cg_hash_t* marker)
 {
 
-    if (znode->node_type != e_operand) {
+    if ( CG_NODE_IS_OPERAND(znode) ) {
         
         if (!cg_hash_has(marker, znode->vertex.id)) {
 
@@ -106,7 +106,7 @@ static int __do_calculate(cg_node_t* znode, cg_hash_t* marker)
 
 static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 {   
-    if (znode->node_type != e_operand) {
+    if ( CG_NODE_IS_OPERAND(znode) ) {
         cg_operand_t* repect = (cg_operand_t *)znode;
         
         if (cg_node_is_respect(znode)) {
@@ -157,7 +157,7 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 int cg_calculate(cg_node_t* znode)
 {
     int ret = -1;
-    if (znode->node_type == e_operand) {
+    if (CG_NODE_IS_OPERAND(znode)) {
         cg_hash_t* update_marker = cg_hash_create(__marker_hash, __marker_cmp);
         ret = __do_calculate(znode, update_marker);
         cg_hash_recycle(update_marker, NULL);

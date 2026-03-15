@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 14:20:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-02-22 17:58:36
+ * @LastEditTime: 2026-03-15 16:44:18
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_operator.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,18 +15,18 @@ typedef struct cg_operator {
 
     cg_node_t _base;
 
-    int (*calculate) (cg_node_t* thiz, cg_node_t* out);
-    int (*differentiate)(cg_node_t* respect, cg_node_t* x, cg_ref_t env_gradient);
+    int (*calculate)    (cg_node_t* thiz, cg_node_t* out);
+    int (*differentiate)(cg_node_t* thiz, cg_node_t* variant, cg_ref_t env_gradient);
 
 } cg_operator_t;
 
 static inline int cg_operator_init(
     cg_operator_t* thiz, 
     const char* id, 
-    int (*calculate) (cg_node_t* thiz, cg_node_t* out), 
-    int (*differentiate)(cg_node_t* respect, cg_node_t* x, cg_ref_t env_gradient)
+    int (*calculate)    (cg_node_t* thiz, cg_node_t* out), 
+    int (*differentiate)(cg_node_t* thiz, cg_node_t* variant, cg_ref_t env_gradient)
 ) {
-    cg_node_init(&thiz->_base, e_operator);
+    cg_node_init(&thiz->_base, id, e_operator);
     *thiz = (cg_operator_t) {
         .calculate     = calculate,
         .differentiate = differentiate
@@ -35,7 +35,6 @@ static inline int cg_operator_init(
 };
 
 static inline int cg_operator_reset(cg_operator_t* thiz) {
-    cg_node_reset(&thiz->_base);
-    return 0;
+    return cg_node_reset(thiz);
 };
 #endif
