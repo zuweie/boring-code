@@ -80,16 +80,13 @@ set (SOURCE
     src/statistical_learning/svm.c
     src/statistical_learning/svm_kernel_func.c
     src/statistical_learning/counting.c
-    src/deep_learning/ann.c
-    src/deep_learning/cnn.c
     src/deep_learning/rnn.c
-    src/deep_learning/lstm.c
-    src/deep_learning/active.c
     src/deep_learning/compute_graph2/cg_allocator.c
     src/deep_learning/compute_graph2/cg_graph.c
     src/deep_learning/compute_graph2/cg_hash.c
     src/deep_learning/compute_graph2/cg_list.c
     src/deep_learning/compute_graph2/cg_tensor.c
+    src/deep_learning/compute_graph2/cg_sub_tensor.c
     src/deep_learning/compute_graph2/cg_calflow.c
     src/deep_learning/compute_graph2/cg_ticket.c
     src/deep_learning/nn2/nn2_znode.c

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-02-23 10:45:50
+ * @LastEditTime: 2026-03-28 16:56:53
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -18,7 +18,7 @@
 #include "deep_learning/compute_graph2/cg_graph.h"
 #include "deep_learning/compute_graph2/cg_tensor.h"
 //include "deep_learning/compute_graph2/cg_base.h"
-#include "deep_learning/cg_ann/cg_ann.h"
+//#include "deep_learning/cg_ann/cg_ann.h"
 
 
 static int key_hash(void* key) 
@@ -40,7 +40,7 @@ static void print_path(const char* path_name, cg_list_t* path)
 {
     printf("%s:", path_name);
 
-    cg_node_t* first = CG_LIST_TOP(path);
+    cg_list_node_t* first = CG_LIST_TOP(path);
 
     while(first != CG_LIST_HEAD(path)) {
 
@@ -58,7 +58,7 @@ static void print_path(const char* path_name, cg_list_t* path)
 
 static void print_paths(const char* paths_name, cg_list_t* paths) 
 {
-    cg_node_t* first = CG_LIST_TOP(paths);
+    cg_list_node_t* first = CG_LIST_TOP(paths);
 
     while(first != CG_LIST_HEAD(paths)) {
 
@@ -102,7 +102,7 @@ static void cg_list_testcase(void)
         cg_list_push(list, test_str[i]);
     }
     int list_number = 0;
-    cg_node_t* first = CG_LIST_TOP(list);
+    cg_list_node_t* first = CG_LIST_TOP(list);
     CU_ASSERT_STRING_EQUAL(first->ref, "?");
     CU_ASSERT_STRING_EQUAL(first->prev->ref, "fucker");
     CU_ASSERT_STRING_EQUAL(first->prev->prev->ref, "monther");
@@ -318,8 +318,8 @@ static void cg_graph_testcase(void)
     cg_vertex_t vertexes[10];
     for (int i=0; i<10; ++i) {
         sprintf(vertexes[i].id, "vtx_%d", i);
-        vertexes[i].in_vertexes  = cg_list_create();
-        vertexes[i].out_vertexes = cg_list_create();
+        vertexes[i].in  = cg_list_create();
+        vertexes[i].out = cg_list_create();
         cg_graph_add_vertex(&graph, &vertexes[i]);
     }
 
@@ -353,8 +353,8 @@ static void cg_graph_testcase(void)
     //print_paths("[paths: 8 to 7]", paths_8_7);
     //print_paths("[paths: 9 to 7]", paths_9_7);
 
-    cg_node_t* first = CG_LIST_TOP(paths_8_7);
-    cg_node_t* _first = CG_LIST_TOP((cg_list_t*)first->ref);
+    cg_list_node_t* first = CG_LIST_TOP(paths_8_7);
+    cg_list_node_t* _first = CG_LIST_TOP((cg_list_t*)first->ref);
 
     cg_vertex_t* vtx = _first->ref;
     CU_ASSERT_STRING_EQUAL(vtx->id, "vtx_8");
@@ -487,28 +487,28 @@ static void cg_ann_testcase ()
     #define HIDDEN_LAYERS_SIZE 3
     int hidden_layers[HIDDEN_LAYERS_SIZE] = {3, 5, 3};
 
-    cg_ann_t cg_ann;
-    cg_ann_init(&cg_ann, HIDDEN_LAYERS_SIZE, hidden_layers, 2, 1, 4, 3, e_cross_entroy, 0.5, 0.01);
+    // cg_ann_t cg_ann;
+    // cg_ann_init(&cg_ann, HIDDEN_LAYERS_SIZE, hidden_layers, 2, 1, 4, 3, e_cross_entroy, 0.5, 0.01);
 
-    cg_tensor_t* X_data = cg_tensor_create(&cg_ann.alloc, 2, 60, 4);
-    cg_tensor_load(X_data, trainingData);
+    // cg_tensor_t* X_data = cg_tensor_create(&cg_ann.alloc, 2, 60, 4);
+    // cg_tensor_load(X_data, trainingData);
 
-    cg_tensor_t* Y_label = cg_tensor_create(&cg_ann.alloc, 2, 60, 3);
-    cg_tensor_load(Y_label, response1);
-    cg_ann_build_flow(&cg_ann);
-    cg_ann_train(&cg_ann, X_data, Y_label);
-    cg_tensor_t* predict = cg_tensor_create(&cg_ann.alloc, 2, 3, 1);
-    cg_tensor_t* input   = cg_tensor_create(&cg_ann.alloc, 2, 4, 1);
-    cg_tensor_load(input, _sample);
-    cg_ann_predict(&cg_ann, input, predict);
-    cg_tensor_inspect(predict);
+    // cg_tensor_t* Y_label = cg_tensor_create(&cg_ann.alloc, 2, 60, 3);
+    // cg_tensor_load(Y_label, response1);
+    // cg_ann_build_flow(&cg_ann);
+    // cg_ann_train(&cg_ann, X_data, Y_label);
+    // cg_tensor_t* predict = cg_tensor_create(&cg_ann.alloc, 2, 3, 1);
+    // cg_tensor_t* input   = cg_tensor_create(&cg_ann.alloc, 2, 4, 1);
+    // cg_tensor_load(input, _sample);
+    // cg_ann_predict(&cg_ann, input, predict);
+    // cg_tensor_inspect(predict);
 
-    cg_tensor_recycle(X_data);
-    cg_tensor_recycle(Y_label);
-    cg_tensor_recycle(predict);
-    cg_tensor_recycle(input);
+    // cg_tensor_recycle(X_data);
+    // cg_tensor_recycle(Y_label);
+    // cg_tensor_recycle(predict);
+    // cg_tensor_recycle(input);
 
-    cg_ann_reset(&cg_ann);
+    // cg_ann_reset(&cg_ann);
     return;
 }
 

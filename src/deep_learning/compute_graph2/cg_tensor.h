@@ -2,13 +2,14 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-03-15 07:59:46
+ * @LastEditTime: 2026-03-28 19:39:28
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
 #ifndef __CG_TENSOR_H__
 #define __CG_TENSOR_H__
 #include "cg_allocator.h"
+#include "cg_sub_tensor.h"
 
 #define TENSOR_ELEM_SIZE          sizeof(float)
 #define _D_AXES(dimensions)        ((dimensions)[0])
@@ -29,12 +30,7 @@ typedef struct cg_tensor {
     int*            dimensions;
 } cg_tensor_t;
 
-typedef struct sub_tensor {
-    void* sub_elems;
-    int*  sub_stride;
-    int*  sub_dimens;
-    int   sub_axes;
-} sub_tensor_t;
+
 
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...);
 cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz);
@@ -53,6 +49,7 @@ int cg_tensor_inspect(cg_tensor_t*);
 float* cg_tensor_get(cg_tensor_t*, ...);
 
 sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...);
+sub_tensor_t cg_tensor_to_sub_tensor(cg_tensor_t* thiz);
 int cg_tensor_sub_to_sub(sub_tensor_t dist, sub_tensor_t src);
 int cg_tensor_sub_to_tensor(cg_tensor_t* dist, sub_tensor_t src);
 int cg_tensor_to_tensor(cg_tensor_t*, const cg_tensor_t*);

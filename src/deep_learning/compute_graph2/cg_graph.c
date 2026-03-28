@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 17:57:53
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-03-15 11:34:27
+ * @LastEditTime: 2026-03-28 17:08:35
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_graph.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%A
  */
@@ -121,22 +121,22 @@ int cg_graph_link(cg_vertex_t* p_from, cg_vertex_t* p_to)
  * @param import 输入节点
  * @return int 
  */
-int cg_graph_combine(cg_vertex_t* vertex, cg_list_t* exports, cg_list_t* imports)
+int cg_graph_combine(cg_vertex_t* vertex, cg_list_t* ins, cg_list_t* outs)
 {
     int i;
-    if (cg_list_size(exports) > 0 && cg_list_size(imports) >0) {
+    if (cg_list_size(ins) > 0 && cg_list_size(outs) >0) {
         // 连接 ins
         cg_vertex_t* from;
         cg_vertex_t* to;
-        for (i=0; i<cg_list_size(imports); ++i) {
-            from = (cg_vertex_t*) cg_list_pop(imports, i);
+
+        while ( from = cg_list_pop(ins) ) {
             cg_graph_link(from, vertex);
         }
 
-        for (i=0; i<cg_list_size(outs); ++i) {
-            to  = (cg_vertex_t*) cg_list_pop(exports, i);
-            cg_graph_link(vertex, to);
+        while ( to = cg_list_pop (outs) ) {
+            cg_graph_link( vertex, to);
         }
+        
         return 0;
     }
     return -1;
