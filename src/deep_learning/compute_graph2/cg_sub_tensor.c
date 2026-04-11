@@ -100,6 +100,17 @@ int sub_tensor_dot(sub_tensor_t* dist, const sub_tensor_t* sub_t1, const sub_ten
     return 0;
 }
 
+int sub_tensor_to_sub(sub_tensor_t* dist, const sub_tensor_t* src)
+{
+    int src_number  = src->sub_dimens[0] * src->sub_stride[0];
+    int dist_number = dist->sub_dimens[0] * dist->sub_stride[0];
+    if (dist_number >= src_number ) {
+        memcpy(dist->sub_elems, src->sub_elems, src_number * src->sub_elem_size);
+        return 0;
+    }
+    return -1;
+}
+
 int sub_tensor_T(sub_tensor_t* dist, const sub_tensor_t* sub_tensor)
 {
     return 0;

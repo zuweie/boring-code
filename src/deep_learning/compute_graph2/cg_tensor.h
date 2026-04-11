@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-03-28 19:39:28
+ * @LastEditTime: 2026-04-06 19:21:30
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -13,10 +13,10 @@
 
 #define TENSOR_ELEM_SIZE          sizeof(float)
 #define _D_AXES(dimensions)        ((dimensions)[0])
-#define _D_DIMEN(dimensions, i)    ((dimensions)[i+1])
-#define _D_STRIDE(dimensions, i)   ((dimensions)[_D_AXES(dimensions)+i+2])
-#define _D_NUM(dimensions)         _D_DIMEN(dimensions, 0) * _D_STRIDE(dimensions, 0)
-#define _D_SIZE(dimensions)        _D_NUM(dimensions) * TENSOR_ELEM_SIZE
+#define _D_DIMEN(dimensions, i)    ((dimensions)[(i)+1])
+#define _D_STRIDE(dimensions, i)   ((dimensions)[_D_AXES(dimensions)+(i)+2])
+#define _D_NUM(dimensions)         (_D_DIMEN(dimensions, 0) * _D_STRIDE(dimensions, 0))
+#define _D_SIZE(dimensions)        (_D_NUM(dimensions) * TENSOR_ELEM_SIZE)
 
 #define TENSOR_AXES(tensor)      _D_AXES((tensor)->dimensions)
 #define TENSOR_DIMEN(tensor, i)  _D_DIMEN((tensor)->dimensions, i)
@@ -50,11 +50,8 @@ float* cg_tensor_get(cg_tensor_t*, ...);
 
 sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...);
 sub_tensor_t cg_tensor_to_sub_tensor(cg_tensor_t* thiz);
-int cg_tensor_sub_to_sub(sub_tensor_t dist, sub_tensor_t src);
-int cg_tensor_sub_to_tensor(cg_tensor_t* dist, sub_tensor_t src);
 int cg_tensor_to_tensor(cg_tensor_t*, const cg_tensor_t*);
 int cg_tensor_set(cg_tensor_t*, float val, ...);
 int cg_tensor_T(cg_tensor_t*, ...);
 int cg_tensor_load(cg_tensor_t*, const void*);
-
 #endif

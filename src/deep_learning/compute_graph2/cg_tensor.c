@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-03-28 20:31:36
+ * @LastEditTime: 2026-04-06 19:22:56
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -87,6 +87,33 @@ static int __reshape(char** target_elems, int** target_dimens, int new_axes, int
         }
     }
     
+    return 0;
+}
+
+static int __batch_match(const cg_tensor_t* t1, const cg_tensor_t* t2, int t1_batch_start) 
+{
+    if (TENSOR_AXES(t1) >= TENSOR_AXES(t2)) {
+        
+        int axes_diff = TENSOR_AXES(t1) - TENSOR_AXES(t2);
+        int t2_batch_index;
+        int t1_batch_index;
+        for (t1_batch_index = t1_batch_start; t1_batch_index<=0; --t1_batch_index) {
+            t2_batch_index = t1_batch_index - axes_diff;
+            if (t2_batch_index >=0 
+            && TENSOR_DIMEN(t2, t2_batch_index) != 1 
+            && TENSOR_DIMEN(t1, t1_batch_index) != TENSOR_DIMEN(t2, t2_batch_index)) {
+                CG_DEBUG("T1 [%d] dimen is %d, T2 [%d] dimen is %d, does not match\n", \
+                    t1_batch_index, TENSOR_DIMEN(t1, t1_batch_index), t2_batch_index, TENSOR_DIMEN(t2, t2_batch_index));
+                return 0;
+            } else if (t2_batch_index < 0) {
+                // t2 batch index 
+                return 1;
+            }
+        }
+        // match all dimens index
+        return 1;
+    }
+    CG_DEBUG("T1 AXES(%s) < T2 AXES(%s)\n", TENSOR_AXES(t1), TENSOR_AXES(t2));
     return 0;
 }
 
@@ -278,6 +305,7 @@ static int __display_elems(cg_tensor_t* t, int curr_axis, int coord[]) {
         printf(" ]\n");
 
     } else {
+
         for (int k=0; k<2*curr_axis; ++k) {
             printf(" ");
         }
@@ -290,20 +318,21 @@ static int __display_elems(cg_tensor_t* t, int curr_axis, int coord[]) {
             printf(" ");
         }
         printf("]\n");
+
     }
     return 0;
 }
 
-static int __sub_to_sub(sub_tensor_t* dist, const sub_tensor_t* src)
-{
-    int src_number  = src->sub_dimens[0] * src->sub_stride[0];
-    int dist_number = dist->sub_dimens[0] * dist->sub_stride[0];
-    if (dist_number >= src_number ) {
-        memcpy(dist->sub_elems, src->sub_elems, src_number * TENSOR_ELEM_SIZE);
-        return 0;
-    }
-    return -1;
-}
+// static int __sub_to_sub(sub_tensor_t* dist, const sub_tensor_t* src)
+// {
+//     int src_number  = src->sub_dimens[0] * src->sub_stride[0];
+//     int dist_number = dist->sub_dimens[0] * dist->sub_stride[0];
+//     if (dist_number >= src_number ) {
+//         memcpy(dist->sub_elems, src->sub_elems, src_number * TENSOR_ELEM_SIZE);
+//         return 0;
+//     }
+//     return -1;
+// }
 
 cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
 {
@@ -587,23 +616,14 @@ sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...)
     return sub_tensor_get_sub(&sub_thiz, axes, coord);
 }
 
-int cg_tensor_sub_to_sub(sub_tensor_t dist, sub_tensor_t src)
-{
-    return __sub_to_sub(&dist, &src);
-}
 
 int cg_tensor_to_tensor(cg_tensor_t* dist, const cg_tensor_t* src)
 {
     sub_tensor_t sub_dist = cg_tensor_to_sub_tensor(dist);
     sub_tensor_t sub_src  = cg_tensor_to_sub_tensor(src);
-    return __sub_to_sub(&sub_dist, &sub_src);
+    return sub_tensor_to_sub(&sub_dist, &sub_src);
 }
 
-int cg_tensor_sub_to_tensor(cg_tensor_t* dist, sub_tensor_t src)
-{
-    sub_tensor_t sub_dist = cg_tensor_to_sub_tensor(dist);
-    return __sub_to_sub(&sub_dist, &src);
-}
 
 int cg_tensor_load(cg_tensor_t* dist, const void* src)
 {
@@ -622,3 +642,4 @@ sub_tensor_t cg_tensor_to_sub_tensor(cg_tensor_t* tensor)
         .sub_elem_size = TENSOR_ELEM_SIZE
     };
 }
+
