@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-04-06 19:22:56
+ * @LastEditTime: 2026-05-03 10:07:09
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -48,14 +48,14 @@ static void* __coordinate_router(const void* base, const int* strides, int axes,
     return dist;
 }
 
-static int __reshape(char** target_elems, int** target_dimens, int new_axes, int new_dimensions[], cg_allocator_t* alloc) 
+static int __reshape(char** target_elems, int** target_dimens, int elem_size, int new_axes, int new_dimensions[], cg_allocator_t* alloc) 
 {
     unsigned int old_size = 0;
     // 这里我将加多一维，第 0 维。例如 axes 为 3。 那么的有 0，1，2，3个轴。第三个轴是第 0 维。
     if (*target_dimens == NULL) {
         *target_dimens = (int*) malloc (((new_axes+1)*2+1) * sizeof(int));
     } else {
-        old_size = _D_SIZE(*target_dimens);
+        old_size = _D_NUM(*target_dimens) * elem_size;
         if (_D_AXES(*target_dimens) < new_axes) 
             (*target_dimens) = (int*)realloc((*target_dimens), ((new_axes+1)*2+1) * sizeof(int));
     }
@@ -75,10 +75,10 @@ static int __reshape(char** target_elems, int** target_dimens, int new_axes, int
     }
 
     // 更新 element 池子大小 
-    if (_D_SIZE(*target_dimens) > old_size) {
+    if (_D_NUM(*target_dimens) * elem_size > old_size) {
 
         void *old_elems = *target_elems;
-        *target_elems   = cg_alloc(alloc, _D_SIZE(*target_dimens));
+        *target_elems   = cg_alloc(alloc, _D_NUM(*target_dimens) * elem_size);
 
         // 如果原来旧有数据复制旧的，然后回收。
         if (old_elems) {
@@ -117,19 +117,23 @@ static int __batch_match(const cg_tensor_t* t1, const cg_tensor_t* t2, int t1_ba
     return 0;
 }
 
-static cg_tensor_t* __create_tensor(int axes, int dimensions[], cg_allocator_t* alloc)
+
+static cg_tensor_t* __create_tensor(int axes, int dimensions[], cg_allocator_t* alloc, cg_elem_spec_t* spec)
 {
     cg_tensor_t* tensor = (cg_tensor_t*) malloc(sizeof(cg_tensor_t));
-    tensor->allocator   = alloc;
-    tensor->dimensions  = NULL;
-    tensor->elems       = NULL;
-    __reshape(&tensor->elems, &tensor->dimensions, axes, dimensions, alloc);
+    *tensor = (cg_tensor_t) {
+        .allocator  = alloc,
+        .elem_spec  = spec,
+        .dimensions = NULL,
+        .elems      = NULL
+    }
+    __reshape(&tensor->elems, &tensor->dimensions, sepc->elem_size, axes, dimensions, alloc);
     return tensor;
 }
 
 static cg_tensor_t* __create_tensor_cpy(const cg_tensor_t* thiz) 
 {
-    cg_tensor_t* tensor = __create_tensor(TENSOR_AXES(thiz), &TENSOR_DIMEN(thiz, 0), thiz->allocator);
+    cg_tensor_t* tensor = __create_tensor(TENSOR_AXES(thiz), &TENSOR_DIMEN(thiz, 0), thiz->allocator, thiz->elem_spec);
     memcpy(tensor->elems, thiz->elems, TENSOR_SIZE(tensor));
     return tensor;
 }
@@ -334,7 +338,7 @@ static int __display_elems(cg_tensor_t* t, int curr_axis, int coord[]) {
 //     return -1;
 // }
 
-cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
+cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, cg_elem_spec_t* spec, int axes, ...)
 {
     int dimensions[axes];
 
@@ -634,12 +638,12 @@ int cg_tensor_load(cg_tensor_t* dist, const void* src)
 
 sub_tensor_t cg_tensor_to_sub_tensor(cg_tensor_t* tensor) 
 {
-    return (sub_tensor_t){
-        .sub_elems=tensor->elems, 
-        .sub_axes=TENSOR_AXES(tensor), 
-        .sub_dimens=&TENSOR_DIMEN(tensor,0), 
-        .sub_stride=&TENSOR_STRIDE(tensor, 0),
-        .sub_elem_size = TENSOR_ELEM_SIZE
+    return (sub_tensor_t) {
+        .sub_elems     = tensor->elems, 
+        .sub_elem_spec = tensor->elem_spec,
+        .sub_axes      = TENSOR_AXES(tensor), 
+        .sub_dimens    = &TENSOR_DIMEN(tensor,0), 
+        .sub_stride    = &TENSOR_STRIDE(tensor, 0)
     };
 }
 

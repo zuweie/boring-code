@@ -87,6 +87,7 @@ set (SOURCE
     src/deep_learning/compute_graph2/cg_list.c
     src/deep_learning/compute_graph2/cg_tensor.c
     src/deep_learning/compute_graph2/cg_sub_tensor.c
+    src/deep_learning/compute_graph2/cg_float.c
     src/deep_learning/compute_graph2/cg_calflow.c
     src/deep_learning/compute_graph2/cg_ticket.c
     src/deep_learning/nn2/nn2_znode.c

@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-09-07 23:21:46
- * @LastEditTime: 2025-06-02 13:46:32
+ * @LastEditTime: 2026-05-01 17:33:44
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #ifndef __CONTAINER_H__
@@ -70,9 +70,6 @@ do { \
     ((container_t*)(container_ptr))->type_clazz = (__type_clazz);                               \
     ((container_t*)(container_ptr))->mem_pool = (__mem_pool);                                   \
 }while (0)
-
-
-
 
 struct container {
     iterator_t (*first) (container_t* container_ptr);   
