@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-05-03 09:59:11
+ * @LastEditTime: 2026-05-04 15:09:30
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -21,6 +21,11 @@
 #define TENSOR_STRIDE(tensor, i) _D_STRIDE((tensor)->dimensions, i)
 #define TENSOR_NUM(tensor)       (TENSOR_DIMEN(tensor, 0) * TENSOR_STRIDE(tensor, 0))
 #define TENSOR_SIZE(tensor)      (TENSOR_NUM(tensor) * (tensor)->elem_spec->elem_size)
+
+typedef enum padding_mode {
+    pd_mode_fill = 0,
+    pd_mode_edge
+} padding_mode_t;
 
 typedef struct cg_allocator cg_allocator_t;
 typedef struct cg_elem_spec cg_elem_spec_t;
