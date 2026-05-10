@@ -24,10 +24,7 @@ int sub_tensor_slice(sub_tensor_t* dist, sub_tensor_t* src, int slice_dimens[]);
 int sub_tensor_padding(sub_tensor_t* dist, sub_tensor_t* src, int padding_dimens[], cg_ref_t fill);
 int sub_tensor_foreach(sub_tensor_t* dest, cg_ref_t opt1, cg_ref_t opt2, elem_opt_t elem_opt)
 
-int sub_tensor_elem_number(sub_tensor_t* sub_tensor);
-int sub_tensor_to_sub(sub_tensor_t* dist, const sub_tensor_t* src);
-// int sub_tensor_opt_scalar(const sub_tensor_t* sub, float scalar,  int (*opt)(cg_ref_t* dist, cg_ref_t e, float scalar));
-// int sub_tensor_opt(const sub_tensor_t* dist, const sub_tensor_t* sub_t1, const sub_tensor_t* sub_t2, int (*opt)(cg_ref_t dist, cg_ref_t e1, cg_ref_t e2));
+int sub_tensor_to_sub(sub_tensor_t* dist, const sub_tensor_t* src);e1, cg_ref_t e2));
 // int sub_tensor_dot(sub_tensor_t* dist, const sub_tensor_t* sub_t1, const sub_tensor_t* sub_t2, int (*opt)(cg_ref_t dist, cg_ref_t e1, cg_ref_t e2));
 // int sub_tensor_T(sub_tensor_t* dist, const sub_tensor_t* sub_tensor);
 

@@ -116,7 +116,7 @@ static int __do_padding(sub_tensor_t* sub_dest, const sub_tensor_t* sub_src, con
     return 0;
 } 
 
-static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2, int working_axis, int t1_batch_axes, int t2_batch_axes, int dest_coord[], int t1_coord[], int t2_coord[], int (*opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
+static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2, int working_axis, int t1_batch_axes, int t2_batch_axes, int dest_coord[], int t1_coord[], int t2_coord[], int (*batch_opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
 {
 
     if (working_axis == t1_batch_axes-1) {
@@ -128,7 +128,7 @@ static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t
         sub_tensor_get_sub(&sub_t1, t1, t1_batch_axes, t1_coord);
         sub_tensor_get_sub(&sub_t2, t2, t2_batch_axes, t2_coord);
 
-        return opt(&sub_dest, &sub_t1, &sub_t2);
+        return batch_opt(&sub_dest, &sub_t1, &sub_t2);
 
     } else {
         int t2_axis = working_axis - (t1_batch_axes - t2_batch_axes);
@@ -228,9 +228,9 @@ int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t
             CALL_ELEM_OPT(\
                 dest->sub_elem_spec, \
                 elem_opt_multiply,   \
-                (p_dest + ((k++)    * dest->sub_elem_spec->elem_size)), \
-                (p_m1   + ((i*c1+j) * dest->sub_elem_spec->elem_size)), \
-                (p_m2   + ((j*r2+i) * dest->sub_elem_spec->elem_size )),\
+                (p_dest + ((k++)    * dest->sub_elem_spec->elem_size)),   \
+                (p_m1   + ((i*c1+j) * sub_t1->sub_elem_spec->elem_size)), \
+                (p_m2   + ((j*r2+i) * sub_t2->sub_elem_spec->elem_size )),\
             );
         }
     }
@@ -239,20 +239,95 @@ int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t
 
 int sub_tensor_subtract(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 {
+    int elem_size   = t1->sub_axes[0] * t1->sub_stride[0];
+    char* dest_base = dest->sub_elems;
+    char* t1_base   = t1->sub_elems;
+    char* t2_base   = t2->sub_elems;
 
+    for (int i=0; i<elem_size; ++i) {
+        CALL_ELEM_OPT(\
+            dest->sub_elem_spec,\
+            elem_opt_subtract,  \
+            (dest_base + (i*dest->sub_elem_spec->elem_size)),\
+            (t1_base   + (i*t1->sub_elem_spec->elem_size)),  \
+            (t2_base   + (i*t2->sub_elem_spec->elem_size)),  \
+        );
+    }
+    return 0;
 }
 
 int sub_tensor_add(sub_tensor_t* dest, sub_tensor_t* t1 sub_tensor_t* t2)
 {
+int elem_size   = t1->sub_axes[0] * t1->sub_stride[0];
+    char* dest_base = dest->sub_elems;
+    char* t1_base   = t1->sub_elems;
+    char* t2_base   = t2->sub_elems;
 
-}
-
-int sub_tensor_T(sub_tensor_t* dest, sub_tensor_t* t1)
-{
+    for (int i=0; i<elem_size; ++i) {
+        CALL_ELEM_OPT(\
+            dest->sub_elem_spec,\
+            elem_opt_add,\
+            (dest_base + (i*dest->sub_elem_spec->elem_size)),\
+            (t1_base   + (i*t1->sub_elem_spec->elem_size)),\
+            (t2_base   + (i*t2->sub_elem_spec->elem_size)),\
+        );
+    }
     return 0;
 }
 
-int sub_tensor_ierate(sub_tensor_t* dest, cg_ref_t opt1, cg_ref_t opt2, elem_opt_t elem_opt)
+int sub_tensor_multiply(sub_tensor_t* dest, sub_tensor_t* t1 sub_tensor_t* t2)
+{
+int elem_size   = t1->sub_axes[0] * t1->sub_stride[0];
+    char* dest_base = dest->sub_elems;
+    char* t1_base   = t1->sub_elems;
+    char* t2_base   = t2->sub_elems;
+
+    for (int i=0; i<elem_size; ++i) {
+        CALL_ELEM_OPT(\
+            dest->sub_elem_spec,\
+            elem_opt_multiply,\
+            (dest_base + (i*dest->sub_elem_spec->elem_size)),\
+            (t1_base   + (i*t1->sub_elem_spec->elem_size)),\
+            (t2_base   + (i*t2->sub_elem_spec->elem_size)),\
+        );
+    }
+    return 0;
+}
+
+
+int sub_tensor_T(sub_tensor_t* dest, sub_tensor_t* t1)
+{
+    if (t1->sub_axes[2] == 1 || t1->sub_axes[1] == 1) {
+        // 如果 x 或者 y 轴其中一轴为 1，那么可以直接将数据 copy 给 dest。
+        return sub_tensor_to_sub(dest, t1);
+    } else {
+        // 
+        char* dest_base = dest->sub_elems;
+        char* t1_base   = t1->sub_elems;
+
+        int dest_rows   = dest->sub_axes[2];
+        int dest_cols   = dest->sub_axes[1];
+
+        int t1_rows     = t1->sub_axes[2];
+        int t1_cols     = t1->sub_axes[1];
+
+        for (int i=0; i<t1_rows; ++i) {
+            for (int j=0; j<t1_cols; ++j) {
+                
+                CALL_ELEM_OPT(\
+                    dest->sub_elem_spec, \
+                    elem_opt_assign,     \
+                    (dest + (j*dest_cols+i) * dest->sub_elem_spec->eleme_size), \
+                    (t1_base + (i*t1_cols+j) * t1->sub_elem_spec->eleme_size), \
+                    NULL\
+                );
+            }
+        }
+    }
+    return 0;
+}
+
+int sub_tensor_iterate(sub_tensor_t* dest, cg_ref_t opt1, cg_ref_t opt2, elem_opt_t elem_opt)
 {
     int elem_num = dest->sub_dimens[0] * dest->sub_stride[0];
     for (int i=0; i<elem_num; ++i) {
