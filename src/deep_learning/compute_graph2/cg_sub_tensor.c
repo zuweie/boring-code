@@ -149,7 +149,7 @@ static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t
                     return -1
                 }
             }
-            __do_binary_opt(dest, t1, t2, working_axis+1, t1_batch_axes, t2_batch_axes, dest_coord, t1_coord, t2_coord, opt);
+            __do_binary_opt(dest, t1, t2, working_axis+1, t1_batch_axes, t2_batch_axes, dest_coord, t1_coord, t2_coord, batch_opt);
         }
     }
 }

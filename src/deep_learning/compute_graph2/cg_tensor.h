@@ -2,13 +2,13 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-05-04 15:09:30
+ * @LastEditTime: 2026-05-14 23:18:22
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
 #ifndef __CG_TENSOR_H__
 #define __CG_TENSOR_H__
-#include "cg_sub_tensor.h"
+#include "cg_elem_spec.h"
 
 //#define TENSOR_ELEM_SIZE          sizeof(float)
 #define _D_AXES(dimensions)             ((dimensions)[0])
@@ -20,7 +20,7 @@
 #define TENSOR_DIMEN(tensor, i)  _D_DIMEN((tensor)->dimensions, i)
 #define TENSOR_STRIDE(tensor, i) _D_STRIDE((tensor)->dimensions, i)
 #define TENSOR_NUM(tensor)       (TENSOR_DIMEN(tensor, 0) * TENSOR_STRIDE(tensor, 0))
-#define TENSOR_SIZE(tensor)      (TENSOR_NUM(tensor) * (tensor)->elem_spec->elem_size)
+#define TENSOR_SIZE(tensor)      (TENSOR_NUM(tensor) * tensor_elem_size)
 
 typedef enum padding_mode {
     pd_mode_fill = 0,
