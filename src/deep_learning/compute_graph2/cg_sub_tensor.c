@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include "cg_debug.h"
 #include "cg_ref.h"
-#include "cg_elem_spec.h"
-#include "cg_tensor.h"
+#include "cg_debug.h"
+#include "cg_tensor_elem_spec.h"
 #include "cg_sub_tensor.h"
 
 static inline cg_ref_t __coordinate_router(sub_tensor_t* sub_tensor, int axes, int coordinate[])
@@ -29,6 +28,7 @@ static int __do_slice(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int s
         sub_tensor_t src;
 
         for (i=slice[working_axis*2], j=0; i<slice[working_axis*2+1]; ++i, ++j) {
+
             dist_coord[working_axis] = j;
             src_coord[working_axis]  = i;
 
@@ -39,11 +39,13 @@ static int __do_slice(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int s
         }
         
     } else {
+
         for (i=slice[working_axis*2], j=0; i<slice[working_axis*2+1]; ++i, ++j) {
             dist_coord[working_axis] = j;
             src_coord[working_axis]  = i;
             __do_slice(sub_dest, sub_src, slice_axes, slice, working_axis+1, dist_coord, src_coord);
         }
+
     }
     return 0;
 }
@@ -69,13 +71,17 @@ static int __do_padding(sub_tensor_t* sub_dest, const sub_tensor_t* sub_src, con
         dest = sub_tensor_get_sub(sub_dest, working_axis, dest_coord);
 
         if (mode == pd_mode_fill) {
-            sub_tenson_iterate(&dest, to_fill, NULL, elem_opt_assign);
+            //sub_tenson_iterate(&dest, to_fill, NULL, elem_opt_assign);
+            sub_tensor_fill(&dest, to_fill)
 
         } else if (mode == pd_mode_edge) {
             // 只拿第一个。
             src_coord[working_axis]  = 0;
             src = sub_tensor_get_sub(sub_dest, working_axis, src_coord);
             sub_tensor_to_sub(&dest, &src);
+        } else {
+            CG_DEBUG("ERROR <%d@%d>: unknown padding mode(%d)\n", __LINE__, __FILE__, mode);
+            return -1;
         }
     }
     
@@ -103,14 +109,16 @@ static int __do_padding(sub_tensor_t* sub_dest, const sub_tensor_t* sub_src, con
         
         if (mode == pd_mode_fill) {
             // 
-            sub_tensor_iterate(&dest, to_fill, NULL, elem_opt_assign);
+            //sub_tensor_iterate(&dest, to_fill, NULL, elem_opt_assign);
+            sub_tensor_fill(&dest, to_fill);
 
         } else if (mode == pd_mode_edge) {
             // 只拿最后一个。
             src_coord[working_axis]  = sub_src->sub_dimens[working_axis] - 1;
             sub_tensor_get_sub(&src, sub_src, working_axis, src_coord);
-            
             sub_tensor_to_sub(&dest, &src);
+        } else {
+            CG_DEBUG("Error <%d@%d>: unknown padding mode(%d)\n", __LINE__, __FILE__, mode);
         }
     }
     return 0;
@@ -168,8 +176,7 @@ int sub_tensor_get_sub(sub_tensor_t* sub_tensor, sub_tensor_t* sub_src, int axes
             .sub_elems  = sub_elems,
             .sub_axes   = sub_axes,
             .sub_dimens = sub_dimens,
-            .sub_stride = sub_stride,
-            .sub_elem_spec = sub_src->sub_elem_spec
+            .sub_stride = sub_stride
         }
         return 0;
     } 
@@ -178,14 +185,23 @@ int sub_tensor_get_sub(sub_tensor_t* sub_tensor, sub_tensor_t* sub_src, int axes
         .sub_elems=NULL, 
         .sub_axes=-1, 
         .sub_dimens=NULL, 
-        .sub_stride=NULL, 
-        .sub_elem_spec = NULL
+        .sub_stride=NULL
     };
     return -1;
 }
+int sub_tensor_to_sub(sub_tensor_t* dest,  sub_tensor_t* src)
+{
+    if (dest->sub_dimens[0] == src->sub_dimens[0] && dest->sub_stride[0] == src->sub_stride) {
 
+        int cpy_size = dest->sub_dimens[0] * dest->sub_stride[0] * tensor_elem_size;
+        memcpy(dest->sub_elems, src->sub_elems, cpy_size);
+        return 0;
 
-
+    } else {
+        CG_DEBUG("Error <%d@%d>: dest shape does match src shape\n", __LINE__,__FILE__);
+    }
+    return -1;
+}
 int sub_tensor_slice(sub_tensor_t* dest, sub_tensor_t* src, int slice_axes, int slice[])
 {
     int dest_coord[slice_axes];
@@ -225,13 +241,8 @@ int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t
     for (int i=0; i<r1; ++i) {
         for (int j=0; j<c2; ++j) {
             //p_dist[k++] = p_m1[i*c1+j] * p_m2[j*r2+i];
-            CALL_ELEM_OPT(\
-                dest->sub_elem_spec, \
-                elem_opt_multiply,   \
-                (p_dest + ((k++)    * dest->sub_elem_spec->elem_size)),   \
-                (p_m1   + ((i*c1+j) * sub_t1->sub_elem_spec->elem_size)), \
-                (p_m2   + ((j*r2+i) * sub_t2->sub_elem_spec->elem_size )),\
-            );
+            //cg_elem_opt_add(p_dest+(k++)*tensor_elem_size, p_m1+(i*c1+j)*tensor_elem_size, p_m2+(j*r2+i)*tensor_elem_size);
+            cg_tensor_elem_ptr_opt(p_dest+(k++)*tensor_elem_size, p_m1+(i*c1+j)*tensor_elem_size,  p_m2+(j*r2+i)*tensor_elem_size, +);
         }
     }
     return 0;
@@ -245,13 +256,15 @@ int sub_tensor_subtract(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
     char* t2_base   = t2->sub_elems;
 
     for (int i=0; i<elem_size; ++i) {
-        CALL_ELEM_OPT(\
-            dest->sub_elem_spec,\
-            elem_opt_subtract,  \
-            (dest_base + (i*dest->sub_elem_spec->elem_size)),\
-            (t1_base   + (i*t1->sub_elem_spec->elem_size)),  \
-            (t2_base   + (i*t2->sub_elem_spec->elem_size)),  \
-        );
+        // CALL_ELEM_OPT(\
+        //     dest->sub_elem_spec,\
+        //     elem_opt_subtract,  \
+        //     (dest_base + (i*dest->sub_elem_spec->elem_size)),\
+        //     (t1_base   + (i*t1->sub_elem_spec->elem_size)),  \
+        //     (t2_base   + (i*t2->sub_elem_spec->elem_size)),  \
+        // );
+        //cg_elem_opt_substract(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size);
+        cg_tensor_elem_ptr_opt(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size, -)
     }
     return 0;
 }
@@ -264,13 +277,16 @@ int elem_size   = t1->sub_axes[0] * t1->sub_stride[0];
     char* t2_base   = t2->sub_elems;
 
     for (int i=0; i<elem_size; ++i) {
-        CALL_ELEM_OPT(\
-            dest->sub_elem_spec,\
-            elem_opt_add,\
-            (dest_base + (i*dest->sub_elem_spec->elem_size)),\
-            (t1_base   + (i*t1->sub_elem_spec->elem_size)),\
-            (t2_base   + (i*t2->sub_elem_spec->elem_size)),\
-        );
+        // CALL_ELEM_OPT(\
+        //     dest->sub_elem_spec,\
+        //     elem_opt_add,\
+        //     (dest_base + (i*dest->sub_elem_spec->elem_size)),\
+        //     (t1_base   + (i*t1->sub_elem_spec->elem_size)),\
+        //     (t2_base   + (i*t2->sub_elem_spec->elem_size)),\
+        // );
+        //cg_elem_opt_add(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size);
+        cg_tensor_elem_ptr_opt(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size, +)
+
     }
     return 0;
 }
@@ -283,13 +299,16 @@ int elem_size   = t1->sub_axes[0] * t1->sub_stride[0];
     char* t2_base   = t2->sub_elems;
 
     for (int i=0; i<elem_size; ++i) {
-        CALL_ELEM_OPT(\
-            dest->sub_elem_spec,\
-            elem_opt_multiply,\
-            (dest_base + (i*dest->sub_elem_spec->elem_size)),\
-            (t1_base   + (i*t1->sub_elem_spec->elem_size)),\
-            (t2_base   + (i*t2->sub_elem_spec->elem_size)),\
-        );
+        // CALL_ELEM_OPT(\
+        //     dest->sub_elem_spec,\
+        //     elem_opt_multiply,\
+        //     (dest_base + (i*dest->sub_elem_spec->elem_size)),\
+        //     (t1_base   + (i*t1->sub_elem_spec->elem_size)),\
+        //     (t2_base   + (i*t2->sub_elem_spec->elem_size)),\
+        // );
+        //cg_elem_opt_multiply(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size);
+        cg_tensor_elem_ptr_opt(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size, *)
+
     }
     return 0;
 }
@@ -314,24 +333,26 @@ int sub_tensor_T(sub_tensor_t* dest, sub_tensor_t* t1)
         for (int i=0; i<t1_rows; ++i) {
             for (int j=0; j<t1_cols; ++j) {
                 
-                CALL_ELEM_OPT(\
-                    dest->sub_elem_spec, \
-                    elem_opt_assign,     \
-                    (dest + (j*dest_cols+i) * dest->sub_elem_spec->eleme_size), \
-                    (t1_base + (i*t1_cols+j) * t1->sub_elem_spec->eleme_size), \
-                    NULL\
-                );
+                // CALL_ELEM_OPT(\
+                //     dest->sub_elem_spec, \
+                //     elem_opt_assign,     \
+                //     (dest + (j*dest_cols+i) * dest->sub_elem_spec->eleme_size), \
+                //     (t1_base + (i*t1_cols+j) * t1->sub_elem_spec->eleme_size), \
+                //     NULL\
+                // );
+                //cg_elem_opt_assign(dest+(j*dest_cols+i)*tensor_elem_size, t1_base+(i*t1_cols+j)*tensor_elem_size);
+                cg_tensor_elem_ptr_assign(dest_base+(j*dest_cols+i)*tensor_elem_size, t1_base+(i*t1_cols+j)*tensor_elem_size);
             }
         }
     }
     return 0;
 }
 
-int sub_tensor_iterate(sub_tensor_t* dest, cg_ref_t opt1, cg_ref_t opt2, elem_opt_t elem_opt)
+int sub_tensor_fill(sub_tensor_t* dest, cg_ref_t fill)
 {
     int elem_num = dest->sub_dimens[0] * dest->sub_stride[0];
     for (int i=0; i<elem_num; ++i) {
-        CALL_ELEM_OPT(dest->sub_elem_spec, elem_opt, (dest->sub_elems + (i * dest->sub_elem_spec->eleme_size)), opt1, opt2);
+        cg_tensor_elem_ptr_assign(((char*)(dest->sub_elems))+(i*tensor_elem_size), fill);
     }
     return 0;
 }

@@ -2,15 +2,15 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-05-14 23:18:22
+ * @LastEditTime: 2026-05-16 15:48:49
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
 #ifndef __CG_TENSOR_H__
 #define __CG_TENSOR_H__
-#include "cg_elem_spec.h"
+#include "cg_tensor_elem_spec.h"
+#include "cg_sub_tensor.h"
 
-//#define TENSOR_ELEM_SIZE          sizeof(float)
 #define _D_AXES(dimensions)             ((dimensions)[0])
 #define _D_DIMEN(dimensions, i)         ((dimensions)[(i)+1])
 #define _D_STRIDE(dimensions, i)        ((dimensions)[_D_AXES(dimensions)+(i)+2])
@@ -22,41 +22,35 @@
 #define TENSOR_NUM(tensor)       (TENSOR_DIMEN(tensor, 0) * TENSOR_STRIDE(tensor, 0))
 #define TENSOR_SIZE(tensor)      (TENSOR_NUM(tensor) * tensor_elem_size)
 
-typedef enum padding_mode {
-    pd_mode_fill = 0,
-    pd_mode_edge
-} padding_mode_t;
-
 typedef struct cg_allocator cg_allocator_t;
 typedef struct cg_elem_spec cg_elem_spec_t;
 
 typedef struct cg_tensor {
     cg_allocator_t* allocator;
-    cg_elem_spec_t* elem_spec;
     void*           elems;
     int*            dimensions;
 } cg_tensor_t;
 
-cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, cg_elem_spec_t* spec, int axes, ...);
+cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...);
 cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz);
 int cg_tensor_recycle(cg_tensor_t* thiz);
 
-cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int axes, ...);
-cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, float fill, int padding_axes, ...);
+// cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int axes, ...);
+// cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, float fill, int padding_axes, ...);
 
-int cg_tensor_dot(cg_tensor_t*, cg_tensor_t*, cg_tensor_t* );
-int cg_tensor_sum(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );
-int cg_tensor_subtract(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );
-int cg_tensor_scale(cg_tensor_t*, float);
-int cg_tensor_fill(cg_tensor_t*, float);
-int cg_tensor_arange(cg_tensor_t*, float, float);
-int cg_tensor_inspect(cg_tensor_t*);
-float* cg_tensor_get(cg_tensor_t*, ...);
+// int cg_tensor_dot(cg_tensor_t*, cg_tensor_t*, cg_tensor_t* );
+// int cg_tensor_sum(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );
+// int cg_tensor_subtract(cg_tensor_t* , cg_tensor_t* , cg_tensor_t* );
+// int cg_tensor_scale(cg_tensor_t*, float);
+// int cg_tensor_fill(cg_tensor_t*, float);
+int cg_tensor_arange(cg_tensor_t*, cg_tensor_elem_type, cg_tensor_elem_type);
+// int cg_tensor_inspect(cg_tensor_t*);
+// float* cg_tensor_get(cg_tensor_t*, ...);
 
 sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...);
 sub_tensor_t cg_tensor_to_sub_tensor(cg_tensor_t* thiz);
 int cg_tensor_to_tensor(cg_tensor_t*, const cg_tensor_t*);
 int cg_tensor_set(cg_tensor_t*, float val, ...);
-int cg_tensor_T(cg_tensor_t*, ...);
+int cg_tensor_T(cg_tensor_t*);
 int cg_tensor_load(cg_tensor_t*, const void*);
 #endif
