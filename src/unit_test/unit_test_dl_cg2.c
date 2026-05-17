@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-05-16 12:53:30
+ * @LastEditTime: 2026-05-17 14:07:30
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -79,11 +79,13 @@ static int recycle_path(cg_ref_t path)
 static int  suite_success_init (void) 
 {
     printf("\ncg2 suite success init\n");
+    return 0;
 }
 
 static int suite_success_clean (void) 
 {   
     printf("\ncg2 suite success clean\n");
+    return 0;
 }
 
 static void cg2_testcase(void) 
@@ -216,7 +218,7 @@ static void cg_allocator_testcase(void)
     CU_ASSERT_NOT_EQUAL(alloc.blocks[BLOCK_INDEX(round_up_size)], NULL);
 
     int block_count = 0;
-    block_node_t* block_next = alloc.blocks[BLOCK_INDEX(round_up_size)];
+    block_node_t* block_next = (block_node_t*) alloc.blocks[BLOCK_INDEX(round_up_size)];
 
     while (block_next)
     {
@@ -228,7 +230,7 @@ static void cg_allocator_testcase(void)
 
     cg_recycle(&alloc, block);
 
-    block_next = alloc.blocks[BLOCK_INDEX(round_up_size)];
+    block_next = (block_node_t*)alloc.blocks[BLOCK_INDEX(round_up_size)];
     block_count = 0;
     while (block_next)
     {
@@ -295,7 +297,8 @@ static void cg_tensor_testcase(void)
     // cg_tensor_t* cpy = cg_tensor_create_cpy(tt);
     // cg_tensor_inspect(cpy);
 
-    cg_tensor_T(tt, 2, 1, 0);
+    //cg_tensor_T(tt, 2, 1, 0);
+    cg_tensor_T(tt);
     cg_tensor_inspect(tt);
     
     cg_tensor_recycle(t1);
