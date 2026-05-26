@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 14:20:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-03-15 16:44:18
+ * @LastEditTime: 2026-05-26 18:00:08
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_operator.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,11 +26,9 @@ static inline int cg_operator_init(
     int (*calculate)    (cg_node_t* thiz, cg_node_t* out), 
     int (*differentiate)(cg_node_t* thiz, cg_node_t* variant, cg_ref_t env_gradient)
 ) {
-    cg_node_init(&thiz->_base, id, e_operator);
-    *thiz = (cg_operator_t) {
-        .calculate     = calculate,
-        .differentiate = differentiate
-    };
+    cg_node_init(thiz, id, e_operator);
+    thiz->calculate     = calculate;
+    thiz->differentiate = differentiate;
     return 0;
 };
 

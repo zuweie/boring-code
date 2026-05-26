@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-05-17 14:32:47
+ * @LastEditTime: 2026-05-17 21:25:45
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -50,7 +50,7 @@ int cg_tensor_inspect(cg_tensor_t*);
 
 sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...);
 sub_tensor_t cg_tensor_to_sub_tensor(cg_tensor_t* thiz);
-int cg_tensor_to_tensor(cg_tensor_t*, const cg_tensor_t*);
+int cg_tensor_to_tensor(cg_tensor_t*, cg_tensor_t*);
 int cg_tensor_T(cg_tensor_t*);
 int cg_tensor_load(cg_tensor_t*, const void*);
 #endif

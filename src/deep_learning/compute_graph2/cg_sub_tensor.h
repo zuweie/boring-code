@@ -2,13 +2,15 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 08:15:48
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-05-17 14:32:10
+ * @LastEditTime: 2026-05-17 23:22:52
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #ifndef __CG_SUB_TENSOR_H__
 #define __CG_SUB_TENSOR_H__
+
 #include "cg_ref.h"
+#include "cg_tensor_elem_spec.h"
 
 typedef enum padding_mode {
     pd_mode_fill = 0,
@@ -26,9 +28,9 @@ int sub_tensor_get_sub(sub_tensor_t* sub_tensor, sub_tensor_t* sub_src, int axes
 
 int sub_tensor_slice(sub_tensor_t* dest, sub_tensor_t* src, int slice_axes, int slice[]);
 
-int sub_tensor_padding(sub_tensor_t* dest, sub_tensor_t* src, int padding_axes, int padding[], padding_mode_t mode, cg_ref_t to_fill);
+int sub_tensor_padding(sub_tensor_t* dest, sub_tensor_t* src, int padding_axes, int padding[], padding_mode_t mode, cg_tensor_elem_type to_fill);
 
-int sub_tensor_fill(sub_tensor_t* dest, cg_ref_t fill);
+int sub_tensor_fill(sub_tensor_t* dest, cg_tensor_elem_type fill);
 
 int sub_tensor_to_sub(sub_tensor_t* dest,  sub_tensor_t* src);
 
