@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-05-26 18:55:37
+ * @LastEditTime: 2026-06-06 21:57:09
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -71,12 +71,13 @@ static int __prepare_tickets (cg_node_t* znode, cg_hash_t* marker)
 
 static int __do_calculate(cg_node_t* znode, cg_hash_t* marker)
 {
-
+    int ret;
     if ( CG_NODE_IS_OPERAND(znode) ) {
         
         if (!cg_hash_has(marker, znode->vertex.id)) {
-
             // 此节点的数据为旧的，需要计算。
+
+            // 这个阶段是否有计算过程
             if (cg_node_is_respect(znode)) {
 
                 // 此节点需要经过 operator 节点计算
@@ -84,21 +85,30 @@ static int __do_calculate(cg_node_t* znode, cg_hash_t* marker)
                 cg_operator_t*  operator = cg_operand_get_operator(znode);
                 cg_list_node_t* first    = CG_LIST_TOP(((cg_node_t*)operator)->vertex.in);
 
-                while (first != CG_LIST_HEAD( ((cg_nodet_t*)operator)->vertex.in ) ) {
+                while (first != CG_LIST_TOP( ((cg_node_t*)operator)->vertex.in ))  {
 
                     sub_znode = first->ref;
-                    __do_calculate(sub_znode, marker);
+                    ret = __do_calculate(sub_znode, marker);
+                    if (!ret) {
+                        CG_DEBUG("ERROR <%d@%s>: sub calculate error(%d)\n", __LINE__, __FILE__, ret);
+                        return ret;
+                    }
                     first = first->prev;
                 }
 
-                operator->calculate(operator, respect->x);
+                // 计算这个节点。
+                ret = operator->calculate(operator, znode);
+                if (!ret) {                         
+                    CG_DEBUG("ERROR <%d@%s>: calculate error(%d)\n", __LINE__, __FILE__, ret);
+                    return ret;
+                }
             }
-            //  计算完了，更新这个数据的版本。
+            //  计算完了，记录一下这个几点已经经过计算了。
             cg_hash_set(marker, znode->vertex.id, 1);
         }
         return 0;
     } else {
-        CG_DEBUG("ERROR <%d@%s>:, znode is not a operand\n", __LINE__, __FILE__);
+        CG_DEBUG("ERROR <%d@%s>: znode is not a operand\n", __LINE__, __FILE__);
     }
  
     return -1;
@@ -106,8 +116,9 @@ static int __do_calculate(cg_node_t* znode, cg_hash_t* marker)
 
 static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 {   
+    int ret = 0;
     if ( CG_NODE_IS_OPERAND(znode) ) {
-        cg_operand_t* repect = (cg_operand_t *)znode;
+        //cg_operand_t* repect = (cg_operand_t *)znode;
         
         if (cg_node_is_respect(znode)) {
 
@@ -125,10 +136,14 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
                 ticket_found = cg_ticket_get(marker, operator, sub_znode, &ticket);
                 if (ticket_found == 1 && !cg_ticket_is_used(ticket)){
                     if (!cg_ticket_is_used(ticket)) {
-                        operator->differentiate(operator, sub_znode, repect->Gx);
+                        ret = operator->differentiate(operator, sub_znode, ((cg_operand_t*)znode)->Gx);
+                        if (!ret) {
+                            CG_DEBUG("ERROR <%d@%s>: differentiate error(%d)\n", __LINE__, __FILE__, ret);
+                            return ret;
+                        }
                         cg_ticket_use(ticket);
                     } else {
-                        CG_DEBUG("WARNING <%d@%s>: , ticket should not be used\n", __LINE__, __FILE__);
+                        CG_DEBUG("WARNING <%d@%s>: ticket should not be used\n", __LINE__, __FILE__);
                     }
                 } 
                 first = first->prev;
@@ -141,17 +156,21 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 
                 if (cg_ticket_is_clean(marker, sub_znode)) {
 
-                    __do_differentiate(sub_znode, marker);
+                    ret = __do_differentiate(sub_znode, marker);
+                    if (!ret) {
+                        CG_DEBUG("ERROR <%d@%s> : do sub differentiate error(%d)\n", __LINE__, __FILE__, ret);
+                        return ret;
+                    }
                     
                 }
             }
-            return 0;
         }
     } else {
         CG_DEBUG("ERROR <%d@%s>:, znode is not is operand\n", __LINE__, __FILE__);
+        ret = -1;
     }
 
-    return -1;
+    return ret;
 }
 
 int cg_calculate(cg_node_t* znode)
@@ -187,7 +206,7 @@ int cg_differentiate(cg_node_t* znode)
     cg_hash_t* ticket_marker = cg_hash_create(__marker_hash, __marker_cmp);
     int ret = __do_differentiate(znode, ticket_marker);
     cg_hash_recycle(ticket_marker, cg_ticket_recycle);
-    return 0;
+    return ret;
 }
 
 /**
@@ -208,7 +227,7 @@ int cg_derivateive_to(cg_node_t* z, cg_node_t* x)
     cg_list_node_t* znode_first;
     cg_list_t* znodes;
 
-    cg_list_t* paths = cg_list_create();
+    cg_list_t* paths  = cg_list_create();
     cg_hash_t* marker = cg_hash_create(__marker_hash, __marker_cmp);
 
     // TODO 1: 我们需要派发 ticket 给偏导路径上的 operand
@@ -227,12 +246,13 @@ int cg_derivateive_to(cg_node_t* z, cg_node_t* x)
 
         while (znode_first != CG_LIST_HEAD(znodes)) {
 
-            operator == NULL;
-            znode = znode_first->ref;
+            operator = NULL;
+            znode    = znode_first->ref;
+            
             if (znode->node_type == e_operator) {
-                operator = znode;
+                operator    = znode;
                 znode_first = znode_first->prev;
-                znode = znode_first->ref;
+                znode       = znode_first->ref;
             } 
 
             if (znode->node_type == e_operand && operator != NULL) {

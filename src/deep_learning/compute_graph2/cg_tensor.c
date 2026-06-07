@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-05-17 22:48:57
+ * @LastEditTime: 2026-06-07 22:25:28
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -25,7 +25,7 @@ static int __reshape(char** target_elems, int** target_dimens, int new_axes, int
         //*target_dimens = (int*) malloc (((new_axes+1)*2+1) * sizeof(int));
         *target_dimens = (int*) malloc ((new_axes * 2 + 1) * sizeof (int));
     } else {
-        old_size = _D_NUM(*target_dimens) * tensor_elem_size;
+        old_size = _D_NUM(*target_dimens) * cg_tensor_elem_size;
         if (_D_AXES(*target_dimens) < new_axes) 
             //(*target_dimens) = (int*)realloc((*target_dimens), ((new_axes+1)*2+1) * sizeof(int));
             (*target_dimens) = (int*) realloc((*target_dimens), ((new_axes*2+1) * sizeof(int)));
@@ -45,10 +45,10 @@ static int __reshape(char** target_elems, int** target_dimens, int new_axes, int
     }
 
     // 更新 element 池子大小 
-    if (_D_NUM(*target_dimens) * tensor_elem_size > old_size) {
+    if (_D_NUM(*target_dimens) * cg_tensor_elem_size > old_size) {
 
         void *old_elems = *target_elems;
-        *target_elems   = cg_alloc(alloc, _D_NUM(*target_dimens) * tensor_elem_size);
+        *target_elems   = cg_alloc(alloc, _D_NUM(*target_dimens) * cg_tensor_elem_size);
 
         // 如果原来旧有数据复制旧的，然后回收。
         if (old_elems) {
@@ -183,27 +183,16 @@ int cg_tensor_recycle(cg_tensor_t* thiz)
     return 0;
 }
 
+int cg_tensor_fill(cg_tensor_t* t, cg_tensor_elem_type fill)
+{
+    sub_tensor_t sub_t1 = cg_tensor_to_sub_tensor(t);
+    return sub_tensor_fill(&sub_t1, fill);
+}
 
 int cg_tensor_arange(cg_tensor_t* t, cg_tensor_elem_type from, cg_tensor_elem_type to)
 {
-    char* p_t = t->elems;
-    //float  per = (to - from) / TENSOR_NUM(t);
-    cg_var_def(per);
-    cg_var_def(gap);
-
-    // per = to - from
-    cg_tensor_elem_number_opt(per, to, from, -);
-    // per = pre / TENSOR_NUM(t)
-    cg_tensor_elem_rn_opt(per, per, TENSOR_NUM(t), /);
-    
-    for (int i=0; i<TENSOR_NUM(t); ++i) {
-        //p_t[i] = i*per + from;
-        // gap = pre * i
-        cg_tensor_elem_rn_opt(gap, per, i, *);
-        // p_t[i] = gap + from
-        cg_tensor_elem_rn_opt(p_t + (i*tensor_elem_size), gap, from, +);
-    }
-    return 0;
+    sub_tensor_t sub_t1 = cg_tensor_to_sub_tensor(t);
+    return sub_tensor_arange(&sub_t1, from, to);
 }
 
 int cg_tensor_inspect(cg_tensor_t* t)

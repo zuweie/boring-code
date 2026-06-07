@@ -32,6 +32,8 @@ int sub_tensor_padding(sub_tensor_t* dest, sub_tensor_t* src, int padding_axes, 
 
 int sub_tensor_fill(sub_tensor_t* dest, cg_tensor_elem_type fill);
 
+int sub_tensor_arange(sub_tensor_t* dest, cg_tensor_elem_type from, cg_tensor_elem_type to);
+
 int sub_tensor_to_sub(sub_tensor_t* dest,  sub_tensor_t* src);
 
 int sub_tensor_T(sub_tensor_t* dest, sub_tensor_t* t1);
