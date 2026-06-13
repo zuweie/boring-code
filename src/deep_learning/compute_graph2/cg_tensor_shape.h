@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-07 22:30:37
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-13 18:53:37
+ * @LastEditTime: 2026-06-13 23:17:52
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor_dimensions.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -60,6 +60,13 @@ static inline int cg_tensor_shape_axes(int* cg_shape, int axis_cursor)
 {
     if (axis_cursor >= 0 && axis_cursor < cg_shape[0]) 
         return (cg_shape[0] - axis_cursor);
+    
+    if (axis_cursor < 0)
+        CG_DEBUG("Error <%d@%s>: axis_cursor(%d) is invalid\n", __LINE__, __FILE__, axis_cursor);
+    
+    if (axis_cursor >= cg_shape[0])
+        CG_DEBUG("Error <%d@%s>: axis_cursor(%d) is out of axes(%d) \n", __LINE__, __FILE__, axis_cursor, cg_shape[0]);
+
     return -1;
 }
 
@@ -68,6 +75,14 @@ static inline int cg_tensor_shape_dimen(int* cg_shape, int axis_cursor, int axis
     if (axis_cursor >=0 && axis_offset >=0 && axis_cursor + axis_offset < cg_shape[0]) 
         return cg_shape[ axis_cursor + axis_offset + 1];
     
+    if (axis_cursor < 0)
+        CG_DEBUG("Error <%d@%s>: axis_cursor(%d) is invalid\n", __LINE__, __FILE__, axis_cursor);
+
+    if (axis_cursor + axis_offset >= cg_shape[0])
+        CG_DEBUG(\
+            "Error <%d@%s>: explore scope(axis_cursor(%d) + axis_offset(%d) is out of axes(%d))\n", \
+            __LINE__, __FILE__, axis_cursor, axis_offset, cg_shape[0]\
+        );
    return -1;
 }
 
@@ -76,13 +91,21 @@ static inline int cg_tensor_shape_stride(int* cg_shape, int axis_cursor, int axi
     if (axis_cursor >=0 && axis_offset >=0 && axis_cursor + axis_offset < cg_shape[0]) 
         return cg_shape[ cg_shape[0] + axis_cursor + axis_offset + 1 ];
     
-    return 0;
+    if (axis_cursor < 0)
+        CG_DEBUG("Error <%d@%s>: axis_cursor(%d) is invalid\n", __LINE__, __FILE__, axis_cursor);
+
+    if (axis_cursor + axis_offset >= cg_shape[0])
+        CG_DEBUG(\
+            "Error <%d@%s>: explore scope(axis_cursor(%d) + axis_offset(%d) is out of axes(%d))\n", \
+            __LINE__, __FILE__, axis_cursor, axis_offset, cg_shape[0]\
+        );
+
+    return -1;
 }
 
-static inline int cg_tensor_shape_router(int* cg_shape, int* axis_cursor, int* offset, int coord_axes, int coord[]) 
+static inline int cg_tensor_shape_split(int* cg_shape, int* axis_cursor, int* cut_out, int coord_axes, int coord[]) 
 {
-    // 
-
+    // very important for whold tensor
 }
 
 static inline int cg_tensor_shape_inspact(int* cg_shape, int axis_cursor) 
