@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-07 22:25:28
+ * @LastEditTime: 2026-06-19 14:18:56
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,47 +12,27 @@
 #include <string.h>
 #include "cg_debug.h"
 #include "cg_allocator.h"
+#include "cg_tensor_shape.h"
 #include "cg_sub_tensor.h"
 #include "cg_tensor.h"
 
-static int __reshape(char** target_elems, int** target_dimens, int new_axes, int new_dimensions[], cg_allocator_t* alloc) 
+static int __reshape(cg_tensor_axis_t** target_shape, char** target_elems, int new_axes, int new_dimensions[], cg_allocator_t* alloc) 
 {
-    unsigned int old_size = 0;
-
-    // delete 这里我将加多一维，第 0 维。例如 axes 为 3。 那么的有 0，1，2，3个轴。第三个轴是第 0 维。
-    // 经过全新设计，这里多加一轴的设计去掉。
-    if (*target_dimens == NULL) {
-        //*target_dimens = (int*) malloc (((new_axes+1)*2+1) * sizeof(int));
-        *target_dimens = (int*) malloc ((new_axes * 2 + 1) * sizeof (int));
-    } else {
-        old_size = _D_NUM(*target_dimens) * cg_tensor_elem_size;
-        if (_D_AXES(*target_dimens) < new_axes) 
-            //(*target_dimens) = (int*)realloc((*target_dimens), ((new_axes+1)*2+1) * sizeof(int));
-            (*target_dimens) = (int*) realloc((*target_dimens), ((new_axes*2+1) * sizeof(int)));
-    }
-
-    // dimens 第一位放入轴数。
-    _D_AXES(*target_dimens) = new_axes;
-
-    // 更新维度信息。
-    // 最后一轴的 stride 是 1，因为是单元 elem，0 轴，0维（是一个点）。
-    _D_DIMEN(*target_dimens,  new_axes-1)  = new_dimensions[new_axes-1];
-    _D_STRIDE(*target_dimens, new_axes-1)  = 1;
+    unsigned int old_number = 0;
     
-     for (int i=new_axes-2; i>=0 ; --i) {
-        _D_DIMEN(*target_dimens,  i)  = new_dimensions[i];
-        _D_STRIDE(*target_dimens, i)  = _D_DIMEN(*target_dimens, i+1) * _D_STRIDE(*target_dimens, i+1);
+    if (*target_shape) {
+        old_number = cg_tensor_shape_number(*target_shape);
+        cg_tensor_shape_recycle(*target_shape);
     }
 
-    // 更新 element 池子大小 
-    if (_D_NUM(*target_dimens) * cg_tensor_elem_size > old_size) {
+    cg_tensor_shape_create(target_shape, new_axes, new_dimensions);
 
-        void *old_elems = *target_elems;
-        *target_elems   = cg_alloc(alloc, _D_NUM(*target_dimens) * cg_tensor_elem_size);
+    if (cg_tensor_shape_number(*target_shape) > old_number) {
+        void* old_elems = *target_elems;
+        *target_elems   = cg_alloc(alloc, cg_tensor_shape_number(*target_shape) * cg_tensor_elem_size);
 
-        // 如果原来旧有数据复制旧的，然后回收。
         if (old_elems) {
-            memcpy(*target_dimens, old_elems, old_size);
+            memcpy(*target_elems, old_elems, old_number * cg_tensor_elem_size);
             cg_recycle(alloc, old_elems);
         }
     }
@@ -178,7 +158,7 @@ cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz)
 int cg_tensor_recycle(cg_tensor_t* thiz)
 {
     cg_recycle(thiz->allocator, thiz->elems);
-    free(thiz->dimensions);
+    cg_tensor_shape_recycle(thiz->shape);
     free(thiz);
     return 0;
 }

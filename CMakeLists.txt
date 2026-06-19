@@ -86,6 +86,7 @@ set (SOURCE
     src/deep_learning/compute_graph2/cg_graph.c
     src/deep_learning/compute_graph2/cg_hash.c
     src/deep_learning/compute_graph2/cg_list.c
+    src/deep_learning/compute_graph2/cg_tensor_shape.c
     src/deep_learning/compute_graph2/cg_tensor.c
     src/deep_learning/compute_graph2/cg_sub_tensor.c
     src/deep_learning/compute_graph2/cg_calflow.c
