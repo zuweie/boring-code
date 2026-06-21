@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-07 22:30:37
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-21 09:13:51
+ * @LastEditTime: 2026-06-21 16:19:24
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor_dimensions.h
  * @Description: 这是一个统一处理 tensor 的 shape 的处理函数。
  */

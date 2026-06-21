@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-21 08:55:22
+ * @LastEditTime: 2026-06-21 16:16:02
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -12,7 +12,7 @@
 #include "cg_tensor_elem_spec.h"
 #include "cg_sub_tensor.h"
 
-#define TENSOR_SIZE(tensor)  (SHAPE_NUMBER(tensor) * cg_tensor_elem_size)
+#define TENSOR_SIZE(tensor)  (AXIS_NUMBER((tensor)->shape) * cg_tensor_elem_size)
 
 typedef struct cg_allocator cg_allocator_t;
 typedef struct cg_elem_spec cg_elem_spec_t;

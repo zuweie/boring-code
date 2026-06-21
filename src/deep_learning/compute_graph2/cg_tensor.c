@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-21 08:49:30
+ * @LastEditTime: 2026-06-21 17:02:53
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,15 +21,15 @@ static int __reshape(cg_tensor_axis_t** target_shape, char** target_elems, int n
     unsigned int old_number = 0;
     
     if (*target_shape) {
-        old_number = cg_tensor_shape_number(*target_shape);
+        old_number = AXIS_NUMBER(*target_shape);
         cg_tensor_shape_recycle(*target_shape);
     }
 
     cg_tensor_shape_create(target_shape, new_axes, new_dimensions);
 
-    if (cg_tensor_shape_number(*target_shape) > old_number) {
+    if (AXIS_NUMBER(*target_shape) > old_number) {
         void* old_elems = *target_elems;
-        *target_elems   = cg_alloc(alloc, cg_tensor_shape_number(*target_shape) * cg_tensor_elem_size);
+        *target_elems   = cg_alloc(alloc, AXIS_NUMBER(*target_shape) * cg_tensor_elem_size);
 
         if (old_elems) {
             memcpy(*target_elems, old_elems, old_number * cg_tensor_elem_size);
@@ -42,17 +42,18 @@ static int __reshape(cg_tensor_axis_t** target_shape, char** target_elems, int n
 
 static int __batch_match(cg_tensor_t* t1, cg_tensor_t* t2, int t1_batch_start) 
 {
-    if (SHAPE_AXES(t1->shape) >= SHAPE_AXES(t2->shape)) {
+    if (AXIS_AXES(t1->shape) >= AXIS_AXES(t2->shape)) {
         
-        int axes_diff = SHAPE_AXES(t1->shape) - SHAPE_AXES(t2->shape);
+        int axes_diff = AXIS_AXES(t1->shape) - AXIS_AXES(t2->shape);
         int t2_batch_index;
         int t1_batch_index;
+
         for (t1_batch_index = t1_batch_start; t1_batch_index<=0; --t1_batch_index) {
             t2_batch_index = t1_batch_index - axes_diff;
             if (t2_batch_index >=0 
             && SHAPE_DIMENS(t2->shape, t2_batch_index) != 1 
             && SHAPE_DIMENS(t1->shape, t1_batch_index) != SHAPE_DIMENS(t2->shape, t2_batch_index)) {
-                CG_DEBUG("Error <%d@%s>: T1 [%d] dimen is %d, T2 [%d] dimen is %d, does not match\n", \
+                CG_DEBUG("Error <%d@%s>: T1 [%d] dimens is %d, T2 [%d] dimens is %d, does not match\n", \
                     __LINE__, __FILE__,\
                     t1_batch_index, SHAPE_DIMENS(t1->shape, t1_batch_index), t2_batch_index, SHAPE_DIMENS(t2->shape, t2_batch_index));
                 return 0;
@@ -64,7 +65,7 @@ static int __batch_match(cg_tensor_t* t1, cg_tensor_t* t2, int t1_batch_start)
         // match all dimens index
         return 1;
     }
-    CG_DEBUG("Error: <%d@%s>: T1 AXES(%s) < T2 AXES(%s)\n", __LINE__, __FILE__, SHAPE_AXES(t1->shape), SHAPE_AXES(t2->shape));
+    CG_DEBUG("Error: <%d@%s>: T1 AXES(%s) < T2 AXES(%s)\n", __LINE__, __FILE__, AXIS_AXES(t1->shape), AXIS_AXES(t2->shape));
     return 0;
 }
 
@@ -87,7 +88,7 @@ static cg_tensor_t* __create_tensor_cpy(cg_tensor_t* thiz)
     int input_dimens[input_axes];
     cg_tensor_shape_get_dimens(thiz->shape, input_axes, input_dimens);
     cg_tensor_t* tensor = __create_tensor(input_axes, input_dimens, thiz->allocator);
-    memcpy(tensor->elems, thiz->elems, SHAPE_NUMBER(tensor->shape) * cg_tensor_elem_size);
+    memcpy(tensor->elems, thiz->elems, TENSOR_SIZE(thiz));
     return tensor;
 }
 
@@ -99,33 +100,32 @@ static sub_tensor_t __get_sub_tensor(cg_tensor_t* thiz, int axes, int coord[])
     return sub_dest;
 }
 
-static int __display_elems(cg_tensor_axis_t* axis, char* base_addr, int axis_index) {
+static int __display_elems(cg_tensor_axis_t* axis, char* base_addr, int space) {
 
-    if (axis->axes == 1) {
+    if (AXIS_AXES(axis) == 1) {
 
-        for (int k=0; k<2*axis_index; ++k) {
+        for (int k=0; k<2*space; ++k) {
             printf(" ");
         }
         printf("[");
         for (int i=0; i<axis->dimens; ++i) {
-            cg_tensor_elem_display( ((cg_tensor_elem_type*)(base_addr))+i, "0.2");
+            cg_tensor_elem_display( cg_tensor_elem_offset_addr(base_addr, i), "0.2");
         }
         printf("]\n");
 
     } else {
 
         char* block_addr;
-        for (int k=0; k<2*axis_index; ++k) {
+        for (int k=0; k<2*space; ++k) {
             printf(" ");
         }
         printf("[ \n");
 
         for (int i=0; i<axis->dimens; ++i) {
 
-            block_addr = base_addr + i * axis->stride * cg_tensor_elem_size;
-            __display_elems(axis->next, block_addr, axis_index+1);
+            __display_elems(axis->next, cg_tensor_elem_offset_addr(base_addr, i*AXIS_STRIDE(axis)), space+1);
         }
-        for (int k=0; k<2*axis_index; ++k) {
+        for (int k=0; k<2*space; ++k) {
             printf(" ");
         }
         printf("]\n");
@@ -176,23 +176,22 @@ int cg_tensor_arange(cg_tensor_t* t, cg_tensor_elem_type from, cg_tensor_elem_ty
 
 int cg_tensor_inspect(cg_tensor_t* t)
 {
-    printf("AXES:%d, SHAPE: ", SHAPE_AXES(t->shape));
-    for (int i=0; i<SHAPE_AXES(t->shape)+1; ++i) {
+    printf("AXES:%d, SHAPE: ", AXIS_AXES(t->shape));
+    for (int i=0; i<AXIS_AXES(t->shape); ++i) {
         printf("%d, ", SHAPE_DIMENS(t->shape, i));
     }
     printf("STRIDE: ");
-    for (int i=0; i<SHAPE_AXES(t->shape)+1; ++i) {
+    for (int i=0; i<AXIS_AXES(t->shape); ++i) {
         printf("%d, ", SHAPE_STRIDE(t->shape, i));
     }
     printf("\n");
-    //int coord[SHAPE_AXES(t->shape)];
     __display_elems(t->shape, t->elems, 0);
     return 0;
 }
 
 cg_ref_t cg_tensor_get(cg_tensor_t* thiz, ...)
 {
-    int axes = SHAPE_AXES(thiz->shape);
+    int axes = AXIS_AXES(thiz->shape);
     int coord[axes];
     int coord_invalid = 0;
     va_list vargs;
@@ -217,8 +216,8 @@ cg_ref_t cg_tensor_get(cg_tensor_t* thiz, ...)
 int cg_tensor_T(cg_tensor_t* thiz)
 {
     // TODO: do the T of tensor
-    if (SHAPE_AXES(thiz->shape) != 2) {
-        CG_DEBUG("Error <%d@%s>: shape of thiz is not 2\n", __LINE__, __FILE__);
+    if (AXIS_AXES(thiz->shape) != 2) {
+        CG_DEBUG("Error <%d@%s>: shape of this tensor is not 2\n", __LINE__, __FILE__);
         return -1;
     }
 
@@ -236,7 +235,7 @@ int cg_tensor_T(cg_tensor_t* thiz)
 
 sub_tensor_t cg_tensor_get_sub (cg_tensor_t* thiz, int axes, ...)
 {
-    if (axes <0 || axes > SHAPE_AXES(thiz->shape)) {
+    if (axes <0 || axes > AXIS_AXES(thiz->shape)) {
         CG_DEBUG("Error <%d@%s>: invalid axes(%d)\n", __LINE__, __FILE__, axes);
         return (sub_tensor_t) {
             .shape = NULL,
@@ -265,7 +264,7 @@ int cg_tensor_to_tensor(cg_tensor_t* dist, cg_tensor_t* src)
 
 int cg_tensor_load(cg_tensor_t* dist, const void* src)
 {
-    int size = SHAPE_NUMBER(dist->shape) * cg_tensor_elem_size;
+    int size = TENSOR_SIZE(dist);
     memcpy(dist->elems, src, size);
     return 0;
 }
@@ -280,15 +279,15 @@ sub_tensor_t cg_tensor_to_sub_tensor(cg_tensor_t* tensor)
 
 cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...)
 {
-    if (slice_axes <=0 && slice_axes > SHAPE_AXES(thiz->shape)) {
+    if (slice_axes <=0 && slice_axes > AXIS_AXES(thiz->shape)) {
         CG_DEBUG("Error <%d@%s>: slice_axes(%d) is invalid or slice_axes(%d) is large then thiz axes(%d)\n", \
-            __LINE__, __FILE__, slice_axes, slice_axes, SHAPE_AXES(thiz->shape));
+            __LINE__, __FILE__, slice_axes, slice_axes, AXIS_AXES(thiz->shape));
         return NULL;
     }
 
     int i;
     int slice[slice_axes<<1];
-    int dest_dimens[SHAPE_AXES(thiz->shape)];
+    int dest_dimens[AXIS_AXES(thiz->shape)];
     int slice_invalid = 0;
     va_list args;
     va_start(args, slice_axes);
@@ -314,11 +313,11 @@ cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...)
     
     if (!slice_invalid) {
 
-        for (;i<SHAPE_AXES(thiz->shape); ++i) {
+        for (;i<AXIS_AXES(thiz->shape); ++i) {
             dest_dimens[i] = SHAPE_DIMENS(thiz->shape, i);
         }
 
-        cg_tensor_t* dest = __create_tensor(TENSOR_AXES(thiz), dest_dimens, thiz->allocator);
+        cg_tensor_t* dest = __create_tensor(AXIS_AXES(thiz->shape), dest_dimens, thiz->allocator);
     
         sub_tensor_t sub_dest  = cg_tensor_to_sub_tensor(dest);
         sub_tensor_t sub_src   = cg_tensor_to_sub_tensor(thiz);
@@ -336,16 +335,16 @@ cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...)
 
 cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, padding_mode_t mode, cg_tensor_elem_type fill, int padding_axes, ...)
 {
-    if (padding_axes > TENSOR_AXES(thiz)) {
+    if (padding_axes > AXIS_AXES(thiz->shape)) {
         CG_DEBUG("Error <%d@%s>: padding_axes(%d) is large then thiz axes(%d)\n", \
-            __LINE__, __FILE__, padding_axes, TENSOR_AXES(thiz)-1 \
+            __LINE__, __FILE__, padding_axes, AXIS_AXES(thiz->shape) \
         );
         return NULL;
     }
 
     int i;
     int padding[padding_axes<<1];
-    int dest_dimens[TENSOR_AXES(thiz)];
+    int dest_dimens[AXIS_AXES(thiz->shape)];
     int padding_invalid = 0;
     va_list args;
     va_start(args, padding_axes);
@@ -359,17 +358,17 @@ cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, padding_mode_t mode, cg_tensor
             padding_invalid = 1;
             break;
         }
-        dest_dimens[i]   = TENSOR_DIMENS(thiz, i) + padding[i*2] + padding[i*2+1];
+        dest_dimens[i]   = SHAPE_DIMENS(thiz->shape, i) + padding[i*2] + padding[i*2+1];
     }
     va_end(args);
 
     if (!padding_invalid) {
 
-        for (; i<TENSOR_AXES(thiz); ++i) {
-            dest_dimens[i] = TENSOR_DIMENS(thiz, i);
+        for (; i<AXIS_AXES(thiz->shape); ++i) {
+            dest_dimens[i] = SHAPE_DIMENS(thiz->shape, i);
         }
 
-        cg_tensor_t* dest = __create_tensor(TENSOR_AXES(thiz), dest_dimens, thiz->allocator);
+        cg_tensor_t* dest = __create_tensor(AXIS_AXES(thiz->shape), dest_dimens, thiz->allocator);
         
         sub_tensor_t sub_dest = cg_tensor_to_sub_tensor(dest);
         sub_tensor_t sub_src  = cg_tensor_to_sub_tensor(thiz);
