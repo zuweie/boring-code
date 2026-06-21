@@ -2,22 +2,23 @@
 #include <string.h>
 #include "cg_ref.h"
 #include "cg_debug.h"
+#include "cg_tensor_shape.h"
 #include "cg_sub_tensor.h"
 
-static inline cg_ref_t __coordinate_router(sub_tensor_t* sub_tensor, int axes, int coordinate[])
-{
+// static inline cg_ref_t __coordinate_router(sub_tensor_t* sub_tensor, int axes, int coordinate[])
+// {
 
-    if (axes >=0 && axes <= sub_tensor->sub_axes) {
-        char* base = sub_tensor->sub_elems;
-        int number = 0;
-        for (int i=0; i<axes; ++i) {
-            number += coordinate[i] * sub_tensor->sub_stride[i];
-        }
-        //return base + number * tensor_elem_size;
-        return cg_tensor_elem_addr(base, number);
-    }
-    return NULL;
-}
+//     if (axes >=0 && axes <= sub_tensor->sub_axes) {
+//         char* base = sub_tensor->sub_elems;
+//         int number = 0;
+//         for (int i=0; i<axes; ++i) {
+//             number += coordinate[i] * sub_tensor->sub_stride[i];
+//         }
+//         //return base + number * tensor_elem_size;
+//         return cg_tensor_elem_addr(base, number);
+//     }
+//     return NULL;
+// }
 
 static int __do_slice(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int slice_axes, const int slice[], int working_axis, int dist_coord[], int src_coord[])
 {
@@ -63,7 +64,7 @@ static int __do_padding(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int
     int padding_left_end   = padding[working_axis * 2];
 
     int padding_middle_start = padding_left_end;
-    int padding_middle_end   = sub_src->sub_dimens[working_axis] + padding[working_axis * 2];
+    int padding_middle_end   = /*sub_src->sub_dimens[working_axis]*/ cg_tensor_shape() + padding[working_axis * 2];
 
     int padding_right_start = padding_middle_end;
     int padding_right_end   = sub_src->sub_dimens[working_axis] + padding[working_axis * 2 + 1];

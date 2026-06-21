@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-19 11:07:10
+ * @LastEditTime: 2026-06-21 08:55:22
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -12,16 +12,7 @@
 #include "cg_tensor_elem_spec.h"
 #include "cg_sub_tensor.h"
 
-// #define _D_AXES(dimensions)        ((dimensions)[0])
-// #define _D_DIMEN(dimensions, i)    ((dimensions)[1+(i)])
-// #define _D_STRIDE(dimensions, i)   ((dimensions)[_D_AXES(dimensions)+1+(i)])
-// #define _D_NUM(dimensions)         (_D_DIMEN(dimensions, 0) * _D_STRIDE(dimensions, 0))
-
-#define TENSOR_AXES(tensor)       ((tensor)->shape->axes)
-#define TENSOR_DIMEN(tensor,  i)  (cg_tensor_shape_dimens((tensor)->shape, i))
-#define TENSOR_STRIDE(tensor, i)  (cg_tensor_shape_stride((tensor)->shape, i))
-#define TENSOR_NUM(tensor)        (TENSOR_DIMEN(tensor, 0) * TENSOR_STRIDE(tensor, 0))
-#define TENSOR_SIZE(tensor)       (TENSOR_NUM(tensor) * cg_tensor_elem_size)
+#define TENSOR_SIZE(tensor)  (SHAPE_NUMBER(tensor) * cg_tensor_elem_size)
 
 typedef struct cg_allocator cg_allocator_t;
 typedef struct cg_elem_spec cg_elem_spec_t;

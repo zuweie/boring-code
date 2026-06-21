@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-31 22:44:25
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-19 11:17:11
+ * @LastEditTime: 2026-06-21 09:08:13
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -255,17 +255,17 @@ static void cg_tensor_testcase(void)
     
     cg_tensor_t* t1 = cg_tensor_create(&alloc, 3, 2, 3, 4);
 
-    CU_ASSERT_EQUAL(TENSOR_AXES(t1), 3);
-    CU_ASSERT_EQUAL(TENSOR_DIMEN(t1, 0), 2);
-    CU_ASSERT_EQUAL(TENSOR_DIMEN(t1, 1), 3);
-    CU_ASSERT_EQUAL(TENSOR_DIMEN(t1, 2), 4);
+    CU_ASSERT_EQUAL(AXIS_AXES(t1->shape), 3);
+    CU_ASSERT_EQUAL(SHAPE_DIMENS(t1->shape, 0), 2);
+    CU_ASSERT_EQUAL(SHAPE_DIMENS(t1->shape, 1), 3);
+    CU_ASSERT_EQUAL(SHAPE_DIMENS(t1->shape, 2), 4);
 
 
-    CU_ASSERT_EQUAL(TENSOR_STRIDE(t1, 0), 12);
-    CU_ASSERT_EQUAL(TENSOR_STRIDE(t1, 1), 4);
-    CU_ASSERT_EQUAL(TENSOR_STRIDE(t1, 2), 1);
+    CU_ASSERT_EQUAL(SHAPE_STRIDE(t1->shape, 0), 12);
+    CU_ASSERT_EQUAL(SHAPE_STRIDE(t1->shape, 1), 4);
+    CU_ASSERT_EQUAL(SHAPE_STRIDE(t1->shape, 2), 1);
 
-    CU_ASSERT_EQUAL(TENSOR_NUM(t1), 24);
+    CU_ASSERT_EQUAL(AXIS_NUMBER(t1->shape), 24);
 
     cg_tensor_fill(t1,  1.0);
     cg_tensor_inspect(t1);
