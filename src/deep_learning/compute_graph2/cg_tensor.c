@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-21 17:02:53
+ * @LastEditTime: 2026-06-27 13:55:28
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -100,30 +100,34 @@ static sub_tensor_t __get_sub_tensor(cg_tensor_t* thiz, int axes, int coord[])
     return sub_dest;
 }
 
-static int __display_elems(cg_tensor_axis_t* axis, char* base_addr, int space) {
+static int __display_elems(sub_tensor_t* sub_tensor, int space) {
 
-    if (AXIS_AXES(axis) == 1) {
+    if (AXIS_AXES(sub_tensor->shape) == 1) {
 
         for (int k=0; k<2*space; ++k) {
             printf(" ");
         }
         printf("[");
-        for (int i=0; i<axis->dimens; ++i) {
-            cg_tensor_elem_display( cg_tensor_elem_offset_addr(base_addr, i), "0.2");
+        
+        for (int i=0; i<AXIS_DIMENS(sub_tensor->shape); ++i) {
+            cg_tensor_elem_display( cg_tensor_elem_offset_addr(sub_tensor->sub_elems, i), "0.2");
         }
         printf("]\n");
 
     } else {
 
-        char* block_addr;
+        sub_tensor_t sub;
+
         for (int k=0; k<2*space; ++k) {
             printf(" ");
         }
         printf("[ \n");
 
-        for (int i=0; i<axis->dimens; ++i) {
+        for (int i=0; i<AXIS_DIMENS(sub_tensor->shape); ++i) {
 
-            __display_elems(axis->next, cg_tensor_elem_offset_addr(base_addr, i*AXIS_STRIDE(axis)), space+1);
+            sub_tensor_get_sub(&sub, sub_tensor, 1, (int[]){i});
+
+            __display_elems(&sub, space+1);
         }
         for (int k=0; k<2*space; ++k) {
             printf(" ");
@@ -176,6 +180,8 @@ int cg_tensor_arange(cg_tensor_t* t, cg_tensor_elem_type from, cg_tensor_elem_ty
 
 int cg_tensor_inspect(cg_tensor_t* t)
 {
+    sub_tensor_t sub_t = cg_tensor_to_sub_tensor(t);
+    
     printf("AXES:%d, SHAPE: ", AXIS_AXES(t->shape));
     for (int i=0; i<AXIS_AXES(t->shape); ++i) {
         printf("%d, ", SHAPE_DIMENS(t->shape, i));
@@ -185,7 +191,7 @@ int cg_tensor_inspect(cg_tensor_t* t)
         printf("%d, ", SHAPE_STRIDE(t->shape, i));
     }
     printf("\n");
-    __display_elems(t->shape, t->elems, 0);
+    __display_elems(&sub_t,  0);
     return 0;
 }
 

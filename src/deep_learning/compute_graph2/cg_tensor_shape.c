@@ -46,7 +46,6 @@ int cg_tensor_shape_recycle(cg_tensor_axis_t* first)
 
 int cg_tensor_shape_split_out(cg_tensor_axis_t** axis, int* cut_out, int coord_axes, int coordinate[])
 {
-    int ret                 = 0;
     *cut_out                = 0;
     cg_tensor_axis_t* first = *axis;
 

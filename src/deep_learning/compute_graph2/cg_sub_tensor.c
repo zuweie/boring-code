@@ -1,3 +1,11 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2026-03-28 17:28:49
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2026-06-27 18:42:43
+ * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #include <stdlib.h>
 #include <string.h>
 #include "cg_ref.h"
@@ -5,43 +13,33 @@
 #include "cg_tensor_shape.h"
 #include "cg_sub_tensor.h"
 
-static int __do_slice(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int slice_axes, const int slice[], int working_axis, int dist_coord[], int src_coord[])
+static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axes, const int slice[], int working_axis)
 {
     int i,j;
     int ret1, ret2, ret;
-    if (working_axis == slice_axes - 1 ) {
 
-        sub_tensor_t dest;
-        sub_tensor_t src;
-        for (i=slice[working_axis*2], j=0; i<slice[working_axis*2+1]; ++i, ++j) {
+    if ( working_axis == slice_axes - 1 ) {
+        // 到了指定的 axis，直接 copy
+        return sub_tensor_to_sub(dest, src);
 
-            dist_coord[working_axis] = j;
-            src_coord[working_axis]  = i;
-
-            ret1 = sub_tensor_get_sub(&dest, sub_dest, slice_axes, dist_coord);
-            ret2 = sub_tensor_get_sub(&src, sub_src, slice_axes, src_coord);
-
-            if (!ret1 && !ret2) {
-                return sub_tensor_to_sub(&dest, &src);
-            } else {
-                return -1;
-            }
-        }
-        
     } else {
 
+        sub_tensor_t sub_dest;
+        sub_tensor_t sub_src; 
+
         for (i=slice[working_axis*2], j=0; i<slice[working_axis*2+1]; ++i, ++j) {
-            dist_coord[working_axis] = j;
-            src_coord[working_axis]  = i;
-            if ((ret = __do_slice(sub_dest, sub_src, slice_axes, slice, working_axis+1, dist_coord, src_coord))) 
-                return ret;
+
+            sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){j});
+            sub_tensor_get_sub(&sub_src, src, 1, (int[]){i});
+
+            if ((ret = __do_slice(&sub_dest, &sub_src, slice_axes, slice, working_axis + 1))) return ret;
         }
 
+        return 0;
     }
-    return 0;
 }
 
-static int __do_padding(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int padding_axes, const int padding[], int working_axis, int dest_coord[], int src_coord[], padding_mode_t mode, cg_tensor_elem_type to_fill) 
+static int __do_padding(sub_tensor_t* dest, sub_tensor_t* src, const int padding_axes, const int padding[], int working_axis, padding_mode_t mode, cg_tensor_elem_type to_fill) 
 {
     int i, j;
 
@@ -49,27 +47,26 @@ static int __do_padding(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int
     int padding_left_end   = padding[working_axis * 2];
 
     int padding_middle_start = padding_left_end;
-    int padding_middle_end   = SHAPE_DIMENS(sub_src->shape, working_axis) + padding[working_axis * 2];
+    int padding_middle_end   = padding_left_end + AXIS_DIMENS(src->shape);
 
     int padding_right_start = padding_middle_end;
     int padding_right_end   = padding_middle_end + padding[working_axis * 2 + 1];
 
-    sub_tensor_t dest;
-    sub_tensor_t src;
+    sub_tensor_t sub_dest;
+    sub_tensor_t sub_src;
 
     for (i=padding_left_start; i<padding_left_end; ++i) {
-        dest_coord[working_axis] = i;
-        sub_tensor_get_sub(&dest, sub_dest, working_axis, dest_coord);
+
+        sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
 
         if (mode == pd_mode_fill) {
             //sub_tenson_iterate(&dest, to_fill, NULL, elem_opt_assign);
-            sub_tensor_fill(&dest, to_fill);
+            sub_tensor_fill(&sub_dest, to_fill);
 
         } else if (mode == pd_mode_edge) {
-            // 只拿第一个。
-            src_coord[working_axis]  = 0;
-            sub_tensor_get_sub(&src, sub_src, working_axis, src_coord);
-            sub_tensor_to_sub(&dest, &src);
+            // 只拿 src 的第一个作为 填充物
+            sub_tensor_get_sub(&sub_src, src, 1, (int[]){0});
+            sub_tensor_to_sub(&sub_dest, &sub_src);
         } else {
             CG_DEBUG("ERROR <%d@%s>: unknown padding mode(%d)\n", __LINE__, __FILE__, mode);
             return -1;
@@ -78,35 +75,30 @@ static int __do_padding(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int
     
     for (i=padding_middle_start, j=0; i<padding_middle_end; ++i, ++j) {
 
-        dest_coord[working_axis] = i;
-        src_coord[working_axis]  = j;
+        sub_tensor_get_sub(&sub_dest, dest, 1, (int){i});
+        sub_tensor_get_sub(&sub_src,  src,  1, (int){j});
 
         if (working_axis == padding_axes - 1) {
             // value copy 
-            sub_tensor_get_sub(&dest, sub_dest, working_axis, dest_coord);
-            sub_tensor_get_sub(&src,  sub_src,  working_axis, src_coord);
-
-            sub_tensor_to_sub(&dest, &src);
+            sub_tensor_to_sub(&sub_dest, &sub_src);
 
         } else {
             // 继续下一个维度的填充。
-            __do_padding(sub_dest, sub_src, padding_axes, padding, working_axis+1, dest_coord, src_coord, mode, to_fill);
+            __do_padding(&sub_dest, &sub_src, padding_axes, padding, working_axis+1, mode, to_fill);
         }
     }
 
     for (i=padding_right_start; i<padding_middle_end; ++i) {
-        dest_coord[working_axis] = i;
-        sub_tensor_get_sub(&dest, sub_dest, working_axis, dest_coord);
+
+        //dest_coord[working_axis] = i;
+        sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
         
         if (mode == pd_mode_fill) {
-
-            sub_tensor_fill(&dest, to_fill);
-
+            sub_tensor_fill(&sub_dest, to_fill);
         } else if (mode == pd_mode_edge) {
             // 只拿最后一个。
-            src_coord[working_axis]  =  SHAPE_DIMENS(sub_src->shape, working_axis)-1;//sub_src->sub_dimens[working_axis] - 1;
-            sub_tensor_get_sub(&src, sub_src, working_axis, src_coord);
-            sub_tensor_to_sub(&dest, &src);
+            sub_tensor_get_sub(&sub_src, src, 1, (int[]){AXIS_DIMENS(src->shape)-1});
+            sub_tensor_to_sub(&sub_dest, &sub_src);
         } else {
             CG_DEBUG("Error <%d@%s>: unknown padding mode(%d)\n", __LINE__, __FILE__, mode);
         }
@@ -114,40 +106,60 @@ static int __do_padding(sub_tensor_t* sub_dest, sub_tensor_t* sub_src, const int
     return 0;
 } 
 
-static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2, int working_axis, int t1_batch_axes, int t2_batch_axes, int dest_coord[], int t1_coord[], int t2_coord[], int (*batch_opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
+/**
+ * @brief 这个函数必须写上注释。这是一个关于两个操作数 t1、t2 结合后赋予 dest 的操作函数。opt_axis 是指结合操作数的维度。 batch_gap 是两个操作数之间 batch 维度的差
+ * 
+ * @param dest 存储结果
+ * @param t1 操作数1
+ * @param t2 操作数2
+ * @param working_axis 工作的维度，从 0 开始
+ * @param opt_axis 操作数维度，例如 t1 {0，1，2，3 | 4，5}. 如果四五是 opt 的维度， 那么 opt_axis 就是 4
+ * @param batch_gap 两个操作数的 batch 维度差，例如 t1 {0,1,2,3|4,5} 那么它的 batch_axes = 4, 例如 t2 {0,1,2|3,4,5,6} 它的 batch_axes = 3. 那么 batch_gap = 4 - 3。 
+ * @param batch_opt 操作数 sub_t1 {4,5} opt sub_t2 {3,4,5,6} --> sub_dest
+ * @return int 
+ */
+static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2, int working_axis, int opt_axis, int batch_gap, int (*batch_opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
 {
+    int i;
+    int axis_match = 1;
+    sub_tensor_t sub_dest;
+    sub_tensor_t sub_t1;
+    sub_tensor_t sub_t2;
 
-    if (working_axis == t1_batch_axes-1) {
-
-        sub_tensor_t sub_dest;
-        sub_tensor_t sub_t1;
-        sub_tensor_t sub_t2;
-        sub_tensor_get_sub(&sub_dest, dest, t1_batch_axes, dest_coord);
-        sub_tensor_get_sub(&sub_t1, t1, t1_batch_axes, t1_coord);
-        sub_tensor_get_sub(&sub_t2, t2, t2_batch_axes, t2_coord);
+    if (working_axis == opt_axis) {
 
         return batch_opt(&sub_dest, &sub_t1, &sub_t2);
 
     } else {
-        int t2_axis = working_axis - (t1_batch_axes - t2_batch_axes);
-        for (int i=0; i<SHAPE_DIMENS(t1->shape, working_axis); ++i) {
-            dest_coord[working_axis] = i;
-            t1_coord[working_axis]   = i;
-            if (t2_axis >= 0) {
-                if (SHAPE_DIMENS(t2->shape, t2_axis) == SHAPE_DIMENS(t1->shape, working_axis)) {
-                    t2_coord[t2_axis] = i;
-                } else if ( SHAPE_DIMENS(t2->shape, t2_axis) == 1) {
-                    t2_coord[t2_axis] = 0;
-                } else {
-                    CG_DEBUG("ERROR <%d@%s>: t2->sub_axes[%d](%d) does not equal t1->sub_axes[%d](%d) either not 1(act %d)\n", \
-                        __LINE__, __FILE__, \
-                        t2_axis, SHAPE_DIMENS(t2->shape, t2_axis), \
-                        working_axis,  SHAPE_DIMENS(t1->shape, working_axis)\
-                    );
-                    return -1;
-                }
+        //int t2_axis = working_axis - (t1_batch_axes - t2_batch_axes);
+        
+        int axis_t2 = working_axis - batch_gap;
+
+        if (axis_t2 >=0 && AXIS_AXES(t2->shape) != 1 && AXIS_AXES(t2->shape) != AXIS_AXES(t1->shape)) {
+            // error 
+            CG_DEBUG("Error <%d@%s>: t2 axes(%d) is not 1 or t2 axes(%d) not equql t1 axes(%d)\n",\
+                __LINE__, __FILE__, \
+                AXIS_AXES(t2->shape), AXIS_AXES(t2->shape), AXIS_AXES(t1->shape);
+            );
+            return -1;
+        }
+
+        for (i=0; i<AXIS_AXES(t1->shape); ++i) {
+
+            sub_tensor_get_sub(&sub_t1,   t1,   1, (int[]){i});
+
+            if (axis_t2>=0) {
+
+                AXIS_AXES(t2->shape) == 1 ? sub_tensor_get_sub(&sub_t2, t2, 1, (int[]){0}) : sub_tensor_get_sub(&sub_t2, t2, 1, (int[]){i});
+
+            } else {
+
+                sub_tensor_get_sub(&sub_t2, t2, 0, (int[]){0} );
+                
             }
-            __do_binary_opt(dest, t1, t2, working_axis+1, t1_batch_axes, t2_batch_axes, dest_coord, t1_coord, t2_coord, batch_opt);
+
+            sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
+            __do_binary_opt(&sub_dest, &sub_t1, &sub_t2, working_axis+1, opt_axis, batch_gap, batch_opt);
         }
     }
     return 0;
@@ -198,38 +210,31 @@ int sub_tensor_to_sub(sub_tensor_t* dest,  sub_tensor_t* src)
 
 int sub_tensor_slice(sub_tensor_t* dest, sub_tensor_t* src, int slice_axes, int slice[])
 {
-    int dest_coord[slice_axes];
-    int src_coord[slice_axes];
-    return __do_slice(dest, src, slice_axes, slice, 0, dest_coord, src_coord);
+    return __do_slice(dest, src, slice_axes, slice, 0);
 }
 
 int sub_tensor_padding(sub_tensor_t* dest, sub_tensor_t* src, int padding_axes, int padding[], padding_mode_t mode, cg_tensor_elem_type to_fill)
 {
-    int dest_coord[padding_axes];
-    int src_coord[padding_axes];
-    return __do_padding(dest, src, padding_axes, padding, 0, dest_coord, src_coord, mode, to_fill);
+    return __do_padding(dest, src, padding_axes, padding, 0, mode, to_fill);
 }
 
-int sub_tensor_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t *t2, int t1_batch_axes, int t2_batch_axes, int (*opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
+int sub_tensor_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t *t2, int opt_axes_t1, int opt_axes_t2, int (*opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
 {
-    // all the check will be do in cg_tensor level
-    int dest_batch_coord[t1_batch_axes];
-    int t1_batch_coord[t1_batch_axes];
-    int t2_batch_coord[t2_batch_axes];
-    return __do_binary_opt(dest, t1, t2, 0, t1_batch_axes, t2_batch_axes, dest_batch_coord, t1_batch_coord, t2_batch_coord, opt);
+    int batch_gap = (AXIS_AXES(t1->shape) - opt_axes_t1) - (AXIS_AXES(t2->shape) - opt_axes_t2);
+    return __do_binary_opt(dest, t1, t2, 0, (AXIS_AXES(t1) - opt_axes_t1), batch_gap, opt);
 }
 
-int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2) 
+int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2) 
 {
 
     char* p_dest = dest->sub_elems;
-    char* p_m1   = sub_t1->sub_elems;
-    char* p_m2   = sub_t2->sub_elems;
+    char* p_m1   = t1->sub_elems;
+    char* p_m2   = t2->sub_elems;
 
-    int    r1     = SHAPE_DIMENS(sub_t1->shape, 0);
-    int    c1     = SHAPE_DIMENS(sub_t1->shape, 1);
-    int    r2     = SHAPE_DIMENS(sub_t2->shape, 0);
-    int    c2     = SHAPE_DIMENS(sub_t2->shape, 1);
+    int    r1     = SHAPE_DIMENS(t1->shape, 0);
+    int    c1     = SHAPE_DIMENS(t1->shape, 1);
+    int    r2     = SHAPE_DIMENS(t2->shape, 0);
+    int    c2     = SHAPE_DIMENS(t2->shape, 1);
     int    k      = 0;
 
     for (int i=0; i<r1; ++i) {
@@ -237,7 +242,7 @@ int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t
             //p_dist[k++] = p_m1[i*c1+j] * p_m2[j*r2+i];
             //cg_elem_opt_add(p_dest+(k++)*tensor_elem_size, p_m1+(i*c1+j)*tensor_elem_size, p_m2+(j*r2+i)*tensor_elem_size);
             //cg_tensor_elem_ref_opt(p_dest+(k++)*tensor_elem_size, p_m1+(i*c1+j)*tensor_elem_size,  p_m2+(j*r2+i)*tensor_elem_size, +);
-            cg_tensor_elem_ref_opt(cg_tensor_elem_offset_addr(p_dest, k++), cg_tensor_elem_offset_addr(p_m1, i*c1+j), cg_tensor_elem_offset_addr(p_m2, j*r2+i), +);
+            cg_tensor_elem_ref_opt(cg_tensor_elem_offset_addr(p_dest, k++), cg_tensor_elem_offset_addr(p_m1, i*c1+j), cg_tensor_elem_offset_addr(p_m2, j*r2+i), *);
         }
     }
     return 0;
