@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-27 18:42:43
+ * @LastEditTime: 2026-06-28 08:24:22
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,6 +13,9 @@
 #include "cg_tensor_shape.h"
 #include "cg_sub_tensor.h"
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axes, const int slice[], int working_axis)
 {
     int i,j;
@@ -39,6 +42,9 @@ static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axe
     }
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 static int __do_padding(sub_tensor_t* dest, sub_tensor_t* src, const int padding_axes, const int padding[], int working_axis, padding_mode_t mode, cg_tensor_elem_type to_fill) 
 {
     int i, j;
@@ -75,8 +81,8 @@ static int __do_padding(sub_tensor_t* dest, sub_tensor_t* src, const int padding
     
     for (i=padding_middle_start, j=0; i<padding_middle_end; ++i, ++j) {
 
-        sub_tensor_get_sub(&sub_dest, dest, 1, (int){i});
-        sub_tensor_get_sub(&sub_src,  src,  1, (int){j});
+        sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
+        sub_tensor_get_sub(&sub_src,  src,  1, (int[]){j});
 
         if (working_axis == padding_axes - 1) {
             // value copy 
@@ -139,7 +145,7 @@ static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t
             // error 
             CG_DEBUG("Error <%d@%s>: t2 axes(%d) is not 1 or t2 axes(%d) not equql t1 axes(%d)\n",\
                 __LINE__, __FILE__, \
-                AXIS_AXES(t2->shape), AXIS_AXES(t2->shape), AXIS_AXES(t1->shape);
+                AXIS_AXES(t2->shape), AXIS_AXES(t2->shape), AXIS_AXES(t1->shape)
             );
             return -1;
         }
@@ -208,22 +214,34 @@ int sub_tensor_to_sub(sub_tensor_t* dest,  sub_tensor_t* src)
     return ret;
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_slice(sub_tensor_t* dest, sub_tensor_t* src, int slice_axes, int slice[])
 {
     return __do_slice(dest, src, slice_axes, slice, 0);
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_padding(sub_tensor_t* dest, sub_tensor_t* src, int padding_axes, int padding[], padding_mode_t mode, cg_tensor_elem_type to_fill)
 {
     return __do_padding(dest, src, padding_axes, padding, 0, mode, to_fill);
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t *t2, int opt_axes_t1, int opt_axes_t2, int (*opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
 {
     int batch_gap = (AXIS_AXES(t1->shape) - opt_axes_t1) - (AXIS_AXES(t2->shape) - opt_axes_t2);
-    return __do_binary_opt(dest, t1, t2, 0, (AXIS_AXES(t1) - opt_axes_t1), batch_gap, opt);
+    return __do_binary_opt(dest, t1, t2, 0, (AXIS_AXES(t1->shape) - opt_axes_t1), batch_gap, opt);
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2) 
 {
 
@@ -233,21 +251,27 @@ int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 
     int    r1     = SHAPE_DIMENS(t1->shape, 0);
     int    c1     = SHAPE_DIMENS(t1->shape, 1);
-    int    r2     = SHAPE_DIMENS(t2->shape, 0);
     int    c2     = SHAPE_DIMENS(t2->shape, 1);
-    int    k      = 0;
 
     for (int i=0; i<r1; ++i) {
         for (int j=0; j<c2; ++j) {
-            //p_dist[k++] = p_m1[i*c1+j] * p_m2[j*r2+i];
-            //cg_elem_opt_add(p_dest+(k++)*tensor_elem_size, p_m1+(i*c1+j)*tensor_elem_size, p_m2+(j*r2+i)*tensor_elem_size);
-            //cg_tensor_elem_ref_opt(p_dest+(k++)*tensor_elem_size, p_m1+(i*c1+j)*tensor_elem_size,  p_m2+(j*r2+i)*tensor_elem_size, +);
-            cg_tensor_elem_ref_opt(cg_tensor_elem_offset_addr(p_dest, k++), cg_tensor_elem_offset_addr(p_m1, i*c1+j), cg_tensor_elem_offset_addr(p_m2, j*r2+i), *);
+            for (int k=0; k<c1; ++k) {
+                // p_dest[i][j] += p_m1[i][k] * p_m2[k][j];
+                cg_tensor_elem_ref_opt( \
+                    cg_tensor_elem_offset_addr(p_dest, i*r1+j), \
+                    cg_tensor_elem_offset_addr(p_m1, i*c1+k),   \
+                    cg_tensor_elem_offset_addr(p_m2, k*c2+j),   \
+                    *, +=\
+                );
+            }
         }
     }
     return 0;
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_subtract(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 {
     int elem_number   = AXIS_NUMBER(t1->shape);
@@ -256,12 +280,19 @@ int sub_tensor_subtract(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
     char* t2_base   = t2->sub_elems;
 
     for (int i=0; i<elem_number; ++i) {
-        //cg_tensor_elem_ref_opt(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size, -);
-        cg_tensor_elem_ref_opt(cg_tensor_elem_offset_addr(dest_base, i), cg_tensor_elem_offset_addr(t1_base, i), cg_tensor_elem_offset_addr(t2_base, i), -);
+        cg_tensor_elem_ref_opt( \
+            cg_tensor_elem_offset_addr(dest_base, i), \
+            cg_tensor_elem_offset_addr(t1_base, i),   \
+            cg_tensor_elem_offset_addr(t2_base, i),  \
+            -, =\
+        );
     }
     return 0;
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_add(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 {
     int elem_number   = AXIS_NUMBER(t1->shape); 
@@ -270,12 +301,19 @@ int sub_tensor_add(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
     char* t2_base   = t2->sub_elems;
 
     for (int i=0; i<elem_number; ++i) {
-        //cg_tensor_elem_ref_opt(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size, +);
-        cg_tensor_elem_ref_opt(cg_tensor_elem_offset_addr(dest_base, i), cg_tensor_elem_offset_addr(t1_base, i), cg_tensor_elem_offset_addr(t2_base, i), +);
+        cg_tensor_elem_ref_opt( \
+            cg_tensor_elem_offset_addr(dest_base, i), \
+            cg_tensor_elem_offset_addr(t1_base, i), \
+            cg_tensor_elem_offset_addr(t2_base, i), 
+            +, =\
+        );
     }
     return 0;
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_multiply(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 {
     int elem_number = AXIS_NUMBER(t1->shape); 
@@ -285,12 +323,19 @@ int sub_tensor_multiply(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 
     for (int i=0; i<elem_number; ++i) {
         //cg_tensor_elem_ref_opt(dest_base+i*tensor_elem_size, t1_base+i*tensor_elem_size, t2_base+i*tensor_elem_size, *);
-        cg_tensor_elem_ref_opt(cg_tensor_elem_offset_addr(dest_base, i), cg_tensor_elem_offset_addr(t1_base, i), cg_tensor_elem_offset_addr(t2_base, i), *);
+        cg_tensor_elem_ref_opt( \
+            cg_tensor_elem_offset_addr(dest_base, i), \
+            cg_tensor_elem_offset_addr(t1_base, i),   \
+            cg_tensor_elem_offset_addr(t2_base, i),  \
+            *, = \
+        );
     }
     return 0;
 }
 
-
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_T(sub_tensor_t* dest, sub_tensor_t* t1)
 {
     if ( SHAPE_DIMENS(t1->shape, 0) == 1 || SHAPE_DIMENS(t1->shape, 1) == 1) {
@@ -317,6 +362,9 @@ int sub_tensor_T(sub_tensor_t* dest, sub_tensor_t* t1)
     return 0;
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_fill(sub_tensor_t* dest, cg_tensor_elem_type fill)
 {
     int elem_number = AXIS_NUMBER(dest->shape); //dest->sub_dimens[0] * dest->sub_stride[0];
@@ -327,6 +375,9 @@ int sub_tensor_fill(sub_tensor_t* dest, cg_tensor_elem_type fill)
     return 0;
 }
 
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
 int sub_tensor_arange(sub_tensor_t* dest, cg_tensor_elem_type from, cg_tensor_elem_type to)
 {
     char* p_t = dest->sub_elems;
@@ -337,18 +388,28 @@ int sub_tensor_arange(sub_tensor_t* dest, cg_tensor_elem_type from, cg_tensor_el
     int sub_tensor_num = AXIS_NUMBER(dest->shape); //dest->sub_dimens[0] * dest->sub_stride[0];
 
     // per = to - from
-    cg_tensor_elem_number_opt(per, to, from, -);
+    cg_tensor_elem_number_opt(per, to, from, -, =);
     // per = pre / TENSOR_NUM(t)
-    cg_tensor_elem_rn_opt(per, per, sub_tensor_num, /);
+    cg_tensor_elem_rn_opt(per, per, sub_tensor_num, /, =);
     
     for (int i=0; i<sub_tensor_num; ++i) {
         //p_t[i] = i*per + from;
         // gap = pre * i
-        cg_tensor_elem_rn_opt(gap, per, i, *);
+        cg_tensor_elem_rn_opt(gap, per, i, *, =);
         // p_t[i] = gap + from
         //cg_tensor_elem_rn_opt(p_t + (i*cg_tensor_elem_size), gap, from, +);
-        cg_tensor_elem_rn_opt(cg_tensor_elem_offset_addr(p_t, i), gap, from, +);
+        cg_tensor_elem_rn_opt(cg_tensor_elem_offset_addr(p_t, i), gap, from, +, =);
     }
+    return 0;
+}
+
+/**
+ * @brief tensor 内部函数，请勿直接调用
+ */
+int sub_tensor_setzero(sub_tensor_t* dest)
+{
+    int size = AXIS_NUMBER(dest->shape) * cg_tensor_elem_size;
+    memset(dest->sub_elems, 0, size);
     return 0;
 }
 

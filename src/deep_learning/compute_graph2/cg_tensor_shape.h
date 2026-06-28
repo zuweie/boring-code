@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-07 22:30:37
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-21 16:19:24
+ * @LastEditTime: 2026-06-27 19:36:10
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor_dimensions.h
  * @Description: 这是一个统一处理 tensor 的 shape 的处理函数。
  */
@@ -32,7 +32,7 @@ typedef struct cg_tensor_axis {
 
 static inline int cg_tensor_shape_axes(cg_tensor_axis_t* shape, int i) 
 {
- while (i--) 
+    while (i--) 
         shape = shape->next;
     return shape->axes;
 }

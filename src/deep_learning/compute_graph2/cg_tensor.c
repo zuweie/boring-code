@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-27 13:55:28
+ * @LastEditTime: 2026-06-28 10:10:54
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -37,35 +37,6 @@ static int __reshape(cg_tensor_axis_t** target_shape, char** target_elems, int n
         }
     }
     
-    return 0;
-}
-
-static int __batch_match(cg_tensor_t* t1, cg_tensor_t* t2, int t1_batch_start) 
-{
-    if (AXIS_AXES(t1->shape) >= AXIS_AXES(t2->shape)) {
-        
-        int axes_diff = AXIS_AXES(t1->shape) - AXIS_AXES(t2->shape);
-        int t2_batch_index;
-        int t1_batch_index;
-
-        for (t1_batch_index = t1_batch_start; t1_batch_index<=0; --t1_batch_index) {
-            t2_batch_index = t1_batch_index - axes_diff;
-            if (t2_batch_index >=0 
-            && SHAPE_DIMENS(t2->shape, t2_batch_index) != 1 
-            && SHAPE_DIMENS(t1->shape, t1_batch_index) != SHAPE_DIMENS(t2->shape, t2_batch_index)) {
-                CG_DEBUG("Error <%d@%s>: T1 [%d] dimens is %d, T2 [%d] dimens is %d, does not match\n", \
-                    __LINE__, __FILE__,\
-                    t1_batch_index, SHAPE_DIMENS(t1->shape, t1_batch_index), t2_batch_index, SHAPE_DIMENS(t2->shape, t2_batch_index));
-                return 0;
-            } else if (t2_batch_index < 0) {
-                // t2 batch index 
-                return 1;
-            }
-        }
-        // match all dimens index
-        return 1;
-    }
-    CG_DEBUG("Error: <%d@%s>: T1 AXES(%s) < T2 AXES(%s)\n", __LINE__, __FILE__, AXIS_AXES(t1->shape), AXIS_AXES(t2->shape));
     return 0;
 }
 
@@ -156,6 +127,11 @@ cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
 cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz) 
 {
     return __create_tensor_cpy(thiz);
+}
+
+int cg_tensor_reshape(cg_tensor_t* thiz, int axes, int shape[]) 
+{
+
 }
 
 int cg_tensor_recycle(cg_tensor_t* thiz)
@@ -315,8 +291,6 @@ cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...)
     }
     va_end(args);
     
-
-    
     if (!slice_invalid) {
 
         for (;i<AXIS_AXES(thiz->shape); ++i) {
@@ -385,4 +359,86 @@ cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, padding_mode_t mode, cg_tensor
     }
     return NULL;
 
+}
+
+/**
+ * @brief opt1 = opt1 dot opt2
+ * 
+ * @param opt1 
+ * @param opt2 
+ * @return int 0 ok, -1 error
+ */
+int cg_tensor_dot(cg_tensor_t* opt1, cg_tensor_t* opt2)
+{
+    //TODO: 1 检查最后两维是否能做点积
+    int opt1_axes = AXIS_AXES(opt1->shape);
+    int opt2_axes = AXIS_AXES(opt2->shape);
+    
+
+    if (opt1_axes < 2 || opt2_axes < 2) {
+        CG_DEBUG("Error <%d@%s>: opt1 axes(%d) or opt axes(%d) < 2\n", __LINE__, __FILE__, opt1_axes, opt2_axes);
+        return -1;
+    }
+
+    if (SHAPE_DIMENS(opt1->shape, opt1_axes-1) != SHAPE_DIMENS(opt2->shape, opt2_axes-2)) {
+        CG_DEBUG("Error <%d@%s>: opt1 column(%d) not equal opt2 row(%d) \n", __LINE__, __FILE__, SHAPE_DIMENS(opt1->shape, opt1_axes-1), SHAPE_DIMENS(opt2->shape, opt2_axes-2));
+        return -1;
+    }
+
+    cg_tensor_t* dest;
+    
+    // 检测是否需要 resize
+    if (SHAPE_DIMENS(opt1->shape, opt1_axes-1) !=  SHAPE_DIMENS(opt2->shape, opt2_axes-1)) {
+        //need to resize
+        int dot_shape[opt1_axes];
+        cg_tensor_shape_get_dimens(opt1_cpy->shape,opt1_axes,dot_shape);
+        dot_shape[opt1_axes-1] = SHAPE_DIMENS(opt2->shape, opt2_axes-1);
+        dest = __create_tensor(opt1_axes, dot_shape, opt1->allocator);
+    } else {
+        dest = __create_tensor_cpy(opt1);
+    }
+
+    sub_tensor_t* sub_opt1 = cg_tensor_to_sub_tensor(opt1);
+    sub_tensor_t* sub_opt2 = cg_tensor_to_sub_tensor()
+    
+    return 0;
+}
+
+/**
+ * @brief opt1 = opt1 + opt2
+ * 
+ * @param opt1 
+ * @param opt2 
+ * @return int 
+ */
+int cg_tensor_add(cg_tensor_t* opt1, cg_tensor_t* opt2)
+{
+    // 
+    return 0;
+}
+
+/**
+ * @brief opt1 = opt1 - opt2
+ * 
+ * @param opt1 
+ * @param opt2 
+ * @return int 
+ */
+int cg_tensor_substract(cg_tensor_t* opt1, cg_tensor_t* opt2)
+{
+    //
+    return 0;
+}
+
+/**
+ * @brief opt1 = opt1 * opt2
+ * 
+ * @param opt1 
+ * @param opt2
+ * @return int 
+ */
+int cg_tensor_multiply(cg_tensor_t* opt1, cg_tensor_t* opt2)
+{
+    //
+    return 0;
 }
