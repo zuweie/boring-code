@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-13 14:20:17
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 15:10:00
+ * @LastEditTime: 2026-06-28 17:30:25
  * @FilePath: /boring-code/src/unit_test/unit_test_cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -95,8 +95,11 @@ void test_tensor_create(void)
     cg_tensor_t* t_slice3 = cg_tensor_slice(t1, 1, 1, 2);
     cg_tensor_inspect(t_slice3);
 
-    cg_tensor_t* t_padding = cg_tensor_padding(t1, pd_mode_edge, (cg_tensor_elem_type)0.f, 3, 1, 0, 2, 2, 1, 1);
+    cg_tensor_t* t_padding = cg_tensor_padding(t1, pd_mode_edge, (cg_tensor_elem_type)0.f, 3, 1, 1, 1, 1, 1, 1);
     cg_tensor_inspect(t_padding);
+
+    cg_tensor_t* t_padding2 = cg_tensor_padding(t1, pd_mode_edge, (cg_tensor_elem_type)0.f, 1, 1, 1);
+    cg_tensor_inspect(t_padding2);
     
     cg_tensor_elem_type* v = cg_tensor_get(t1, 1, 1,2);
     CU_ASSERT_DOUBLE_EQUAL(*v, 18, 0.001);

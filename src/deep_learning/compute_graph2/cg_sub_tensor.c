@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 15:06:04
+ * @LastEditTime: 2026-06-28 18:16:52
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -45,71 +45,70 @@ static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axe
 /**
  * @brief tensor 内部函数，请勿直接调用
  */
-static int __do_padding(sub_tensor_t* dest, sub_tensor_t* src, const int padding_axes, const int padding[], int working_axis, padding_mode_t mode, cg_tensor_elem_type to_fill) 
+static int __do_padding(sub_tensor_t* dest, sub_tensor_t* src, const int padding_axes, const int padding[], int curr_dim, padding_mode_t mode, cg_tensor_elem_type fill_value) 
 {
-    int i, j;
+    if (curr_dim == padding_axes) {
+        // 从 src copy 到 dest
+        return sub_tensor_to_sub(dest, src);
+    } else {
+        int i, j;
 
-    int padding_left_start = 0;
-    int padding_left_end   = padding[working_axis * 2];
+        int left_start = 0;
+        int left_end   = left_start + padding[curr_dim * 2];
 
-    int padding_middle_start = padding_left_end;
-    int padding_middle_end   = padding_left_end + AXIS_DIMENS(src->shape);
+        int middle_start = left_end;
+        int middle_end   = middle_start + AXIS_DIMENS(src->shape);
 
-    int padding_right_start = padding_middle_end;
-    int padding_right_end   = padding_middle_end + padding[working_axis * 2 + 1];
+        int right_start = middle_end;
+        int right_end   = right_start + padding[curr_dim * 2 + 1];
 
-    sub_tensor_t sub_dest;
-    sub_tensor_t sub_src;
-
-    for (i=padding_left_start; i<padding_left_end; ++i) {
-
-        sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
-
-        if (mode == pd_mode_fill) {
-            //sub_tenson_iterate(&dest, to_fill, NULL, elem_opt_assign);
-            sub_tensor_fill(&sub_dest, to_fill);
-
-        } else if (mode == pd_mode_edge) {
-            // 只拿 src 的第一个作为 填充物
-            sub_tensor_get_sub(&sub_src, src, 1, (int[]){0});
-            sub_tensor_to_sub(&sub_dest, &sub_src);
-        } else {
-            CG_DEBUG("ERROR <%d@%s>: unknown padding mode(%d)\n", __LINE__, __FILE__, mode);
-            return -1;
+        sub_tensor_t sub_dest;
+        sub_tensor_t sub_src;
+        // 使用 src 填充中间部分。
+        for (i=middle_start, j=0; i<middle_end; ++i, ++j) {
+            sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
+            sub_tensor_get_sub(&sub_src,  src,  1, (int[]){j});
+            __do_padding(&sub_dest, &sub_src, padding_axes, padding, curr_dim+1, mode, fill_value);
         }
-    }
-    
-    for (i=padding_middle_start, j=0; i<padding_middle_end; ++i, ++j) {
 
-        sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
-        sub_tensor_get_sub(&sub_src,  src,  1, (int[]){j});
+        for (i=left_start; i<left_end; ++i) {
 
-        if (working_axis == padding_axes) {
-            // value copy 
-            sub_tensor_to_sub(&sub_dest, &sub_src);
+            sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
 
-        } else {
-            // 继续下一个维度的填充。
-            __do_padding(&sub_dest, &sub_src, padding_axes, padding, working_axis+1, mode, to_fill);
+            if (mode == pd_mode_fill) {
+                // 如果只是填充模式，直接填入 fill 的值。
+                sub_tensor_fill(&sub_dest, fill_value);
+
+            } else if (mode == pd_mode_edge) {
+                // 如果是边缘模式， 在填完 dest 的中间部分后，用中间部分的第一个 dest 元素填充左边的空白。
+                sub_tensor_get_sub(&sub_src, dest, 1, (int[]){middle_start});
+                sub_tensor_to_sub(&sub_dest, &sub_src);
+            } else {
+                CG_DEBUG("ERROR <%d@%s>: unknown padding mode(%d)\n", __LINE__, __FILE__, mode);
+                return -1;
+            }
         }
-    }
 
-    for (i=padding_right_start; i<padding_middle_end; ++i) {
+            
+        for (i=right_start; i<right_end; ++i) {
 
-        //dest_coord[working_axis] = i;
-        sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
+            //dest_coord[working_axis] = i;
+            sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
         
-        if (mode == pd_mode_fill) {
-            sub_tensor_fill(&sub_dest, to_fill);
-        } else if (mode == pd_mode_edge) {
-            // 只拿最后一个。
-            sub_tensor_get_sub(&sub_src, src, 1, (int[]){AXIS_DIMENS(src->shape)-1});
-            sub_tensor_to_sub(&sub_dest, &sub_src);
-        } else {
-            CG_DEBUG("Error <%d@%s>: unknown padding mode(%d)\n", __LINE__, __FILE__, mode);
+            if (mode == pd_mode_fill) {
+                // 如果是填充模式，直接填入 fill 值。
+                sub_tensor_fill(&sub_dest, fill_value);
+            } else if (mode == pd_mode_edge) {
+                // 如果是边缘模式，在填完 dest 的中间部分后，用中间部分最后一个 dest 元素填充右边的空白。
+                sub_tensor_get_sub(&sub_src, dest, 1, (int[]){middle_end-1});
+                sub_tensor_to_sub(&sub_dest, &sub_src);
+            } else {
+                CG_DEBUG("Error <%d@%s>: unknown padding mode(%d)\n", __LINE__, __FILE__, mode);
+                return -1;
+            }
         }
+        return 0;
     }
-    return 0;
 } 
 
 /**
