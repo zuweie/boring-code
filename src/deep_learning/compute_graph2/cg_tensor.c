@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 10:10:54
+ * @LastEditTime: 2026-06-28 13:33:36
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,6 +15,57 @@
 #include "cg_tensor_shape.h"
 #include "cg_sub_tensor.h"
 #include "cg_tensor.h"
+
+#define __tensor_shape_check(indicator, axes, shape) \
+    do { \
+        indicator = 0; \
+        if ((axes) <= 0) { \
+            CG_DEBUG("Error <%d@%s>: axes(%d) is invalid\n", __LINE__, __FILE__, (axes)); \
+            indicator = -1; \
+        } \
+        if (indicator == 0) { \
+            for (int i=0; i<axes; ++i) { \
+                if ((shape)[i] <=0) { \
+                    CG_DEBUG("Error <%d@%s>: shape[%d](%d) is invalid\n", __LINE__, __FILE__, i, (shape)[i]); \
+                    indicator = -1; \
+                    break; \
+                } \
+            } \
+        } \
+    } while(0) 
+
+
+static int __auto_batch_fitting(cg_tensor_t* t1, cg_tensor_t* t2, int* opt_axes_1, int* opt_axes_2) 
+{
+    int i,j;
+
+    *opt_axes_1 = 0;
+    *opt_axes_2 = 0;
+
+    int axes_t1 = AXIS_AXES(t1->shape);
+    int axes_t2 = AXIS_AXES(t2->shape);
+    if (axes_t1 >= axes_t2) {
+
+        for (int i=axes_t1-1, j=axes_t2-1; i<axes_t1 && j<axes_t2; --i, --j) {
+
+            if ( SHAPE_DIMENS(t2->shape, j) == SHAPE_DIMENS(t1->shape, i) ) {
+                *opt_axes_1++;
+                *opt_axes_2++;
+            } else if (SHAPE_DIMENS(t2->shape, j) == 1) {
+                return 0;
+            } else {
+                *opt_axes_1 = -1;
+                *opt_axes_2 = -2;
+                CG_DEBUG("Error <%d@%s>: t2_dimens[%d](%d) not equal t1_diemns[%d](%d)\n", __LINE__, __FILE__, j, SHAPE_DIMENS(t2->shape, j), i, SHAPE_DIMENS(t1->shape, i));
+                return -1;
+            }
+        }
+        return 0;
+    } else {
+        CG_DEBUG("Error <%d@%s>: t1 axes(%d) is small then t2 axes(%d)\n", __LINE__, __FILE__, axes_t1, axes_t2);
+        return -1;
+    }
+}
 
 static int __reshape(cg_tensor_axis_t** target_shape, char** target_elems, int new_axes, int new_dimensions[], cg_allocator_t* alloc) 
 {
@@ -120,8 +171,14 @@ cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
         dimensions[i] = va_arg(args, int);
     }
     va_end(args);
+
+    int shape_ok;
+    __tensor_shape_check(shape_ok, axes, dimensions);
     
-    return __create_tensor(axes, dimensions, alloc);
+    if (shape_ok == 0)  
+        return __create_tensor(axes, dimensions, alloc);
+    
+    return NULL;
 }
 
 cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz) 
@@ -129,9 +186,15 @@ cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz)
     return __create_tensor_cpy(thiz);
 }
 
-int cg_tensor_reshape(cg_tensor_t* thiz, int axes, int shape[]) 
+int cg_tensor_reshape(cg_tensor_t* thiz, int new_axes, int new_shape[]) 
 {
-
+    int shape_ok;
+    __tensor_shape_check(shape_ok, new_axes, new_shape);
+    
+    if (shape_ok ==0)
+        return __reshape(&thiz->shape, &thiz->elems, new_axes, new_shape, thiz->allocator);
+        
+    return shape_ok;
 }
 
 int cg_tensor_recycle(cg_tensor_t* thiz)
@@ -171,7 +234,7 @@ int cg_tensor_inspect(cg_tensor_t* t)
     return 0;
 }
 
-cg_ref_t cg_tensor_get(cg_tensor_t* thiz, ...)
+cg_tensor_elem_type* cg_tensor_get(cg_tensor_t* thiz, ...)
 {
     int axes = AXIS_AXES(thiz->shape);
     int coord[axes];
@@ -385,23 +448,33 @@ int cg_tensor_dot(cg_tensor_t* opt1, cg_tensor_t* opt2)
         return -1;
     }
 
-    cg_tensor_t* dest;
+    cg_tensor_t* opt1_cpy = __create_tensor_cpy(opt1);
     
     // 检测是否需要 resize
     if (SHAPE_DIMENS(opt1->shape, opt1_axes-1) !=  SHAPE_DIMENS(opt2->shape, opt2_axes-1)) {
         //need to resize
-        int dot_shape[opt1_axes];
-        cg_tensor_shape_get_dimens(opt1_cpy->shape,opt1_axes,dot_shape);
-        dot_shape[opt1_axes-1] = SHAPE_DIMENS(opt2->shape, opt2_axes-1);
-        dest = __create_tensor(opt1_axes, dot_shape, opt1->allocator);
-    } else {
-        dest = __create_tensor_cpy(opt1);
-    }
+        int new_shape[opt1_axes];
+        cg_tensor_shape_get_dimens(opt1_cpy->shape, opt1_axes, new_shape);
+        new_shape[opt1_axes-1] = SHAPE_DIMENS(opt2->shape, opt2_axes-1);
+        __reshape(&opt1->shape, &opt1->elems, opt1_axes, new_shape, opt1->allocator);
+    } 
 
-    sub_tensor_t* sub_opt1 = cg_tensor_to_sub_tensor(opt1);
-    sub_tensor_t* sub_opt2 = cg_tensor_to_sub_tensor()
+    sub_tensor_t sub_opt1 = cg_tensor_to_sub_tensor(opt1_cpy);
+    sub_tensor_t sub_opt2 = cg_tensor_to_sub_tensor(opt2);
+    sub_tensor_t sub_dest = cg_tensor_to_sub_tensor(opt1);
+
     
-    return 0;
+    int ret = sub_tensor_binary_opt(
+        &sub_dest,
+        &sub_opt1,
+        &sub_opt2,
+        2,
+        2,
+        sub_tensor_dot
+    );
+    
+    cg_tensor_recycle(opt1_cpy);
+    return ret;
 }
 
 /**
@@ -414,6 +487,16 @@ int cg_tensor_dot(cg_tensor_t* opt1, cg_tensor_t* opt2)
 int cg_tensor_add(cg_tensor_t* opt1, cg_tensor_t* opt2)
 {
     // 
+    int opt_axes_1;
+    int opt_axes_2;
+    int ret = __auto_batch_fitting(opt1, opt2, &opt_axes_1, &opt_axes_2);
+    if (ret == 0) {
+        sub_tensor_t sub_dest = cg_tensor_to_sub_tensor(opt1);
+        sub_tensor_t sub_opt1 = cg_tensor_to_sub_tensor(opt1);
+        sub_tensor_t sub_opt2 = cg_tensor_to_sub_tensor(opt2);
+
+        sub_tensor_binary_opt(&sub_dest, &sub_opt1, &sub_opt2, opt_axes_1, opt_axes_2, sub_tensor_add);
+    }
     return 0;
 }
 
@@ -427,6 +510,16 @@ int cg_tensor_add(cg_tensor_t* opt1, cg_tensor_t* opt2)
 int cg_tensor_substract(cg_tensor_t* opt1, cg_tensor_t* opt2)
 {
     //
+    int opt_axes_1;
+    int opt_axes_2;
+    int ret = __auto_batch_fitting(opt1, opt2, &opt_axes_1, &opt_axes_2);
+    if (ret == 0) {
+        sub_tensor_t sub_dest = cg_tensor_to_sub_tensor(opt1);
+        sub_tensor_t sub_opt1 = cg_tensor_to_sub_tensor(opt1);
+        sub_tensor_t sub_opt2 = cg_tensor_to_sub_tensor(opt2);
+
+        sub_tensor_binary_opt(&sub_dest, &sub_opt1, &sub_opt2, opt_axes_1, opt_axes_2, sub_tensor_subtract);
+    }
     return 0;
 }
 
@@ -440,5 +533,15 @@ int cg_tensor_substract(cg_tensor_t* opt1, cg_tensor_t* opt2)
 int cg_tensor_multiply(cg_tensor_t* opt1, cg_tensor_t* opt2)
 {
     //
+    int opt_axes_1;
+    int opt_axes_2;
+    int ret = __auto_batch_fitting(opt1, opt2, &opt_axes_1, &opt_axes_2);
+    if (ret == 0) {
+        sub_tensor_t sub_dest = cg_tensor_to_sub_tensor(opt1);
+        sub_tensor_t sub_opt1 = cg_tensor_to_sub_tensor(opt1);
+        sub_tensor_t sub_opt2 = cg_tensor_to_sub_tensor(opt2);
+
+        sub_tensor_binary_opt(&sub_dest, &sub_opt1, &sub_opt2, opt_axes_1, opt_axes_2, sub_tensor_multiply);
+    }
     return 0;
 }

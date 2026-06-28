@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-05-14 23:13:41
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 08:00:09
+ * @LastEditTime: 2026-06-28 14:04:28
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_double_spec.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%A
  */
@@ -29,5 +29,5 @@ typedef float cg_tensor_elem_type;
         *((double*)(dest_ptr)) = ((double)(number))
 
 #define cg_tensor_elem_display(elem_ptr, precision) \
-        printf("%" precision "f", *((float*)(elem_ptr)))
+        printf("%" precision "f, ", *((float*)(elem_ptr)))
 #endif

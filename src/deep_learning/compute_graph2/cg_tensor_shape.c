@@ -17,10 +17,10 @@ int cg_tensor_shape_create(cg_tensor_axis_t** first, int input_axes, int input_d
     *first = axis0;
 
     int axes_count = input_axes;
-    for (int i=0; i<input_axes; ++i) {
+    for (int i=input_axes-1; i>=0; --i) {
         axis0 = (cg_tensor_axis_t*) malloc (sizeof(cg_tensor_axis_t));
         *axis0 = (cg_tensor_axis_t) {
-            .axes   = axes_count--,
+            .axes   = axes_count-i,
             .dimens = input_dimens[i],
             .stride = (*first)->stride * (*first)->dimens,
             .next   = *first
@@ -70,12 +70,19 @@ int cg_tensor_shape_inspect(cg_tensor_axis_t* axis)
         printf("\n axes: %d, dimens: %d, stride: %d\n", axis->axes, axis->dimens, axis->stride);
     } else {
         cg_tensor_axis_t* first = axis;
-        printf("\n axes: %d\n", first->axes);
+        printf("\n axes: ", first->axes);
+        while (first->axes){
+            printf("%d, ", first->axes);
+            first = first->next;
+        }
+        
         printf("\n dimens: ");
+        first = axis;
         while (first->axes) {
             printf("%d, ", first->dimens);
             first = first->next;
         }
+        
         first = axis;
         printf("\n stride: ");
         while (first->axes) {

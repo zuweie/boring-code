@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 08:24:22
+ * @LastEditTime: 2026-06-28 15:06:04
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,7 +21,7 @@ static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axe
     int i,j;
     int ret1, ret2, ret;
 
-    if ( working_axis == slice_axes - 1 ) {
+    if ( working_axis == slice_axes ) {
         // 到了指定的 axis，直接 copy
         return sub_tensor_to_sub(dest, src);
 
@@ -84,7 +84,7 @@ static int __do_padding(sub_tensor_t* dest, sub_tensor_t* src, const int padding
         sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
         sub_tensor_get_sub(&sub_src,  src,  1, (int[]){j});
 
-        if (working_axis == padding_axes - 1) {
+        if (working_axis == padding_axes) {
             // value copy 
             sub_tensor_to_sub(&sub_dest, &sub_src);
 
@@ -176,21 +176,21 @@ static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t
 int sub_tensor_get_sub(sub_tensor_t* sub_tensor, sub_tensor_t* sub_src, int axes, int coord[]) 
 {   
     //void* sub_elems = __coordinate_router(sub_src, axes, coord);
-    cg_tensor_axis_t* sub_shape = sub_tensor->shape;
+    cg_tensor_axis_t* sub_src_shape = sub_src->shape;
     int cut_out;
-    int ret = cg_tensor_shape_split_out(&sub_shape, &cut_out, axes, coord);
+    int ret = cg_tensor_shape_split_out(&sub_src_shape, &cut_out, axes, coord);
 
     if (!ret) {
         *sub_tensor = (sub_tensor_t) {
-            .sub_elems = cg_tensor_elem_offset_addr(sub_tensor->sub_elems, cut_out),
-            .shape     = sub_shape
+            .sub_elems = cg_tensor_elem_offset_addr(sub_src->sub_elems, cut_out),
+            .shape     = sub_src_shape
         };
         return 0;
     };
 
     *sub_tensor =  (sub_tensor_t) {
         .sub_elems  = NULL, 
-        .shape      = sub_shape
+        .shape      = sub_src_shape
     };
     return -1;
 }

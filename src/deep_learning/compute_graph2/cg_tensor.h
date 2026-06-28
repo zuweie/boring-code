@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 10:00:11
+ * @LastEditTime: 2026-06-28 13:27:40
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -30,7 +30,7 @@ int cg_tensor_recycle(cg_tensor_t* thiz);
 
 cg_tensor_t* cg_tensor_slice(cg_tensor_t* thiz, int slice_axes, ...);
 cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, padding_mode_t mode, cg_tensor_elem_type fill, int padding_axes, ...);
-cg_ref_t cg_tensor_get(cg_tensor_t* thiz, ...);
+cg_tensor_elem_type* cg_tensor_get(cg_tensor_t* thiz, ...);
 
 int cg_tensor_fill(cg_tensor_t*, cg_tensor_elem_type);
 int cg_tensor_arange(cg_tensor_t*, cg_tensor_elem_type, cg_tensor_elem_type);

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-05-14 22:56:54
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 08:01:03
+ * @LastEditTime: 2026-06-28 14:04:24
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor_elem_int_spec.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -29,6 +29,6 @@ typedef int cg_tensor_elem_type;
         *((int*)(dest_ptr)) = ((int)(number))
 
 #define cg_tensor_elem_display(elem_ptr, precision) \
-        printf("%" precision "d", *((int*)(elem_ptr)))
+        printf("%" precision "d, ", *((int*)(elem_ptr)))
 
 #endif
