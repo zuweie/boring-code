@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-05-01 15:35:16
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-21 16:36:49
+ * @LastEditTime: 2026-07-04 13:30:13
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_elem_spec.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,7 +12,9 @@
 #define CG_ELEM_TYPE_FLOAT  1
 #define CG_ELEM_TYPE_DOUBLE 2
 #define CG_ELEM_TYPE_INT    3
+#define CG_ELEM_TYPE_COMPLEX 4
 
+// 外部编译器没有指明，默认值为 float
 #ifndef CG_ELEM_TYPE 
 #define CG_ELEM_TYPE CG_ELEM_TYPE_FLOAT
 #endif
@@ -23,6 +25,8 @@
     #include "cg_tensor_elem_double_spec.h"
 #elif CG_ELEM_TYPE == CG_ELEM_TYPE_INT
     #include "cg_tensor_elem_int_spec.h"
+#elif CG_ELEM_TYPE == CG_ELEM_TYPE_COMPLEX
+    #include "cg_tensor_elem_complex_spec.h"
 #else
     #error "unknown elem type define"
 #endif

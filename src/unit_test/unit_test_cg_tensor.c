@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-13 14:20:17
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-04 12:39:53
+ * @LastEditTime: 2026-07-04 15:41:44
  * @FilePath: /boring-code/src/unit_test/unit_test_cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -121,7 +121,8 @@ void test_tensor_create(void)
 
     // cg_tensor_T(tt);
     // cg_tensor_inspect(tt);
-    
+
+    // TODO : cg_tensor_T(t);
     cg_tensor_recycle(t1);
     cg_tensor_recycle(t_slice);
     cg_tensor_recycle(t_slice2);
@@ -171,6 +172,7 @@ void test_tensor_binary_opt(void)
     // cg_tensor_inspect(t1);
 
     cg_tensor_inspect(t1);
+    cg_tensor_inspect(t6);
     cg_tensor_dot(t1, t6);
     cg_tensor_inspect(t1);
 
