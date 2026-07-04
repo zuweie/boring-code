@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-07 22:30:37
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-27 19:36:10
+ * @LastEditTime: 2026-07-04 11:51:42
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor_dimensions.h
  * @Description: 这是一个统一处理 tensor 的 shape 的处理函数。
  */
@@ -20,6 +20,7 @@
 #define SHAPE_DIMENS(shape, i) cg_tensor_shape_dimens(shape, i)
 #define SHAPE_STRIDE(shape, i) cg_tensor_shape_stride(shape, i)
 #define SHAPE_NUMBER(shape, i) (SHAPE_DIMENS(shape, i) * SHAPE_STRIDE(shape, i))
+#define SHAPE_SAME(shape1, shape2) cg_tensor_shape_is_same(shape1, shape2)
 
 typedef struct cg_tensor_axis {
 
@@ -56,6 +57,19 @@ static inline int cg_tensor_shape_get_dimens(cg_tensor_axis_t* shape, int axes, 
     for (int i=0; i<axes; ++i) {
         dimension[i] = shape->dimens;
         shape = shape->next;
+    }
+    return 0;
+}
+
+static inline int cg_tensor_shape_is_same(cg_tensor_axis_t* shape1, cg_tensor_axis_t* shape2) 
+{
+    if (AXIS_AXES(shape1) == AXIS_AXES(shape2)) {
+        while (shape1->axes) {
+            if (AXIS_DIMENS(shape1) != AXIS_DIMENS(shape2)) return 0;
+            shape1 = shape1->next;
+            shape2 = shape2->next;
+        }
+        return 1;
     }
     return 0;
 }

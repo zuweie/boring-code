@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 18:16:52
+ * @LastEditTime: 2026-07-04 12:02:49
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -125,37 +125,36 @@ static int __do_padding(sub_tensor_t* dest, sub_tensor_t* src, const int padding
  */
 static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2, int working_axis, int opt_axis, int batch_gap, int (*batch_opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
 {
-    int i;
-    int axis_match = 1;
-    sub_tensor_t sub_dest;
-    sub_tensor_t sub_t1;
-    sub_tensor_t sub_t2;
+
 
     if (working_axis == opt_axis) {
 
-        return batch_opt(&sub_dest, &sub_t1, &sub_t2);
+        return batch_opt(dest, t1, t2);
 
     } else {
         //int t2_axis = working_axis - (t1_batch_axes - t2_batch_axes);
-        
+        sub_tensor_t sub_dest;
+        sub_tensor_t sub_t1;
+        sub_tensor_t sub_t2;
+
         int axis_t2 = working_axis - batch_gap;
 
-        if (axis_t2 >=0 && AXIS_AXES(t2->shape) != 1 && AXIS_AXES(t2->shape) != AXIS_AXES(t1->shape)) {
+        if (axis_t2 >=0 && AXIS_DIMENS(t2->shape) != 1 && AXIS_DIMENS(t2->shape) != AXIS_DIMENS(t1->shape)) {
             // error 
-            CG_DEBUG("Error <%d@%s>: t2 axes(%d) is not 1 or t2 axes(%d) not equql t1 axes(%d)\n",\
+            CG_DEBUG("Error <%d@%s>: t2 DIMEMS(%d) is not 1 or t2 DIMEMS(%d) not equql t1 DIMEMS(%d)\n",\
                 __LINE__, __FILE__, \
-                AXIS_AXES(t2->shape), AXIS_AXES(t2->shape), AXIS_AXES(t1->shape)
+                AXIS_DIMENS(t2->shape), AXIS_DIMENS(t2->shape), AXIS_DIMENS(t1->shape)
             );
             return -1;
         }
 
-        for (i=0; i<AXIS_AXES(t1->shape); ++i) {
+        for (int i=0; i<AXIS_DIMENS(t1->shape); ++i) {
 
             sub_tensor_get_sub(&sub_t1,   t1,   1, (int[]){i});
 
             if (axis_t2>=0) {
 
-                AXIS_AXES(t2->shape) == 1 ? sub_tensor_get_sub(&sub_t2, t2, 1, (int[]){0}) : sub_tensor_get_sub(&sub_t2, t2, 1, (int[]){i});
+                AXIS_DIMENS(t2->shape) == 1 ? sub_tensor_get_sub(&sub_t2, t2, 1, (int[]){0}) : sub_tensor_get_sub(&sub_t2, t2, 1, (int[]){i});
 
             } else {
 
@@ -273,6 +272,10 @@ int sub_tensor_dot(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
  */
 int sub_tensor_subtract(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 {
+    if (!SHAPE_SAME(t1->shape, t2->shape)) {
+        CG_DEBUG("Error <%d@%s>: t1 shape is not same with t2\n", __LINE__, __FILE__);
+        return -1;
+    }
     int elem_number   = AXIS_NUMBER(t1->shape);
     char* dest_base = dest->sub_elems;
     char* t1_base   = t1->sub_elems;
@@ -294,10 +297,15 @@ int sub_tensor_subtract(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
  */
 int sub_tensor_add(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 {
+    if (!SHAPE_SAME(t1->shape, t2->shape)) {
+        CG_DEBUG("Error <%d@%s>: t1 shape is not same with t2\n", __LINE__, __FILE__);
+        return -1;
+    }
+
     int elem_number   = AXIS_NUMBER(t1->shape); 
-    char* dest_base = dest->sub_elems;
-    char* t1_base   = t1->sub_elems;
-    char* t2_base   = t2->sub_elems;
+    char* dest_base   = dest->sub_elems;
+    char* t1_base     = t1->sub_elems;
+    char* t2_base     = t2->sub_elems;
 
     for (int i=0; i<elem_number; ++i) {
         cg_tensor_elem_ref_opt( \
@@ -315,6 +323,10 @@ int sub_tensor_add(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
  */
 int sub_tensor_multiply(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2)
 {
+    if (!SHAPE_SAME(t1->shape, t2->shape)) {
+        CG_DEBUG("Error <%d@%s>: t1 shape is not same with t2\n", __LINE__, __FILE__);
+        return -1;
+    }
     int elem_number = AXIS_NUMBER(t1->shape); 
     char* dest_base = dest->sub_elems;
     char* t1_base   = t1->sub_elems;

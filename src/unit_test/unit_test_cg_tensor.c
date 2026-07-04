@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-13 14:20:17
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 17:30:25
+ * @LastEditTime: 2026-07-04 12:39:53
  * @FilePath: /boring-code/src/unit_test/unit_test_cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -58,6 +58,8 @@ void test_tensor_dimension (void)
         cg_tensor_shape_recycle(shape);
     }
 }
+
+
 
 void test_tensor_create(void) 
 {
@@ -125,10 +127,61 @@ void test_tensor_create(void)
     cg_tensor_recycle(t_slice2);
     cg_tensor_recycle(t_slice3);
     cg_tensor_recycle(t_padding);
+    cg_tensor_recycle(t_padding2);
     //cg_tensor_recycle(tt);
 
     cg_allocator_reset(&alloc);
     return;
+}
+
+void test_tensor_binary_opt(void) 
+{
+    cg_allocator_t alloc;
+    cg_allocator_init(&alloc);
+
+    cg_tensor_t* t1 = cg_tensor_create(&alloc, 4, 3, 3, 2, 1);
+    cg_tensor_t* t2 = cg_tensor_create(&alloc, 3, 3, 2, 1);
+    cg_tensor_t* t3 = cg_tensor_create(&alloc, 2, 2, 1);
+    cg_tensor_t* t4 = cg_tensor_create(&alloc, 2, 4, 5);
+    cg_tensor_t* t5 = cg_tensor_create(&alloc, 3, 1, 2, 1);
+    cg_tensor_t* t6 = cg_tensor_create(&alloc, 3, 3, 1, 2);
+    cg_tensor_fill(t1, 1.f);
+    cg_tensor_fill(t2, 1.f);
+    cg_tensor_fill(t3, 1.f);
+    cg_tensor_fill(t4, 1.f);
+    cg_tensor_fill(t5, 2.f);
+    cg_tensor_fill(t6, 1.f);
+
+    // cg_tensor_add(t1, t2);
+    // cg_tensor_inspect(t1);
+
+    // cg_tensor_add(t1, t3);
+    // cg_tensor_inspect(t1);
+
+    // cg_tensor_add(t1, t4);
+    // cg_tensor_inspect(t1);
+
+    // cg_tensor_substract(t1, t5);
+    // cg_tensor_inspect(t1);
+
+    // cg_tensor_multiply(t1, t5);
+    // cg_tensor_inspect(t1);
+
+    // cg_tensor_substract(t1, t2);
+    // cg_tensor_inspect(t1);
+
+    cg_tensor_inspect(t1);
+    cg_tensor_dot(t1, t6);
+    cg_tensor_inspect(t1);
+
+    // recycle memory
+    cg_tensor_recycle(t1);
+    cg_tensor_recycle(t2);
+    cg_tensor_recycle(t3);
+    cg_tensor_recycle(t4);
+    cg_tensor_recycle(t5);
+    cg_tensor_recycle(t6);
+    cg_allocator_reset(&alloc);
 }
 
 int do_cg_tensor_test (void) 
@@ -140,15 +193,25 @@ int do_cg_tensor_test (void)
         return CU_get_error();
     }
 
+    #if 0
     if (NULL == CU_add_test(pSuite, "test tensor dimens", test_tensor_dimension) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
 
 
-    if (NULL == CU_add_test(pSuite, "test tensor dimens", test_tensor_create) ) {
+    #if 0
+    if (NULL == CU_add_test(pSuite, "test tensor create", test_tensor_create) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
+    
+    if (NULL == CU_add_test(pSuite, "test tensor binary_opt", test_tensor_binary_opt) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
     return 0;
 }

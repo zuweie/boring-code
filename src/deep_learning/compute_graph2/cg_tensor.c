@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 13:33:36
+ * @LastEditTime: 2026-07-04 10:57:31
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -46,11 +46,11 @@ static int __auto_batch_fitting(cg_tensor_t* t1, cg_tensor_t* t2, int* opt_axes_
     int axes_t2 = AXIS_AXES(t2->shape);
     if (axes_t1 >= axes_t2) {
 
-        for (int i=axes_t1-1, j=axes_t2-1; i<axes_t1 && j<axes_t2; --i, --j) {
+        for (i=axes_t1-1, j=axes_t2-1; i>=0 && j>=0; --i, --j) {
 
             if ( SHAPE_DIMENS(t2->shape, j) == SHAPE_DIMENS(t1->shape, i) ) {
-                *opt_axes_1++;
-                *opt_axes_2++;
+                (*opt_axes_1)++;
+                (*opt_axes_2)++;
             } else if (SHAPE_DIMENS(t2->shape, j) == 1) {
                 return 0;
             } else {
