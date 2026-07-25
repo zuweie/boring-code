@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-03-15 11:26:58
+ * @LastEditTime: 2026-07-25 19:11:24
  * @FilePath: /boring-code/src/deep_learning/nn/nn.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,9 +15,6 @@ typedef struct cg_allocator cg_allocator_t;
 typedef struct cg_tensor    cg_tensor_t;
 
 typedef struct nn {
-
-    int    input_dimens;
-    int    output_dimens;
 
     int    batch;
     int    max_iter;
@@ -39,13 +36,11 @@ typedef struct nn {
 
     // use to build compute graph 
     cg_list_t*      build_stack;
-    cg_list_t*      import_operands;
-    cg_list_t*      export_operands;
     char            temp_id[64];
 
 } nn_t;
 
-int nn_int(nn_t* nn, int batch, int max_iter, int err_stable, float epsilon, float alpah);
+int nn_init(nn_t* nn, int batch, int max_iter, int err_stable, float epsilon, float alpah);
 int nn_reset(nn_t* nn);
 int nn_linear(nn_t* int in_dimens, int out_dimens);
 int nn_relu(nn_t* nn);

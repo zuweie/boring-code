@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-06 21:57:09
+ * @LastEditTime: 2026-07-25 23:49:55
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -118,7 +118,6 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 {   
     int ret = 0;
     if ( CG_NODE_IS_OPERAND(znode) ) {
-        //cg_operand_t* repect = (cg_operand_t *)znode;
         
         if (cg_node_is_respect(znode)) {
 
@@ -136,7 +135,7 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
                 ticket_found = cg_ticket_get(marker, operator, sub_znode, &ticket);
                 if (ticket_found == 1 && !cg_ticket_is_used(ticket)){
                     if (!cg_ticket_is_used(ticket)) {
-                        ret = operator->differentiate(operator, sub_znode, ((cg_operand_t*)znode)->Gx);
+                        ret = operator->differentiate(operator, sub_znode, znode);
                         if (!ret) {
                             CG_DEBUG("ERROR <%d@%s>: differentiate error(%d)\n", __LINE__, __FILE__, ret);
                             return ret;
@@ -173,7 +172,8 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
     return ret;
 }
 
-int cg_calculate(cg_node_t* znode)
+// 计算所有 zonde 下所有贡献者的对他的贡献。
+int cg_calculate_flow(cg_node_t* znode)
 {
     int ret = -1;
     if (CG_NODE_IS_OPERAND(znode)) {
@@ -189,6 +189,7 @@ int cg_calculate(cg_node_t* znode)
 
 /**
  * @brief 这里我发明了一种 ticket 算法。
+ * 0. 从 znode 出发，计算所有关于 zonde 对它的变量贡献者的偏导
  * 1. 我从一个 operand A 的节点出发，使用深度优先算法，遍历其地下所有的节点。经过一个 operand X 节点，便给这个 operand X 节点派发，一张 ticket。
  * 若果有多次经过这个 operand X 节点，它将获得多个 ticket。
  * 2. 开始正式的做 derivative 的时候，我们会将遇到的要计算 gradient 的 operand 的时候，我们将检查他的上级节点是否与 ticket 的中的 handle 是否一致。
@@ -201,7 +202,7 @@ int cg_calculate(cg_node_t* znode)
  * @param params 
  * @return int 
  */
-int cg_differentiate(cg_node_t* znode)
+int cg_derivative_flow(cg_node_t* znode)
 {
     cg_hash_t* ticket_marker = cg_hash_create(__marker_hash, __marker_cmp);
     int ret = __do_differentiate(znode, ticket_marker);
@@ -219,7 +220,7 @@ int cg_differentiate(cg_node_t* znode)
  * @param x 
  * @return int 
  */
-int cg_derivateive_to(cg_node_t* z, cg_node_t* x)
+int cg_derivative(cg_node_t* z, cg_node_t* x)
 {
     cg_node_t* operator;
     cg_node_t* znode;
