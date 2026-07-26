@@ -1,3 +1,11 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2026-03-15 18:30:21
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2026-07-26 14:14:08
+ * @FilePath: /boring-code/src/deep_learning/nn_operator/softmax_opt.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef __SOFTMAX_H__
 #define __SOFTMAX_H__
 
@@ -41,16 +49,8 @@ static inline softmax_opt_t* softmax_opt_create(const char* id, cg_operand_t* va
 {
     softmax_opt_t* softmax_opt = (softmax_opt_t*) malloc (sizeof(softmax_opt_t));
     softmax_opt->variant       = variant;
-    cg_operator_init(softmax_opt, id, __calculate, __differentiate);
+    cg_operator_init(softmax_opt, id, __calculate, __differentiate, NULL);
     return softmax_opt;
 }
-
-static inline int softmax_opt_recycle(cg_operator_t* thiz) 
-{
-    cg_operator_reset(thiz);
-    free(thiz);
-    return 0;
-}
-
 
 #endif

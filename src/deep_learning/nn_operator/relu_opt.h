@@ -1,25 +1,33 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2026-03-15 15:56:08
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2026-07-26 11:33:38
+ * @FilePath: /boring-code/src/deep_learning/nn_operator/relu_opt.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef __RELU_OPT_H__
 #define __RELU_OPT_H__
 
 #include "deep_learning/compute_graph2/cg_debug.h"
 #include "deep_learning/compute_graph2/cg_operator.h"
-#include "deep_learning/compute_graph2/cg_operand.h"
+#include "deep_learning/nn_operand/nn_operand.h"
 
 typedef struct relu_opt
 {
     cg_opreator_t operator;
-    cg_operand_t* variant;
+    nn_operand_t* _Input;
 
 } relu_opt_t;
 
 static inline int __calculate(cg_node_t* thiz, cg_node_t* out) 
 {
     relu_opt* operator         = (cg_operator_t*) thiz;
-    cg_operand_t*  out_operand = (cg_operand_t*) out;
-    cg_operand_t*  variant     = operator->variant;
+    nn_operand_t*  out_operand = (cg_operand_t*) out;
+    //nn_operand_t*  _Input      = operator->_Input;
 
     CG_DEBUG("calculate @ %s: \n", CG_NODE_ID(operator));
-    CG_DEBUG("%s = relu(%s) \n", CG_NODE_ID(out_operand), CG_NODE_ID(variant));
+    CG_DEBUG("%s = relu(%s) \n", CG_NODE_ID(out_operand), CG_NODE_ID(operator->_Input));
     return 0;
 }
 

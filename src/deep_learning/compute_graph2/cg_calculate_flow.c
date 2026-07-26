@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-25 23:49:55
+ * @LastEditTime: 2026-07-26 07:55:20
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -104,7 +104,7 @@ static int __do_calculate(cg_node_t* znode, cg_hash_t* marker)
                 }
             }
             //  计算完了，记录一下这个几点已经经过计算了。
-            cg_hash_set(marker, znode->vertex.id, 1);
+            cg_hash_set(marker, znode->vertex.id, 1L);
         }
         return 0;
     } else {

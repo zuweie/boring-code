@@ -93,6 +93,8 @@ set (SOURCE
     src/deep_learning/compute_graph2/cg_ticket.c
     src/deep_learning/nn2/nn2_znode.c
     src/deep_learning/nn2/nn2.c
+    src/deep_learning/nn/nn.c
+    src/deep_learning/nnalloc/nn_alloc.c
     src/reinforce_learning/grid_world.c
     src/reinforce_learning/policy.c
     src/reinforce_learning/agent.c

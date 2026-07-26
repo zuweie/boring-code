@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 14:20:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-25 23:46:19
+ * @LastEditTime: 2026-07-26 13:29:00
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_operator.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,24 +17,31 @@ struct cg_operator {
 
     cg_node_t _base;
 
+    int (*_reset)       (cg_operator_t* thiz);
     int (*calculate)    (cg_operator_t* thiz, cg_operand_t* out);
     int (*differentiate)(cg_operator_t* thiz, cg_operand_t* variant, cg_operand_t* in_gard);
-
+    
 };
 
 static inline int cg_operator_init(
     cg_operator_t* thiz, 
     const char* id, 
     int (*calculate)    (cg_operator_t* thiz, cg_operand_t* out), 
-    int (*differentiate)(cg_operator_t* thiz, cg_operand_t* variant, cg_operand_t* in_gard)
+    int (*differentiate)(cg_operator_t* thiz, cg_operand_t* variant, cg_operand_t* in_gard),
+    int (*reset)        (cg_operator_t* thiz)
 ) {
     cg_node_init(thiz, id, e_operator);
     thiz->calculate     = calculate;
     thiz->differentiate = differentiate;
+    thiz->_reset        = reset;
     return 0;
 };
 
 static inline int cg_operator_reset(cg_operator_t* thiz) {
-    return cg_node_reset((cg_node_t*)thiz);
+
+    if (thiz->_reset)
+        thiz->_reset(thiz):
+
+    return cg_node_reset(thiz);
 };
 #endif

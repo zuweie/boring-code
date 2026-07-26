@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 20:37:57
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-03-15 20:54:12
+ * @LastEditTime: 2026-07-26 14:15:14
  * @FilePath: /boring-code/src/deep_learning/nn_operators/crossentropy_opt.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -53,17 +53,11 @@ static inline crossentropy_opt_t* crossentropy_opt_create( const char* id, cg_op
 
     crossentropy_opt_t* operator = (crossentropy_opt_t*) malloc (sizeof(crossentropy_opt_t));
 
-    cg_operator_init(operator, id, __calculate, __differentiate);
+    cg_operator_init(operator, id, __calculate, __differentiate, NULL);
 
     operator->variant   = variant;
     operator->labels    = labels;
     return operator;
-}
-
-static inline crossentropy_opt_recycle(crossentropy_opt_t* thiz) {
-    cg_operator_reset(thiz);
-    free(thiz);
-    return 0;
 }
 
 #endif

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-25 19:11:24
+ * @LastEditTime: 2026-07-26 14:37:12
  * @FilePath: /boring-code/src/deep_learning/nn/nn.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,30 +26,25 @@ typedef struct nn {
 
     cg_allocator_t alloc;
 
-    cg_operand_t*   labels;
-    cg_operand_t*   output;
-    cg_operand_t*   input;
-    cg_operand_t*   loss;
+    nn_operand_t*   labels;
+    nn_operand_t*   output;
+    nn_operand_t*   input;
+    nn_operand_t*   loss;
 
     cg_list_t*      operands;
     cg_list_t*      operators;
 
     // use to build compute graph 
-    cg_list_t*      build_stack;
     char            temp_id[64];
 
 } nn_t;
 
 int nn_init(nn_t* nn, int batch, int max_iter, int err_stable, float epsilon, float alpah);
 int nn_reset(nn_t* nn);
-int nn_linear(nn_t* int in_dimens, int out_dimens);
-int nn_relu(nn_t* nn);
-int nn_mse_loss(nn_t* nn);
-int nn_crossentropy(nn_t* nn);
-int nn_softmax(nn_t* nn);
-
-int nn_forward(nn_t* nn);
-int nn_backward(nn_t* nn);
-int nn_train(nn_t* nn);
+nn_operand_t* nn_linear(nn_t* nn, int out_dimens, nn_operand_t* _Input);
+nn_operand_t* nn_relu(nn_t* nn, nn_operand_t* _Input);
+nn_operand_t* nn_mse_loss(nn_t* nn, nn_operand_t* _Input, nn_operand_t* labels);
+nn_operand_t* nn_crossentropy(nn_t* nn, nn_operand_t* _Input, nn_operand_t* labels);
+nn_operand_t* nn_softmax(nn_t* nn, nn_operand_t* _Input);
 
 #endif
