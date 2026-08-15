@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-22 15:34:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-15 22:00:13
+ * @LastEditTime: 2026-08-16 00:17:48
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_ticket.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -75,7 +75,8 @@ int cg_ticket_get(cg_hash_t* marker, cg_node_t* repect, cg_node_t* x, cg_ticket_
             // 若是找不到 则返回最后一个 ticket
             *ticket = ticket_first;
 
-            if (strcmp(ticket_first->repect_id,  CG_NODE_ID(repect)) == 0) return 1;
+            if (strcmp(ticket_first->repect_id,  CG_NODE_ID(repect)) == 0) 
+                return 1;
 
             ticket_first = ticket_first->next;
         }
@@ -87,15 +88,17 @@ int cg_ticket_get(cg_hash_t* marker, cg_node_t* repect, cg_node_t* x, cg_ticket_
 
 int cg_ticket_is_clean(cg_hash_t* market, cg_node_t* x)
 {
-    cg_ticket_t* first = cg_hash_get(market, x->vertex.id);
-    int used = 0;
+    int used;
+    cg_ticket_t* first = cg_hash_get(market, CG_NODE_ID(x));
+
     if (first) {
-        while (first && (used == first->used)) {
-            first = first->next;
-        }
+
+        while (first && (used = first->used)) first = first->next;
         return used;
+        
+    } else {
+        return 1;
     }
-    return 0;
 }
 
 int cg_ticket_recycle(cg_ticket_t* ticket_first) 
