@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:01:32
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-15 11:49:24
+ * @LastEditTime: 2026-08-15 20:06:29
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_node.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,6 +15,9 @@
 
 #define CG_NODE_ID(cg_node)   (((cg_node_t*)(cg_node))->vertex.id)
 #define CG_NODE_TYPE(cg_node) (((cg_node_t*)(cg_node))->node_type)
+#define CG_NODE_IN(cg_node)   (((cg_node_t*)(cg_node))->vertex.in)
+#define CG_NODE_OUT(cg_node)  (((cg_node_t*)(cg_node))->vertex.out)
+
 #define CG_NODE_IS_OPERAND(cg_node)  (CG_NODE_TYPE(cg_node) == e_operand)
 #define CG_NODE_IS_OPERATOR(cg_node) (CG_NODE_TYPE(cg_node) == e_operator)
 

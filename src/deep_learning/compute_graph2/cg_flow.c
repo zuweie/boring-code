@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-15 12:40:17
+ * @LastEditTime: 2026-08-15 21:51:45
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -31,87 +31,81 @@ static int __marker_cmp(void* k1, void* k2)
     return strcmp(k1, k2);
 }
 
-static int __recycle_path(cg_ref_t path) 
+static int __recycle_flow(cg_ref_t flow) 
 {
-    cg_list_t* list = path;
+    cg_list_t* list = flow;
     cg_list_recycle(list, NULL);
     return 0;
 }
 
 static int __prepare_tickets (cg_node_t* znode, cg_hash_t* marker) 
 {
-    // 拥有小弟，才能给小弟派导数券
-    if (CG_NODE_TYPE(znode) == e_operand) {
-        if (cg_node_is_respect(znode)) {
+    cg_operator_t*  operator = cg_operand_get_producer(znode);
 
-            cg_operator_t*  operator = cg_operand_get_producer(znode);
-            cg_list_node_t* first    = CG_LIST_TOP(((cg_node_t*)operator)->vertex.in);
+    if (operator) {
+        cg_list_node_t* first    = CG_LIST_TOP(((cg_node_t*)operator)->vertex.in);
 
-            while (first != CG_LIST_HEAD( ((cg_node_t*)operator)->vertex.in)){
+        while (first != CG_LIST_HEAD( ((cg_node_t*)operator)->vertex.in)){
 
-                cg_node_t* sub_znode = first->ref;
+            cg_node_t* sub_znode = first->ref;
+
+            if ( CG_NODE_IS_OPERAND(sub_znode) ) {
                 cg_ticket_give(marker, operator, sub_znode);
                 first = first->prev;
-            }
-
-            // 找一下小弟的自变量。
-            first = CG_LIST_TOP( ((cg_node_t*)operator)->vertex.in);
-            while (first != CG_LIST_HEAD( ((cg_node_t*)operator)->vertex.in)){
-
-                cg_node_t* sub_znode = first->ref;
-                __prepare_tickets(sub_znode, marker);
+            } else {
+                CG_DEBUG("ERROR <%d@%s>: %s should be a operand\n", __LINE__, __FILE__, sub_znode->vertex.id);
+                return -1;
             }
         }
+
+        // 找一下小弟的自变量。
+        first = CG_LIST_TOP( ((cg_node_t*)operator)->vertex.in);
+        while (first != CG_LIST_HEAD( ((cg_node_t*)operator)->vertex.in)){
+            cg_node_t* sub_znode = first->ref;
+            __prepare_tickets(sub_znode, marker);
+        }
         return 0;
-    } else {
-        CG_DEBUG("ERROR <%d@%s>: znode is not a operand\n", __LINE__, __FILE__);
     }
     return -1;
 }
 
-static int __do_calculate(cg_node_t* znode, cg_hash_t* marker)
+static int __do_calculate(cg_operand_t* znode, cg_hash_t* marker)
 {
-    int ret;
-    if ( CG_NODE_IS_OPERAND(znode) ) {
-        
-        if (!cg_hash_has(marker, znode->vertex.id)) {
-            // 此节点的数据为旧的，需要计算。
+    int ret = 0;
+    if (!cg_hash_has(marker, CG_NODE_ID(znode)) {
+        // 尚未经过计算需要计算
+        if ( CG_NODE_IS_OPERAND(znode) ) {
+            cg_operator_t*  operator = cg_operand_get_producer(znode);
+            if (operator) {
+                // Todo 1: 检测本 operator 下的 sub operand 都计算完毕。
+                cg_list_node_t* first = CG_LIST_TOP( CG_NODE_IN(operator) );
 
-            // 这个阶段是否有计算过程
-            if (cg_node_is_respect(znode)) {
+                while (first != CG_LIST_TOP( CG_NODE_IN(operator) ))  {
 
-                // 此节点需要经过 operator 节点计算
-                cg_node_t*      sub_znode;
-                cg_operator_t*  operator = cg_operand_get_operator(znode);
-                cg_list_node_t* first    = CG_LIST_TOP(((cg_node_t*)operator)->vertex.in);
+                    cg_operand_t* sub_node = first->ref;
 
-                while (first != CG_LIST_TOP( ((cg_node_t*)operator)->vertex.in ))  {
-
-                    sub_znode = first->ref;
-                    ret = __do_calculate(sub_znode, marker);
+                    ret = __do_calculate(sub_node, marker);
                     if (!ret) {
                         CG_DEBUG("ERROR <%d@%s>: sub calculate error(%d)\n", __LINE__, __FILE__, ret);
                         return ret;
                     }
                     first = first->prev;
                 }
-
-                // 计算这个节点。
+                // TODO 2: 计算完所有的 sub 
                 ret = operator->calculate(operator, znode);
-                if (!ret) {                         
-                    CG_DEBUG("ERROR <%d@%s>: calculate error(%d)\n", __LINE__, __FILE__, ret);
-                    return ret;
-                }
-            }
-            //  计算完了，记录一下这个几点已经经过计算了。
-            cg_hash_set(marker, znode->vertex.id, 1L);
+            } 
+
+            // 一切正常，这个节点计算完了，将它 mark 一下, 表示这个已经是最新的节点了
+            if (!ret)
+                cg_hash_set(marker, CG_NODE_ID(znode), 1L );
+            
+        } else {
+            CG_DEBUG("ERROR <%d@%s>: %s should be a operand\n", __LINE__, __FILE__, CG_NODE_ID(znode))
+            ret = -1;
         }
-        return 0;
-    } else {
-        CG_DEBUG("ERROR <%d@%s>: znode is not a operand\n", __LINE__, __FILE__);
+
     }
- 
-    return -1;
+    return ret;
 }
 
 static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
@@ -119,20 +113,20 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
     int ret = 0;
     if ( CG_NODE_IS_OPERAND(znode) ) {
         
-        if (cg_node_is_respected(znode)) {
-
-            cg_operator_t*   operator = cg_operand_get_producer(znode);
+        cg_operator_t* operator = cg_operand_get_producer(znode);
+        if (operator) {
             cg_list_node_t*  first;
             cg_node_t*       sub_znode;
             cg_ticket_t*     ticket;
             int ticket_found;
 
-            first = CG_LIST_TOP(((cg_node_t*)operator)->vertex.in);
+            first = CG_LIST_TOP(CG_NODE_IN(operator));
 
-            while (first != CG_LIST_HEAD(((cg_node_t*)operator)->vertex.in)) {
+            while (first != CG_LIST_HEAD( CG_NODE_IN(operator) )) {
 
                 sub_znode = first->ref;
                 ticket_found = cg_ticket_get(marker, operator, sub_znode, &ticket);
+
                 if (ticket_found == 1 && !cg_ticket_is_used(ticket)){
                     if (!cg_ticket_is_used(ticket)) {
                         ret = operator->differentiate(operator, sub_znode, znode);
@@ -142,30 +136,29 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
                         }
                         cg_ticket_use(ticket);
                     } else {
-                        CG_DEBUG("WARNING <%d@%s>: ticket should not be used\n", __LINE__, __FILE__);
+                        CG_DEBUG("INFO <%d@%s>: ticket has been used\n", __LINE__, __FILE__);
                     }
                 } 
                 first = first->prev;
             }
 
-            first = CG_LIST_TOP(((cg_node_t*)operator)->vertex.in);
-            while (first != CG_LIST_HEAD( ((cg_node_t*)operator)->vertex.in)){
-
+            // 继续往下一层的节点做偏导
+            first = CG_LIST_TOP( CG_NODE_IN(operator) );
+            while (first != CG_LIST_HEAD( CG_NODE_IN(operator) ){
                 sub_znode = first->ref;
-
                 if (cg_ticket_is_clean(marker, sub_znode)) {
-
                     ret = __do_differentiate(sub_znode, marker);
                     if (!ret) {
-                        CG_DEBUG("ERROR <%d@%s>: do sub differentiate error(%d)\n", __LINE__, __FILE__, ret);
+                        CG_DEBUG("ERROR <%d@%s>: differentiate ret error(%d)\n", __LINE__, __FILE__, ret);
                         return ret;
                     }
-                    
                 }
+                first = first->prev;
             }
         }
+
     } else {
-        CG_DEBUG("ERROR <%d@%s>: znode is not is operand\n", __LINE__, __FILE__);
+        CG_DEBUG("ERROR <%d@%s>: %s is not is operand\n", __LINE__, __FILE__,CG_NODE_ID(znode));
         ret = -1;
     }
 
@@ -207,6 +200,7 @@ int cg_derivative(cg_operand_t* znode)
     int ret = -1;
     if ( CG_NODE_IS_OPERAND(znode) ) {
         cg_hash_t* ticket_marker = cg_hash_create(__marker_hash, __marker_cmp);
+        __prepare_tickets(znode, ticket_marker);
         ret = __do_differentiate(znode, ticket_marker);
         cg_hash_recycle(ticket_marker, cg_ticket_recycle);
     } else {
@@ -228,61 +222,64 @@ int cg_derivative(cg_operand_t* znode)
  */
 int cg_derivative_to(cg_operand_t* z, cg_operand_t* to_x)
 {
-    
-    cg_node_t* operator;
-    cg_node_t* znode;
-    cg_list_node_t* path_first;
-    cg_list_node_t* znode_first;
-    cg_list_t* znodes;
+    if (CG_NODE_IS_OPERAND(z) && CG_NODE_IS_OPERAND(to_x)) {
+        cg_node_t* operator;
+        cg_node_t* znode;
+        cg_list_node_t* flow_fist;
+        cg_list_node_t* znode_first;
+        cg_list_t* derviative_flow;
 
-    cg_list_t* paths  = cg_list_create();
-    cg_hash_t* marker = cg_hash_create(__marker_hash, __marker_cmp);
+        cg_list_t* flows  = cg_list_create();
+        cg_hash_t* marker = cg_hash_create(__marker_hash, __marker_cmp);
 
-    // TODO 1: 我们需要派发 ticket 给偏导路径上的 operand
-    cg_graph_search_paths(to_x, z, paths);
+        // 查找 x --> z 的所有路径，这些路径上的变量都要做偏导
+        cg_graph_search_paths(to_x, z, flows);
 
-    path_first = CG_LIST_TOP(paths);
-    while (path_first != CG_LIST_HEAD(paths)) {
+        flow_fist = CG_LIST_TOP(flows);
+        while (flow_fist != CG_LIST_HEAD(flows)) {
 
-        znodes = path_first->ref;
+            derviative_flow = flow_fist->ref;
 
-        // 搜索到的路径是 从起点到终点，需要将其反过来，
-        cg_list_revert(znodes);
+            // 搜索到的路径是 从起点到终点，需要将其反过来，
+            cg_list_revert(derviative_flow);
 
-        // 终点并不需要配发ticket，所以直接跳到下一个节点。
-        znode_first = CG_LIST_TOP(znodes)->prev;
+            // 终点并不需要配发ticket，所以直接跳到下一个节点。
+            znode_first = CG_LIST_TOP(derviative_flow)->prev;
 
-        while (znode_first != CG_LIST_HEAD(znodes)) {
+            while (znode_first != CG_LIST_HEAD(derviative_flow)) {
 
-            operator = NULL;
-            znode    = znode_first->ref;
+                operator = NULL;
+                znode    = znode_first->ref;
             
-            if (znode->node_type == e_operator) {
-                operator    = znode;
-                znode_first = znode_first->prev;
-                znode       = znode_first->ref;
-            } 
+                if ( CG_NODE_IS_OPERATOR(znode) ) {
+                    operator    = znode;
+                    znode_first = znode_first->prev;
+                    znode       = znode_first->ref;
+                } 
 
-            if (znode->node_type == e_operand && operator != NULL) {
+                if ( CG_NODE_IS_OPERAND(znode) && operator != NULL) {
                 
-                cg_ticket_give(marker, operator, znode);
+                    cg_ticket_give(marker, operator, znode);
 
-            } else {
-                // big error here
-                return -1;
+                 } else {
+                    // big error here
+                    CG_DEBUG("Error <%d@%s>:  big error here\n", __LINE__, __FILE__);
+                    return -1;
+                }
+                znode_first = znode_first->prev;
             }
-            znode_first = znode_first->prev;
-        }
         
-        path_first = path_first->prev;
+            flow_fist = flow_fist->prev;
+        }
+
+        // TODO 2: 做偏导, 这里只会对拥有 ticket 的 operand 进行偏导。
+        __do_differentiate(znode, marker);
+
+        // TODO 3: 释放资源。
+        cg_list_recycle(flows, __recycle_flow);
+        cg_hash_recycle(marker, cg_ticket_recycle);
+        return 0;
     }
-
-    // TODO 2: 做偏导。
-    __do_differentiate(znode, marker);
-
-    // TODO 3: 释放资源。
-    cg_list_recycle(paths, __recycle_path);
-    cg_hash_recycle(marker, cg_ticket_recycle);
-    
-    return 0;
+    CG_DEBUG("Error <%d@%s>: %s or %s is not operand\n", __LINE__, __FILE__, CG_NODE_ID(z), CG_NODE_ID(to_x));
+    return -1;
 }
