@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-26 07:55:20
+ * @LastEditTime: 2026-08-15 12:32:53
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,7 +13,7 @@
 #include "cg_operand.h"
 #include "cg_operator.h"
 #include "cg_ticket.h"
-#include "cg_calflow.h"
+#include "cg_flow.h"
 
 static int __marker_hash(void* key) 
 {
@@ -119,9 +119,9 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
     int ret = 0;
     if ( CG_NODE_IS_OPERAND(znode) ) {
         
-        if (cg_node_is_respect(znode)) {
+        if (cg_node_is_respected(znode)) {
 
-            cg_operator_t*   operator = cg_operand_get_operator(znode);
+            cg_operator_t*   operator = cg_operand_get_producer(znode);
             cg_list_node_t*  first;
             cg_node_t*       sub_znode;
             cg_ticket_t*     ticket;
@@ -157,7 +157,7 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 
                     ret = __do_differentiate(sub_znode, marker);
                     if (!ret) {
-                        CG_DEBUG("ERROR <%d@%s> : do sub differentiate error(%d)\n", __LINE__, __FILE__, ret);
+                        CG_DEBUG("ERROR <%d@%s>: do sub differentiate error(%d)\n", __LINE__, __FILE__, ret);
                         return ret;
                     }
                     
@@ -165,7 +165,7 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
             }
         }
     } else {
-        CG_DEBUG("ERROR <%d@%s>:, znode is not is operand\n", __LINE__, __FILE__);
+        CG_DEBUG("ERROR <%d@%s>: znode is not is operand\n", __LINE__, __FILE__);
         ret = -1;
     }
 
@@ -173,7 +173,7 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 }
 
 // 计算所有 zonde 下所有贡献者的对他的贡献。
-int cg_calculate_flow(cg_node_t* znode)
+int cg_calculate(cg_operand_t* znode)
 {
     int ret = -1;
     if (CG_NODE_IS_OPERAND(znode)) {
@@ -181,7 +181,7 @@ int cg_calculate_flow(cg_node_t* znode)
         ret = __do_calculate(znode, update_marker);
         cg_hash_recycle(update_marker, NULL);
     } else {
-        CG_DEBUG("ERROR <%d@%s>:, znode is not a operand\n", __LINE__, __FILE__);
+        CG_DEBUG("ERROR <%d@%s>: znode is not a operand\n", __LINE__, __FILE__);
     }
     return ret;
 }
@@ -202,16 +202,22 @@ int cg_calculate_flow(cg_node_t* znode)
  * @param params 
  * @return int 
  */
-int cg_derivative_flow(cg_node_t* znode)
+int cg_derivative(cg_operand_t* znode)
 {
-    cg_hash_t* ticket_marker = cg_hash_create(__marker_hash, __marker_cmp);
-    int ret = __do_differentiate(znode, ticket_marker);
-    cg_hash_recycle(ticket_marker, cg_ticket_recycle);
+    int ret = -1;
+    if ( CG_NODE_IS_OPERAND(znode) ) {
+        cg_hash_t* ticket_marker = cg_hash_create(__marker_hash, __marker_cmp);
+        ret = __do_differentiate(znode, ticket_marker);
+        cg_hash_recycle(ticket_marker, cg_ticket_recycle);
+    } else {
+        CG_DEBUG("ERROR <%d@%s>: znode is not a operand\n", __LINE__, __FILE__);
+    }
+
     return ret;
 }
 
 /**
- * @brief 这个函数是自定 z 到 x 的偏导。
+ * @brief 这个函数是 z 对某个 x 的偏导。
  * 1. 使用深度优先算法，找到所有 z 到 x 的偏导路径，
  * 2. 给路径上所有的数据节点派上 ticket。
  * 3. 开始进行编导。
@@ -220,8 +226,9 @@ int cg_derivative_flow(cg_node_t* znode)
  * @param x 
  * @return int 
  */
-int cg_derivative(cg_node_t* z, cg_node_t* x)
+int cg_derivative_to(cg_operand_t* z, cg_operand_t* to_x)
 {
+    
     cg_node_t* operator;
     cg_node_t* znode;
     cg_list_node_t* path_first;
@@ -232,7 +239,7 @@ int cg_derivative(cg_node_t* z, cg_node_t* x)
     cg_hash_t* marker = cg_hash_create(__marker_hash, __marker_cmp);
 
     // TODO 1: 我们需要派发 ticket 给偏导路径上的 operand
-    cg_graph_search_paths(x, z, paths);
+    cg_graph_search_paths(to_x, z, paths);
 
     path_first = CG_LIST_TOP(paths);
     while (path_first != CG_LIST_HEAD(paths)) {
