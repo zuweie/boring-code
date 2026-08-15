@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-15 12:32:53
+ * @LastEditTime: 2026-08-15 12:40:17
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -44,7 +44,7 @@ static int __prepare_tickets (cg_node_t* znode, cg_hash_t* marker)
     if (CG_NODE_TYPE(znode) == e_operand) {
         if (cg_node_is_respect(znode)) {
 
-            cg_operator_t*  operator = cg_operand_get_operator(znode);
+            cg_operator_t*  operator = cg_operand_get_producer(znode);
             cg_list_node_t* first    = CG_LIST_TOP(((cg_node_t*)operator)->vertex.in);
 
             while (first != CG_LIST_HEAD( ((cg_node_t*)operator)->vertex.in)){
