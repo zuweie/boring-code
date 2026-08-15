@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-15 21:51:45
+ * @LastEditTime: 2026-08-15 21:54:50
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -38,7 +38,7 @@ static int __recycle_flow(cg_ref_t flow)
     return 0;
 }
 
-static int __prepare_tickets (cg_node_t* znode, cg_hash_t* marker) 
+static int __give_tickets (cg_node_t* znode, cg_hash_t* marker) 
 {
     cg_operator_t*  operator = cg_operand_get_producer(znode);
 
@@ -62,7 +62,7 @@ static int __prepare_tickets (cg_node_t* znode, cg_hash_t* marker)
         first = CG_LIST_TOP( ((cg_node_t*)operator)->vertex.in);
         while (first != CG_LIST_HEAD( ((cg_node_t*)operator)->vertex.in)){
             cg_node_t* sub_znode = first->ref;
-            __prepare_tickets(sub_znode, marker);
+            __give_tickets(sub_znode, marker);
         }
         return 0;
     }
@@ -108,6 +108,13 @@ static int __do_calculate(cg_operand_t* znode, cg_hash_t* marker)
     return ret;
 }
 
+/**
+ * @brief 复杂到嗨咁的偏导算法
+ * 
+ * @param znode 
+ * @param marker 
+ * @return int 
+ */
 static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 {   
     int ret = 0;
@@ -200,7 +207,7 @@ int cg_derivative(cg_operand_t* znode)
     int ret = -1;
     if ( CG_NODE_IS_OPERAND(znode) ) {
         cg_hash_t* ticket_marker = cg_hash_create(__marker_hash, __marker_cmp);
-        __prepare_tickets(znode, ticket_marker);
+        __give_tickets(znode, ticket_marker);
         ret = __do_differentiate(znode, ticket_marker);
         cg_hash_recycle(ticket_marker, cg_ticket_recycle);
     } else {

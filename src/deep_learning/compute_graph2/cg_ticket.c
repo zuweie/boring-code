@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-22 15:34:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-15 13:48:05
+ * @LastEditTime: 2026-08-15 22:00:13
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_ticket.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -32,15 +32,16 @@ int cg_ticket_give(cg_hash_t* marker, cg_node_t* repect, cg_node_t* x)
 
     if (found != 1) {
         
-        cg_ticket_t* new_ticket = __cg_ticket_create(repect->vertex.id);
+        cg_ticket_t* new_ticket = __cg_ticket_create( CG_NODE_ID(repect) );
         if (found == 0) {
             ticket->next = new_ticket;
         } else {
             // found == -1, dose not had any ticket, set the first ticket about repect
-            cg_hash_set(marker, x->vertex.id, new_ticket);
+            cg_hash_set(marker, CG_NODE_ID(x), new_ticket);
         }
+        return 0;
     } 
-    CG_DEBUG("INFO <%d@%s>: x(%s) had ticket about repect(%s)\n", __LINE__, __FILE__, x->vertex.id, repect->vertex.id);
+    CG_DEBUG("INFO <%d@%s>: x(%s) had ticket about repect(%s)\n", __LINE__, __FILE__,  CG_NODE_ID(x), CG_NODE_ID(repect));
     return 0;
 }
 
@@ -67,14 +68,14 @@ int cg_ticket_is_used(cg_ticket_t* ticket)
  */
 int cg_ticket_get(cg_hash_t* marker, cg_node_t* repect, cg_node_t* x, cg_ticket_t** ticket)
 {
-    cg_ticket_t* ticket_first = cg_hash_get(marker, x->vertex.id);
+    cg_ticket_t* ticket_first = cg_hash_get(marker, CG_NODE_ID(x));
     if (ticket_first) {
         while (ticket_first) {
 
             // 若是找不到 则返回最后一个 ticket
             *ticket = ticket_first;
 
-            if (strcmp(ticket_first->repect_id, repect->vertex.id) == 0) return 1;
+            if (strcmp(ticket_first->repect_id,  CG_NODE_ID(repect)) == 0) return 1;
 
             ticket_first = ticket_first->next;
         }
