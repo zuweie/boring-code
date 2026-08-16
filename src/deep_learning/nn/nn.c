@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-13 22:47:42
+ * @LastEditTime: 2026-08-16 21:43:16
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -18,7 +18,6 @@
 #include "deep_learning/compute_graph2/cg_debug.h"
 #include "deep_learning/compute_graph2/cg_calculate_flow.h"
 
-#include "deep_learning/nnalloc/nn_alloc.h"
 #include "deep_learning/nn_operand/nn_operand.h"
 #include "deep_learning/nn_operator/linear_opt.h"
 #include "deep_learning/nn_operator/relu_opt.h"
@@ -49,7 +48,7 @@ static int __recycle_operator(cg_operator_t* operator)
     return 0;
 }
 
-int nn_init(nn_t* nn, int batch, int max_iter, int err_stable, float epsilon, float alpah)
+int nn_init(nn_t* nn)
 {
     *nn = (nn_t) {
         .znode_count  = 0,
@@ -79,14 +78,14 @@ int nn_set_train_package(nn_t* nn, nn_train_package_t* package)
     return 0;
 }
 
-nn_operand_t* nn_linear(nn_t* nn, nn_operand_t* _Input, int out_dimens)
+linear_opt_t* nn_linear(nn_t* nn, nn_operand_t* _Input, int out_dimens)
 {
     int in_dimens = SHAPE_DIMENS(_Input->x->shape, 0);
 
-    nn_operand_t* W = nn_operand_create(__gen_id(nn, "W"), out_dimens, in_dimens);
-    nn_operand_t* b = nn_operand_create(__gen_id(nn, "b"), out_dimens, 1);
-    nn_operand_t* z = nn_operand_create(__gen_id(nn, "_Z"), out_dimens, 1);
-    linear_opt_t* linear_opt = linear_opt_create(__gen_id(nn, "linear_opt"),  _Input, W, b);
+    nn_operand_t* W = nn_operand_create(nn, __gen_id(nn, "W"), out_dimens, in_dimens);
+    nn_operand_t* b = nn_operand_create(nn, __gen_id(nn, "b"), out_dimens, 1);
+    nn_operand_t* z = nn_operand_create(nn, __gen_id(nn, "_Z"), out_dimens, 1);
+    linear_opt_t* linear_opt = linear_opt_create(nn, __gen_id(nn, "linear_opt"),  _Input, W, b);
 
     // 做物理连接。
     cg_graph_link(_Input, linear_opt);
@@ -100,7 +99,7 @@ nn_operand_t* nn_linear(nn_t* nn, nn_operand_t* _Input, int out_dimens)
     cg_list_push(nn->operands, z);
     cg_list_push(nn->operators, linear_opt);
 
-    return z;
+    return linear_opt;
 }
 
 nn_operand_t* nn_relu(nn_t* nn, nn_operand_t* _Input)
@@ -161,27 +160,24 @@ nn_operand_t* nn_softmax(nn_t* nn, nn_operand_t* _Input)
 }
 
 
-int nn_fit(nn_t* nn)
+int nn_fit(nn_t* nn, nn_fit_package_t* package)
 {
 
-    if (nn->train_package) {
-
-        int termin = 0;
-        do {
-            nn->train_package->prepare(nn);
-            cg_calculate_flow(nn->loss);
-            termin = nn->train_package->termin(nn);
-            if (!termin) {
-                // do backward propagetion
-                cg_derivative_flow(nn->loss);
-            }
-        } while (termin);
-    } 
-    CG_DEBUG("Error <%d@%s>: nn does not have training package\n", __LINE__, __FILE__);
-    return -1;
+    int term = 1;
+    do {
+        package->prepare(nn);
+        cg_calculate(nn->_Loss);
+        term = package->term(nn);
+        if (!term) {
+            // do backward propagetion continue to fit
+            cg_derivative(nn->_Loss);
+        }
+        package->processing(nn);
+    } while (!term);
+    return 0;
 }
 
-int nn_predict(nn_t* nn, cg_tensor_t* _Input)
+int nn_predict(nn_t* nn, cg_tensor_t* _Input, cg_tensor_t* predict)
 {
-    
+    return 0;
 }

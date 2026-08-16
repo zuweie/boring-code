@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-15 21:54:50
+ * @LastEditTime: 2026-08-16 00:20:41
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -151,7 +151,7 @@ static int __do_differentiate(cg_node_t* znode, cg_hash_t* marker)
 
             // 继续往下一层的节点做偏导
             first = CG_LIST_TOP( CG_NODE_IN(operator) );
-            while (first != CG_LIST_HEAD( CG_NODE_IN(operator) ){
+            while (first != CG_LIST_HEAD( CG_NODE_IN(operator))){
                 sub_znode = first->ref;
                 if (cg_ticket_is_clean(marker, sub_znode)) {
                     ret = __do_differentiate(sub_znode, marker);

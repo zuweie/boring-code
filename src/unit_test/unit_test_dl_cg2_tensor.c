@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-13 14:20:17
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-04 15:41:44
+ * @LastEditTime: 2026-08-16 22:01:51
  * @FilePath: /boring-code/src/unit_test/unit_test_cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -146,6 +146,7 @@ void test_tensor_binary_opt(void)
     cg_tensor_t* t4 = cg_tensor_create(&alloc, 2, 4, 5);
     cg_tensor_t* t5 = cg_tensor_create(&alloc, 3, 1, 2, 1);
     cg_tensor_t* t6 = cg_tensor_create(&alloc, 3, 3, 1, 2);
+    
     cg_tensor_fill(t1, 1.f);
     cg_tensor_fill(t2, 1.f);
     cg_tensor_fill(t3, 1.f);
@@ -186,7 +187,7 @@ void test_tensor_binary_opt(void)
     cg_allocator_reset(&alloc);
 }
 
-int do_cg_tensor_test (void) 
+int do_dl_cg2_tensor_test (void) 
 {
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Test tensor Suite", suite_success_init, suite_success_clean);

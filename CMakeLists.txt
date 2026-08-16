@@ -32,7 +32,7 @@ set (SOURCE
     src/unit_test/unit_test_deep_learning.c
     src/unit_test/unit_test_dl_cg2.c
     src/unit_test/unit_test_reinforce_learning.c
-    src/unit_test/unit_test_cg_tensor.c
+    src/unit_test/unit_test_dl_cg2_tensor.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__vector.c
@@ -89,12 +89,11 @@ set (SOURCE
     src/deep_learning/compute_graph2/cg_tensor_shape.c
     src/deep_learning/compute_graph2/cg_tensor.c
     src/deep_learning/compute_graph2/cg_sub_tensor.c
-    src/deep_learning/compute_graph2/cg_calflow.c
+    src/deep_learning/compute_graph2/cg_flow.c
     src/deep_learning/compute_graph2/cg_ticket.c
     src/deep_learning/nn2/nn2_znode.c
     src/deep_learning/nn2/nn2.c
     src/deep_learning/nn/nn.c
-    src/deep_learning/nnalloc/nn_alloc.c
     src/reinforce_learning/grid_world.c
     src/reinforce_learning/policy.c
     src/reinforce_learning/agent.c

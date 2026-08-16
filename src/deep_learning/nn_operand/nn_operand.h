@@ -4,6 +4,8 @@
 #include "deep_learning/compute_graph2/cg_tensor.h"
 #include "deep_learning/compute_graph2/cg_operand.h"
 
+typedef struct nn nn_t;
+
 typedef struct nn_operand {
 
     cg_operand_t _base;
@@ -18,13 +20,13 @@ static inline int __reset(cg_operand_t* thiz) {
     return 0;
 }
 
-static inline nn_operand_t* nn_operand_create(const char* id, int in_dimens, int out_dimens)
+static inline nn_operand_t* nn_operand_create(nn_t* nn, const char* id, int in_dimens, int out_dimens)
 {
     nn_operand_t* operand = (nn_operand_t*) malloc (sizoeof(nn_operand_t));
     cg_operand_init(operand, id, __reset);
     *operand = (nn_operand_t) {
-        .x  = cg_tensor_create(Get_alloc(), 2, in_dimens, out_dimens),
-        .Gx = cg_tensor_create(Get_alloc(), 2, in_dimens, out_dimens)
+        .x  = cg_tensor_create(&(nn->alloc), 2, in_dimens, out_dimens),
+        .Gx = cg_tensor_create(&(nn->alloc), 2, in_dimens, out_dimens)
     };
     return operand;
 }

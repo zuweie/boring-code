@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-04 14:07:01
+ * @LastEditTime: 2026-08-16 21:57:18
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -24,12 +24,12 @@
 /**
  * @brief tensor 内部函数，请勿直接调用
  */
-static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axes, const int slice[], int working_axis)
+static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axes, const int slice[], int curr_dim)
 {
     int i,j;
     int ret1, ret2, ret;
 
-    if ( working_axis == slice_axes ) {
+    if ( curr_dim == slice_axes ) {
         // 到了指定的 axis，直接 copy
         return sub_tensor_to_sub(dest, src);
 
@@ -38,12 +38,12 @@ static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axe
         sub_tensor_t sub_dest;
         sub_tensor_t sub_src; 
 
-        for (i=slice[working_axis*2], j=0; i<slice[working_axis*2+1]; ++i, ++j) {
+        for (i=slice[curr_dim*2], j=0; i<slice[curr_dim*2+1]; ++i, ++j) {
 
             sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){j});
-            sub_tensor_get_sub(&sub_src, src, 1, (int[]){i});
+            sub_tensor_get_sub(&sub_src,  src,  1, (int[]){i});
 
-            if ((ret = __do_slice(&sub_dest, &sub_src, slice_axes, slice, working_axis + 1))) return ret;
+            if ((ret = __do_slice(&sub_dest, &sub_src, slice_axes, slice, curr_dim + 1))) return ret;
         }
 
         return 0;

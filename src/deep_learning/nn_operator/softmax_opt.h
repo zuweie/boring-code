@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 18:30:21
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-26 14:14:08
+ * @LastEditTime: 2026-08-16 21:30:40
  * @FilePath: /boring-code/src/deep_learning/nn_operator/softmax_opt.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -22,7 +22,7 @@ typedef struct softmax_opt
 
 static inline int __calculate(cg_node_t* thiz, cg_node_t* out) 
 {
-    softmax_opt*      operator = (cg_operator_t*) thiz;
+    softmax_opt_t*    operator = (cg_operator_t*) thiz;
     cg_operand_t*  out_opreand = (cg_operand_t*) out;
     cg_operand_t*  varaint     = operator->variant;
 
@@ -33,7 +33,7 @@ static inline int __calculate(cg_node_t* thiz, cg_node_t* out)
 
 static inline int __differentiate(cg_node_t* thiz, cg_node_t* variant, cg_ref_t env_gradient)
 {
-    softmax_opt* operator = (cg_operator_t*) thiz;
+    softmax_opt_t* operator = (cg_operator_t*) thiz;
 
     CG_DEBUG("differentiate @ %s: \n", CG_NODE_ID(operator));
     if (variant == operator->variant) {
