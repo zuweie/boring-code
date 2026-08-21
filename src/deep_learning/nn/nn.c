@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-16 21:43:16
+ * @LastEditTime: 2026-08-21 18:31:51
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -78,7 +78,7 @@ int nn_set_train_package(nn_t* nn, nn_train_package_t* package)
     return 0;
 }
 
-linear_opt_t* nn_linear(nn_t* nn, nn_operand_t* _Input, int out_dimens)
+linear_opt_t* nn_linear(nn_t* nn, int in_dimens, int out_dimens)
 {
     int in_dimens = SHAPE_DIMENS(_Input->x->shape, 0);
 

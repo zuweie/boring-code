@@ -33,6 +33,7 @@ set (SOURCE
     src/unit_test/unit_test_dl_cg2.c
     src/unit_test/unit_test_reinforce_learning.c
     src/unit_test/unit_test_dl_cg2_tensor.c
+    src/unit_test/unit_test_dl_cg2_nn.c
     src/base/__list.c
     src/base/__rb_tree.c
     src/base/__vector.c
