@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-07-04 10:57:31
+ * @LastEditTime: 2026-08-22 23:41:53
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -215,6 +215,13 @@ int cg_tensor_arange(cg_tensor_t* t, cg_tensor_elem_type from, cg_tensor_elem_ty
 {
     sub_tensor_t sub_t1 = cg_tensor_to_sub_tensor(t);
     return sub_tensor_arange(&sub_t1, from, to);
+}
+
+int cg_tensor_cpy_to(cg_tensor_t* dest, cg_tensor_t* src)
+{
+    // TODO 1: make the shape of dest became the same as src, if it different with src
+    // TODO 2: cpy the data from src to dest
+    return 0;
 }
 
 int cg_tensor_inspect(cg_tensor_t* t)

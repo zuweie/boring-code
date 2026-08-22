@@ -2,12 +2,12 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 18:30:21
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-16 21:30:40
+ * @LastEditTime: 2026-08-22 18:14:48
  * @FilePath: /boring-code/src/deep_learning/nn_operator/softmax_opt.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-#ifndef __SOFTMAX_H__
-#define __SOFTMAX_H__
+#ifndef __NN_OPERATOR_SOFTMAX_H__
+#define __NN_OPERATOR_SOFTMAX_H__
 
 #include "deep_learning/compute_graph2/cg_debug.h"
 #include "deep_learning/compute_graph2/cg_operator.h"

@@ -1,5 +1,13 @@
-#ifndef __MSE_OPT_H__
-#define __MSE_OPT_H__
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2026-03-15 18:34:49
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2026-08-22 22:43:13
+ * @FilePath: /boring-code/src/deep_learning/nn_library/nn_operator_mse.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%A
+ */
+#ifndef __NN_OPERATOR_MSE_H__
+#define __NN_OPERATOR_MSE_H__
 
 #include "deep_learning/compute_graph2/cg_debug.h"
 #include "deep_learning/compute_graph2/cg_operator.h"
@@ -8,16 +16,16 @@
 typedef struct mse_opt {
 
     cg_operator_t operator;
-    cg_operand_t* y_hat;
-    cg_operand_t* labels;
+    nn_operand_t* y_hat;
+    nn_operand_t* labels;
 
 } mse_opt_t;
 
 static inline int __calculate(cg_node_t* thiz, cg_node_t* out)
 {
     mse_opt_t* operator   = (mse_opt_t*) thiz;
-    cg_operand_t* y_hat   = operator->y_hat;
-    cg_operand_t* labels  = operator->labels;
+    nn_operand_t* y_hat   = operator->y_hat;
+    nn_operand_t* labels  = operator->labels;
 
     CG_DEBUG("calculate @ %s\n", CG_NODE_ID(operator));
     CG_DEBUG("%s = (%s - %s)^2 \n", CG_NODE_ID(out), CG_NODE_ID(y_hat), CG_NODE_ID(labels));
@@ -27,8 +35,8 @@ static inline int __calculate(cg_node_t* thiz, cg_node_t* out)
 static inline int __differentiate(cg_node_t* thiz, cg_node_t* variant, cg_ref_t env_gradient)
 {
     mse_opt_t* operator = (mse_opt_t*) thiz;
-    cg_operand_t* y_hat  = operator->variant;
-    cg_operand_t* labels = operator->labels;
+    nn_operand_t* y_hat  = operator->variant;
+    nn_operand_t* labels = operator->labels;
     
     CG_DEBUG("differentiate @ %s\n", CG_NODE_ID(operator));
     if (variant == y_hat) {
@@ -41,21 +49,15 @@ static inline int __differentiate(cg_node_t* thiz, cg_node_t* variant, cg_ref_t 
     return 0;
 }
 
-static inline mse_opt_t* mse_opt_create(const char* id, cg_operand_t* variant, cg_operand_t* labels) {
+static inline mse_opt_t* mse_opt_create(const char* id, nn_operand_t* variant, nn_operand_t* labels) {
 
     mse_opt_t* operator = (mse_opt_t*) malloc (sizeof(mse_opt_t));
 
-    cg_operator_init(operator, id, );
+    cg_operator_init(operator, id, __calculate, __differentiate, NULL);
 
     operator->variant   = variant;
     operator->labels    = labels;
     return operator;
-}
-
-static inline int mse_opt_recycle(mse_opt_t* thiz) {
-    cg_operator_reset(thiz);
-    free(thiz);
-    return 0;
 }
 
 #endif

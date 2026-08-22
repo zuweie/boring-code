@@ -15,20 +15,21 @@ typedef struct nn_operand {
 } nn_operand_t;
 
 static inline int __reset(cg_operand_t* thiz) {
-    cg_tensor_recycle(((nn_operand_t*)operand)->x);
-    cg_tensor_recycle(((nn_operand_t*)operand)->Gx);
+    cg_tensor_recycle(((nn_operand_t*)thiz)->x);
+    cg_tensor_recycle(((nn_operand_t*)thiz)->Gx);
     return 0;
 }
 
-static inline nn_operand_t* nn_operand_create(nn_t* nn, const char* id, int in_dimens, int out_dimens)
+static inline nn_operand_t* nn_operand_create(cg_allocator_t* alloc, const char* id, int rows, int cols)
 {
     nn_operand_t* operand = (nn_operand_t*) malloc (sizoeof(nn_operand_t));
     cg_operand_init(operand, id, __reset);
     *operand = (nn_operand_t) {
-        .x  = cg_tensor_create(&(nn->alloc), 2, in_dimens, out_dimens),
-        .Gx = cg_tensor_create(&(nn->alloc), 2, in_dimens, out_dimens)
+        .x  = cg_tensor_create(alloc, 2, rows, cols),
+        .Gx = cg_tensor_create(alloc, 2, rows, cols)
     };
     return operand;
 }
+
 
 #endif

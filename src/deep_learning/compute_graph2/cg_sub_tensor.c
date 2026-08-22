@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-16 21:57:18
+ * @LastEditTime: 2026-08-22 16:06:47
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -131,11 +131,11 @@ static int __do_padding(sub_tensor_t* dest, sub_tensor_t* src, const int padding
  * @param batch_opt 操作数 sub_t1 {4,5} opt sub_t2 {3,4,5,6} --> sub_dest
  * @return int 
  */
-static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2, int working_axis, int opt_axis, int batch_gap, int (*batch_opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
+static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2, int curr_dim, int opt_axis, int batch_gap, int (*batch_opt)(sub_tensor_t* sub_dest, sub_tensor_t* sub_t1, sub_tensor_t* sub_t2))
 {
 
 
-    if (working_axis == opt_axis) {
+    if (curr_dim == opt_axis) {
 
         return batch_opt(dest, t1, t2);
 
@@ -145,7 +145,7 @@ static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t
         sub_tensor_t sub_t1;
         sub_tensor_t sub_t2;
 
-        int axis_t2 = working_axis - batch_gap;
+        int axis_t2 = curr_dim - batch_gap;
 
         if (axis_t2 >=0 && AXIS_DIMENS(t2->shape) != 1 && AXIS_DIMENS(t2->shape) != AXIS_DIMENS(t1->shape)) {
             // error 
@@ -171,7 +171,7 @@ static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t
             }
 
             sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
-            __do_binary_opt(&sub_dest, &sub_t1, &sub_t2, working_axis+1, opt_axis, batch_gap, batch_opt);
+            __do_binary_opt(&sub_dest, &sub_t1, &sub_t2, curr_dim+1, opt_axis, batch_gap, batch_opt);
         }
     }
     return 0;
