@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-22 23:41:53
+ * @LastEditTime: 2026-08-23 10:45:41
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -161,7 +161,7 @@ static int __display_elems(sub_tensor_t* sub_tensor, int space) {
 }
 
 
-cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
+cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, void* data, int axes, ...)
 {
     int dimensions[axes];
 
@@ -175,9 +175,13 @@ cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...)
     int shape_ok;
     __tensor_shape_check(shape_ok, axes, dimensions);
     
-    if (shape_ok == 0)  
-        return __create_tensor(axes, dimensions, alloc);
-    
+    if (shape_ok == 0)  {
+        cg_tensor_t* dest = __create_tensor(axes, dimensions, alloc); 
+        if (data) {
+            memcpy(dest->elems, data, TENSOR_SIZE(dest));
+        }
+        return dest;
+    }
     return NULL;
 }
 
@@ -221,6 +225,14 @@ int cg_tensor_cpy_to(cg_tensor_t* dest, cg_tensor_t* src)
 {
     // TODO 1: make the shape of dest became the same as src, if it different with src
     // TODO 2: cpy the data from src to dest
+    if (!cg_tensor_shape_is_same(dest->shape, src->shape)) {
+        // need to reshape
+        int new_dimes[AXIS_AXES(src->shape)];
+        __reshape(&dest->shape, &dest->elems, AXIS_AXES(src->shape), new_dimes, dest->allocator);
+    }
+    sub_tensor_t sub_dest = cg_tensor_to_sub_tensor(dest);
+    sub_tensor_t sub_src  = cg_tensor_to_sub_tensor(src);
+    sub_tensor_to_sub(&sub_dest, &sub_src);
     return 0;
 }
 

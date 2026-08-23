@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-22 23:39:24
+ * @LastEditTime: 2026-08-23 10:42:15
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -23,7 +23,7 @@ typedef struct cg_tensor {
     cg_tensor_axis_t* shape;
 } cg_tensor_t;
 
-cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, int axes, ...);
+cg_tensor_t* cg_tensor_create(cg_allocator_t* alloc, void* data, int axes, ...);
 cg_tensor_t* cg_tensor_create_cpy(cg_tensor_t* thiz);
 int cg_tensor_reshape(cg_tensor_t* thiz, int axes, int shape[]);
 int cg_tensor_recycle(cg_tensor_t* thiz);

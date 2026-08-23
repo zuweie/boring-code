@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 18:30:21
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-22 18:14:48
+ * @LastEditTime: 2026-08-23 08:58:22
  * @FilePath: /boring-code/src/deep_learning/nn_operator/softmax_opt.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -22,9 +22,9 @@ typedef struct softmax_opt
 
 static inline int __calculate(cg_node_t* thiz, cg_node_t* out) 
 {
-    softmax_opt_t*    operator = (cg_operator_t*) thiz;
-    cg_operand_t*  out_opreand = (cg_operand_t*) out;
-    cg_operand_t*  varaint     = operator->variant;
+    softmax_opt_t* operator    = (cg_operator_t*) thiz;
+    nn_operand_t*  out_opreand = (cg_operand_t*) out;
+    nn_operand_t*  varaint     = operator->variant;
 
     CG_DEBUG("calculate @ %s: \n", CG_NODE_ID(operator));
     CG_DEBUG("%s = softmax(%s) \n", CG_NODE_ID(out_opreand), CG_NODE_ID(varaint));

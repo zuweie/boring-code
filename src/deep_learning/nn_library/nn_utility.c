@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-22 10:01:59
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-22 23:26:26
+ * @LastEditTime: 2026-08-23 09:41:34
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_utility.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -47,14 +47,14 @@ char* node_is(cg_node_t* node, const char* type)
 }
 
 // 线性运算
-linear_opt_t* linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_count, int in_dimens, int out_dimens, cg_list_t* node_recycle_list)
+linear_opt_t* linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_count, int in_dimens, int out_dimens, cg_list_t* nodes_list)
 {
     
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (!_Input) {
         // 新建 _Input 默认是 in_dimens 个属性， 1 条记录。
         _Input = nn_operand_create(alloc, __gen_node_id(++(*node_count), "x"), in_dimens, 1);
-        cg_list_push(node_recycle_list, _Input);
+        cg_list_push(nodes_list, _Input);
     } else if (!node_is(_Input, "x")) {
         CG_DEBUG("Error <%d@%s>: pop up node is a \'%s\', not a \'x\'\n", __LINE__, __FILE__, node_type_of(_Input));
         return NULL;
@@ -77,16 +77,16 @@ linear_opt_t* linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_co
     cg_list_push(build_stack, W);
     cg_list_push(build_stack, z);
 
-    cg_list_push(node_recycle_list, W);
-    cg_list_push(node_recycle_list, b);
-    cg_list_push(node_recycle_list, z);
-    cg_list_push(node_recycle_list, linear_opt);
+    cg_list_push(nodes_list, W);
+    cg_list_push(nodes_list, b);
+    cg_list_push(nodes_list, z);
+    cg_list_push(nodes_list, linear_opt);
     
     return linear_opt;
 }
 
 // relu 激活
-relu_opt_t* relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_recycle_list)
+relu_opt_t* relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
 
@@ -107,8 +107,8 @@ relu_opt_t* relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count,
 
         cg_list_push(build_stack, z);
 
-        cg_list_push(node_recycle_list, z);
-        cg_list_push(node_recycle_list, relu);
+        cg_list_push(nodes_list, z);
+        cg_list_push(nodes_list, relu);
 
         return relu;
 
@@ -123,13 +123,13 @@ relu_opt_t* relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count,
 }
 
 // softmax
-softmax_opt_t* softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_recycle_list)
+softmax_opt_t* softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
         nn_operand_t z = nn_operand_create(
             alloc, 
-            __gen_node_id(++(*node_count), "x"), 
+            __gen_node_id(++(*node_count), "out"), 
             SHAPE_DIMENS(_Input->x->shape, 0),
             SHAPE_DIMENS(_Input->x->shape, 1)
         );
@@ -139,8 +139,8 @@ softmax_opt_t* softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_
         
         cg_list_push(build_stack, z);
 
-        cg_list_push(node_recycle_list, z);
-        cg_list_push(node_recycle_list, softmax);
+        cg_list_push(nodes_list, z);
+        cg_list_push(nodes_list, softmax);
 
         return softmax;
 
@@ -153,16 +153,11 @@ softmax_opt_t* softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_
 }
 
 // most square error
-mse_opt_t* mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_recycle_list)
+mse_opt_t* mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
-        nn_operand_t z = nn_operand_create(
-            alloc, 
-            __gen_node_id(++(*node_count), "x"), 
-            SHAPE_DIMENS(_Input->x->shape, 0),
-            SHAPE_DIMENS(_Input->x->shape, 1)
-        );
+
 
         nn_operand_t* labls  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "labels"), SHAPE_DIMENS(_Input->x->shape, 0), 1);
         nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
@@ -174,9 +169,9 @@ mse_opt_t* mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, c
         
         cg_list_push(build_stack, _Loss);
 
-        cg_list_push(node_recycle_list, labls);
-        cg_list_push(node_recycle_list, _Loss);
-        cg_list_push(node_recycle_list, mse);
+        cg_list_push(nodes_list, labls);
+        cg_list_push(nodes_list, _Loss);
+        cg_list_push(nodes_list, mse);
         
         return mse;
 
@@ -189,16 +184,10 @@ mse_opt_t* mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, c
 }
 
 // corss entropy
-crossentropy_opt_t* crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_recycle_list)
+crossentropy_opt_t* crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
-        nn_operand_t z = nn_operand_create(
-            alloc, 
-            __gen_node_id(++(*node_count), "x"), 
-            SHAPE_DIMENS(_Input->x->shape, 0),
-            SHAPE_DIMENS(_Input->x->shape, 1)
-        );
 
         nn_operand_t* labls  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "labels"), SHAPE_DIMENS(_Input->x->shape, 0), 1);
         nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
@@ -210,9 +199,9 @@ crossentropy_opt_t* crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, 
         
         cg_list_push(build_stack, _Loss);
 
-        cg_list_push(node_recycle_list, labls);
-        cg_list_push(node_recycle_list, _Loss);
-        cg_list_push(node_recycle_list, crx);
+        cg_list_push(nodes_list, labls);
+        cg_list_push(nodes_list, _Loss);
+        cg_list_push(nodes_list, crx);
         
         return crx;
 
