@@ -2,7 +2,7 @@
  * @Description: test case for unc
  * @Author: your name
  * @Date: 2019-09-04 10:43:36
- * @LastEditTime: 2026-06-13 14:23:58
+ * @LastEditTime: 2026-08-23 11:59:41
  * @LastEditors: zuweie jojoe.wei@gmail.com
  */
 #include <stdio.h>
@@ -63,7 +63,8 @@ int main ()
     // do_deep_learning_test();
     // do_cg2_test();
     // do_reinforce_learning_test();
-    do_cg_tensor_test();
+    // do_cg_tensor_test();
+    do_dl_cg2_nn_test();
     /* run the test case */
     
     CU_basic_set_mode(CU_BRM_VERBOSE);
