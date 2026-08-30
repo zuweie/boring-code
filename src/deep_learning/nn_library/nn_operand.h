@@ -1,6 +1,6 @@
 #ifndef __NN_OPERAND_H__
 #define __NN_OPERAND_H__
-
+#include <stdlib.h>
 #include "deep_learning/compute_graph2/cg_tensor.h"
 #include "deep_learning/compute_graph2/cg_operand.h"
 

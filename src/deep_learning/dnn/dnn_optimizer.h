@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-23 09:19:58
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 10:56:06
+ * @LastEditTime: 2026-08-30 13:59:37
  * @FilePath: /boring-code/src/deep_learning/dnn/dnn_optimizer.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,6 +19,8 @@ struct dnn_optimizer {
     int    batch;
     int    max_iter;
     int    err_stable;
+    int    iter;
+    int    stable_count;
 
     float  epsilon;
     float  alpha;
@@ -52,6 +54,8 @@ static inline int dnn_optimizer_init(
     int (*step)(dnn_optimizer_t*)
 ) {
     *optimizer = (dnn_optimizer_t) {
+        .iter         = 0,
+        .stable_count = 0,
         .model       = model,
         .batch       = batch,
         .max_iter    = max_iter,

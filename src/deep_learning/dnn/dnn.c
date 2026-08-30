@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 11:29:26
+ * @LastEditTime: 2026-08-30 13:47:44
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -69,7 +69,7 @@ int dnn_reset(dnn_t* nn)
 
 int dnn_linear(dnn_t* nn, int in_dimens, int out_dimens)
 {
-    linear_opt_t* l = linear(&nn->alloc, nn->build_stack, &nn->node_count, in_dimens, out_dimens, nn->nodes_list);
+    linear_opt_t* l = nn_linear(&nn->alloc, nn->build_stack, &nn->node_count, in_dimens, out_dimens, nn->nodes_list);
     if (l && !nn->_Input) {
         nn->_Input = l->x;
     }
@@ -80,14 +80,14 @@ int dnn_linear(dnn_t* nn, int in_dimens, int out_dimens)
 
 int dnn_relu(dnn_t* nn)
 {
-    void* ret = relu(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    void* ret = nn_relu(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
     if (!ret) CG_DEBUG("Error <%d@%s>: relu faild\n", __LINE__, __FILE__);
     return !ret;
 }
 
 int dnn_mse(dnn_t* nn)
 {
-    void* ret = mse(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    void* ret = nn_mse(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
     if (ret) {
         if (!nn->_Loss) {
             nn->_Loss = (nn_operand_t*)cg_list_pop(nn->build_stack);
@@ -110,14 +110,14 @@ int dnn_softcrx(dnn_t* nn)
         cg_list_push(nn->build_stack, top_operand);
 
         // TODO 1: softmax
-        void* soft = softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+        void* soft = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
         if (soft) {
             nn->_Output = (nn_operand_t*) cg_list_pop(nn->build_stack);
         } else {
             CG_DEBUG("Error <%d@%s>: softmax faild\n", __LINE__, __FILE__);
             return !soft;
         }
-        void* crx = crossentropy(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+        void* crx = nn_crossentropy(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
         if (crx) {
             nn->_Loss = (nn_operand_t*) cg_list_pop(nn->build_stack);
         } else {
@@ -134,7 +134,7 @@ int dnn_softcrx(dnn_t* nn)
 
 int dnn_softmax(dnn_t* nn)
 {
-    void* ret = softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    void* ret = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
     if (ret) nn->_Output = (nn_operand_t*)cg_list_pop(nn->build_stack);
     else CG_DEBUG("Error <%d@%s>: softmax faild!\n", __LINE__, __FILE__);
     return !ret;

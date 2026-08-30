@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-16 22:01:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-23 11:42:08
+ * @LastEditTime: 2026-08-30 14:08:44
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2_nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,6 +14,7 @@
 #include "deep_learning/compute_graph2/cg_tensor.h"
 #include "deep_learning/dnn/dnn.h"
 #include "deep_learning/dnn/dnn_optimizer.h"
+#include "deep_learning/compute_graph2/cg_debug.h"
 
 
 static int  suite_success_init (void) 
@@ -30,21 +31,25 @@ static int suite_success_clean (void)
 
 static int __dnn_prepare(dnn_optimizer_t* thiz)
 {
+    CG_DEBUG("dnn prepare: update batch training data\n");
     return 0;
 }
 
 static int __dnn_term(dnn_optimizer_t* thiz)
 {
-    return 0;
+    return thiz->iter > thiz->max_iter;
 }
 
 static int __dnn_processing(dnn_optimizer_t* thiz)
 {
+    thiz->iter++;
+    CG_DEBUG("dnn processing: %d round trainning\n", thiz->iter);
     return 0;
 }
 
 static int __dnn_step(dnn_optimizer_t* thiz)
 {
+    CG_DEBUG("dnn step, update nn`s weigth\n");
     return 0;
 }
 

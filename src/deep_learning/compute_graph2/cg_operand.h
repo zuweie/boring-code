@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 14:20:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 10:22:45
+ * @LastEditTime: 2026-08-30 13:28:52
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_operand.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,6 +11,7 @@
 
 #include "cg_ref.h"
 #include "cg_node.h"
+#include "cg_debug.h"
 
 typedef struct cg_operator cg_operator_t;
 

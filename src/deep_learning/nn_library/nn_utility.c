@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-22 10:01:59
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-23 09:41:34
+ * @LastEditTime: 2026-08-30 13:46:57
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_utility.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -37,7 +37,7 @@ char* node_typeof(cg_node_t* node)
         return cg_node_type;
     } else {
         CG_DEBUG("Error <%d@%s>: cg_node`s id(%s) format is wrong\n", __LINE__, __FILE__, CG_NODE_ID(node));
-        return "undefined!"
+        return "undefined!";
     }
 }
 
@@ -47,7 +47,7 @@ char* node_is(cg_node_t* node, const char* type)
 }
 
 // 线性运算
-linear_opt_t* linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_count, int in_dimens, int out_dimens, cg_list_t* nodes_list)
+linear_opt_t* nn_linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_count, int in_dimens, int out_dimens, cg_list_t* nodes_list)
 {
     
     nn_operand_t* _Input = cg_list_pop(build_stack);
@@ -56,7 +56,7 @@ linear_opt_t* linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_co
         _Input = nn_operand_create(alloc, __gen_node_id(++(*node_count), "x"), in_dimens, 1);
         cg_list_push(nodes_list, _Input);
     } else if (!node_is(_Input, "x")) {
-        CG_DEBUG("Error <%d@%s>: pop up node is a \'%s\', not a \'x\'\n", __LINE__, __FILE__, node_type_of(_Input));
+        CG_DEBUG("Error <%d@%s>: pop up node is a \'%s\', not a \'x\'\n", __LINE__, __FILE__, node_typeof(_Input));
         return NULL;
     } else if (SHAPE_DIMENS(_Input->x->shape, 0) != in_dimens) {
         CG_DEBUG("Error <%d@%s>: in_dimens(%d) does not match _Input rows(%d)\n", __LINE__, __FILE__, in_dimens,SHAPE_DIMENS(_Input->x->shape, 0));
@@ -86,7 +86,7 @@ linear_opt_t* linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_co
 }
 
 // relu 激活
-relu_opt_t* relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+relu_opt_t* nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
 
@@ -100,7 +100,7 @@ relu_opt_t* relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count,
             SHAPE_DIMENS(_Input->x->shape, 1)
         );
 
-        relu_opt_t* relu = relu_opt_create(__gen_node_id(++(*node_count), "relu"), __Input);
+        relu_opt_t* relu = relu_opt_create(__gen_node_id(++(*node_count), "relu"), _Input);
         
         cg_graph_link(_Input, relu);
         cg_graph_link(relu, z);
@@ -123,11 +123,11 @@ relu_opt_t* relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count,
 }
 
 // softmax
-softmax_opt_t* softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+softmax_opt_t* nn_softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
-        nn_operand_t z = nn_operand_create(
+        nn_operand_t* z = nn_operand_create(
             alloc, 
             __gen_node_id(++(*node_count), "out"), 
             SHAPE_DIMENS(_Input->x->shape, 0),
@@ -153,7 +153,7 @@ softmax_opt_t* softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_
 }
 
 // most square error
-mse_opt_t* mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+mse_opt_t* nn_mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
@@ -184,7 +184,7 @@ mse_opt_t* mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, c
 }
 
 // corss entropy
-crossentropy_opt_t* crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+crossentropy_opt_t* nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
