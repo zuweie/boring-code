@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-23 11:37:57
+ * @LastEditTime: 2026-08-30 09:33:32
  * @FilePath: /boring-code/src/deep_learning/nn/nn.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,16 +11,19 @@
 
 #include "deep_learning/compute_graph2/cg_allocator.h"
 
-typedef struct cg_tensor cg_tensor_t;
-typedef struct dnn {
-    cg_allocator_t  alloc;
+typedef struct cg_list       cg_list_t;
+typedef struct cg_tensor     cg_tensor_t;
+typedef struct nn_operand    nn_operand_t;
+typedef struct dnn_optimizer dnn_optimizer_t;
 
+typedef struct dnn {
+    // 非常简单的内存配置器
+    cg_allocator_t  alloc;
     nn_operand_t*   _Output;
     nn_operand_t*   _Input;
     nn_operand_t*   _Loss;
 
     cg_list_t*      nodes_list;
-
     // 组网用
     cg_list_t*      build_stack;
     int             node_count;

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-16 00:20:41
+ * @LastEditTime: 2026-08-30 10:19:33
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -72,7 +72,7 @@ static int __give_tickets (cg_node_t* znode, cg_hash_t* marker)
 static int __do_calculate(cg_operand_t* znode, cg_hash_t* marker)
 {
     int ret = 0;
-    if (!cg_hash_has(marker, CG_NODE_ID(znode)) {
+    if (!cg_hash_has(marker, CG_NODE_ID(znode))) {
         // 尚未经过计算需要计算
         if ( CG_NODE_IS_OPERAND(znode) ) {
             cg_operator_t*  operator = cg_operand_get_producer(znode);
@@ -100,7 +100,7 @@ static int __do_calculate(cg_operand_t* znode, cg_hash_t* marker)
                 cg_hash_set(marker, CG_NODE_ID(znode), 1L );
             
         } else {
-            CG_DEBUG("ERROR <%d@%s>: %s should be a operand\n", __LINE__, __FILE__, CG_NODE_ID(znode))
+            CG_DEBUG("ERROR <%d@%s>: %s should be a operand\n", __LINE__, __FILE__, CG_NODE_ID(znode));
             ret = -1;
         }
 

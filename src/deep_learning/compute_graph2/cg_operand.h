@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 14:20:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-15 11:53:13
+ * @LastEditTime: 2026-08-30 10:22:45
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_operand.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,14 +17,14 @@ typedef struct cg_operator cg_operator_t;
 typedef struct cg_operand {
 
     cg_node_t _base;
-    int (*_reset)(cg_operand_t* thiz);
+    int (*_reset)(struct cg_operand* thiz);
     
 } cg_operand_t;
 
 static inline int cg_operand_init(cg_operand_t* thiz, const char* id, int (*reset)(cg_operand_t*))
 {
     cg_node_init(thiz, id, e_operand);
-    thiz->_reset = reset
+    thiz->_reset = reset;
     return 0;
 }   
 
@@ -32,6 +32,7 @@ static inline int cg_operand_reset(cg_operand_t* thiz)
 {
     if (thiz->_reset) 
         thiz->_reset(thiz);
+        
     return cg_node_reset(thiz);
 }
 

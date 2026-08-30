@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-23 11:06:13
+ * @LastEditTime: 2026-08-30 11:29:26
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,7 +17,7 @@
 #include "deep_learning/compute_graph2/cg_graph.h"
 #include "deep_learning/compute_graph2/cg_tensor_shape.h"
 #include "deep_learning/compute_graph2/cg_debug.h"
-#include "deep_learning/compute_graph2/cg_calculate_flow.h"
+#include "deep_learning/compute_graph2/cg_flow.h"
 #include "deep_learning/compute_graph2/cg_operand.h"
 #include "deep_learning/compute_graph2/cg_operator.h"
 
@@ -28,13 +28,15 @@
 #include "deep_learning/nn_library/nn_operator_crossentropy.h"
 #include "deep_learning/nn_library/nn_utility.h"
 
+#include "dnn_optimizer.h"
 #include "dnn.h"
+
 
 static int __recycle_node(cg_node_t* node)
 {
     if (CG_NODE_IS_OPERAND(node)) {
         cg_operand_reset(node);
-        CG_DEBUG("INFO: released operand(%s)\n", CG_NODE_ID(node))
+        CG_DEBUG("INFO: released operand(%s)\n", CG_NODE_ID(node));
     } else if (CG_NODE_IS_OPERATOR(node)) {
         cg_operator_reset(node);
         CG_DEBUG("INFO: released operator(%s)\n", CG_NODE_ID(node));
@@ -69,16 +71,16 @@ int dnn_linear(dnn_t* nn, int in_dimens, int out_dimens)
 {
     linear_opt_t* l = linear(&nn->alloc, nn->build_stack, &nn->node_count, in_dimens, out_dimens, nn->nodes_list);
     if (l && !nn->_Input) {
-        nn->_Input = l->_Input;
+        nn->_Input = l->x;
     }
-    // 这个有可能是输出层,先把它的输出 markdown
+    // 这个也有可能是输出层,先把它的输出 markdown
     if (l) nn->_Output = (nn_operand_t*)(CG_LIST_TOP(nn->build_stack)->ref);
     return !l;
 }
 
 int dnn_relu(dnn_t* nn)
 {
-    void* ret = relu(&nn->alloc, nn->build_stack, &nn->node_count, nn->recyc_list);
+    void* ret = relu(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
     if (!ret) CG_DEBUG("Error <%d@%s>: relu faild\n", __LINE__, __FILE__);
     return !ret;
 }
@@ -139,16 +141,16 @@ int dnn_softmax(dnn_t* nn)
 }
 
 
-int dnn_fit(dnn_t* nn, dnn_optimizer_t* optimizer)
+int dnn_fit(dnn_optimizer_t* optimizer)
 {
 
     int term = 1;
     do {
         optimizer->prepare(optimizer);
-        cg_calculate(nn->_Loss);
+        cg_calculate(optimizer->model->_Loss);
         if (term = optimizer->term(optimizer)) {
             // do backward propagetion continue to fit
-            cg_derivative(nn->_Loss);
+            cg_derivative(optimizer->model->_Loss);
             optimizer->step(optimizer);
         }
         optimizer->processing(optimizer);

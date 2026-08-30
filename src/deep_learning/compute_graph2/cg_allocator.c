@@ -69,12 +69,18 @@ void* cg_alloc(cg_allocator_t* alloc, unsigned int size)
             }
             // 最后一块 block 的 link 字段指向 alloc->blocks[blocks_index] 的地址。
             // 将这块划分好的 blocks 挂入 alloc->blocks 中。
-            block_first->link           = alloc->blocks[block_index];
+            block_first->link          = alloc->blocks[block_index];
             alloc->blocks[block_index] = block_head;
 
             // 添加统计
             alloc->total_alloc += block_size * ALLOC_NUMBER; 
-            CG_DEBUG("alloc %d chuck(addr:%p) from system, current %d memory\n", block_size * ALLOC_NUMBER, chunk, alloc->total_alloc);
+            
+            CG_DEBUG("alloc %d chuck(addr:%p) from system, current %d memory, first block address is %p\n", \
+                block_size * ALLOC_NUMBER, \
+                chunk, \
+                alloc->total_alloc,\
+                alloc->blocks[block_index]
+            );
         }
 
         // 把当前的 block 抽出来。

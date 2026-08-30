@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 18:34:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-22 22:43:13
+ * @LastEditTime: 2026-08-30 12:30:37
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_operator_mse.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%A
  */
@@ -11,12 +11,13 @@
 
 #include "deep_learning/compute_graph2/cg_debug.h"
 #include "deep_learning/compute_graph2/cg_operator.h"
-#include "deep_learning/compute_graph2/cg_operand.h"
+
+#include "nn_operand.h"
 
 typedef struct mse_opt {
 
     cg_operator_t operator;
-    nn_operand_t* y_hat;
+    nn_operand_t* x;
     nn_operand_t* labels;
 
 } mse_opt_t;
@@ -24,25 +25,25 @@ typedef struct mse_opt {
 static inline int __calculate(cg_node_t* thiz, cg_node_t* out)
 {
     mse_opt_t* operator   = (mse_opt_t*) thiz;
-    nn_operand_t* y_hat   = operator->y_hat;
+    nn_operand_t* x       = operator->x;
     nn_operand_t* labels  = operator->labels;
 
     CG_DEBUG("calculate @ %s\n", CG_NODE_ID(operator));
-    CG_DEBUG("%s = (%s - %s)^2 \n", CG_NODE_ID(out), CG_NODE_ID(y_hat), CG_NODE_ID(labels));
+    CG_DEBUG("%s = (%s - %s)^2 \n", CG_NODE_ID(out), CG_NODE_ID(x), CG_NODE_ID(labels));
     return 0;
 }
 
 static inline int __differentiate(cg_node_t* thiz, cg_node_t* variant, cg_ref_t env_gradient)
 {
     mse_opt_t* operator = (mse_opt_t*) thiz;
-    nn_operand_t* y_hat  = operator->variant;
+    nn_operand_t* x      = operator->x;
     nn_operand_t* labels = operator->labels;
     
     CG_DEBUG("differentiate @ %s\n", CG_NODE_ID(operator));
-    if (variant == y_hat) {
-        CG_DEBUG("delta %s = (%s - %s) X env_gradient\n", CG_NODE_ID(y_hat), CG_NODE_ID(y_hat), CG_NODE_ID(labels));
+    if (variant == x) {
+        CG_DEBUG("delta %s = (%s - %s) X env_gradient\n", CG_NODE_ID(x), CG_NODE_ID(x), CG_NODE_ID(labels));
     } else if (variant == labels) {
-        CG_DEBUG("delta %s is useless\n", CG_NODE_ID(labels));
+        CG_DEBUG("delta %s is no need\n", CG_NODE_ID(labels));
     } else {
         CG_DEBUG("ERROR! %s is not belong %s\n", CG_NODE_ID(variant), CG_NODE_ID(operator));
     }
@@ -55,8 +56,8 @@ static inline mse_opt_t* mse_opt_create(const char* id, nn_operand_t* variant, n
 
     cg_operator_init(operator, id, __calculate, __differentiate, NULL);
 
-    operator->variant   = variant;
-    operator->labels    = labels;
+    operator->x      = variant;
+    operator->labels = labels;
     return operator;
 }
 
