@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-22 10:01:59
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-06 13:13:52
+ * @LastEditTime: 2026-09-06 22:33:08
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_utility.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -20,6 +20,7 @@
 #include "nn_operator_mse.h"
 #include "nn_operator_crossentropy.h"
 #include "nn_operator_sqrsum.h"
+#include "nn_operator_sum.h"
 #include "nn_utility.h"
 
 static char cg_node_naming[64];
@@ -217,8 +218,8 @@ crossentropy_opt_t* nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stac
 sqrsum_opt_t* nn_sqrsum(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_list, float lamada)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
-    if (_Input && node_is("W")) {
-        nn_operand_t* z      = nn_operand_create(alloc, __gen_node_id(++(*node_count), "x"), 1, 1);
+    if (_Input && node_is(_Input, "W")) {
+        nn_operand_t* z      = nn_operand_create(alloc, __gen_node_id(++(*node_count), "ww2"), 1, 1);
         sqrsum_opt_t* sqrsum = sqrsum_opt_create(__gen_node_id(++(*node_count), "sqrsum"), _Input, lamada);
 
         cg_graph_link(_Input, sqrsum);
@@ -235,4 +236,48 @@ sqrsum_opt_t* nn_sqrsum(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
     }
     return NULL;
+}
+
+sum_opt_t* nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_list) 
+{
+    // TODO 1: check all item in build stack is OK
+    
+    int all_is_W  = 1;
+    int have_loss = 0;
+    cg_list_node_t* first = CG_LIST_TOP(build_stack);
+    while (first != CG_LIST_HEAD(build_stack)) {
+        if (node_is(first->ref, "loss")) {
+            have_loss = 1;
+        }
+        if (!node_is(first->ref, "W")) {
+            all_is_W = 0;
+            break;
+        }
+        first = first->prev;
+    }
+
+    if (!have_loss) {
+        CG_DEBUG("ERROR <%d@%s>: does not have loss\n", __LINE__, __FILE__);
+        return NULL;
+    }
+    if (!all_is_W) {
+        CG_DEBUG("ERROR <%d@%s>: not all cg_node is W\n", __LINE__, __FILE__);
+        return NULL;
+    }
+
+    if (all_is_W && have_loss) {
+        nn_operand_t* _Input = NULL;
+        nn_operand_t* z      = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
+        sum_opt_t* sum_opt   = sum_opt_create(__gen_node_id(++(*node_count), "sum_opt"));
+
+        cg_list_push(node_list, z);
+        cg_list_push(node_list, sum_opt);
+
+        cg_graph_link(sum_opt, z);
+
+        while ( _Input = cg_list_pop(build_stack) ) {
+            sum_opt_add_variant(sum_opt, _Input);
+            cg_graph_link(_Input, sum_opt);
+        }
+    }
 }

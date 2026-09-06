@@ -10,6 +10,7 @@ typedef struct sum_opt
 {
     cg_operator_t operator;
     cg_list_t* xs;
+    
 } sum_opt_t;
 
 static inline int __sum_reset(cg_operator_t* thiz) 
