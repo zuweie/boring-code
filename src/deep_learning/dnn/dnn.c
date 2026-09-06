@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 13:47:44
+ * @LastEditTime: 2026-09-05 17:46:14
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -120,6 +120,7 @@ int dnn_softcrx(dnn_t* nn)
         void* crx = nn_crossentropy(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
         if (crx) {
             nn->_Loss = (nn_operand_t*) cg_list_pop(nn->build_stack);
+            return !crx;
         } else {
             CG_DEBUG("Error <%d@%s>: crx faild\n", __LINE__, __FILE__);
             return !crx;
@@ -148,7 +149,7 @@ int dnn_fit(dnn_optimizer_t* optimizer)
     do {
         optimizer->prepare(optimizer);
         cg_calculate(optimizer->model->_Loss);
-        if (term = optimizer->term(optimizer)) {
+        if (!(term = optimizer->term(optimizer))) {
             // do backward propagetion continue to fit
             cg_derivative(optimizer->model->_Loss);
             optimizer->step(optimizer);
@@ -161,7 +162,7 @@ int dnn_fit(dnn_optimizer_t* optimizer)
 cg_tensor_t* dnn_predict(dnn_t* nn, cg_tensor_t* feature)
 {
     // 输入特征
-    cg_tensor_cpy_to(nn->_Input, feature);
+    cg_tensor_cpy_to(nn->_Input->x, feature);
     // 计算预计
     cg_calculate(nn->_Output);
     // 返回结果

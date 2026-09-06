@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-22 15:34:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-16 00:17:48
+ * @LastEditTime: 2026-09-06 00:20:12
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_ticket.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,33 +15,33 @@
 
 
 
-static cg_ticket_t* __cg_ticket_create(const char* repect_id) 
+static cg_ticket_t* __cg_ticket_create(const char* respect_id) 
 {
     cg_ticket_t* ticket = (cg_ticket_t*) malloc (sizeof (cg_ticket_t));
-    strcpy(ticket->repect_id, repect_id);
+    strcpy(ticket->respect_id, respect_id);
     ticket->next = NULL;
     ticket->used = 0;
     return ticket;
 }
 
-int cg_ticket_give(cg_hash_t* marker, cg_node_t* repect, cg_node_t* x)
+int cg_ticket_give(cg_hash_t* marker, cg_node_t* respect, cg_node_t* x)
 {
     cg_ticket_t* ticket = NULL;
 
-    int found = cg_ticket_get(marker, repect, x, &ticket);
+    int found = cg_ticket_get(marker, respect, x, &ticket);
 
     if (found != 1) {
         
-        cg_ticket_t* new_ticket = __cg_ticket_create( CG_NODE_ID(repect) );
+        cg_ticket_t* new_ticket = __cg_ticket_create( CG_NODE_ID(respect) );
         if (found == 0) {
             ticket->next = new_ticket;
         } else {
-            // found == -1, dose not had any ticket, set the first ticket about repect
+            // found == -1, dose not had any ticket, set the first ticket about respect
             cg_hash_set(marker, CG_NODE_ID(x), new_ticket);
         }
         return 0;
     } 
-    CG_DEBUG("INFO <%d@%s>: x(%s) had ticket about repect(%s)\n", __LINE__, __FILE__,  CG_NODE_ID(x), CG_NODE_ID(repect));
+    CG_DEBUG("INFO <%d@%s>: x(%s) had ticket about respect(%s)\n", __LINE__, __FILE__,  CG_NODE_ID(x), CG_NODE_ID(respect));
     return 0;
 }
 
@@ -57,16 +57,16 @@ int cg_ticket_is_used(cg_ticket_t* ticket)
 }
 
 /**
- * @brief 寻找 x 是否有关于上线 repect 的 ticket。如果这个点没有 ticket 返回但是没有关于 repect 的 ticket 返回 0， 如果有返回 1，
+ * @brief 寻找 x 是否有关于上线 respect 的 ticket。如果这个点没有 ticket 返回但是没有关于 respect 的 ticket 返回 0， 如果有返回 1，
  * 如果完全没有任何 ticket 返回  -1.
  * 
  * @param marker 
- * @param repect 
+ * @param respect 
  * @param x 
  * @param ticket 
  * @return int 
  */
-int cg_ticket_get(cg_hash_t* marker, cg_node_t* repect, cg_node_t* x, cg_ticket_t** ticket)
+int cg_ticket_get(cg_hash_t* marker, cg_node_t* respect, cg_node_t* x, cg_ticket_t** ticket)
 {
     cg_ticket_t* ticket_first = cg_hash_get(marker, CG_NODE_ID(x));
     if (ticket_first) {
@@ -75,7 +75,7 @@ int cg_ticket_get(cg_hash_t* marker, cg_node_t* repect, cg_node_t* x, cg_ticket_
             // 若是找不到 则返回最后一个 ticket
             *ticket = ticket_first;
 
-            if (strcmp(ticket_first->repect_id,  CG_NODE_ID(repect)) == 0) 
+            if (strcmp(ticket_first->respect_id,  CG_NODE_ID(respect)) == 0) 
                 return 1;
 
             ticket_first = ticket_first->next;

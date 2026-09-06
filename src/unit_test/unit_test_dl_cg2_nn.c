@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-16 22:01:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 14:08:44
+ * @LastEditTime: 2026-09-05 16:43:10
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2_nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -43,13 +43,13 @@ static int __dnn_term(dnn_optimizer_t* thiz)
 static int __dnn_processing(dnn_optimizer_t* thiz)
 {
     thiz->iter++;
-    CG_DEBUG("dnn processing: %d round trainning\n", thiz->iter);
+    CG_DEBUG("dnn processing: %d round trainning\n\n", thiz->iter);
     return 0;
 }
 
 static int __dnn_step(dnn_optimizer_t* thiz)
 {
-    CG_DEBUG("dnn step, update nn`s weigth\n");
+    CG_DEBUG("dnn step, update nn`s weigth, total update %d nodes\n", thiz->model->node_count);
     return 0;
 }
 
@@ -65,15 +65,19 @@ static void test_dnn (void)
     dnn_optimizer_t optimizer;
     dnn_init(&simple_nn);
 
-    cg_tensor_t* tensor_train_datas = cg_tensor_create(&simple_nn.alloc, train_datas, 2, 4, 60);
-    cg_tensor_t* tensor_labels      = cg_tensor_create(&simple_nn.alloc, labels, 2, 3, 60);
-    cg_tensor_t* tensor_feature     = cg_tensor_create(&simple_nn.alloc, feature, 2, 4, 1);
+    cg_tensor_t* tensor_train_datas = cg_tensor_create(&simple_nn.alloc,  3, 3, 4, 20);
+    cg_tensor_t* tensor_labels      = cg_tensor_create(&simple_nn.alloc,  3, 3, 3, 20);
+    cg_tensor_t* tensor_feature     = cg_tensor_create(&simple_nn.alloc,  2, 4, 1);
+
+    // cg_tensor_load(tensor_train_datas, train_datas);
+    // cg_tensor_load(tensor_labels, labels);
+    // cg_tensor_load(tensor_feature, feature);
     
     dnn_optimizer_init(
         &optimizer,
         &simple_nn,
         20, 
-        1000,
+        5,
         3,
         0.001f,
         0.05,
@@ -91,6 +95,7 @@ static void test_dnn (void)
     dnn_linear(&simple_nn, 5, 3);
     dnn_softcrx(&simple_nn);
     
+    printf("\n start fiting \n");
     // training
     dnn_fit(&optimizer);
     

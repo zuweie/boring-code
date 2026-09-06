@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 13:06:19
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 13:19:08
+ * @LastEditTime: 2026-09-05 14:54:09
  * @FilePath: /boring-code/src/deep_learning/nn_operator/linear_opt.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -74,14 +74,13 @@ static inline int __linear_diff(cg_operator_t* thiz, cg_operand_t* variant, cg_o
 static inline linear_opt_t* linear_opt_create(const char* id, nn_operand_t* x, nn_operand_t* W, nn_operand_t* b) 
 {
     linear_opt_t* linear_opt = (linear_opt_t*) malloc (sizeof(linear_opt_t));
-
+    
+    linear_opt->x = x;
+    linear_opt->W = W;
+    linear_opt->b = b;
+    
     cg_operator_init(linear_opt, id, __linear_calc, __linear_diff, NULL);
 
-    *linear_opt = (linear_opt_t) {
-        .x  = x,
-        .W  = W,
-        .b  = b
-    };
     return linear_opt;
 }
 

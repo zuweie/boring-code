@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-19 15:08:47
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 10:19:33
+ * @LastEditTime: 2026-09-05 23:26:08
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_calflow.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -63,6 +63,7 @@ static int __give_tickets (cg_node_t* znode, cg_hash_t* marker)
         while (first != CG_LIST_HEAD( ((cg_node_t*)operator)->vertex.in)){
             cg_node_t* sub_znode = first->ref;
             __give_tickets(sub_znode, marker);
+            first = first->prev;
         }
         return 0;
     }
@@ -80,12 +81,12 @@ static int __do_calculate(cg_operand_t* znode, cg_hash_t* marker)
                 // Todo 1: 检测本 operator 下的 sub operand 都计算完毕。
                 cg_list_node_t* first = CG_LIST_TOP( CG_NODE_IN(operator) );
 
-                while (first != CG_LIST_TOP( CG_NODE_IN(operator) ))  {
+                while (first != CG_LIST_HEAD( CG_NODE_IN(operator) ))  {
 
                     cg_operand_t* sub_node = first->ref;
 
                     ret = __do_calculate(sub_node, marker);
-                    if (!ret) {
+                    if (ret) {
                         CG_DEBUG("ERROR <%d@%s>: sub calculate error(%d)\n", __LINE__, __FILE__, ret);
                         return ret;
                     }

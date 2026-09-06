@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 18:34:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 13:19:38
+ * @LastEditTime: 2026-09-05 14:54:24
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_operator_mse.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%A
  */
@@ -54,10 +54,11 @@ static inline mse_opt_t* mse_opt_create(const char* id, nn_operand_t* variant, n
 
     mse_opt_t* operator = (mse_opt_t*) malloc (sizeof(mse_opt_t));
 
-    cg_operator_init(operator, id, __mse_calc, __mse_diff, NULL);
-
     operator->x      = variant;
     operator->labels = labels;
+
+    cg_operator_init(operator, id, __mse_calc, __mse_diff, NULL);
+    
     return operator;
 }
 
