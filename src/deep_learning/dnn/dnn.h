@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 09:33:32
+ * @LastEditTime: 2026-09-06 13:18:43
  * @FilePath: /boring-code/src/deep_learning/nn/nn.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -45,7 +45,8 @@ int dnn_relu(dnn_t* nn);
 int dnn_mse(dnn_t* nn);
 // softmax output + crxenotrpy loss
 int dnn_softcrx(dnn_t* nn);
+// add regular layer
+int dnn_regular(dnn_t* nn);
 // softmax output
 int dnn_softmax(dnn_t* nn);
-
 #endif

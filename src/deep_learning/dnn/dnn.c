@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-06 10:26:00
+ * @LastEditTime: 2026-09-06 14:00:24
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -92,7 +92,7 @@ int dnn_mse(dnn_t* nn)
         if (!nn->_Loss) {
             nn->_Loss = (nn_operand_t*)cg_list_pop(nn->build_stack);
         } else {
-            CG_DEBUG("Error <%d@%s>: loss has been set, SHOULD be set again \n", __LINE__, __FILE__);
+            CG_DEBUG("Error <%d@%s>: nn`s loss has been set, SHOULD not be set again \n", __LINE__, __FILE__);
             return -1;
         }
     } else {
@@ -126,7 +126,7 @@ int dnn_softcrx(dnn_t* nn)
             return !crx;
         }
     } else if (nn->_Loss){
-        CG_DEBUG("Error <%d@%s>: nn`s loss has been set, SHOULD be set again \n", __LINE__, __FILE__);
+        CG_DEBUG("Error <%d@%s>: nn`s loss has been set, SHOULD not be set again \n", __LINE__, __FILE__);
         return -1;
     }
     CG_DEBUG("Error <%d@%s>: Input(%s) is no a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(top_operand));
@@ -141,6 +141,10 @@ int dnn_softmax(dnn_t* nn)
     return !ret;
 }
 
+int dnn_regular(dnn_t* nn)
+{
+    
+}
 
 int dnn_fit(dnn_optimizer_t* optimizer)
 {
