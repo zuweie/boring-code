@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-02-22 15:34:30
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-06 00:20:12
+ * @LastEditTime: 2026-09-06 09:45:00
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_ticket.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -38,6 +38,7 @@ int cg_ticket_give(cg_hash_t* marker, cg_node_t* respect, cg_node_t* x)
         } else {
             // found == -1, dose not had any ticket, set the first ticket about respect
             cg_hash_set(marker, CG_NODE_ID(x), new_ticket);
+            CG_DEBUG("INFO <%d@%s>: give ticket to x(%s) with respect(%s)\n", __LINE__, __FILE__, CG_NODE_ID(x), CG_NODE_ID(respect));
         }
         return 0;
     } 
@@ -82,7 +83,7 @@ int cg_ticket_get(cg_hash_t* marker, cg_node_t* respect, cg_node_t* x, cg_ticket
         }
         return 0;
     } 
-    CG_DEBUG("INFO <%d@%s>: node x(%s) has not any tickets\n", __LINE__, __FILE__, x->vertex.id);
+    CG_DEBUG("INFO <%d@%s>: node x(%s) has no any tickets\n", __LINE__, __FILE__, x->vertex.id);
     return -1;
 }
 

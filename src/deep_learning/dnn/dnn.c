@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-05 17:46:14
+ * @LastEditTime: 2026-09-06 10:26:00
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -61,9 +61,9 @@ int dnn_init(dnn_t* nn)
 
 int dnn_reset(dnn_t* nn)
 {
-    cg_allocator_reset(&nn->alloc);
     cg_list_recycle(nn->nodes_list, __recycle_node);
     cg_list_recycle(nn->build_stack, NULL);
+    cg_allocator_reset(&nn->alloc);
     return 0;
 }
 

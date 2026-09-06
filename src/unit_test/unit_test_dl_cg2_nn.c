@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-16 22:01:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-05 16:43:10
+ * @LastEditTime: 2026-09-06 09:21:08
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2_nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -77,8 +77,8 @@ static void test_dnn (void)
         &optimizer,
         &simple_nn,
         20, 
-        5,
-        3,
+        2,
+        1,
         0.001f,
         0.05,
         tensor_labels,
