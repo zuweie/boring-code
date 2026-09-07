@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-22 10:01:59
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-06 23:38:26
+ * @LastEditTime: 2026-09-07 08:32:34
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_utility.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -102,7 +102,7 @@ relu_opt_t* nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_cou
             SHAPE_DIMENS(_Input->x->shape, 1)
         );
 
-        relu_opt_t* relu = relu_opt_create(__gen_node_id(++(*node_count), "relu"), _Input);
+        relu_opt_t* relu = relu_opt_create(__gen_node_id(++(*node_count), "relu_opt"), _Input);
         
         cg_graph_link(_Input, relu);
         cg_graph_link(relu, z);
@@ -135,7 +135,7 @@ softmax_opt_t* nn_softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* no
             SHAPE_DIMENS(_Input->x->shape, 0),
             SHAPE_DIMENS(_Input->x->shape, 1)
         );
-        softmax_opt_t* softmax = softmax_opt_create(__gen_node_id(++(*node_count), "softmax"), _Input);
+        softmax_opt_t* softmax = softmax_opt_create(__gen_node_id(++(*node_count), "softmax_opt"), _Input);
         cg_graph_link(_Input, softmax);
         cg_graph_link(softmax, z);
         
@@ -163,7 +163,7 @@ mse_opt_t* nn_mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count
 
         nn_operand_t* labls  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "labels"), SHAPE_DIMENS(_Input->x->shape, 0), 1);
         nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
-        mse_opt_t*    mse    = mse_opt_create(__gen_node_id(++(*node_count), "mse"), _Input, labls);
+        mse_opt_t*    mse    = mse_opt_create(__gen_node_id(++(*node_count), "mse_opt"), _Input, labls);
 
         cg_graph_link(_Input, mse);
         cg_graph_link(labls, mse);
@@ -193,7 +193,7 @@ crossentropy_opt_t* nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stac
 
         nn_operand_t* labls  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "labels"), SHAPE_DIMENS(_Input->x->shape, 0), 1);
         nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
-        crossentropy_opt_t* crx = crossentropy_opt_create(__gen_node_id(++(*node_count), "corssentropy"), _Input, labls);
+        crossentropy_opt_t* crx = crossentropy_opt_create(__gen_node_id(++(*node_count), "corssentropy_opt"), _Input, labls);
 
         cg_graph_link(_Input, crx);
         cg_graph_link(labls, crx);
@@ -244,12 +244,13 @@ sum_opt_t* nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_co
     
     int all_is_W  = 1;
     int have_loss = 0;
+
+    // check it first
     cg_list_node_t* first = CG_LIST_TOP(build_stack);
     while (first != CG_LIST_HEAD(build_stack)) {
         if (node_is(first->ref, "loss")) {
             have_loss = 1;
-        }
-        if (!node_is(first->ref, "W")) {
+        } else if (!node_is(first->ref, "W")) {
             all_is_W = 0;
             break;
         }
@@ -267,20 +268,20 @@ sum_opt_t* nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_co
 
     if (all_is_W && have_loss) {
         nn_operand_t* _Input = NULL;
-        nn_operand_t* z      = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
+        nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
         sum_opt_t* sum_opt   = sum_opt_create(__gen_node_id(++(*node_count), "sum_opt"));
 
-        cg_list_push(node_list, z);
-        cg_list_push(node_list, sum_opt);
+        cg_graph_link(sum_opt, _Loss);
 
-        cg_graph_link(sum_opt, z);
+        cg_list_push(node_list, _Loss);
+        cg_list_push(node_list, sum_opt);
 
         while ( _Input = cg_list_pop(build_stack) ) {
             
             if (node_is(_Input, "W")) {
                 // TODO: create a WW2
                 nn_operand_t* z      = nn_operand_create(alloc, __gen_node_id(++(*node_count), "ww2"), 1, 1);
-                sqrsum_opt_t* sqrsum = sqrsum_opt_create(__gen_node_id(++(*node_count), "sqrsum"), _Input, lamada);
+                sqrsum_opt_t* sqrsum = sqrsum_opt_create(__gen_node_id(++(*node_count), "sqrsum_opt"), _Input, lamada);
                 
                 cg_graph_link(_Input, sqrsum);
                 cg_graph_link(sqrsum, z);
@@ -295,6 +296,7 @@ sum_opt_t* nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_co
                 cg_graph_link(_Input, sum_opt);
             }
         }
+        cg_list_push(build_stack, _Loss);
         return sum_opt;
     }
     return NULL;

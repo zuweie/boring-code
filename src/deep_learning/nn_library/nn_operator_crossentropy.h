@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 20:37:57
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-06 23:21:37
+ * @LastEditTime: 2026-09-07 09:49:35
  * @FilePath: /boring-code/src/deep_learning/nn_operators/crossentropy_opt.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -42,7 +42,7 @@ static inline int __crx_diff(cg_operator_t* thiz, cg_operand_t* variant, cg_oper
     
     CG_DEBUG("differentiate @ %s\n", CG_NODE_ID(operator));
     if (variant == x) {
-        CG_DEBUG("delta %s = (%s - %s) X env_gradient\n", CG_NODE_ID(x), CG_NODE_ID(x), CG_NODE_ID(labels));
+        CG_DEBUG("delta %s = (%s - %s) X env_gradient(%s)\n", CG_NODE_ID(x), CG_NODE_ID(x), CG_NODE_ID(labels), CG_NODE_ID(in_gard));
     } else if (variant == labels) {
         CG_DEBUG("delta %s is useless\n", CG_NODE_ID(labels));
     } else {

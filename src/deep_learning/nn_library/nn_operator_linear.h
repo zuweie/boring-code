@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 13:06:19
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-05 14:54:09
+ * @LastEditTime: 2026-09-07 09:50:46
  * @FilePath: /boring-code/src/deep_learning/nn_operator/linear_opt.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -53,15 +53,15 @@ static inline int __linear_diff(cg_operator_t* thiz, cg_operand_t* variant, cg_o
     
     if (variant == x) {
         
-        CG_DEBUG("delta %s = (%s)^T X env_gradient\n", CG_NODE_ID(x), CG_NODE_ID(W));
+        CG_DEBUG("delta %s = (%s)^T X env_gradient(%s)\n", CG_NODE_ID(x), CG_NODE_ID(W), CG_NODE_ID(in_gard));
 
     } else if (variant == W) {
 
-        CG_DEBUG("delta %s = (%s)^T X env_gradient\n", CG_NODE_ID(W), CG_NODE_ID(x));
+        CG_DEBUG("delta %s = (%s)^T X env_gradient(%s)\n", CG_NODE_ID(W), CG_NODE_ID(x), CG_NODE_ID(in_gard));
 
     } else if (variant == b) {
 
-        CG_DEBUG("delta %s = 1 X env_gradient\n", CG_NODE_ID(b));
+        CG_DEBUG("delta %s = 1 X env_gradient(%s)\n", CG_NODE_ID(b), CG_NODE_ID(in_gard));
 
     } else {
 

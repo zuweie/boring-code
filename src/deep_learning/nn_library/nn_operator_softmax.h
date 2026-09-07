@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 18:30:21
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-30 13:22:11
+ * @LastEditTime: 2026-09-07 09:52:22
  * @FilePath: /boring-code/src/deep_learning/nn_operator/softmax_opt.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -37,7 +37,7 @@ static inline int __softmax_diff(cg_operator_t* thiz, cg_operand_t* variant, cg_
 
     CG_DEBUG("differentiate @ %s: \n", CG_NODE_ID(operator));
     if (variant == operator->x) {
-        CG_DEBUG("delta %s = delta softmax(%s) X env_gradient", CG_NODE_ID(operator->x), CG_NODE_ID(operator->x));
+        CG_DEBUG("delta %s = delta softmax(%s) X env_gradient(%s)", CG_NODE_ID(operator->x), CG_NODE_ID(operator->x), CG_NODE_ID(in_gard));
     } else {
         CG_DEBUG("ERROR! %s is not belong %s\n", CG_NODE_ID(variant), CG_NODE_ID(operator));
         return -1;
