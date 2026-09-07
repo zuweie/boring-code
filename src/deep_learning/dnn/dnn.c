@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-06 14:00:24
+ * @LastEditTime: 2026-09-06 23:38:50
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -41,7 +41,7 @@ static int __recycle_node(cg_node_t* node)
         cg_operator_reset(node);
         CG_DEBUG("INFO: released operator(%s)\n", CG_NODE_ID(node));
     } else {
-        CG_DEBUG("Error <%d@%s>: unknown CG NODE TYPE\n", __LINE__, __FILE__);
+        CG_DEBUG("ERROR <%d@%s>: unknown CG NODE TYPE\n", __LINE__, __FILE__);
     }
     free(node);
     return 0;
@@ -81,7 +81,7 @@ int dnn_linear(dnn_t* nn, int in_dimens, int out_dimens)
 int dnn_relu(dnn_t* nn)
 {
     void* ret = nn_relu(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
-    if (!ret) CG_DEBUG("Error <%d@%s>: relu faild\n", __LINE__, __FILE__);
+    if (!ret) CG_DEBUG("ERROR <%d@%s>: relu faild\n", __LINE__, __FILE__);
     return !ret;
 }
 
@@ -90,13 +90,14 @@ int dnn_mse(dnn_t* nn)
     void* ret = nn_mse(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
     if (ret) {
         if (!nn->_Loss) {
-            nn->_Loss = (nn_operand_t*)cg_list_pop(nn->build_stack);
+            //nn->_Loss = (nn_operand_t*)cg_list_pop(nn->build_stack);
+            nn->_Loss = CG_LIST_TOP(nn->build_stack)->ref;
         } else {
-            CG_DEBUG("Error <%d@%s>: nn`s loss has been set, SHOULD not be set again \n", __LINE__, __FILE__);
+            CG_DEBUG("ERROR <%d@%s>: nn`s loss has been set, SHOULD not be set again \n", __LINE__, __FILE__);
             return -1;
         }
     } else {
-        CG_DEBUG("Error <%d@%s>: mse faild\n", __LINE__, __FILE__);
+        CG_DEBUG("ERROR <%d@%s>: mse faild\n", __LINE__, __FILE__);
     }
     return !ret;
 }
@@ -114,36 +115,45 @@ int dnn_softcrx(dnn_t* nn)
         if (soft) {
             nn->_Output = (nn_operand_t*) cg_list_pop(nn->build_stack);
         } else {
-            CG_DEBUG("Error <%d@%s>: softmax faild\n", __LINE__, __FILE__);
+            CG_DEBUG("ERROR <%d@%s>: softmax faild\n", __LINE__, __FILE__);
             return !soft;
         }
         void* crx = nn_crossentropy(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
         if (crx) {
-            nn->_Loss = (nn_operand_t*) cg_list_pop(nn->build_stack);
+            //nn->_Loss = (nn_operand_t*) cg_list_pop(nn->build_stack);
+            nn->_Loss = CG_LIST_TOP(nn->build_stack)->ref;
             return !crx;
         } else {
-            CG_DEBUG("Error <%d@%s>: crx faild\n", __LINE__, __FILE__);
+            CG_DEBUG("ERROR <%d@%s>: crx faild\n", __LINE__, __FILE__);
             return !crx;
         }
     } else if (nn->_Loss){
-        CG_DEBUG("Error <%d@%s>: nn`s loss has been set, SHOULD not be set again \n", __LINE__, __FILE__);
+        CG_DEBUG("ERROR <%d@%s>: nn`s loss has been set, SHOULD not be set again \n", __LINE__, __FILE__);
         return -1;
     }
-    CG_DEBUG("Error <%d@%s>: Input(%s) is no a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(top_operand));
+    CG_DEBUG("ERROR <%d@%s>: Input(%s) is no a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(top_operand));
     return -1;
 }
 
 int dnn_softmax(dnn_t* nn)
 {
     void* ret = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
-    if (ret) nn->_Output = (nn_operand_t*)cg_list_pop(nn->build_stack);
-    else CG_DEBUG("Error <%d@%s>: softmax faild!\n", __LINE__, __FILE__);
+    if (ret) 
+        nn->_Output = CG_LIST_TOP(nn->build_stack)->ref;
+    else 
+        CG_DEBUG("ERROR <%d@%s>: softmax faild!\n", __LINE__, __FILE__);
     return !ret;
 }
 
 int dnn_regular(dnn_t* nn)
 {
+    void* ret = nn_regular(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list, 0.5);
+    if (ret)
+        nn->_Loss = CG_LIST_TOP(nn->build_stack)->ref;
+    else 
+        CG_DEBUG("ERROR <%d@%s>: regular faild!\n", __LINE__, __FILE__);
     
+    return !ret;
 }
 
 int dnn_fit(dnn_optimizer_t* optimizer)

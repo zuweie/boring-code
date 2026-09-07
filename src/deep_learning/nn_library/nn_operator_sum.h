@@ -1,3 +1,11 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2026-09-06 14:01:12
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2026-09-06 23:15:32
+ * @FilePath: /boring-code/src/deep_learning/nn_library/nn_operator_sum.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef __NN_OPERATOR_SUM_H__
 #define __NN_OPERATOR_SUM_H__
 
@@ -15,13 +23,13 @@ typedef struct sum_opt
 
 static inline int __sum_reset(cg_operator_t* thiz) 
 {
-    return cg_list_recycle( ((sum_opt_t*)thiz)->xs );
+    return cg_list_recycle( ((sum_opt_t*)thiz)->xs, NULL );
 }
 
 static inline int __sum_calc(cg_operator_t* thiz, cg_operand_t* out)
 {
     sum_opt_t* thiz_opt  = thiz;
-    nn_operand_t x       = NULL;
+    nn_operand_t* x      = NULL;
     CG_DEBUG("calculate @ %s:\n %s = ", CG_NODE_ID(thiz), CG_NODE_ID(out));
     cg_list_node_t* first = CG_LIST_TOP(thiz_opt->xs);
     while(first != CG_LIST_HEAD(thiz_opt->xs)) {
