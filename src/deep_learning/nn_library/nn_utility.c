@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-22 10:01:59
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-07 08:32:34
+ * @LastEditTime: 2026-09-13 12:37:05
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_utility.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -48,8 +48,24 @@ char* node_is(cg_node_t* node, const char* type)
     return strstr(CG_NODE_ID(node), type) != NULL;
 }
 
+nn_operand_t* node_group_find(nn_operand_t* z, const char* node_type)
+{
+    cg_operator_t* opt = cg_operand_get_producer(z);
+    if (opt) {
+
+        cg_list_node_t* first = CG_LIST_TOP( CG_NODE_IN(opt) );
+
+        while (first != CG_LIST_HEAD( CG_NODE_IN(opt) ) ) {
+
+            if (node_is(first->ref, node_type)) return first->ref;
+            first = first->prev;
+        }
+    }
+    return NULL;
+}
+
 // 线性运算
-linear_opt_t* nn_linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_count, int in_dimens, int out_dimens, cg_list_t* nodes_list)
+int nn_linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_count, int in_dimens, int out_dimens, cg_list_t* nodes_list)
 {
     
     nn_operand_t* _Input = cg_list_pop(build_stack);
@@ -84,11 +100,11 @@ linear_opt_t* nn_linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node
     cg_list_push(nodes_list, z);
     cg_list_push(nodes_list, linear_opt);
     
-    return linear_opt;
+    return 0;
 }
 
 // relu 激活
-relu_opt_t* nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+int nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
 
@@ -112,20 +128,22 @@ relu_opt_t* nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_cou
         cg_list_push(nodes_list, z);
         cg_list_push(nodes_list, relu);
 
-        return relu;
+        return 0;
 
     } else if (_Input) {
         // error _Input is not a "X"
         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
+        return -1;
     } else {
         // error _Input is NULL
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
+        return -1;
     }
-    return NULL;
+    return 0;
 }
 
 // softmax
-softmax_opt_t* nn_softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+int nn_softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
@@ -144,18 +162,20 @@ softmax_opt_t* nn_softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* no
         cg_list_push(nodes_list, z);
         cg_list_push(nodes_list, softmax);
 
-        return softmax;
+        return 0;
 
     } else if (_Input) {
         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
+        return -1;
     } else {
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
+        return -1;
     }
-    return NULL;
+    return -1;
 }
 
 // most square error
-mse_opt_t* nn_mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+int nn_mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
@@ -175,18 +195,20 @@ mse_opt_t* nn_mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count
         cg_list_push(nodes_list, _Loss);
         cg_list_push(nodes_list, mse);
         
-        return mse;
+        return 0;
 
     } else if (_Input) {
         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
+        return -1;
     } else{
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
+        return -1;
     }
-    return NULL;
+    return -1;
 }
 
 // corss entropy
-crossentropy_opt_t* nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+int nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
 {
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
@@ -205,40 +227,21 @@ crossentropy_opt_t* nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stac
         cg_list_push(nodes_list, _Loss);
         cg_list_push(nodes_list, crx);
         
-        return crx;
+        return 0;
 
     } else if (_Input) {
         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
+        return -1;
     } else{
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
+        return -1;
     }
-    return NULL;
+    return -1;
 }
 
-// sqrsum_opt_t* nn_sqrsum(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_list, float lamada)
-// {
-//     nn_operand_t* _Input = cg_list_pop(build_stack);
-//     if (_Input && node_is(_Input, "W")) {
-//         nn_operand_t* z      = nn_operand_create(alloc, __gen_node_id(++(*node_count), "ww2"), 1, 1);
-//         sqrsum_opt_t* sqrsum = sqrsum_opt_create(__gen_node_id(++(*node_count), "sqrsum"), _Input, lamada);
 
-//         cg_graph_link(_Input, sqrsum);
-//         cg_graph_link(sqrsum, z);
 
-//         cg_list_push(build_stack, z);
-
-//         cg_list_push(node_list, z);
-//         cg_list_push(node_list, sqrsum);
-//         return sqrsum;
-//     } else if (_Input) {
-//         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'W\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
-//     } else{
-//         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
-//     }
-//     return NULL;
-// }
-
-sum_opt_t* nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_list, float lamada) 
+int nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_list, float lamada) 
 {
     // TODO 1: check all item in build stack is OK
     
@@ -259,11 +262,11 @@ sum_opt_t* nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_co
 
     if (!have_loss) {
         CG_DEBUG("ERROR <%d@%s>: does not have loss\n", __LINE__, __FILE__);
-        return NULL;
+        return -1;
     }
     if (!all_is_W) {
         CG_DEBUG("ERROR <%d@%s>: not all cg_node is W\n", __LINE__, __FILE__);
-        return NULL;
+        return -1;
     }
 
     if (all_is_W && have_loss) {
@@ -297,7 +300,7 @@ sum_opt_t* nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_co
             }
         }
         cg_list_push(build_stack, _Loss);
-        return sum_opt;
+        return 0;
     }
-    return NULL;
+    return -1;
 }

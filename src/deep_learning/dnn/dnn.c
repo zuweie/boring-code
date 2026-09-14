@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-06 23:38:50
+ * @LastEditTime: 2026-09-13 12:32:32
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -69,26 +69,36 @@ int dnn_reset(dnn_t* nn)
 
 int dnn_linear(dnn_t* nn, int in_dimens, int out_dimens)
 {
-    linear_opt_t* l = nn_linear(&nn->alloc, nn->build_stack, &nn->node_count, in_dimens, out_dimens, nn->nodes_list);
-    if (l && !nn->_Input) {
-        nn->_Input = l->x;
+    int ret = nn_linear(&nn->alloc, nn->build_stack, &nn->node_count, in_dimens, out_dimens, nn->nodes_list);
+    if (!ret && !nn->_Input) {
+        nn_operand_t* z = CG_LIST_TOP(nn->build_stack)->ref;
+        nn_operand_t* x = node_group_find(z, "x");
+
+        if (x) {
+            nn->_Input = x;
+        }
+        else {
+            CG_DEBUG("ERROR <%d@%s>: Can`t find x from z(%s)\n", __LINE__, __FILE__, CG_NODE_ID(z));
+        }
     }
     // 这个也有可能是输出层,先把它的输出 markdown
-    if (l) nn->_Output = (nn_operand_t*)(CG_LIST_TOP(nn->build_stack)->ref);
-    return !l;
+    if (!ret)
+        nn->_Output = (nn_operand_t*)(CG_LIST_TOP(nn->build_stack)->ref);
+
+    return ret;
 }
 
 int dnn_relu(dnn_t* nn)
 {
-    void* ret = nn_relu(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
-    if (!ret) CG_DEBUG("ERROR <%d@%s>: relu faild\n", __LINE__, __FILE__);
-    return !ret;
+    int ret = nn_relu(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    if (ret) CG_DEBUG("ERROR <%d@%s>: relu faild\n", __LINE__, __FILE__);
+    return ret;
 }
 
 int dnn_mse(dnn_t* nn)
 {
-    void* ret = nn_mse(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
-    if (ret) {
+    int ret = nn_mse(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    if (!ret) {
         if (!nn->_Loss) {
             //nn->_Loss = (nn_operand_t*)cg_list_pop(nn->build_stack);
             nn->_Loss = CG_LIST_TOP(nn->build_stack)->ref;
@@ -99,7 +109,7 @@ int dnn_mse(dnn_t* nn)
     } else {
         CG_DEBUG("ERROR <%d@%s>: mse faild\n", __LINE__, __FILE__);
     }
-    return !ret;
+    return ret;
 }
 
 int dnn_softcrx(dnn_t* nn)
@@ -111,21 +121,21 @@ int dnn_softcrx(dnn_t* nn)
         cg_list_push(nn->build_stack, top_operand);
 
         // TODO 1: softmax
-        void* soft = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
-        if (soft) {
+        int ret = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+        if (!ret) {
             nn->_Output = (nn_operand_t*) cg_list_pop(nn->build_stack);
         } else {
             CG_DEBUG("ERROR <%d@%s>: softmax faild\n", __LINE__, __FILE__);
-            return !soft;
+            return ret;
         }
-        void* crx = nn_crossentropy(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
-        if (crx) {
+        ret = nn_crossentropy(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+        if (ret) {
             //nn->_Loss = (nn_operand_t*) cg_list_pop(nn->build_stack);
             nn->_Loss = CG_LIST_TOP(nn->build_stack)->ref;
-            return !crx;
+            return ret;
         } else {
             CG_DEBUG("ERROR <%d@%s>: crx faild\n", __LINE__, __FILE__);
-            return !crx;
+            return ret;
         }
     } else if (nn->_Loss){
         CG_DEBUG("ERROR <%d@%s>: nn`s loss has been set, SHOULD not be set again \n", __LINE__, __FILE__);
@@ -137,23 +147,23 @@ int dnn_softcrx(dnn_t* nn)
 
 int dnn_softmax(dnn_t* nn)
 {
-    void* ret = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
-    if (ret) 
+    int ret = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    if (!ret) 
         nn->_Output = CG_LIST_TOP(nn->build_stack)->ref;
     else 
         CG_DEBUG("ERROR <%d@%s>: softmax faild!\n", __LINE__, __FILE__);
-    return !ret;
+    return ret;
 }
 
 int dnn_regular(dnn_t* nn)
 {
-    void* ret = nn_regular(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list, 0.5);
-    if (ret)
+    int ret = nn_regular(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list, 0.5);
+    if (!ret)
         nn->_Loss = CG_LIST_TOP(nn->build_stack)->ref;
     else 
         CG_DEBUG("ERROR <%d@%s>: regular faild!\n", __LINE__, __FILE__);
     
-    return !ret;
+    return ret;
 }
 
 int dnn_fit(dnn_optimizer_t* optimizer)
