@@ -27,8 +27,8 @@ static inline int __embedding_diff (cg_operator_t* thiz, cg_operand_t* variant, 
 static inline embedding_opt_t* embedding_opt_create( const char* id, nn_operand_t* variant)
 {
     embedding_opt* operator = (embedding_opt*) malloc (sizeof(embedding_opt));
-    operator->x = variant;
     cg_operator_init(operator, id, __embedding_cal, __embedding_diff, NULL);
+    operator->x = variant;
     return operator;
 }
 
