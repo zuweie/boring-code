@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-13 12:32:32
+ * @LastEditTime: 2026-11-22 19:37:34
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -47,15 +47,19 @@ static int __recycle_node(cg_node_t* node)
     return 0;
 }
 
-int dnn_init(dnn_t* nn)
+int dnn_init(dnn_t* nn, int features)
 {
     *nn = (dnn_t) {
-        .node_count  = 0,
         .nodes_list  = cg_list_create(),
-        .build_stack = cg_list_create()
+        .build_stack = cg_list_create(),
+        ._Input      = cg_tensor_create(nn->alloc, 2, features)
     };
+
     cg_allocator_init(&nn->alloc);
     
+    // create Input outside of nn_library.
+    cg_list_push(nn->nodes_list, nn->_Input);
+
     return 0;
 }
 
@@ -68,19 +72,13 @@ int dnn_reset(dnn_t* nn)
 }
 
 int dnn_linear(dnn_t* nn, int in_dimens, int out_dimens)
-{
-    int ret = nn_linear(&nn->alloc, nn->build_stack, &nn->node_count, in_dimens, out_dimens, nn->nodes_list);
-    if (!ret && !nn->_Input) {
-        nn_operand_t* z = CG_LIST_TOP(nn->build_stack)->ref;
-        nn_operand_t* x = node_group_find(z, "x");
-
-        if (x) {
-            nn->_Input = x;
-        }
-        else {
-            CG_DEBUG("ERROR <%d@%s>: Can`t find x from z(%s)\n", __LINE__, __FILE__, CG_NODE_ID(z));
-        }
+{   
+    // if build stack is empty, that means star to build, provide nn->_Input as first input as DNN.
+    if (cg_list_size(nn->build_stack) == 0) {
+        cg_list_push(nn->build_stack, nn->_Input);
     }
+    int ret = nn_linear(&nn->alloc, nn->build_stack, in_dimens, out_dimens, nn->nodes_list);
+    
     // 这个也有可能是输出层,先把它的输出 markdown
     if (!ret)
         nn->_Output = (nn_operand_t*)(CG_LIST_TOP(nn->build_stack)->ref);
@@ -90,14 +88,14 @@ int dnn_linear(dnn_t* nn, int in_dimens, int out_dimens)
 
 int dnn_relu(dnn_t* nn)
 {
-    int ret = nn_relu(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    int ret = nn_relu(&nn->alloc, nn->build_stack,nn->nodes_list);
     if (ret) CG_DEBUG("ERROR <%d@%s>: relu faild\n", __LINE__, __FILE__);
     return ret;
 }
 
 int dnn_mse(dnn_t* nn)
 {
-    int ret = nn_mse(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    int ret = nn_mse(&nn->alloc, nn->build_stack, nn->nodes_list);
     if (!ret) {
         if (!nn->_Loss) {
             //nn->_Loss = (nn_operand_t*)cg_list_pop(nn->build_stack);
@@ -121,14 +119,14 @@ int dnn_softcrx(dnn_t* nn)
         cg_list_push(nn->build_stack, top_operand);
 
         // TODO 1: softmax
-        int ret = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+        int ret = nn_softmax(&nn->alloc, nn->build_stack, nn->nodes_list);
         if (!ret) {
             nn->_Output = (nn_operand_t*) cg_list_pop(nn->build_stack);
         } else {
             CG_DEBUG("ERROR <%d@%s>: softmax faild\n", __LINE__, __FILE__);
             return ret;
         }
-        ret = nn_crossentropy(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+        ret = nn_crossentropy(&nn->alloc, nn->build_stack, nn->nodes_list);
         if (ret) {
             //nn->_Loss = (nn_operand_t*) cg_list_pop(nn->build_stack);
             nn->_Loss = CG_LIST_TOP(nn->build_stack)->ref;
@@ -147,7 +145,7 @@ int dnn_softcrx(dnn_t* nn)
 
 int dnn_softmax(dnn_t* nn)
 {
-    int ret = nn_softmax(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list);
+    int ret = nn_softmax(&nn->alloc, nn->build_stack, nn->nodes_list);
     if (!ret) 
         nn->_Output = CG_LIST_TOP(nn->build_stack)->ref;
     else 
@@ -157,7 +155,7 @@ int dnn_softmax(dnn_t* nn)
 
 int dnn_regular(dnn_t* nn)
 {
-    int ret = nn_regular(&nn->alloc, nn->build_stack, &nn->node_count, nn->nodes_list, 0.5);
+    int ret = nn_regular(&nn->alloc, nn->build_stack, nn->nodes_list, 0.5);
     if (!ret)
         nn->_Loss = CG_LIST_TOP(nn->build_stack)->ref;
     else 

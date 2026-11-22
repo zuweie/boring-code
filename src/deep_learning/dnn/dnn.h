@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-06 13:18:43
+ * @LastEditTime: 2026-11-22 19:30:36
  * @FilePath: /boring-code/src/deep_learning/nn/nn.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,10 +26,9 @@ typedef struct dnn {
     cg_list_t*      nodes_list;
     // 组网用
     cg_list_t*      build_stack;
-    int             node_count;
 } dnn_t;
 
-int dnn_init(dnn_t* nn);
+int dnn_init(dnn_t* nn, int features);
 int dnn_reset(dnn_t* nn);
 
 int dnn_fit(dnn_optimizer_t* optimizer);
@@ -49,4 +48,5 @@ int dnn_softcrx(dnn_t* nn);
 int dnn_regular(dnn_t* nn);
 // softmax output
 int dnn_softmax(dnn_t* nn);
+
 #endif

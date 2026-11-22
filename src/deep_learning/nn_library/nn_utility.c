@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-22 10:01:59
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-13 12:37:05
+ * @LastEditTime: 2026-11-22 20:08:40
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_utility.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,6 +21,8 @@
 #include "nn_operator_crossentropy.h"
 #include "nn_operator_sqrsum.h"
 #include "nn_operator_sum.h"
+#include "nn_operator_embedding.h"
+#include "nn_operator_positional_encoding.h"
 #include "nn_utility.h"
 
 static char cg_node_naming[64];
@@ -65,47 +67,52 @@ nn_operand_t* node_group_find(nn_operand_t* z, const char* node_type)
 }
 
 // 线性运算
-int nn_linear(cg_allocator_t* alloc, cg_list_t* build_stack, int *node_count, int in_dimens, int out_dimens, cg_list_t* nodes_list)
+int nn_linear(cg_allocator_t* alloc, cg_list_t* build_stack, int in_dimens, int out_dimens, cg_list_t* nodes_list)
 {
-    
+    int node_count = cg_list_size(nodes_list);
+
     nn_operand_t* _Input = cg_list_pop(build_stack);
-    if (!_Input) {
-        // 新建 _Input 默认是 in_dimens 个属性， 1 条记录。
-        _Input = nn_operand_create(alloc, __gen_node_id(++(*node_count), "x"), in_dimens, 1);
-        cg_list_push(nodes_list, _Input);
-    } else if (!node_is(_Input, "x")) {
+
+    if (_Input && node_is(_Input, "x")) {
+        // every thing is OK keep going
+        if (SHAPE_DIMENS(_Input->x->shape, 0) == in_dimens) {
+
+            // z = Wx+b
+            nn_operand_t *W = nn_operand_create(alloc, __gen_node_id(++(node_count), "W"), out_dimens, in_dimens);
+            nn_operand_t *b = nn_operand_create(alloc, __gen_node_id(++(node_count), "b"), out_dimens, 1);
+            nn_operand_t *z = nn_operand_create(alloc, __gen_node_id(++(node_count), "x"), out_dimens, 1);
+            linear_opt_t *linear_opt = linear_opt_create(__gen_node_id(++(node_count), "linear_opt"), _Input, W, b);
+
+            // 做物理连接。
+            cg_graph_link(_Input, linear_opt);
+            cg_graph_link(W, linear_opt);
+            cg_graph_link(b, linear_opt);
+            cg_graph_link(linear_opt, z);
+
+            cg_list_push(build_stack, W);
+            cg_list_push(build_stack, z);
+
+            cg_list_push(nodes_list, W);
+            cg_list_push(nodes_list, b);
+            cg_list_push(nodes_list, z);
+            cg_list_push(nodes_list, linear_opt);
+            return 0;
+        } else {
+            CG_DEBUG("Error <%d@%s>: in_dimens(%d) does not match _Input rows(%d)\n", __LINE__, __FILE__, in_dimens,SHAPE_DIMENS(_Input->x->shape, 0));
+        }
+
+    } else if (!_Input) {
+        CG_DEBUG("Error <%d@%s>: _Input is null\n", __LINE__, __FILE__):
+    } else (!node_is(_Input, "x")) {
         CG_DEBUG("Error <%d@%s>: pop up node is a \'%s\', not a \'x\'\n", __LINE__, __FILE__, node_typeof(_Input));
-        return NULL;
-    } else if (SHAPE_DIMENS(_Input->x->shape, 0) != in_dimens) {
-        CG_DEBUG("Error <%d@%s>: in_dimens(%d) does not match _Input rows(%d)\n", __LINE__, __FILE__, in_dimens,SHAPE_DIMENS(_Input->x->shape, 0));
-        return NULL;
     }
-    // every thing is OK keep going
-    nn_operand_t* W = nn_operand_create(alloc, __gen_node_id(++(*node_count), "W"), out_dimens, in_dimens);
-    nn_operand_t* b = nn_operand_create(alloc, __gen_node_id(++(*node_count), "b"), out_dimens, 1);
-    nn_operand_t* z = nn_operand_create(alloc, __gen_node_id(++(*node_count), "x"), out_dimens, 1);
-    linear_opt_t* linear_opt = linear_opt_create(__gen_node_id(++(*node_count), "linear_opt"),  _Input, W, b);
-
-    // 做物理连接。
-    cg_graph_link(_Input, linear_opt);
-    cg_graph_link(W, linear_opt);
-    cg_graph_link(b, linear_opt);
-    cg_graph_link(linear_opt, z);
-
-    cg_list_push(build_stack, W);
-    cg_list_push(build_stack, z);
-
-    cg_list_push(nodes_list, W);
-    cg_list_push(nodes_list, b);
-    cg_list_push(nodes_list, z);
-    cg_list_push(nodes_list, linear_opt);
-    
-    return 0;
+    return -1;
 }
 
 // relu 激活
-int nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+int nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, cg_list_t* nodes_list)
 {
+    int node_count = cg_list_size(nodes_list);
     nn_operand_t* _Input = cg_list_pop(build_stack);
 
     if (_Input && node_is(_Input, "x")) {
@@ -113,12 +120,12 @@ int nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_l
         // z 的大小与 _Input 一样大。
         nn_operand_t* z  = nn_operand_create(
             alloc, 
-            __gen_node_id(++(*node_count), "x"), 
+            __gen_node_id(++(node_count), "x"), 
             SHAPE_DIMENS(_Input->x->shape, 0), 
             SHAPE_DIMENS(_Input->x->shape, 1)
         );
 
-        relu_opt_t* relu = relu_opt_create(__gen_node_id(++(*node_count), "relu_opt"), _Input);
+        relu_opt_t* relu = relu_opt_create(__gen_node_id(++(node_count), "relu_opt"), _Input);
         
         cg_graph_link(_Input, relu);
         cg_graph_link(relu, z);
@@ -133,27 +140,26 @@ int nn_relu(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_l
     } else if (_Input) {
         // error _Input is not a "X"
         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
-        return -1;
     } else {
         // error _Input is NULL
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
-        return -1;
     }
-    return 0;
+    return -1;
 }
 
 // softmax
-int nn_softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+int nn_softmax(cg_allocator_t* alloc, cg_list_t* build_stack, cg_list_t* nodes_list)
 {
+    int node_count = cg_list_size(nodes_list);
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
         nn_operand_t* z = nn_operand_create(
             alloc, 
-            __gen_node_id(++(*node_count), "out"), 
+            __gen_node_id(++(node_count), "out"), 
             SHAPE_DIMENS(_Input->x->shape, 0),
             SHAPE_DIMENS(_Input->x->shape, 1)
         );
-        softmax_opt_t* softmax = softmax_opt_create(__gen_node_id(++(*node_count), "softmax_opt"), _Input);
+        softmax_opt_t* softmax = softmax_opt_create(__gen_node_id(++(node_count), "softmax_opt"), _Input);
         cg_graph_link(_Input, softmax);
         cg_graph_link(softmax, z);
         
@@ -166,24 +172,23 @@ int nn_softmax(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, c
 
     } else if (_Input) {
         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
-        return -1;
     } else {
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
-        return -1;
     }
     return -1;
 }
 
 // most square error
-int nn_mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+int nn_mse(cg_allocator_t* alloc, cg_list_t* build_stack, cg_list_t* nodes_list)
 {
+    int node_count = cg_list_size(nodes_list);
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
 
 
-        nn_operand_t* labls  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "labels"), SHAPE_DIMENS(_Input->x->shape, 0), 1);
-        nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
-        mse_opt_t*    mse    = mse_opt_create(__gen_node_id(++(*node_count), "mse_opt"), _Input, labls);
+        nn_operand_t* labls  = nn_operand_create(alloc, __gen_node_id(++(node_count), "labels"), SHAPE_DIMENS(_Input->x->shape, 0), 1);
+        nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(node_count), "loss"), 1, 1);
+        mse_opt_t*    mse    = mse_opt_create(__gen_node_id(++(node_count), "mse_opt"), _Input, labls);
 
         cg_graph_link(_Input, mse);
         cg_graph_link(labls, mse);
@@ -199,23 +204,22 @@ int nn_mse(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_li
 
     } else if (_Input) {
         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
-        return -1;
     } else{
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
-        return -1;
     }
     return -1;
 }
 
 // corss entropy
-int nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* nodes_list)
+int nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, cg_list_t* nodes_list)
 {
+    int node_count = cg_list_size(nodes_list);
     nn_operand_t* _Input = cg_list_pop(build_stack);
     if (_Input && node_is(_Input, "x")) {
 
-        nn_operand_t* labls  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "labels"), SHAPE_DIMENS(_Input->x->shape, 0), 1);
-        nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
-        crossentropy_opt_t* crx = crossentropy_opt_create(__gen_node_id(++(*node_count), "corssentropy_opt"), _Input, labls);
+        nn_operand_t* labls  = nn_operand_create(alloc, __gen_node_id(++(node_count), "labels"), SHAPE_DIMENS(_Input->x->shape, 0), 1);
+        nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(node_count), "loss"), 1, 1);
+        crossentropy_opt_t* crx = crossentropy_opt_create(__gen_node_id(++(node_count), "corssentropy_opt"), _Input, labls);
 
         cg_graph_link(_Input, crx);
         cg_graph_link(labls, crx);
@@ -231,20 +235,18 @@ int nn_crossentropy(cg_allocator_t* alloc, cg_list_t* build_stack, int* node_cou
 
     } else if (_Input) {
         CG_DEBUG("Error: <%d@%s>: _Input(%s) is not a \'x\'\n", __LINE__, __FILE__, CG_NODE_ID(_Input));
-        return -1;
     } else{
         CG_DEBUG("Error: <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
-        return -1;
     }
     return -1;
 }
 
 
 
-int nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_count, cg_list_t* node_list, float lamada) 
+int nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, cg_list_t* nodes_list, float lamada) 
 {
     // TODO 1: check all item in build stack is OK
-    
+    int node_count = cg_list_size(nodes_list);
     int all_is_W  = 1;
     int have_loss = 0;
 
@@ -271,28 +273,28 @@ int nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_count, cg
 
     if (all_is_W && have_loss) {
         nn_operand_t* _Input = NULL;
-        nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(*node_count), "loss"), 1, 1);
-        sum_opt_t* sum_opt   = sum_opt_create(__gen_node_id(++(*node_count), "sum_opt"));
+        nn_operand_t* _Loss  = nn_operand_create(alloc, __gen_node_id(++(node_count), "loss"), 1, 1);
+        sum_opt_t* sum_opt   = sum_opt_create(__gen_node_id(++(node_count), "sum_opt"));
 
         cg_graph_link(sum_opt, _Loss);
 
-        cg_list_push(node_list, _Loss);
-        cg_list_push(node_list, sum_opt);
+        cg_list_push(nodes_list, _Loss);
+        cg_list_push(nodes_list, sum_opt);
 
         while ( _Input = cg_list_pop(build_stack) ) {
             
             if (node_is(_Input, "W")) {
                 // TODO: create a WW2
-                nn_operand_t* z      = nn_operand_create(alloc, __gen_node_id(++(*node_count), "ww2"), 1, 1);
-                sqrsum_opt_t* sqrsum = sqrsum_opt_create(__gen_node_id(++(*node_count), "sqrsum_opt"), _Input, lamada);
+                nn_operand_t* z      = nn_operand_create(alloc, __gen_node_id(++(node_count), "ww2"), 1, 1);
+                sqrsum_opt_t* sqrsum = sqrsum_opt_create(__gen_node_id(++(node_count), "sqrsum_opt"), _Input, lamada);
                 
                 cg_graph_link(_Input, sqrsum);
                 cg_graph_link(sqrsum, z);
                 sum_opt_add_variant(sum_opt, z);
                 cg_graph_link(z, sum_opt);
 
-                cg_list_push(node_list, z);
-                cg_list_push(node_list, sqrsum);
+                cg_list_push(nodes_list, z);
+                cg_list_push(nodes_list, sqrsum);
             } else {
                 // is a loss
                 sum_opt_add_variant(sum_opt, _Input);
@@ -303,4 +305,81 @@ int nn_regular(cg_allocate_t* alloc, cg_list_t* build_stack, int* node_count, cg
         return 0;
     }
     return -1;
+}
+
+int nn_embdeeing(cg_allocate_t* alloc, cg_list_t* build_stack, cg_list_t* nodes_list)
+{
+    
+    int node_count = cg_list_size(nodes_list);
+    nn_operand_t* _Input = cg_list_pop(build_stack);
+
+    if (_Input && node_is(_Input, "x")) {
+
+        nn_operand_t* z \                
+            = nn_operand_create(alloc, __gen_node_id(++node_count, "x"), 1, 1);
+        embedding_opt_t* embedding_opt \
+            = embedding_opt_create(__gen_node_id(++node_count, "embedding_opt"), _Input);
+        
+        cg_graph_link(_Input, embedding_opt);
+        cg_graph_link(embedding_opt, z);
+
+        cg_list_push(build_stack, z);
+
+        // for recycle
+        cg_list_push(nodes_list, z);
+        cg_list_push(nodes_list, embedding_opt);
+
+        return 0;
+
+    } else if (_Input == NULL) {
+        CG_DEBUG("Error <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
+    } else {
+        CG_DEBUG("Error <%d@%s>: _Input is not x\n", __LINE__, __FILE__);
+    }
+    return -1;
+}
+
+int nn_positional_encoding(cg_allocate_t* alloc, cg_list_t* build_stack, cg_list_t* nodes_list)
+{
+    int node_count = cg_list_size(nodes_list);
+    nn_operand_t* _Input = cg_list_pop(build_stack);
+
+    if (_Input && node_is(_Input, "x")) {
+
+        nn_operand_t* z \
+            = nn_operand_create(alloc, __gen_node_id(++node_count, "x"), 1, 1);
+            
+        positional_encoding_opt_t* positional_encoding_opt \
+            = position_encoding_opt_create (__gen_node_id(++node_count, "positional_encoding_opt"), _Input);
+
+        // link graph
+        cg_graph_link(_Input, positional_encoding_opt);
+        cg_graph_link(positional_encoding_opt, z);
+
+        // Q
+        cg_list_push(build_stack, z);
+        // K
+        cg_list_push(build_stack, z);
+        // V    
+        cg_list_push(build_stack, z);
+        // for Layer Norm
+        cg_list_push(build_stack, z);
+
+        cg_list_push(nodes_list, z);
+        cg_list_push(nodes_list, positional_encoding_opt);
+        return 0;
+
+    } else if (_Input == NULL) {
+        
+        CG_DEBUG("Error <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
+
+    } else {
+        CG_DEBUG("Error <%d@%s>: _Input is not x\n", __LINE__, __FILE__):
+    }
+    return -1;
+}
+
+int nn_multi_head_attention(cg_allocate_t* alloc, cg_list_t* build_stack, cg_list_t* nodes_list)
+{
+    
 }
