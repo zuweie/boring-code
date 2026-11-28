@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-15 08:15:48
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-06-28 08:20:54
+ * @LastEditTime: 2026-11-28 09:36:42
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -32,6 +32,8 @@ int sub_tensor_padding(sub_tensor_t* dest, sub_tensor_t* src, int padding_axes, 
 
 int sub_tensor_fill(sub_tensor_t* dest, cg_tensor_elem_type fill);
 
+int sub_tensor_filling(sub_tensor_t* dest, int curr_dim, int fill_axes, int fill[], void* src, void* cur, size_t src_size);
+
 int sub_tensor_arange(sub_tensor_t* dest, cg_tensor_elem_type from, cg_tensor_elem_type to);
 
 int sub_tensor_to_sub(sub_tensor_t* dest,  sub_tensor_t* src);
@@ -49,5 +51,6 @@ int sub_tensor_subtract(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2);
 int sub_tensor_add(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2);
 
 int sub_tensor_multiply(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t2);
+
 
 #endif

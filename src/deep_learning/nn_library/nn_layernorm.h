@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-11-22 20:10:42
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-11-23 13:19:23
+ * @LastEditTime: 2026-11-25 16:52:10
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_layernorm.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,7 +17,7 @@ typedef struct layer_norm_opt {
 
     cg_operator_t operator;
     nn_operand_t* x;
-    nn_operand_t* x_norm;
+    nn_operand_t* norm;
 
 } layer_norm_opt_t;
 
@@ -34,11 +34,11 @@ static inline int layer_norm_diff(cg_operator_t* thiz, cg_operand_t* variant, cg
     return 0;
 }
 
-static inline layer_norm_opt_t* layre_norm_opt_create(const char* id, nn_operand_t* x, nn_operand_t* x_norm)
+static inline layer_norm_opt_t* layre_norm_opt_create(const char* id, nn_operand_t* x, nn_operand_t* norm)
 {
     layer_norm_opt_t* operator = (layer_norm_opt_t*) malloc (sizeof(layer_norm_opt_t));
     operator->x = x;
-    operator->x_norm = x_norm;
+    operator->norm = x_norm;
     cg_operator_init(operator, id, layer_norm_cal, layer_norm_diff, NULL);
     return operator;
 }

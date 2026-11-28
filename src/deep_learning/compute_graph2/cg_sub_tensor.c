@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-22 16:06:47
+ * @LastEditTime: 2026-11-28 18:24:22
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,13 +21,33 @@
 #include "cg_tensor_shape.h"
 #include "cg_sub_tensor.h"
 
+static inline char* __polling_pull(char* src, char** next_block, size_t* pull_len, size_t block_size) 
+{
+    char* valid_addr  = *next_block;
+    char* bottom_addr = src + block_size;
+
+    size_t remain = bottom_addr - *next_block;
+
+    if (remain <= *pull_len) {
+        // remain is largest memory can pull out
+        *pull_len = remain;
+        // after pulled, set next_block to first begin
+        *next_block = src;
+    } else {
+        // try pull is 
+        *next_block += *pull_len;
+    }
+
+    return valid_addr;
+}
+
 /**
  * @brief tensor 内部函数，请勿直接调用
  */
 static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axes, const int slice[], int curr_dim)
 {
     int i,j;
-    int ret1, ret2, ret;
+    int ret;
 
     if ( curr_dim == slice_axes ) {
         // 到了指定的 axis，直接 copy
@@ -48,6 +68,56 @@ static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axe
 
         return 0;
     }
+}
+
+
+static int __do_filling_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, int fill_at[], char* src, char* curr, size_t src_size)
+{
+    int ret = 0;
+
+    if (curr_dim == filling_at_axes) {
+        // do the data filling at
+        // here is continue memory 
+
+        char* fill_at_addr  = (char*)(dest->sub_elems);
+        int remain_size     = AXIS_NUMBER(dest->shape) * cg_tensor_elem_size;
+        int try_size        = remain_size;
+
+        while (remain_size) {
+
+            // try to get valid 
+            char* pulled_addr = __polling_pull(src, &curr, &try_size, src_size);
+            // copy the data from pull_addr to fill_at_addr
+            memcpy(fill_at_addr, pulled_addr, try_size);
+            // fill addr move forward
+            fill_at_addr = fill_at_addr + try_size;
+            // calculate how many size need to be copy
+            if (remain_size >= try_size) {
+                remain_size = remain_size - try_size;
+            } else {
+                CG_DEBUG("Error <%d@%s>: Fill at address calculate bug remain_size(%ld) < try_size(%ld)\n", remain_size, try_size);
+                ret = -1;
+                break;
+            }
+            // next to try.
+            try_size = remain_size;
+        }
+
+    } else {
+        
+        // do exploring the whole tensor
+
+        sub_tensor_t sub_dest;
+
+        for (int i=filling_at[curr_dim*2]; i<filling_at[curr_dim*2+1]; ++i) {
+
+            // explore tensor
+            sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
+
+            if ( ret = __do_filling_at(&sub_dest, curr_dim+1, fill_at_axes, fill_at, src, curr, src_size) ) break;
+        }
+    }
+    return ret;
 }
 
 /**
@@ -176,8 +246,6 @@ static int __do_binary_opt(sub_tensor_t* dest, sub_tensor_t* t1, sub_tensor_t* t
     }
     return 0;
 }
-
-
 
 int sub_tensor_get_sub(sub_tensor_t* sub_tensor, sub_tensor_t* sub_src, int axes, int coord[]) 
 {   
@@ -394,6 +462,12 @@ int sub_tensor_fill(sub_tensor_t* dest, cg_tensor_elem_type fill)
     }
     return 0;
 }
+
+int sub_tensor_fill_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, int fill_at[], char* src, size_t src_size)
+{
+    return __do_filling_at(dest, 0, fill_at_axes, fill)
+}
+
 
 /**
  * @brief tensor 内部函数，请勿直接调用
