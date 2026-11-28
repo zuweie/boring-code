@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-14 11:35:50
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-11-22 19:37:34
+ * @LastEditTime: 2026-11-28 23:40:03
  * @FilePath: /boring-code/src/deep_learning/nn/nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -52,7 +52,7 @@ int dnn_init(dnn_t* nn, int features)
     *nn = (dnn_t) {
         .nodes_list  = cg_list_create(),
         .build_stack = cg_list_create(),
-        ._Input      = cg_tensor_create(nn->alloc, 2, features)
+        ._Input      = cg_tensor_create(&nn->alloc, 2, features, 1)
     };
 
     cg_allocator_init(&nn->alloc);

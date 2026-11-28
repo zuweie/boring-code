@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-05 14:03:06
+ * @LastEditTime: 2026-11-28 21:15:35
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -192,7 +192,7 @@ int cg_tensor_reshape(cg_tensor_t* thiz, int new_axes, int new_shape[])
     int shape_ok;
     __tensor_shape_check(shape_ok, new_axes, new_shape);
     
-    if (shape_ok ==0)
+    if (shape_ok == 0)
         return __reshape(&thiz->shape, &thiz->elems, new_axes, new_shape, thiz->allocator);
         
     return shape_ok;
@@ -210,6 +210,40 @@ int cg_tensor_fill(cg_tensor_t* t, cg_tensor_elem_type fill)
 {
     sub_tensor_t sub_t1 = cg_tensor_to_sub_tensor(t);
     return sub_tensor_fill(&sub_t1, fill);
+}
+
+int cg_tensor_fill_at(cg_tensor_t* thiz, cg_tensor_t* src, int axes, ...)
+{
+    int ret = 0;
+    int dimensions[axes<<1];
+    va_list args;
+    va_start(args, axes);
+    for (int i=0; i<axes; ++i) {
+        dimensions[i*2]   = va_arg(args, int);
+        dimensions[i*2+1] = va_arg(args, int);
+    }
+    va_end(args);
+
+    
+    // TODO: CHECK input dimensions
+    for (int i=0; i<axes; ++i) {
+        if (dimensions[i*2] >= dimensions[i*2+1]) {
+            CG_DEBUG("Error <%d@%s>: input begin dimens[%d](%d) >= open end dimens[%d](%d)\n", __LINE__, __FILE__, i*2, dimensions[i*2], i*2+1, dimensions[i*2+1]);
+            return -1;
+        } else if (dimensions[i*2] < 0) {
+            CG_DEBUG("Error <%d@%s>: input begin dimens[%d](%d) < 0\n", __LINE__, __FILE__, i*2, dimensions[i*2]);
+            return -1;
+        } else if (dimensions[i*2+1] > SHAPE_AXES(thiz->shape, i)) {
+            CG_DEBUG("Error <%d@%s>: input open end dimens[%d](%d) > thiz shape[%d](%d)\n", __LINE__, __FILE__, i*2+1, dimensions[i*2+1], i, SHAPE_AXES(thiz->shape, i));
+            return -1;
+        } else if ( (dimensions[i*2+1] - dimensions[i*2]) != SHAPE_AXES(src, i) ) {
+            CG_DEBUG("Error <%d@%s>: dest fill dimens(%d) is not match src dimens(%d)\n", __LINE__, __FILE__, dimensions[i*2+1] - dimensions[i*2], SHAPE_AXES(src, i));
+            return -1;
+        } 
+    }
+
+    sub_tensor_t sub_dest = cg_tensor_to_sub_tensor(thiz);
+    return sub_tensor_fill_at(&sub_dest, axes, dimensions, src->elems, AXIS_NUMBER(src->shape) * cg_tensor_elem_size);
 }
 
 int cg_tensor_arange(cg_tensor_t* t, cg_tensor_elem_type from, cg_tensor_elem_type to)

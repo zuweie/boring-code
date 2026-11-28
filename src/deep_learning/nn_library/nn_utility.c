@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-22 10:01:59
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-11-22 20:08:40
+ * @LastEditTime: 2026-11-29 00:01:38
  * @FilePath: /boring-code/src/deep_learning/nn_library/nn_utility.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -102,8 +102,8 @@ int nn_linear(cg_allocator_t* alloc, cg_list_t* build_stack, int in_dimens, int 
         }
 
     } else if (!_Input) {
-        CG_DEBUG("Error <%d@%s>: _Input is null\n", __LINE__, __FILE__):
-    } else (!node_is(_Input, "x")) {
+        CG_DEBUG("Error <%d@%s>: _Input is null\n", __LINE__, __FILE__);
+    } else if (!node_is(_Input, "x")) {
         CG_DEBUG("Error <%d@%s>: pop up node is a \'%s\', not a \'x\'\n", __LINE__, __FILE__, node_typeof(_Input));
     }
     return -1;
@@ -374,7 +374,7 @@ int nn_positional_encoding(cg_allocate_t* alloc, cg_list_t* build_stack, cg_list
         CG_DEBUG("Error <%d@%s>: _Input is NULL\n", __LINE__, __FILE__);
 
     } else {
-        CG_DEBUG("Error <%d@%s>: _Input is not x\n", __LINE__, __FILE__):
+        CG_DEBUG("Error <%d@%s>: _Input is not x\n", __LINE__, __FILE__);
     }
     return -1;
 }

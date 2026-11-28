@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:43
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-05 14:02:07
+ * @LastEditTime: 2026-11-28 19:28:39
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.h
  * @Description: 好难
  */
@@ -33,6 +33,7 @@ cg_tensor_t* cg_tensor_padding(cg_tensor_t* thiz, padding_mode_t mode, cg_tensor
 cg_tensor_elem_type* cg_tensor_get(cg_tensor_t* thiz, ...);
 
 int cg_tensor_fill(cg_tensor_t*, cg_tensor_elem_type);
+int cg_tensor_fill_at(cg_tensor_t* thiz, cg_tensor_t* src, int fill_at_axes, ...);
 int cg_tensor_arange(cg_tensor_t*, cg_tensor_elem_type, cg_tensor_elem_type);
 int cg_tensor_cpy_to(cg_tensor_t*, cg_tensor_t*);
 int cg_tensor_inspect(cg_tensor_t*);

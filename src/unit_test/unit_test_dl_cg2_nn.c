@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-08-16 22:01:02
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-09-13 13:00:54
+ * @LastEditTime: 2026-11-28 23:36:02
  * @FilePath: /boring-code/src/unit_test/unit_test_dl_cg2_nn.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,6 +11,7 @@
 #include <CUnit/Basic.h>
 #include "unit_test.h"
 
+#include "deep_learning/compute_graph2/cg_list.h"
 #include "deep_learning/compute_graph2/cg_tensor.h"
 #include "deep_learning/dnn/dnn.h"
 #include "deep_learning/dnn/dnn_optimizer.h"
@@ -49,7 +50,7 @@ static int __dnn_processing(dnn_optimizer_t* thiz)
 
 static int __dnn_step(dnn_optimizer_t* thiz)
 {
-    CG_DEBUG("dnn step, update nn`s weigth, total update %d nodes\n", thiz->model->node_count);
+    CG_DEBUG("dnn step, update nn`s weigth, total update %d nodes\n", cg_list_size(thiz->model->nodes_list));
     return 0;
 }
 
@@ -63,7 +64,7 @@ static void test_dnn (void)
     
     dnn_t simple_nn;
     dnn_optimizer_t optimizer;
-    dnn_init(&simple_nn);
+    dnn_init(&simple_nn, 4);
 
     cg_tensor_t* tensor_train_datas = cg_tensor_create(&simple_nn.alloc,  3, 3, 4, 20);
     cg_tensor_t* tensor_labels      = cg_tensor_create(&simple_nn.alloc,  3, 3, 3, 20);

@@ -1,3 +1,11 @@
+/*
+ * @Author: zuweie jojoe.wei@gmail.com
+ * @Date: 2026-09-17 22:13:03
+ * @LastEditors: zuweie jojoe.wei@gmail.com
+ * @LastEditTime: 2026-11-29 00:03:52
+ * @FilePath: /boring-code/src/deep_learning/nn_library/nn_operator_embedding.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef __NN_OPERATOR_EMBEDDING_H__
 #define __NN_OPERATOR_EMBEDDING_H__
 
@@ -26,7 +34,7 @@ static inline int __embedding_diff (cg_operator_t* thiz, cg_operand_t* variant, 
 
 static inline embedding_opt_t* embedding_opt_create( const char* id, nn_operand_t* variant)
 {
-    embedding_opt* operator = (embedding_opt*) malloc (sizeof(embedding_opt));
+    embedding_opt_t* operator = (embedding_opt_t*) malloc (sizeof(embedding_opt_t));
     cg_operator_init(operator, id, __embedding_cal, __embedding_diff, NULL);
     operator->x = variant;
     return operator;

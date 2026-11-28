@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-11-28 18:24:22
+ * @LastEditTime: 2026-11-28 23:37:25
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -71,11 +71,11 @@ static int __do_slice(sub_tensor_t* dest, sub_tensor_t* src, const int slice_axe
 }
 
 
-static int __do_filling_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, int fill_at[], char* src, char* curr, size_t src_size)
+static int __do_filling_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, int fill_at[], char* src, char** curr, size_t src_size)
 {
     int ret = 0;
 
-    if (curr_dim == filling_at_axes) {
+    if (curr_dim == fill_at_axes) {
         // do the data filling at
         // here is continue memory 
 
@@ -86,7 +86,7 @@ static int __do_filling_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, i
         while (remain_size) {
 
             // try to get valid 
-            char* pulled_addr = __polling_pull(src, &curr, &try_size, src_size);
+            char* pulled_addr = __polling_pull(src, curr, &try_size, src_size);
             // copy the data from pull_addr to fill_at_addr
             memcpy(fill_at_addr, pulled_addr, try_size);
             // fill addr move forward
@@ -95,7 +95,7 @@ static int __do_filling_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, i
             if (remain_size >= try_size) {
                 remain_size = remain_size - try_size;
             } else {
-                CG_DEBUG("Error <%d@%s>: Fill at address calculate bug remain_size(%ld) < try_size(%ld)\n", remain_size, try_size);
+                CG_DEBUG("Error <%d@%s>: Fill at address calculate bug remain_size(%ld) < try_size(%ld)\n", __LINE__, __FILE__, remain_size, try_size);
                 ret = -1;
                 break;
             }
@@ -109,7 +109,7 @@ static int __do_filling_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, i
 
         sub_tensor_t sub_dest;
 
-        for (int i=filling_at[curr_dim*2]; i<filling_at[curr_dim*2+1]; ++i) {
+        for (int i=fill_at[curr_dim*2]; i<fill_at[curr_dim*2+1]; ++i) {
 
             // explore tensor
             sub_tensor_get_sub(&sub_dest, dest, 1, (int[]){i});
@@ -463,9 +463,10 @@ int sub_tensor_fill(sub_tensor_t* dest, cg_tensor_elem_type fill)
     return 0;
 }
 
-int sub_tensor_fill_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, int fill_at[], char* src, size_t src_size)
+int sub_tensor_fill_at(sub_tensor_t* dest, int fill_at_axes, int fill_at[], char* src, size_t src_size)
 {
-    return __do_filling_at(dest, 0, fill_at_axes, fill)
+    char* next_block = src;
+    return __do_filling_at(dest, 0, fill_at_axes, fill_at, src, &next_block, src_size);
 }
 
 

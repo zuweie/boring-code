@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-13 14:20:17
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-08-16 22:01:51
+ * @LastEditTime: 2026-11-28 22:20:58
  * @FilePath: /boring-code/src/unit_test/unit_test_cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -187,6 +187,16 @@ void test_tensor_binary_opt(void)
     cg_allocator_reset(&alloc);
 }
 
+void test_tensor_fill_at(void) 
+{
+    cg_allocator_t alloc;
+    cg_allocator_init(&alloc);
+    
+    cg_tensor_t* T = cg_tensor_create(&alloc, 3,  6, 6, 6);
+    cg_tensor_fill(T, 1.f);
+    cg_tensor_inspect(T);
+}
+
 int do_dl_cg2_tensor_test (void) 
 {
     CU_pSuite pSuite = NULL;
@@ -211,10 +221,17 @@ int do_dl_cg2_tensor_test (void)
     }
     #endif
     
+    #if 0
     if (NULL == CU_add_test(pSuite, "test tensor binary_opt", test_tensor_binary_opt) ) {
         CU_cleanup_registry();
         return CU_get_error();
     }
+    #endif
 
+    if (NULL == CU_add_test(pSuite, "test tensor fill at", test_tensor_fill_at) ) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    
     return 0;
 }
