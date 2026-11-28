@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2025-05-24 09:57:39
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-11-28 21:15:35
+ * @LastEditTime: 2026-11-29 00:32:01
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -233,11 +233,11 @@ int cg_tensor_fill_at(cg_tensor_t* thiz, cg_tensor_t* src, int axes, ...)
         } else if (dimensions[i*2] < 0) {
             CG_DEBUG("Error <%d@%s>: input begin dimens[%d](%d) < 0\n", __LINE__, __FILE__, i*2, dimensions[i*2]);
             return -1;
-        } else if (dimensions[i*2+1] > SHAPE_AXES(thiz->shape, i)) {
-            CG_DEBUG("Error <%d@%s>: input open end dimens[%d](%d) > thiz shape[%d](%d)\n", __LINE__, __FILE__, i*2+1, dimensions[i*2+1], i, SHAPE_AXES(thiz->shape, i));
+        } else if (dimensions[i*2+1] > SHAPE_DIMENS(thiz->shape, i)) {
+            CG_DEBUG("Error <%d@%s>: input open end dimens[%d](%d) > thiz shape[%d](%d)\n", __LINE__, __FILE__, i*2+1, dimensions[i*2+1], i, SHAPE_DIMENS(thiz->shape, i));
             return -1;
-        } else if ( (dimensions[i*2+1] - dimensions[i*2]) != SHAPE_AXES(src, i) ) {
-            CG_DEBUG("Error <%d@%s>: dest fill dimens(%d) is not match src dimens(%d)\n", __LINE__, __FILE__, dimensions[i*2+1] - dimensions[i*2], SHAPE_AXES(src, i));
+        } else if ( (dimensions[i*2+1] - dimensions[i*2]) != SHAPE_DIMENS(src->shape, i) ) {
+            CG_DEBUG("Error <%d@%s>: dest fill dimens(%d) is not match src dimens(%d)\n", __LINE__, __FILE__, dimensions[i*2+1] - dimensions[i*2], SHAPE_DIMENS(src->shape, i));
             return -1;
         } 
     }

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-03-28 17:28:49
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-11-28 23:37:25
+ * @LastEditTime: 2026-11-29 00:37:05
  * @FilePath: /boring-code/src/deep_learning/compute_graph2/cg_sub_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -80,8 +80,8 @@ static int __do_filling_at(sub_tensor_t* dest, int curr_dim, int fill_at_axes, i
         // here is continue memory 
 
         char* fill_at_addr  = (char*)(dest->sub_elems);
-        int remain_size     = AXIS_NUMBER(dest->shape) * cg_tensor_elem_size;
-        int try_size        = remain_size;
+        size_t remain_size  = AXIS_NUMBER(dest->shape) * cg_tensor_elem_size;
+        size_t try_size     = remain_size;
 
         while (remain_size) {
 

@@ -2,7 +2,7 @@
  * @Author: zuweie jojoe.wei@gmail.com
  * @Date: 2026-06-13 14:20:17
  * @LastEditors: zuweie jojoe.wei@gmail.com
- * @LastEditTime: 2026-11-28 22:20:58
+ * @LastEditTime: 2026-11-29 00:43:57
  * @FilePath: /boring-code/src/unit_test/unit_test_cg_tensor.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -192,9 +192,18 @@ void test_tensor_fill_at(void)
     cg_allocator_t alloc;
     cg_allocator_init(&alloc);
     
-    cg_tensor_t* T = cg_tensor_create(&alloc, 3,  6, 6, 6);
+    cg_tensor_t* T  = cg_tensor_create(&alloc, 3,  6, 6, 6);
+    cg_tensor_t* t1 = cg_tensor_create(&alloc, 3, 2, 4, 3);
     cg_tensor_fill(T, 1.f);
+    cg_tensor_fill(t1, 3.f);
+
     cg_tensor_inspect(T);
+    cg_tensor_fill_at(T, t1, 3, 1, 3, 1, 5, 2, 5);
+    cg_tensor_inspect(T);
+
+    cg_tensor_recycle(T);
+    cg_tensor_recycle(t1);
+    cg_allocator_reset(&alloc);
 }
 
 int do_dl_cg2_tensor_test (void) 
